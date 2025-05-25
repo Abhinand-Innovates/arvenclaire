@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Watch Haven - Create an Account</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="stylesheet" href="../../styles/user/user-register.css">
+  <!-- SweetAlert2 + Animate.css -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+  <style>
+    .error-message {
+      color: #dc3545;
+      font-size: 0.875rem;
+      margin-top: 0.25rem;
+      display: none;
+    }
+
+    .is-invalid~.error-message {
+      display: block;
+    }
+
+    .is-invalid {
+      border-color: #dc3545;
+      background-image: none !important;
+      background-repeat: no-repeat;
+      background-position: right calc(0.375em + 0.1875rem) center;
+      background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+    }
+
+    .password-wrapper {
+      position: relative;
+    }
+
+    .password-toggle {
+      position: absolute;
+      right: 15px;
+      top: 10px;
+      transform: translateY(0);
+      cursor: pointer;
+      color: #6c757d;
+      z-index: 10;
+      font-size: 1rem;
+    }
+
+    .password-toggle:hover {
+      color: #000;
+    }
+
+    .password-wrapper .form-control {
+      padding-right: 60px;
+    }
+
+    .btn-loading .spinner-border {
+      width: 1.5rem;
+      height: 1.5rem;
+      margin-right: 0.5rem;
+    }
+
+    .btn-loading .btn-text {
+      display: none;
+    }
+
+    .btn-loading {
+      pointer-events: none;
+      opacity: 0.65;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page-container">
+    <div class="signup-container">
+      <div class="signup-image">
+        <img src="/assets/register-img.jpg" style="width: 100%; height: 100%; object-fit: cover;" alt="Watch Haven">
+      </div>
+      <div class="signup-form">
+        <h2 class="mb-3">Create your account</h2>
+        <form id="signupForm" novalidate>
+          <div class="mb-3">
+            <input type="text" id="fullname" name="fullname" class="form-control" placeholder="Fullname" required>
+            <div class="error-message" id="fullname-error">Full name must be at least 4 characters long</div>
+          </div>
+          <div class="mb-3">
+            <input type="tel" id="phone" name="phone" class="form-control" placeholder="Phone" required>
+            <div class="error-message" id="phone-error">Please enter a valid phone number</div>
+          </div>
+          <div class="mb-3">
+            <input type="email" id="email" name="email" class="form-control" placeholder="Email" required>
+            <div class="error-message" id="email-error">Please enter a valid email address</div>
+          </div>
+          <div class="mb-3 password-wrapper">
+            <input type="password" id="password" name="password" class="form-control" placeholder="Password">
+            <i class="bi bi-lock password-toggle" id="password-toggle"></i>
+            <div class="error-message" id="password-error">Give strong password</div>
+          </div>
+          <div class="mb-3 password-wrapper">
+            <input type="password" id="confirmpassword" name="confirmpassword" class="form-control"
+              placeholder="Confirm Password">
+            <i class="bi bi-lock password-toggle" id="confirmpassword-toggle"></i>
+            <div class="error-message" id="confirmpassword-error">Passwords do not match</div>
+          </div>
+          <div class="form-check mb-2">
+            <input class="form-check-input" type="checkbox" id="rememberMe">
+            <label class="form-check-label text-muted" for="rememberMe">
+              Remember me
+            </label>
+          </div>
+          <button type="submit" class="btn btn-create py-2" id="signupButton">
+            <span class="btn-text">Sign Up</span>
+            <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+          </button>
+          <div class="d-flex align-items-center my-3">
+            <hr class="flex-grow-1">
+            <span class="mx-3 text-muted">or</span>
+            <hr class="flex-grow-1">
+          </div>
+          <a href="/auth/google" class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center p-2"
+            role="button">
+            <img src="../../assets/google-icon.png" alt="Google logo" width="20" height="20"
+              style="margin-right: 10px;">
+            Sign up with Google
+          </a>
+
+
+          <div class="login-link">
+            Already have an account? <a href="/login">Log In</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script>
+    const form = document.getElementById("signupForm");
+    const signupButton = document.getElementById("signupButton");
+    const fields = [
+      {
+        id: "fullname",
+        validate: (value) => value.trim().length >= 4,
+        errorElement: "fullname-error"
+      },
+      {
+        id: "phone",
+        validate: (value) => /^\+?[\d\s-]{10,}$/.test(value.trim()),
+        errorElement: "phone-error"
+      },
+      {
+        id: "email",
+        validate: (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim()),
+        errorElement: "email-error"
+      },
+      {
+        id: "password",
+        validate: (value) => /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(value),
+        errorElement: "password-error"
+      },
+      {
+        id: "confirmpassword",
+        validate: (value) => value === document.getElementById("password").value,
+        errorElement: "confirmpassword-error"
+      }
+    ];
+
+    function validateField(field) {
+      const input = document.getElementById(field.id);
+      const isValid = field.validate(input.value);
+      input.classList.toggle("is-invalid", !isValid);
+      return isValid;
+    }
+
+    // Real-time validation on input
+    fields.forEach(field => {
+      const input = document.getElementById(field.id);
+      input.addEventListener("input", () => validateField(field));
+    });
+
+    // Password toggle functionality
+    function setupPasswordToggle(inputId, toggleId) {
+      const input = document.getElementById(inputId);
+      const toggle = document.getElementById(toggleId);
+      toggle.addEventListener("click", () => {
+        const isPassword = input.type === "password";
+        input.type = isPassword ? "text" : "password";
+        toggle.classList.toggle("bi-unlock", isPassword);
+        toggle.classList.toggle("bi-lock", !isPassword);
+      });
+    }
+
+    setupPasswordToggle("password", "password-toggle");
+    setupPasswordToggle("confirmpassword", "confirmpassword-toggle");
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      // Show loader and disable button
+      signupButton.classList.add("btn-loading");
+      signupButton.querySelector(".spinner-border").classList.remove("d-none");
+      signupButton.querySelector(".btn-text").classList.add("d-none");
+
+      let isValid = true;
+      fields.forEach(field => {
+        if (!validateField(field)) {
+          isValid = false;
+        }
+      });
+
+      if (!isValid) {
+        // Hide loader and enable button if validation fails
+        signupButton.classList.remove("btn-loading");
+        signupButton.querySelector(".spinner-border").classList.add("d-none");
+        signupButton.querySelector(".btn-text").classList.remove("d-none");
+        return;
+      }
+
+      const fullname = document.getElementById("fullname").value.trim();
+      const phone = document.getElementById("phone").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+
+      try {
+        const response = await fetch("/signup", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            fullname,
+            phone,
+            email,
+            password,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          window.location.href = "/verify-otp";
+        } else {
+          Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'error',
+            title: 'Signup Failed',
+            text: data.message || 'Signup failed.',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            customClass: {
+              popup: 'small-toast'
+            },
+            showClass: {
+              popup: 'animate__animated animate__fadeInDown'
+            },
+            hideClass: {
+              popup: 'animate__animated animate__fadeOutUp'
+            }
+          });
+        }
+      } catch (error) {
+        console.error("Signup error:", error);
+        Swal.fire({
+          position: 'top-end',
+          icon: 'error',
+          title: 'Error',
+          text: 'An error occurred during signup.',
+        });
+      } finally {
+        // Hide loader and enable button after request completes
+        signupButton.classList.remove("btn-loading");
+        signupButton.querySelector(".spinner-border").classList.add("d-none");
+        signupButton.querySelector(".btn-text").classList.remove("d-none");
+      }
+    });
+  </script>
+</body>
+
+</html>

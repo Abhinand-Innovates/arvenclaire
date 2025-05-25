@@ -1,0 +1,615 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shop Page</title>
+    <!-- Bootstrap CSS CDN -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .navbar-brand {
+            font-weight: bold;
+            font-size: 1.5rem;
+        }
+        
+        .hero-section {
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('/api/placeholder/1200/300');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            padding: 3rem 0;
+            margin-bottom: 2rem;
+        }
+        
+        .filter-sidebar {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        
+        .filter-heading {
+            font-weight: 600;
+            font-size: 1.1rem;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #e1e1e1;
+        }
+        
+        .filter-group {
+            margin-bottom: 20px;
+        }
+        
+        .filter-label {
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: block;
+            font-size: 0.9rem;
+        }
+        
+        .range-values {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+        }
+        
+        .product-card {
+            background-color: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            margin-bottom: 25px;
+            height: 100%;
+        }
+        
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .product-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+        
+        .product-details {
+            padding: 15px;
+        }
+        
+        .product-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+            font-size: 1rem;
+        }
+        
+        .product-category {
+            color: #6c757d;
+            font-size: 0.8rem;
+            margin-bottom: 10px;
+        }
+        
+        .product-price {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #212529;
+        }
+        
+        .product-rating {
+            color: #ffc107;
+            margin-bottom: 10px;
+        }
+        
+        .btn-add-cart {
+            width: 100%;
+            border-radius: 5px;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+        
+        .filters-offcanvas {
+            width: 280px;
+        }
+        
+        .pagination .page-item .page-link {
+            color: #212529;
+        }
+        
+        .pagination .page-item.active .page-link {
+            background-color: #212529;
+            border-color: #212529;
+        }
+        
+        .filter-button {
+            display: none;
+        }
+        
+        @media (max-width: 991px) {
+            .filter-sidebar {
+                display: none;
+            }
+            
+            .filter-button {
+                display: block;
+                margin-bottom: 20px;
+            }
+        }
+        
+        @media (max-width: 767px) {
+            .hero-section {
+                padding: 2rem 0;
+            }
+            
+            .product-card {
+                margin-bottom: 15px;
+            }
+        }
+        
+        .form-check-input:checked {
+            background-color: #212529;
+            border-color: #212529;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">ARVENCLAIRE</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                  
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#">Shop</a>
+                    </li>
+                    
+                </ul>
+                <div class="d-flex">
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Search products...">
+                        <button class="btn btn-light" type="button"><i class="fas fa-search"></i></button>
+                    </div>
+                    <a class="btn btn-outline-light ms-2" href="#"><i class="fas fa-shopping-cart"></i></a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container text-center">
+            <h1>Our Products</h1>
+            <p class="lead">Find the perfect item for your needs</p>
+        </div>
+    </section>
+
+    <!-- Shop Content -->
+    <div class="container">
+        <!-- Mobile Filter Button -->
+        <div class="filter-button">
+            <button class="btn btn-dark w-100 mb-3" type="button" data-bs-toggle="offcanvas" data-bs-target="#filtersOffcanvas">
+                <i class="fas fa-filter me-2"></i> Show Filters
+            </button>
+        </div>
+
+        <div class="row">
+            <!-- Sidebar Filters -->
+            <div class="col-lg-3">
+                <div class="filter-sidebar">
+                    <h4 class="filter-heading">Filters</h4>
+                    
+                    <!-- Categories Filter -->
+                    <div class="filter-group">
+                        <label class="filter-label">Categories</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="category1" checked>
+                            <label class="form-check-label" for="category1">All</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="category2">
+                            <label class="form-check-label" for="category2">Men</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="category3">
+                            <label class="form-check-label" for="category3">Women</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="category4">
+                            <label class="form-check-label" for="category4">Unisex</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="category5">
+                            <label class="form-check-label" for="category5">Kids</label>
+                        </div>
+                    </div>
+                    
+                    <!-- Price Range Filter -->
+                    <div class="filter-group">
+                        <label class="filter-label">Price Range</label>
+                        <input type="range" class="form-range" min="0" max="1000" id="priceRange">
+                        <div class="range-values">
+                            <span>$0</span>
+                            <span>$1000</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Brand Filter -->
+                    <div class="filter-group">
+                        <label class="filter-label">Brand</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="brand1" checked>
+                            <label class="form-check-label" for="brand1">All Brands</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="brand2">
+                            <label class="form-check-label" for="brand2">Zenith</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="brand3">
+                            <label class="form-check-label" for="brand3">Omega</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="brand4">
+                            <label class="form-check-label" for="brand4">Penerai</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="brand5">
+                            <label class="form-check-label" for="brand5">Atlantic</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="brand6">
+                            <label class="form-check-label" for="brand6">Aigner</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="brand7">
+                            <label class="form-check-label" for="brand7">Bifora</label>
+                        </div>
+                    </div>
+                    
+                    <!-- Availability Filter -->
+                    
+                    
+                    <!-- Apply Button -->
+                    <button class="btn btn-dark w-100">Apply Filters</button>
+                </div>
+            </div>
+            
+            <!-- Products Grid -->
+            <div class="col-lg-9">
+                <!-- Sort and View Options -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <p class="m-0">Showing 1-12 of 36 results</p>
+                    <div class="d-flex align-items-center">
+                        <label for="sortSelect" class="me-2">Sort by:</label>
+                        <select class="form-select form-select-sm" id="sortSelect" style="width: auto;">
+                            <option selected>Popularity</option>
+                            <option>Price: Low to High</option>
+                            <option>Price: High to Low</option>
+                            <option>Newest</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Products Row -->
+                <div class="row">
+                    <!-- Product Card 1 -->
+                    <div class="col-md-4 col-sm-6 mb-4">
+                        <div class="product-card">
+                            <img src="/api/placeholder/400/300" class="product-image" alt="Product 1">
+                            <div class="product-details">
+                                <div class="product-category">Electronics</div>
+                                <h5 class="product-title">Wireless Headphones</h5>
+                                <div class="product-rating">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star-half-alt"></i>
+                                    <span class="ms-1 text-muted">(4.5)</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="product-price">$89.99</span>
+                                    <span class="badge bg-success">In Stock</span>
+                                </div>
+                                <button class="btn btn-dark btn-add-cart">Add to Cart</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Product Card 2 -->
+                    <div class="col-md-4 col-sm-6 mb-4">
+                        <div class="product-card">
+                            <img src="/api/placeholder/400/300" class="product-image" alt="Product 2">
+                            <div class="product-details">
+                                <div class="product-category">Clothing</div>
+                                <h5 class="product-title">Classic T-Shirt</h5>
+                                <div class="product-rating">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="far fa-star"></i>
+                                    <span class="ms-1 text-muted">(4.0)</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="product-price">$24.99</span>
+                                    <span class="badge bg-success">In Stock</span>
+                                </div>
+                                <button class="btn btn-dark btn-add-cart">Add to Cart</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Product Card 3 -->
+                    <div class="col-md-4 col-sm-6 mb-4">
+                        <div class="product-card">
+                            <img src="/api/placeholder/400/300" class="product-image" alt="Product 3">
+                            <div class="product-details">
+                                <div class="product-category">Home & Kitchen</div>
+                                <h5 class="product-title">Coffee Maker</h5>
+                                <div class="product-rating">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star-half-alt"></i>
+                                    <i class="far fa-star"></i>
+                                    <span class="ms-1 text-muted">(3.5)</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="product-price">$129.99</span>
+                                    <span class="badge bg-success">In Stock</span>
+                                </div>
+                                <button class="btn btn-dark btn-add-cart">Add to Cart</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Product Card 4 -->
+                    <div class="col-md-4 col-sm-6 mb-4">
+                        <div class="product-card">
+                            <img src="/api/placeholder/400/300" class="product-image" alt="Product 4">
+                            <div class="product-details">
+                                <div class="product-category">Accessories</div>
+                                <h5 class="product-title">Leather Wallet</h5>
+                                <div class="product-rating">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <span class="ms-1 text-muted">(5.0)</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="product-price">$49.99</span>
+                                    <span class="badge bg-danger">Out of Stock</span>
+                                </div>
+                                <button class="btn btn-secondary btn-add-cart" disabled>Out of Stock</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Product Card 5 -->
+                    <div class="col-md-4 col-sm-6 mb-4">
+                        <div class="product-card">
+                            <img src="/api/placeholder/400/300" class="product-image" alt="Product 5">
+                            <div class="product-details">
+                                <div class="product-category">Electronics</div>
+                                <h5 class="product-title">Smart Speaker</h5>
+                                <div class="product-rating">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="far fa-star"></i>
+                                    <span class="ms-1 text-muted">(4.0)</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="product-price">$79.99</span>
+                                    <span class="badge bg-success">In Stock</span>
+                                </div>
+                                <button class="btn btn-dark btn-add-cart">Add to Cart</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Product Card 6 -->
+                    <div class="col-md-4 col-sm-6 mb-4">
+                        <div class="product-card">
+                            <img src="/api/placeholder/400/300" class="product-image" alt="Product 6">
+                            <div class="product-details">
+                                <div class="product-category">Clothing</div>
+                                <h5 class="product-title">Denim Jacket</h5>
+                                <div class="product-rating">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star-half-alt"></i>
+                                    <i class="far fa-star"></i>
+                                    <span class="ms-1 text-muted">(3.5)</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="product-price">$79.99</span>
+                                    <span class="badge bg-success">In Stock</span>
+                                </div>
+                                <button class="btn btn-dark btn-add-cart">Add to Cart</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Product Card 7 -->
+                    <div class="col-md-4 col-sm-6 mb-4">
+                        <div class="product-card">
+                            <img src="/api/placeholder/400/300" class="product-image" alt="Product 7">
+                            <div class="product-details">
+                                <div class="product-category">Home & Kitchen</div>
+                                <h5 class="product-title">Knife Set</h5>
+                                <div class="product-rating">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="far fa-star"></i>
+                                    <span class="ms-1 text-muted">(4.0)</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="product-price">$129.99</span>
+                                    <span class="badge bg-success">In Stock</span>
+                                </div>
+                                <button class="btn btn-dark btn-add-cart">Add to Cart</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Product Card 8 -->
+                    <div class="col-md-4 col-sm-6 mb-4">
+                        <div class="product-card">
+                            <img src="/api/placeholder/400/300" class="product-image" alt="Product 8">
+                            <div class="product-details">
+                                <div class="product-category">Accessories</div>
+                                <h5 class="product-title">Sunglasses</h5>
+                                <div class="product-rating">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="far fa-star"></i>
+                                    <i class="far fa-star"></i>
+                                    <span class="ms-1 text-muted">(3.0)</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="product-price">$39.99</span>
+                                    <span class="badge bg-success">In Stock</span>
+                                </div>
+                                <button class="btn btn-dark btn-add-cart">Add to Cart</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Product Card 9 -->
+                    <div class="col-md-4 col-sm-6 mb-4">
+                        <div class="product-card">
+                            <img src="/api/placeholder/400/300" class="product-image" alt="Product 9">
+                            <div class="product-details">
+                                <div class="product-category">Electronics</div>
+                                <h5 class="product-title">Smartwatch</h5>
+                                <div class="product-rating">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star-half-alt"></i>
+                                    <span class="ms-1 text-muted">(4.5)</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="product-price">$149.99</span>
+                                    <span class="badge bg-success">In Stock</span>
+                                </div>
+                                <button class="btn btn-dark btn-add-cart">Add to Cart</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Pagination -->
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item disabled">
+                            <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Previous</a>
+                        </li>
+                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                        <li class="page-item"><a class="page-link" href="#">2</a></li>
+                        <li class="page-item"><a class="page-link" href="#">3</a></li>
+                        <li class="page-item">
+                            <a class="page-link" href="#">Next</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <!-- Offcanvas Filter (Mobile) -->
+    <div class="offcanvas offcanvas-start filters-offcanvas" tabindex="-1" id="filtersOffcanvas" aria-labelledby="filtersOffcanvasLabel">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="filtersOffcanvasLabel">Filters</h5>
+            <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
+            <!-- Categories Filter -->
+            <div class="filter-group">
+                <label class="filter-label">Categories</label>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="categoryM1" checked>
+                    <label class="form-check-label" for="categoryM1">All</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="categoryM2">
+                    <label class="form-check-label" for="categoryM2">Electronics</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="categoryM3">
+                    <label class="form-check-label" for="categoryM3">Clothing</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="categoryM4">
+                    <label class="form-check-label" for="categoryM4">Accessories</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="categoryM5">
+                    <label class="form-check-label" for="categoryM5">Home & Kitchen</label>
+                </div>
+            </div>
+            
+            <!-- Price Range Filter -->
+            <div class="filter-group">
+                <label class="filter-label">Price Range</label>
+                <input type="range" class="form-range" min="0" max="1000" id="priceRangeM">
+                <div class="range-values">
+                    <span>$0</span>
+                    <span>$1000</span>
+                </div>
+            </div>
+            
+            <!-- Brand Filter -->
+            <div class="filter-group">
+                <label class="filter-label">Brand</label>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="brandM1" checked>
+                    <label class="form-check-label" for="brandM1">All Brands</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="brandM2">
+                    <label class="form-check-label" for="brandM2">Apple</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="brandM3">
+                    <label class="form-check-label" for="brandM3">Samsung</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="brandM4">
+                    <label class="form-check-label" for="brandM4">Nike</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="brandM5">
+                    <label class="form-check-label" for="brandM5">Adidas</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="brandM6">
+                    <label class="form-check-label" for="brandM6">Sony</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="brandM7">
+                    <label class="form-check-label" for="brandM7">LG</label>
+                </div>
+            </div> -->

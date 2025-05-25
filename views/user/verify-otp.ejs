@@ -1,0 +1,1136 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OTP Verification</title>
+    <link rel="stylesheet" href="../../styles/user/varify-otp.css">
+</head>
+
+<body>
+    <div class="container">
+        <h1>OTP Verification</h1>
+        <p>We have sent a 6-digit verification code to your registered email address</p>
+
+
+
+        <div class="otp-container">
+            <input type="text" class="otp-input" maxlength="1" autofocus data-index="0">
+            <input type="text" class="otp-input" maxlength="1" data-index="1">
+            <input type="text" class="otp-input" maxlength="1" data-index="2">
+            <input type="text" class="otp-input" maxlength="1" data-index="3">
+            <input type="text" class="otp-input" maxlength="1" data-index="4">
+            <input type="text" class="otp-input" maxlength="1" data-index="5">
+        </div>
+
+        <div class="error-message" id="error-message"></div>
+
+        <div class="timer" id="timer">Timer: 00:30</div>
+
+        <div class="button-container">
+            <button class="btn btn-primary" id="verify-btn">Verify OTP</button>
+            <button class="btn btn-secondary" id="resend-btn" disabled>Resend OTP</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        // OTP Validation Class
+        class OTPValidator {
+            constructor() {
+                this.otpInputs = document.querySelectorAll('.otp-input');
+                this.errorMessage = document.getElementById('error-message');
+                this.verifyButton = document.getElementById('verify-btn');
+                this.setupEventListeners();
+            }
+
+            setupEventListeners() {
+                this.otpInputs.forEach((input, index) => {
+                    // Input validation and navigation
+                    input.addEventListener('input', (e) => this.handleInput(e, index));
+                    input.addEventListener('keydown', (e) => this.handleKeyDown(e, index));
+                    input.addEventListener('paste', (e) => this.handlePaste(e));
+                    input.addEventListener('blur', () => this.validateInput(input));
+                });
+            }
+
+            handleInput(e, index) {
+                const value = e.target.value;
+                
+                // Allow only numbers
+                if (!/^\d*$/.test(value)) {
+                    e.target.value = '';
+                    this.showError('Only numbers are allowed');
+                    this.markInputAsError(e.target);
+                    return;
+                }
+
+                // Clear error state
+                this.clearError();
+                this.markInputAsSuccess(e.target);
+
+                // Auto-focus next input
+                if (value.length === 1 && index < this.otpInputs.length - 1) {
+                    this.otpInputs[index + 1].focus();
+                }
+
+                // Enable/disable verify button
+                this.toggleVerifyButton();
+            }
+
+            handleKeyDown(e, index) {
+                // Handle backspace
+                if (e.key === 'Backspace') {
+                    if (e.target.value === '' && index > 0) {
+                        this.otpInputs[index - 1].focus();
+                    }
+                }
+                
+                // Handle arrow keys
+                if (e.key === 'ArrowLeft' && index > 0) {
+                    this.otpInputs[index - 1].focus();
+                    e.preventDefault();
+                }
+                if (e.key === 'ArrowRight' && index < this.otpInputs.length - 1) {
+                    this.otpInputs[index + 1].focus();
+                    e.preventDefault();
+                }
+
+                // Handle Enter key
+                if (e.key === 'Enter') {
+                    this.verifyOTP();
+                }
+            }
+
+            handlePaste(e) {
+                e.preventDefault();
+                const pastedData = e.clipboardData.getData('text').trim();
+                
+                // Validate pasted data
+                if (!/^\d{6}$/.test(pastedData)) {
+                    this.showError('Please paste a valid 6-digit OTP');
+                    return;
+                }
+
+                // Fill inputs with pasted data
+                for (let i = 0; i < 6; i++) {
+                    this.otpInputs[i].value = pastedData[i];
+                    this.markInputAsSuccess(this.otpInputs[i]);
+                }
+
+                this.clearError();
+                this.toggleVerifyButton();
+                this.otpInputs[5].focus();
+            }
+
+            validateInput(input) {
+                if (input.value && !/^\d$/.test(input.value)) {
+                    this.markInputAsError(input);
+                    this.showError('Invalid character entered');
+                } else if (input.value) {
+                    this.markInputAsSuccess(input);
+                } else {
+                    this.clearInputState(input);
+                }
+            }
+
+            getOTPValue() {
+                return Array.from(this.otpInputs).map(input => input.value.trim()).join('');
+            }
+
+            validateOTP() {
+                const otpValue = this.getOTPValue();
+                
+                // Check if all fields are filled
+                if (otpValue.length !== 6) {
+                    this.showError('Please enter all 6 digits');
+                    this.highlightEmptyInputs();
+                    return false;
+                }
+
+                // Check if all are numbers
+                if (!/^\d{6}$/.test(otpValue)) {
+                    this.showError('OTP must contain only numbers');
+                    return false;
+                }
+
+                this.clearError();
+                return true;
+            }
+
+            highlightEmptyInputs() {
+                this.otpInputs.forEach(input => {
+                    if (!input.value.trim()) {
+                        this.markInputAsError(input);
+                    }
+                });
+            }
+
+            showError(message) {
+                this.errorMessage.textContent = message;
+                this.errorMessage.style.color = '#ef4444';
+            }
+
+            clearError() {
+                this.errorMessage.textContent = '';
+            }
+
+            markInputAsError(input) {
+                input.classList.remove('success');
+                input.classList.add('error');
+            }
+
+            markInputAsSuccess(input) {
+                input.classList.remove('error');
+                input.classList.add('success');
+            }
+
+            clearInputState(input) {
+                input.classList.remove('error', 'success');
+            }
+
+            clearAllInputs() {
+                this.otpInputs.forEach(input => {
+                    input.value = '';
+                    this.clearInputState(input);
+                });
+                this.clearError();
+                this.toggleVerifyButton();
+                this.otpInputs[0].focus();
+            }
+
+            toggleVerifyButton() {
+                const otpValue = this.getOTPValue();
+                this.verifyButton.disabled = otpValue.length !== 6;
+            }
+
+            verifyOTP() {
+                if (!this.validateOTP()) {
+                    return;
+                }
+
+                const otpValue = this.getOTPValue();
+                
+                // Show loading state
+                this.verifyButton.classList.add('loading');
+                this.verifyButton.disabled = true;
+                this.verifyButton.textContent = '';
+
+                // Simulate API call
+                fetch("verify-otp", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ otp: otpValue })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            icon: "success",
+                            title: "OTP verified successfully",
+                            showConfirmButton: false,
+                            timer: 1500
+                        }).then(() => {
+                            window.location.href = data.redirectUrl || '/dashboard';
+                        });
+                    } else {
+                        this.showError(data.message || 'Invalid OTP. Please try again.');
+                        this.highlightAllInputsAsError();
+                    }
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    this.showError('Verification failed. Please try again.');
+                    this.highlightAllInputsAsError();
+                })
+                .finally(() => {
+                    // Reset button state
+                    this.verifyButton.classList.remove('loading');
+                    this.verifyButton.disabled = false;
+                    this.verifyButton.textContent = 'Verify OTP';
+                });
+            }
+
+            highlightAllInputsAsError() {
+                this.otpInputs.forEach(input => {
+                    this.markInputAsError(input);
+                });
+            }
+        }
+
+        // Timer Management Class
+        class TimerManager {
+            constructor(duration = 30) {
+                this.duration = duration;
+                this.timerElement = document.getElementById('timer');
+                this.resendButton = document.getElementById('resend-btn');
+                this.timeLeft = 0;
+                this.timerInterval = null;
+                this.initialize();
+            }
+
+            initialize() {
+                const storedEndTime = sessionStorage.getItem('otpTimerEndTime');
+                
+                if (storedEndTime) {
+                    const endTime = parseInt(storedEndTime);
+                    const currentTime = Date.now();
+                    const remainingSeconds = Math.max(0, Math.ceil((endTime - currentTime) / 1000));
+                    this.timeLeft = remainingSeconds;
+                } else {
+                    this.timeLeft = this.duration;
+                    this.storeEndTime();
+                }
+                
+                this.updateDisplay();
+                if (this.timeLeft > 0) {
+                    this.start();
+                }
+            }
+
+            start() {
+                this.timerInterval = setInterval(() => {
+                    this.timeLeft--;
+                    this.updateDisplay();
+                    
+                    if (this.timeLeft <= 0) {
+                        this.expire();
+                    }
+                }, 1000);
+            }
+
+            updateDisplay() {
+                const minutes = Math.floor(this.timeLeft / 60);
+                const seconds = this.timeLeft % 60;
+                this.timerElement.textContent = `Timer: ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                // Change color when time is running low
+                if (this.timeLeft <= 10) {
+                    this.timerElement.style.color = '#ef4444';
+                } else {
+                    this.timerElement.style.color = '#6366f1';
+                }
+            }
+
+            expire() {
+                clearInterval(this.timerInterval);
+                this.timerElement.textContent = 'Time expired';
+                this.timerElement.classList.add('expired');
+                this.resendButton.disabled = false;
+                sessionStorage.removeItem('otpTimerEndTime');
+                
+                // Show expiration notification
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'OTP Expired',
+                    text: 'Please request a new OTP',
+                    timer: 3000,
+                    showConfirmButton: false
+                });
+            }
+
+            reset() {
+                clearInterval(this.timerInterval);
+                this.timeLeft = this.duration;
+                this.timerElement.classList.remove('expired');
+                this.resendButton.disabled = true;
+                this.storeEndTime();
+                this.updateDisplay();
+                this.start();
+            }
+
+            storeEndTime() {
+                const endTime = Date.now() + (this.timeLeft * 1000);
+                sessionStorage.setItem('otpTimerEndTime', endTime.toString());
+            }
+        }
+
+        // Initialize components
+        const otpValidator = new OTPValidator();
+        const timerManager = new TimerManager(30);
+
+        // Verify button event listener
+        document.getElementById('verify-btn').addEventListener('click', () => {
+            otpValidator.verifyOTP();
+        });
+
+        // Resend button event listener
+        document.getElementById('resend-btn').addEventListener('click', () => {
+            // Show loading state
+            const resendBtn = document.getElementById('resend-btn');
+            resendBtn.classList.add('loading');
+            resendBtn.disabled = true;
+            resendBtn.textContent = '';
+
+            Swal.fire({
+                title: 'Sending OTP...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            // Make API call to resend OTP
+            fetch('/resend-otp', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'OTP Sent',
+                        text: 'A new OTP has been sent to your email.',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+
+                    // Reset everything
+                    timerManager.reset();
+                    otpValidator.clearAllInputs();
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: data.message || 'Failed to resend OTP. Please try again.'
+                    });
+                    resendBtn.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Failed to resend OTP. Please try again.'
+                });
+                resendBtn.disabled = false;
+            })
+            .finally(() => {
+                // Reset button state
+                resendBtn.classList.remove('loading');
+                resendBtn.textContent = 'Resend OTP';
+            });
+        });
+
+        // Auto-clear error message after 5 seconds
+        let errorTimeout;
+        const originalShowError = otpValidator.showError;
+        otpValidator.showError = function(message) {
+            originalShowError.call(this, message);
+            clearTimeout(errorTimeout);
+            errorTimeout = setTimeout(() => {
+                this.clearError();
+            }, 5000);
+        };
+
+        // Prevent form submission on Enter key globally
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                otpValidator.verifyOTP();
+            }
+        });
+
+        // Focus management - ensure at least one input is always focused
+        document.addEventListener('click', (e) => {
+            if (!e.target.classList.contains('otp-input') && !e.target.classList.contains('btn')) {
+                // Find first empty input or last filled input
+                const emptyInput = Array.from(otpValidator.otpInputs).find(input => !input.value);
+                if (emptyInput) {
+                    emptyInput.focus();
+                } else {
+                    otpValidator.otpInputs[5].focus();
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>-->
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OTP Verification</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        p {
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.5;
+        }
+
+        .otp-container {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .otp-input {
+            width: 50px;
+            height: 50px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .otp-input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .otp-input.success {
+            border-color: #10b981;
+            background-color: #f0fdf4;
+        }
+
+        .otp-input.error {
+            border-color: #ef4444;
+            background-color: #fef2f2;
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .error-message {
+            min-height: 20px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .timer {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 25px;
+            color: #6366f1;
+            transition: color 0.3s ease;
+        }
+
+        .timer.expired {
+            color: #ef4444;
+        }
+
+        .button-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f8fafc;
+            color: #64748b;
+            border: 2px solid #e2e8f0;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #e2e8f0;
+            color: #475569;
+        }
+
+        .btn.loading {
+            color: transparent;
+        }
+
+        .btn.loading::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .btn.hidden {
+            display: none;
+        }
+
+        @keyframes spin {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 30px 20px;
+            }
+            
+            .otp-input {
+                width: 45px;
+                height: 45px;
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>OTP Verification</h1>
+        <p>We have sent a 6-digit verification code to your registered email address</p>
+
+        <div class="otp-container">
+            <input type="text" class="otp-input" maxlength="1" autofocus data-index="0">
+            <input type="text" class="otp-input" maxlength="1" data-index="1">
+            <input type="text" class="otp-input" maxlength="1" data-index="2">
+            <input type="text" class="otp-input" maxlength="1" data-index="3">
+            <input type="text" class="otp-input" maxlength="1" data-index="4">
+            <input type="text" class="otp-input" maxlength="1" data-index="5">
+        </div>
+
+        <div class="error-message" id="error-message"></div>
+
+        <div class="timer" id="timer">Timer: 00:30</div>
+
+        <div class="button-container">
+            <button class="btn btn-primary" id="verify-btn">Verify OTP</button>
+            <button class="btn btn-secondary" id="resend-btn" disabled>Resend OTP</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        // OTP Validation Class
+        class OTPValidator {
+            constructor() {
+                this.otpInputs = document.querySelectorAll('.otp-input');
+                this.errorMessage = document.getElementById('error-message');
+                this.verifyButton = document.getElementById('verify-btn');
+                this.setupEventListeners();
+            }
+
+            setupEventListeners() {
+                this.otpInputs.forEach((input, index) => {
+                    // Input validation and navigation
+                    input.addEventListener('input', (e) => this.handleInput(e, index));
+                    input.addEventListener('keydown', (e) => this.handleKeyDown(e, index));
+                    input.addEventListener('paste', (e) => this.handlePaste(e));
+                    input.addEventListener('blur', () => this.validateInput(input));
+                });
+            }
+
+            handleInput(e, index) {
+                const value = e.target.value;
+                
+                // Allow only numbers
+                if (!/^\d*$/.test(value)) {
+                    e.target.value = '';
+                    this.showError('Only numbers are allowed');
+                    this.markInputAsError(e.target);
+                    return;
+                }
+
+                // Clear error state
+                this.clearError();
+                this.markInputAsSuccess(e.target);
+
+                // Auto-focus next input
+                if (value.length === 1 && index < this.otpInputs.length - 1) {
+                    this.otpInputs[index + 1].focus();
+                }
+
+                // Enable/disable verify button
+                this.toggleVerifyButton();
+            }
+
+            handleKeyDown(e, index) {
+                // Handle backspace
+                if (e.key === 'Backspace') {
+                    if (e.target.value === '' && index > 0) {
+                        this.otpInputs[index - 1].focus();
+                    }
+                }
+                
+                // Handle arrow keys
+                if (e.key === 'ArrowLeft' && index > 0) {
+                    this.otpInputs[index - 1].focus();
+                    e.preventDefault();
+                }
+                if (e.key === 'ArrowRight' && index < this.otpInputs.length - 1) {
+                    this.otpInputs[index + 1].focus();
+                    e.preventDefault();
+                }
+
+                // Handle Enter key
+                if (e.key === 'Enter') {
+                    this.verifyOTP();
+                }
+            }
+
+            handlePaste(e) {
+                e.preventDefault();
+                const pastedData = e.clipboardData.getData('text').trim();
+                
+                // Validate pasted data
+                if (!/^\d{6}$/.test(pastedData)) {
+                    this.showError('Please paste a valid 6-digit OTP');
+                    return;
+                }
+
+                // Fill inputs with pasted data
+                for (let i = 0; i < 6; i++) {
+                    this.otpInputs[i].value = pastedData[i];
+                    this.markInputAsSuccess(this.otpInputs[i]);
+                }
+
+                this.clearError();
+                this.toggleVerifyButton();
+                this.otpInputs[5].focus();
+            }
+
+            validateInput(input) {
+                if (input.value && !/^\d$/.test(input.value)) {
+                    this.markInputAsError(input);
+                    this.showError('Invalid character entered');
+                } else if (input.value) {
+                    this.markInputAsSuccess(input);
+                } else {
+                    this.clearInputState(input);
+                }
+            }
+
+            getOTPValue() {
+                return Array.from(this.otpInputs).map(input => input.value.trim()).join('');
+            }
+
+            validateOTP() {
+                const otpValue = this.getOTPValue();
+                
+                // Check if all fields are filled
+                if (otpValue.length !== 6) {
+                    this.showError('Please enter all 6 digits');
+                    this.highlightEmptyInputs();
+                    return false;
+                }
+
+                // Check if all are numbers
+                if (!/^\d{6}$/.test(otpValue)) {
+                    this.showError('OTP must contain only numbers');
+                    return false;
+                }
+
+                this.clearError();
+                return true;
+            }
+
+            highlightEmptyInputs() {
+                this.otpInputs.forEach(input => {
+                    if (!input.value.trim()) {
+                        this.markInputAsError(input);
+                    }
+                });
+            }
+
+            showError(message) {
+                this.errorMessage.textContent = message;
+                this.errorMessage.style.color = '#ef4444';
+            }
+
+            clearError() {
+                this.errorMessage.textContent = '';
+            }
+
+            markInputAsError(input) {
+                input.classList.remove('success');
+                input.classList.add('error');
+            }
+
+            markInputAsSuccess(input) {
+                input.classList.remove('error');
+                input.classList.add('success');
+            }
+
+            clearInputState(input) {
+                input.classList.remove('error', 'success');
+            }
+
+            clearAllInputs() {
+                this.otpInputs.forEach(input => {
+                    input.value = '';
+                    this.clearInputState(input);
+                });
+                this.clearError();
+                this.toggleVerifyButton();
+                this.otpInputs[0].focus();
+            }
+
+            toggleVerifyButton() {
+                const otpValue = this.getOTPValue();
+                this.verifyButton.disabled = otpValue.length !== 6;
+            }
+
+            hideVerifyButton() {
+                this.verifyButton.classList.add('hidden');
+            }
+
+            showVerifyButton() {
+                this.verifyButton.classList.remove('hidden');
+            }
+
+            verifyOTP() {
+                // Check if verify button is hidden (timer expired)
+                if (this.verifyButton.classList.contains('hidden')) {
+                    this.showError('OTP has expired. Please request a new one.');
+                    return;
+                }
+
+                if (!this.validateOTP()) {
+                    return;
+                }
+
+                const otpValue = this.getOTPValue();
+                
+                // Show loading state
+                this.verifyButton.classList.add('loading');
+                this.verifyButton.disabled = true;
+                this.verifyButton.textContent = '';
+
+                // Simulate API call
+                fetch("verify-otp", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ otp: otpValue })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            icon: "success",
+                            title: "OTP verified successfully",
+                            showConfirmButton: false,
+                            timer: 1500
+                        }).then(() => {
+                            window.location.href = data.redirectUrl || '/dashboard';
+                        });
+                    } else {
+                        this.showError(data.message || 'Invalid OTP. Please try again.');
+                        this.highlightAllInputsAsError();
+                    }
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    this.showError('Verification failed. Please try again.');
+                    this.highlightAllInputsAsError();
+                })
+                .finally(() => {
+                    // Reset button state
+                    this.verifyButton.classList.remove('loading');
+                    this.verifyButton.disabled = false;
+                    this.verifyButton.textContent = 'Verify OTP';
+                });
+            }
+
+            highlightAllInputsAsError() {
+                this.otpInputs.forEach(input => {
+                    this.markInputAsError(input);
+                });
+            }
+        }
+
+        // Timer Management Class
+        class TimerManager {
+            constructor(duration = 30) {
+                this.duration = duration;
+                this.timerElement = document.getElementById('timer');
+                this.resendButton = document.getElementById('resend-btn');
+                this.timeLeft = 0;
+                this.timerInterval = null;
+                this.otpValidator = null; // Will be set later
+                this.initialize();
+            }
+
+            setOTPValidator(validator) {
+                this.otpValidator = validator;
+            }
+
+            initialize() {
+                const storedEndTime = sessionStorage.getItem('otpTimerEndTime');
+                
+                if (storedEndTime) {
+                    const endTime = parseInt(storedEndTime);
+                    const currentTime = Date.now();
+                    const remainingSeconds = Math.max(0, Math.ceil((endTime - currentTime) / 1000));
+                    this.timeLeft = remainingSeconds;
+                } else {
+                    this.timeLeft = this.duration;
+                    this.storeEndTime();
+                }
+                
+                this.updateDisplay();
+                if (this.timeLeft > 0) {
+                    this.start();
+                } else {
+                    this.expire();
+                }
+            }
+
+            start() {
+                this.timerInterval = setInterval(() => {
+                    this.timeLeft--;
+                    this.updateDisplay();
+                    
+                    if (this.timeLeft <= 0) {
+                        this.expire();
+                    }
+                }, 1000);
+            }
+
+            updateDisplay() {
+                const minutes = Math.floor(this.timeLeft / 60);
+                const seconds = this.timeLeft % 60;
+                this.timerElement.textContent = `Timer: ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                // Change color when time is running low
+                if (this.timeLeft <= 10) {
+                    this.timerElement.style.color = '#ef4444';
+                } else {
+                    this.timerElement.style.color = '#6366f1';
+                }
+            }
+
+            expire() {
+                clearInterval(this.timerInterval);
+                this.timerElement.textContent = 'Time expired';
+                this.timerElement.classList.add('expired');
+                this.resendButton.disabled = false;
+                
+                // Hide verify button when timer expires
+                if (this.otpValidator) {
+                    this.otpValidator.hideVerifyButton();
+                }
+                
+                sessionStorage.removeItem('otpTimerEndTime');
+                
+                // Show expiration notification
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'OTP Expired',
+                    text: 'Please request a new OTP',
+                    timer: 3000,
+                    showConfirmButton: false
+                });
+            }
+
+            reset() {
+                clearInterval(this.timerInterval);
+                this.timeLeft = this.duration;
+                this.timerElement.classList.remove('expired');
+                this.resendButton.disabled = true;
+                
+                // Show verify button when timer resets
+                if (this.otpValidator) {
+                    this.otpValidator.showVerifyButton();
+                }
+                
+                this.storeEndTime();
+                this.updateDisplay();
+                this.start();
+            }
+
+            storeEndTime() {
+                const endTime = Date.now() + (this.timeLeft * 1000);
+                sessionStorage.setItem('otpTimerEndTime', endTime.toString());
+            }
+        }
+
+        // Initialize components
+        const otpValidator = new OTPValidator();
+        const timerManager = new TimerManager(30);
+        
+        // Set the reference so timer can control verify button
+        timerManager.setOTPValidator(otpValidator);
+
+        // Verify button event listener
+        document.getElementById('verify-btn').addEventListener('click', () => {
+            otpValidator.verifyOTP();
+        });
+
+        // Resend button event listener
+        document.getElementById('resend-btn').addEventListener('click', () => {
+            // Show loading state
+            const resendBtn = document.getElementById('resend-btn');
+            resendBtn.classList.add('loading');
+            resendBtn.disabled = true;
+            resendBtn.textContent = '';
+
+            Swal.fire({
+                title: 'Sending OTP...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            // Make API call to resend OTP
+            fetch('/resend-otp', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'OTP Sent',
+                        text: 'A new OTP has been sent to your email.',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+
+                    // Reset everything
+                    timerManager.reset();
+                    otpValidator.clearAllInputs();
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: data.message || 'Failed to resend OTP. Please try again.'
+                    });
+                    resendBtn.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Failed to resend OTP. Please try again.'
+                });
+                resendBtn.disabled = false;
+            })
+            .finally(() => {
+                // Reset button state
+                resendBtn.classList.remove('loading');
+                resendBtn.textContent = 'Resend OTP';
+            });
+        });
+
+        // Auto-clear error message after 5 seconds
+        let errorTimeout;
+        const originalShowError = otpValidator.showError;
+        otpValidator.showError = function(message) {
+            originalShowError.call(this, message);
+            clearTimeout(errorTimeout);
+            errorTimeout = setTimeout(() => {
+                this.clearError();
+            }, 5000);
+        };
+
+        // Prevent form submission on Enter key globally
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                otpValidator.verifyOTP();
+            }
+        });
+
+        // Focus management - ensure at least one input is always focused
+        document.addEventListener('click', (e) => {
+            if (!e.target.classList.contains('otp-input') && !e.target.classList.contains('btn')) {
+                // Find first empty input or last filled input
+                const emptyInput = Array.from(otpValidator.otpInputs).find(input => !input.value);
+                if (emptyInput) {
+                    emptyInput.focus();
+                } else {
+                    otpValidator.otpInputs[5].focus();
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>

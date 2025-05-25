@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Watch Haven - Login</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <!-- SweetAlert2 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+  <!-- Animate.css -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+  <link rel="stylesheet" href="../../styles/user/user-login.css">
+  <style>
+    body, html {
+      height: 100%;
+    }
+    .login-wrapper {
+      height: 100vh;
+    }
+    .login-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-top-left-radius: 10px;
+      border-bottom-left-radius: 10px;
+    }
+    .login-box {
+      max-width: 900px;
+      width: 100%;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .error-message {
+      color: #dc3545;
+      font-size: 0.875rem;
+      margin-top: 0.25rem;
+      display: none;
+    }
+    .is-invalid~.error-message {
+      display: block;
+    }
+    .is-invalid {
+      border-color: #dc3545;
+      background-image: none !important;
+      background-repeat: no-repeat;
+      background-position: right calc(0.375em + 0.1875rem) center;
+      background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+    }
+    .password-wrapper {
+      position: relative;
+    }
+    .password-toggle {
+      position: absolute;
+      right: 15px;
+      top: 2.5rem; /* Adjusted to position the icon inside the input field */
+      transform: translateY(0);
+      cursor: pointer;
+      color: #6c757d;
+      z-index: 10;
+      font-size: 1rem;
+    }
+    .password-toggle:hover {
+      color: #000;
+    }
+    .password-wrapper .form-control {
+      padding-right: 60px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container d-flex align-items-center justify-content-center login-wrapper">
+    <div class="row login-box">
+      <!-- Left Image Column -->
+      <div class="col-md-6 d-none d-md-block p-0">
+        <img src="../../assets/login-img.jpg" alt="Login Image" class="login-img">
+      </div>
+
+      <!-- Right Form Column -->
+      <div class="col-md-6 p-5 bg-white">
+        <div class="text-center mb-4">
+          <h2>Login to your account</h2>
+          <p class="text-muted">Log in to your Watch Haven</p>
+        </div>
+
+        <form id="loginForm" novalidate>
+          <div class="mb-3">
+            <label for="email" class="form-label">Email address</label>
+            <input type="email" class="form-control" id="email" placeholder="Enter your email" required>
+            <div class="error-message" id="email-error">Please enter a valid email address</div>
+          </div>
+
+          <div class="mb-3 password-wrapper">
+            <label for="password" class="form-label">Password</label>
+            <input type="password" class="form-control" id="password" placeholder="Enter your password" required>
+            <i class="bi bi-lock password-toggle" id="password-toggle"></i>
+            <div class="error-message" id="password-error">Please enter a valid password</div>
+          </div>
+
+          <div class="mb-3 d-flex justify-content-between">
+            <div class="form-check">
+              <input type="checkbox" class="form-control-check-input" id="rememberMe">
+              <label class="form-check-label" for="rememberMe">Remember me</label>
+            </div>
+            <a href="/forgot-password" class="text-dark text-decoration-none">Forgot Password?</a>
+          </div>
+
+          <button type="submit" class="btn btn-dark w-100 mb-3">Log In</button>
+
+          <div class="divider text-center text-muted my-3">or</div>
+
+          <a href="/auth/google" class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center p-2"
+            role="button">
+            <img src="../../assets/google-icon.png" alt="Google logo" width="20" height="20"
+              style="margin-right: 10px;">
+            Sign up with Google
+          </a>
+
+          <div class="text-center mt-3">
+            Don't have an account? <a href="/signup" class="text-dark">Sign Up</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- SweetAlert2 JS -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  
+  <!-- Login Script -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const loginForm = document.getElementById('loginForm');
+      const fields = [
+        {
+          id: 'email',
+          validate: (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim()),
+          errorElement: 'email-error'
+        },
+        {
+          id: 'password',
+          validate: (value) => /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(value),
+          errorElement: 'password-error'
+        }
+      ];
+
+      // Real-time validation
+      function validateField(field) {
+        const input = document.getElementById(field.id);
+        const isValid = field.validate(input.value);
+        input.classList.toggle('is-invalid', !isValid);
+        return isValid;
+      }
+
+      fields.forEach(field => {
+        const input = document.getElementById(field.id);
+        input.addEventListener('input', () => validateField(field));
+      });
+
+      // Password toggle functionality
+      function setupPasswordToggle(inputId, toggleId) {
+        const input = document.getElementById(inputId);
+        const toggle = document.getElementById(toggleId);
+        toggle.addEventListener('click', () => {
+          const isPassword = input.type === 'password';
+          input.type = isPassword ? 'text' : 'password';
+          toggle.classList.toggle('bi-unlock', isPassword);
+          toggle.classList.toggle('bi-lock', !isPassword);
+        });
+      }
+
+      setupPasswordToggle('password', 'password-toggle');
+
+      // Form submit handling
+      loginForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        let isValid = true;
+        fields.forEach(field => {
+          if (!validateField(field)) {
+            isValid = false;
+          }
+        });
+
+        if (!isValid) {
+          return;
+        }
+
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+
+        try {
+          const response = await fetch('/login', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email, password }),
+            credentials: 'include',
+          });
+
+          if (response.redirected) {
+            Swal.fire({
+              icon: 'success',
+              title: 'Login Successful',
+              text: 'Redirecting to your dashboard...',
+              timer: 1500,
+              showConfirmButton: false,
+            }).then(() => {
+              window.location.href = response.url;
+            });
+            return;
+          }
+
+          const data = await response.json();
+
+          if (!data.success) {
+            Swal.fire({
+              toast: true,
+              position: 'top-end',
+              icon: 'error',
+              title: 'Login Failed',
+              text: data.message || 'An error occurred during login.',
+              showConfirmButton: false,
+              timer: 3000,
+              timerProgressBar: true,
+              customClass: {
+                popup: 'small-toast'
+              },
+              showClass: {
+                popup: 'animate__animated animate__fadeInDown'
+              },
+              hideClass: {
+                popup: 'animate__animated animate__fadeOutUp'
+              }
+            });
+            return;
+          }
+        } catch (error) {
+          console.error('Login error:', error);
+          Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'error',
+            title: 'Error',
+            text: 'An unexpected error occurred. Please try again later.',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            customClass: {
+              popup: 'small-toast'
+            },
+            showClass: {
+              popup: 'animate__animated animate__fadeInDown'
+            },
+            hideClass: {
+              popup: 'animate__animated animate__fadeOutUp'
+            }
+          });
+        }
+      });
+    });
+  </script>
+</body>
+
+</html>

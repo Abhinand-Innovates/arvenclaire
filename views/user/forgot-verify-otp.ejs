@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OTP Verification</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: #f5efeb;
+        }
+
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.8rem;
+        }
+
+        p {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 0.95rem;
+        }
+
+        .otp-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .otp-input {
+            width: 50px;
+            height: 60px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #333;
+            transition: all 0.2s;
+        }
+
+        .otp-input:focus {
+            border-color: #6366f1;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+        }
+
+        .otp-input.error {
+            border-color: #ef4444;
+            box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
+        }
+
+        .timer {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #6366f1;
+            margin-bottom: 20px;
+        }
+
+        .button-container {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background-color: #6366f1;
+            color: white;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background-color: #4f46e5;
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            color: #6366f1;
+            border: 2px solid #6366f1;
+        }
+
+        .btn-secondary:hover {
+            background-color: rgba(99, 102, 241, 0.1);
+        }
+
+        .btn-secondary:disabled {
+            color: #9ca3af;
+            border-color: #d1d5db;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>OTP Varification</h1>
+        <p>We have sended a 6 degit verification code to your registered email address</p>
+
+        <div class="otp-container">
+            <input type="text" class="otp-input" maxlength="1" autofocus>
+            <input type="text" class="otp-input" maxlength="1">
+            <input type="text" class="otp-input" maxlength="1">
+            <input type="text" class="otp-input" maxlength="1">
+            <input type="text" class="otp-input" maxlength="1">
+            <input type="text" class="otp-input" maxlength="1">
+        </div>
+
+        <div class="timer" id="timer">Timer: 00:30</div>
+
+        <div class="button-container">
+            <button class="btn btn-primary" id="verify-btn">Verify OTP</button>
+            <button class="btn btn-secondary" id="resend-btn" disabled>Resend OTP</button>
+        </div>
+    </div>
+    <!-- Add in your HTML <head> or before </body> -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        // OTP input handling
+        const otpInputs = document.querySelectorAll('.otp-input');
+
+        // Validation function for OTP input
+        function validateOtpInput(value) {
+            // Only allow numeric characters
+            return /^\d$/.test(value);
+        }
+
+        // Remove error styling from all inputs
+        function clearErrorStyling() {
+            otpInputs.forEach(input => {
+                input.classList.remove('error');
+            });
+        }
+
+        // Add error styling to specific inputs
+        function addErrorStyling(indices) {
+            indices.forEach(index => {
+                if (otpInputs[index]) {
+                    otpInputs[index].classList.add('error');
+                }
+            });
+        }
+
+        otpInputs.forEach((input, index) => {
+            // Validate input on keypress (prevent non-numeric characters)
+            input.addEventListener('keypress', (e) => {
+                const char = String.fromCharCode(e.which);
+                if (!validateOtpInput(char) && e.which !== 8 && e.which !== 0) {
+                    e.preventDefault();
+                    return false;
+                }
+            });
+
+            // Validate input on paste
+            input.addEventListener('paste', (e) => {
+                e.preventDefault();
+                const pastedData = e.clipboardData.getData('text');
+                
+                // Validate pasted data - only numbers allowed
+                if (!/^\d+$/.test(pastedData)) {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Invalid Input",
+                        text: "Only numeric characters are allowed."
+                    });
+                    return;
+                }
+
+                // Handle pasting multiple digits
+                const digits = pastedData.slice(0, 6 - index); // Don't exceed remaining fields
+                for (let i = 0; i < digits.length && (index + i) < otpInputs.length; i++) {
+                    otpInputs[index + i].value = digits[i];
+                }
+                
+                // Focus on next empty field or last field
+                const nextEmptyIndex = Math.min(index + digits.length, otpInputs.length - 1);
+                otpInputs[nextEmptyIndex].focus();
+                
+                clearErrorStyling();
+            });
+
+            // Auto-focus next input when current one is filled
+            input.addEventListener('input', (e) => {
+                // Validate the input value
+                if (e.target.value && !validateOtpInput(e.target.value)) {
+                    e.target.value = '';
+                    Swal.fire({
+                        icon: "error",
+                        title: "Invalid Input",
+                        text: "Only numeric characters are allowed."
+                    });
+                    return;
+                }
+
+                clearErrorStyling();
+
+                if (e.target.value.length === 1) {
+                    if (index < otpInputs.length - 1) {
+                        otpInputs[index + 1].focus();
+                    }
+                }
+            });
+
+            // Handle backspace to go to previous input
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace' && e.target.value === '') {
+                    if (index > 0) {
+                        otpInputs[index - 1].focus();
+                    }
+                }
+                
+                // Clear error styling on any key press
+                if (e.key !== 'Tab') {
+                    clearErrorStyling();
+                }
+            });
+
+            // Prevent spaces and other whitespace characters
+            input.addEventListener('keydown', (e) => {
+                if (e.key === ' ' || e.key === 'Spacebar') {
+                    e.preventDefault();
+                }
+            });
+        });
+
+        // Timer functionality
+        const timerElement = document.getElementById('timer');
+        const resendButton = document.getElementById('resend-btn');
+        let timeLeft;
+        let timerInterval;
+
+        // Get stored timer data or set default
+        function initializeTimer() {
+            const storedEndTime = sessionStorage.getItem('otpTimerEndTime');
+            
+            if (storedEndTime) {
+                const endTime = parseInt(storedEndTime);
+                const currentTime = Date.now();
+                const remainingSeconds = Math.max(0, Math.ceil((endTime - currentTime) / 1000));
+                
+                timeLeft = remainingSeconds;
+            } else {
+                // First time loading, set timer to 30 seconds
+                timeLeft = 30;
+                const endTime = Date.now() + (timeLeft * 1000);
+                sessionStorage.setItem('otpTimerEndTime', endTime.toString());
+            }
+            
+            updateTimer();
+            if (timeLeft > 0) {
+                timerInterval = setInterval(updateTimer, 1000);
+            }
+        }
+
+        function updateTimer() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+
+            timerElement.textContent = `Timer: ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+            if (timeLeft === 0) {
+                clearInterval(timerInterval);
+                resendButton.disabled = false;
+                timerElement.textContent = 'Time expired';
+                sessionStorage.removeItem('otpTimerEndTime');
+            } else {
+                timeLeft--;
+            }
+        }
+
+        // Initialize timer on page load
+        initializeTimer();
+
+        // Resend OTP functionality
+        resendButton.addEventListener('click', () => {
+            // Reset timer
+            timeLeft = 30;
+            const endTime = Date.now() + (timeLeft * 1000);
+            sessionStorage.setItem('otpTimerEndTime', endTime.toString());
+            
+            updateTimer();
+            clearInterval(timerInterval);
+            timerInterval = setInterval(updateTimer, 1000);
+
+            // Disable resend button again
+            resendButton.disabled = true;
+
+            // Clear OTP fields
+            otpInputs.forEach(input => {
+                input.value = '';
+            });
+            otpInputs[0].focus();
+
+        });
+
+        // Verify OTP functionality
+        const verifyButton = document.getElementById('verify-btn');
+
+        verifyButton.addEventListener('click', () => {
+            function validateOtp() {
+                // Clear any previous error styling
+                clearErrorStyling();
+
+                // Collect the 6-digit OTP from input fields
+                const otpInputs = document.querySelectorAll('.otp-input');
+                let otpValue = '';
+                let emptyIndices = [];
+                let invalidIndices = [];
+
+                otpInputs.forEach((input, index) => {
+                    const value = input.value.trim();
+                    
+                    // Check for empty fields
+                    if (value === '') {
+                        emptyIndices.push(index);
+                    }
+                    // Check for invalid characters (non-numeric)
+                    else if (!validateOtpInput(value)) {
+                        invalidIndices.push(index);
+                    }
+                    
+                    otpValue += value;
+                });
+
+                // Validation checks
+                if (emptyIndices.length > 0) {
+                    addErrorStyling(emptyIndices);
+                    Swal.fire({
+                        icon: "error",
+                        title: "Incomplete OTP",
+                        text: "Please fill in all 6 digits of the OTP."
+                    });
+                    // Focus on first empty field
+                    otpInputs[emptyIndices[0]].focus();
+                    return;
+                }
+
+                if (invalidIndices.length > 0) {
+                    addErrorStyling(invalidIndices);
+                    Swal.fire({
+                        icon: "error",
+                        title: "Invalid Characters",
+                        text: "OTP should contain only numeric digits (0-9)."
+                    });
+                    // Focus on first invalid field
+                    otpInputs[invalidIndices[0]].focus();
+                    return;
+                }
+
+                // Final length validation
+                if (otpValue.length !== 6) {
+                    // This shouldn't happen with proper validation above, but just in case
+                    addErrorStyling([0, 1, 2, 3, 4, 5]); // Highlight all fields
+                    Swal.fire({
+                        icon: "error",
+                        title: "Invalid OTP",
+                        text: "Please enter exactly 6 digits."
+                    });
+                    otpInputs[0].focus();
+                    return;
+                }
+
+                // Additional validation: check if OTP is all zeros
+                if (otpValue === '000000') {
+                    addErrorStyling([0, 1, 2, 3, 4, 5]);
+                    Swal.fire({
+                        icon: "error",
+                        title: "Invalid OTP",
+                        text: "Please enter a valid OTP. All zeros are not allowed."
+                    });
+                    otpInputs[0].focus();
+                    return;
+                }
+
+                // Additional validation: check for sequential numbers
+                const isSequential = /^(012345|123456|234567|345678|456789|567890|654321|543210|432109|321098|210987|109876)$/.test(otpValue);
+                if (isSequential) {
+                    addErrorStyling([0, 1, 2, 3, 4, 5]);
+                    Swal.fire({
+                        icon: "warning",
+                        title: "Suspicious OTP",
+                        text: "The entered OTP appears to be sequential. Please verify and try again."
+                    });
+                    return;
+                }
+
+                // Check if timer has expired
+                if (timeLeft <= 0) {
+                    Swal.fire({
+                        icon: "error",
+                        title: "OTP Expired",
+                        text: "The OTP has expired. Please request a new one."
+                    });
+                    return;
+                }
+
+                // All validations passed, proceed with API call
+                // Send OTP using fetch
+                fetch("forgot-verify-otp", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ otp: otpValue })
+                })
+                    .then(response => {
+                        // Validate response
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        // Validate response data structure
+                        if (typeof data !== 'object' || data === null) {
+                            throw new Error('Invalid response format');
+                        }
+
+                        if (data.success) {
+                            // Clear timer and session storage on successful verification
+                            clearInterval(timerInterval);
+                            sessionStorage.removeItem('otpTimerEndTime');
+                            
+                            Swal.fire({
+                                icon: "success",
+                                title: "OTP verified successfully",
+                                showConfirmButton: false,
+                                timer: 1500
+                            }).then(() => {
+                                // Validate redirect URL before redirecting
+                                if (data.redirectUrl && typeof data.redirectUrl === 'string') {
+                                    window.location.href = data.redirectUrl;
+                                } else {
+                                    console.warn('No valid redirect URL provided');
+                                    // Fallback redirect or stay on page
+                                }
+                            });
+                        } else {
+                            // Handle server-side validation errors
+                            const errorMessage = data.message || 'Invalid OTP. Please try again.';
+                            
+                            // Add error styling to all inputs for invalid OTP
+                            addErrorStyling([0, 1, 2, 3, 4, 5]);
+                            
+                            Swal.fire({
+                                icon: "error",
+                                title: "Verification Failed",
+                                text: errorMessage
+                            }).then(() => {
+                                // Clear inputs and focus on first field
+                                otpInputs.forEach(input => input.value = '');
+                                otpInputs[0].focus();
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Error:", error);
+                        
+                        // Network or parsing error
+                        let errorMessage = "Unable to verify OTP. Please check your connection and try again.";
+                        
+                        // Provide more specific error messages based on error type
+                        if (error.message.includes('HTTP error')) {
+                            errorMessage = "Server error occurred. Please try again later.";
+                        } else if (error.message.includes('Failed to fetch')) {
+                            errorMessage = "Network error. Please check your internet connection.";
+                        }
+                        
+                        addErrorStyling([0, 1, 2, 3, 4, 5]);
+                        
+                        Swal.fire({
+                            icon: "error",
+                            title: "Connection Error",
+                            text: errorMessage
+                        });
+                    });
+            }
+
+            validateOtp();
+        });
+
+        resendButton.addEventListener('click', () => {
+    // Show loading state
+    Swal.fire({
+        title: 'Sending OTP...',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+    
+
+    // Make API call to resend OTP
+    fetch('/resend-forgot-verify-otp', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ /* Include user identifier if needed, e.g., email or userId */ })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            Swal.fire({
+                icon: 'success',
+                title: 'OTP Sent',
+                text: 'A new OTP has been sent to your email.',
+                timer: 1500,
+                showConfirmButton: false
+            });
+
+            // Reset timer
+            timeLeft = 30;
+            const endTime = Date.now() + (timeLeft * 1000);
+            sessionStorage.setItem('otpTimerEndTime', endTime.toString());
+            
+            updateTimer();
+            clearInterval(timerInterval);
+            timerInterval = setInterval(updateTimer, 1000);
+
+            // Disable resend button again
+            resendButton.disabled = true;
+
+            // Clear OTP fields
+            otpInputs.forEach(input => {
+                input.value = '';
+            });
+            otpInputs[0].focus();
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: data.message || 'Failed to resend OTP. Please try again.'
+            });
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Failed to resend OTP. Please try again.'
+        });
+    });
+});
+
+
+    </script>
+</body>
+
+</html>
+
+
+

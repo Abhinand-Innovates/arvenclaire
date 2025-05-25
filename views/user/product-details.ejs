@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Watch Product Detail</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            color: #333;
+        }
+        
+        .breadcrumb {
+            background-color: transparent;
+            padding: 0.5rem 0;
+            font-size: 0.9rem;
+        }
+        
+        .product-title {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+        
+        .product-price {
+            font-weight: 600;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .original-price {
+            text-decoration: line-through;
+            color: #999;
+            font-size: 1rem;
+            margin-left: 0.5rem;
+        }
+        
+        .rating-stars {
+            color: #ffb400;
+            margin-right: 0.5rem;
+        }
+        
+        .thumbnail-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .main-image-container {
+            background-color: #f5f2ed;
+            padding: 1rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 4px;
+        }
+        
+        .thumbnail {
+            width: 100%;
+            cursor: pointer;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .thumbnail:hover {
+            border-color: #333;
+        }
+        
+        .thumbnail img {
+            width: 100%;
+            height: auto;
+        }
+        
+        .stock-status {
+            color: #248232;
+            font-weight: 500;
+            margin-bottom: 1rem;
+        }
+        
+        .product-variant {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 1rem;
+        }
+        
+        .variant-option {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+        
+        .variant-option.active {
+            border-color: #333;
+        }
+        
+        .product-details {
+            margin-top: 1.5rem;
+        }
+        
+        .size-option {
+            border: 1px solid #ddd;
+            padding: 0.5rem 1rem;
+            margin-right: 0.5rem;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+        
+        .size-option.active {
+            background-color: #333;
+            color: white;
+            border-color: #333;
+        }
+        
+        .add-to-cart {
+            background-color: #000;
+            color: white;
+            border: none;
+            padding: 0.75rem 2rem;
+            font-weight: 500;
+            border-radius: 4px;
+            width: 100%;
+            margin-bottom: 1rem;
+        }
+        
+        .add-to-cart:hover {
+            background-color: #333;
+        }
+        
+        .delivery-info {
+            font-size: 0.9rem;
+            color: #666;
+            padding: 0.75rem 0;
+            border-top: 1px solid #eee;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 1rem;
+        }
+        
+        .info-icon {
+            margin-right: 0.5rem;
+        }
+        
+        .benefits-list {
+            padding-left: 1.5rem;
+            margin-top: 1rem;
+        }
+        
+        .benefits-list li {
+            margin-bottom: 0.5rem;
+            position: relative;
+            padding-left: 0.5rem;
+        }
+        
+        .benefits-list li::before {
+            content: "✓";
+            color: #248232;
+            position: absolute;
+            left: -1.2rem;
+        }
+        
+        .description-section {
+            margin-top: 3rem;
+        }
+        
+        .product-description {
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+        
+        .similar-products {
+            margin-top: 3rem;
+        }
+        
+        .similar-product-item {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .similar-product-img {
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+        }
+        
+        .similar-product-name {
+            font-size: 0.9rem;
+            margin: 0.5rem 0;
+        }
+        
+        .similar-product-price {
+            font-weight: 500;
+        }
+        
+        .nav-tabs {
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 1.5rem;
+        }
+        
+        .nav-tabs .nav-link {
+            border: none;
+            color: #666;
+            font-weight: 500;
+            padding: 0.75rem 1rem;
+        }
+        
+        .nav-tabs .nav-link.active {
+            color: #000;
+            border-bottom: 2px solid #000;
+            background-color: transparent;
+        }
+        
+        .specification-table {
+            width: 100%;
+            font-size: 0.9rem;
+        }
+        
+        .specification-table td {
+            padding: 0.5rem 0;
+        }
+        
+        .specification-table td:first-child {
+            font-weight: 500;
+            width: 40%;
+        }
+        
+        @media (max-width: 767px) {
+            .thumbnail-container {
+                flex-direction: row;
+                margin-bottom: 1rem;
+            }
+            
+            .thumbnail {
+                width: 60px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-4">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="#" class="text-decoration-none text-muted">Home</a></li>
+                <li class="breadcrumb-item"><a href="#" class="text-decoration-none text-muted">Shop</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Product Detail</li>
+            </ol>
+        </nav>
+        
+        <!-- Product Section -->
+        <div class="row">
+            <!-- Product Images -->
+            <div class="col-lg-7">
+                <div class="row">
+                    <div class="col-md-2 col-3">
+                        <div class="thumbnail-container">
+                            <div class="thumbnail active">
+                                <img src="/assets/watch-img1.jpg" alt="Product thumbnail 1" class="img-fluid">
+                            </div>
+                            <div class="thumbnail">
+                                <img src="/assets/watch-img1.jpg" alt="Product thumbnail 2" class="img-fluid">
+                            </div>
+                            <div class="thumbnail">
+                                <img src="/assets/watch-img1.jpg" alt="Product thumbnail 3" class="img-fluid">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-10 col-9">
+                        <div class="main-image-container">
+                            <img src="/assets/watch-img1.jpg" alt="Watch" class="img-fluid">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Product Info -->
+            <div class="col-lg-5">
+                <div class="product-info">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <h1 class="product-title">Ralissax</h1>
+                        <div class="rating">
+                            <span class="rating-stars">★★★★★</span>
+                            <span class="text-muted">(23 reviews)</span>
+                        </div>
+                    </div>
+                    
+                    <div class="product-price mb-3">
+                        $3,099 <span class="original-price">$3,499</span>
+                    </div>
+                    
+                    <div class="stock-status mb-3">
+                        <i class="fa fa-check-circle me-1"></i> In Stock & Ready to Ship
+                    </div>
+                    
+                    <p class="product-short-desc mb-4">
+                        A new definition of style in the Ralissax collection. This timepiece ($3,099) is a perfect illustration of exquisite-grade for excellence in all fields of fine watchmaking art, blending with the shape of the past, round case for present times and a look into the future.
+                    </p>
+                    
+                    <!-- Variants -->
+                    <div class="variants mb-4">
+                        <h6 class="mb-2">Variants</h6>
+                        <div class="d-flex mb-3">
+                            <div class="variant-option active" style="background-color: black"></div>
+                            <div class="variant-option" style="background-color: rgb(234, 236, 174)"></div>
+                            
+                        </div>
+                    </div>
+                    
+                    <!-- Product Details -->
+                    <div class="product-details mb-4">
+                        <h6 class="mb-2">Product Details</h6>
+                        <table class="specification-table">
+                            <tr>
+                                <td>Brand:</td>
+                                <td>Ralissax Watch</td>
+                            </tr>
+                            <tr>
+                                <td>Strap Color:</td>
+                                <td>Beige</td>
+                            </tr>
+                            <tr>
+                                <td>Dial Type:</td>
+                                <td>Analog</td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <!-- Size Selection -->
+                    <div class="size-selection mb-4">
+                        <h6 class="mb-2">Size</h6>
+                        <div class="d-flex">
+                            <div class="size-option active">40mm</div>
+                            <div class="size-option">42mm</div>
+                            <div class="size-option">44mm</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Add to Cart -->
+                    <div class="actions">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="qty-selector d-flex align-items-center me-3">
+                                <button class="btn btn-outline-secondary btn-sm">-</button>
+                                <input type="text" class="form-control mx-2 text-center" value="1" style="width: 50px;">
+                                <button class="btn btn-outline-secondary btn-sm">+</button>
+                            </div>
+                            <button class="add-to-cart">Add to Cart</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Delivery Info -->
+                    <div class="delivery-info">
+                        <div class="mb-2">
+                            <i class="fas fa-truck info-icon"></i> Free Delivery worldwide available.
+                        </div>
+                        <div>
+                            <i class="fas fa-undo info-icon"></i> 30-day return policy.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Description Section -->
+        <div class="row description-section">
+            <div class="col-12">
+                <ul class="nav nav-tabs" id="productTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="description-tab" data-bs-toggle="tab" data-bs-target="#description" type="button" role="tab" aria-controls="description" aria-selected="true">Description</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="benefits-tab" data-bs-toggle="tab" data-bs-target="#benefits" type="button" role="tab" aria-controls="benefits" aria-selected="false">Benefits</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="reviews-tab" data-bs-toggle="tab" data-bs-target="#reviews" type="button" role="tab" aria-controls="reviews" aria-selected="false">Reviews (23)</button>
+                    </li>
+                </ul>
+                
+                <div class="tab-content" id="productTabsContent">
+                    <div class="tab-pane fade show active" id="description" role="tabpanel" aria-labelledby="description-tab">
+                        <div class="product-description">
+                            <p>A new definition of style in the Ralissax collection. This timepiece ($3,099) is a perfect illustration of exquisite-grade for excellence in all fields of fine watchmaking art, blending with the shape of the past, round case for present times and a look into the future.</p>
+                            <p>The classic Ralissax look is crafted from the finest materials and assembled with scrupulous attention to detail. Every component is designed and manufactured to the highest standards.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="tab-pane fade" id="benefits" role="tabpanel" aria-labelledby="benefits-tab">
+                        <ul class="benefits-list">
+                            <li><strong>Premium Craftsmanship</strong> - Artisanal high-quality paper with a soft touch surface cover that feels like a fine watch.</li>
+                            <li><strong>Perfect Balance</strong> - Carefully balanced timepiece for your transition from casual to formal occasions.</li>
+                            <li><strong>Timeless Design</strong> - A beautiful presence for poetry lovers, introspective souls, and free minds.</li>
+                            <li><strong>Crystal Clear</strong> - Sapphire crystal with multi-layered anti-reflective treatment and maximum protection.</li>
+                            <li><strong>Exclusive Collection</strong> - A made-to-order solution for modern jewelry vendors and lovers of handcrafted timepieces.</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="tab-pane fade" id="reviews" role="tabpanel" aria-labelledby="reviews-tab">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="review-item mb-4 pb-4 border-bottom">
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <div>
+                                            <h6 class="mb-0">John D.</h6>
+                                            <div class="text-muted small">Verified Purchase</div>
+                                        </div>
+                                        <div class="rating-stars">★★★★★</div>
+                                    </div>
+                                    <p>This watch exceeded my expectations. The craftsmanship is superb and the attention to detail is incredible. Definitely worth the investment.</p>
+                                </div>
+                                
+                                <div class="review-item mb-4 pb-4 border-bottom">
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <div>
+                                            <h6 class="mb-0">Sarah M.</h6>
+                                            <div class="text-muted small">Verified Purchase</div>
+                                        </div>
+                                        <div class="rating-stars">★★★★<span class="text-muted">★</span></div>
+                                    </div>
+                                    <p>Beautiful watch, just as described. The only thing I would change is the clasp, which feels a bit flimsy compared to the rest of the watch. Otherwise, perfect!</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Similar Products -->
+        <div class="similar-products">
+            <h4 class="mb-4">You May Also Like</h4>
+            <div class="row">
+                <div class="col-6 col-md-3">
+                    <div class="similar-product-item">
+                        <div class="similar-product-img">
+                            <img src="/api/placeholder/250/250" alt="Similar product 1" class="img-fluid">
+                        </div>
+                        <div class="similar-product-name">Classic Watch</div>
+                        <div class="similar-product-price">$2,799</div>
+                        <div class="rating-stars small">★★★★★</div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="similar-product-item">
+                        <div class="similar-product-img">
+                            <img src="/api/placeholder/250/250" alt="Similar product 2" class="img-fluid">
+                        </div>
+                        <div class="similar-product-name">Blue Dial Watch</div>
+                        <div class="similar-product-price">$3,499</div>
+                        <div class="rating-stars small">★★★★<span class="text-muted">★</span></div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="similar-product-item">
+                        <div class="similar-product-img">
+                            <img src="/api/placeholder/250/250" alt="Similar product 3" class="img-fluid">
+                        </div>
+                        <div class="similar-product-name">Gold Tone Watch</div>
+                        <div class="similar-product-price">$4,299</div>
+                        <div class="rating-stars small">★★★★★</div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="similar-product-item">
+                        <div class="similar-product-img">
+                            <img src="/api/placeholder/250/250" alt="Similar product 4" class="img-fluid">
+                        </div>
+                        <div class="similar-product-name">Green Dial Watch</div>
+                        <div class="similar-product-price">$2,999</div>
+                        <div class="rating-stars small">★★★★<span class="text-muted">★</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Thumbnail Click Handler
+        document.querySelectorAll('.thumbnail').forEach(thumbnail => {
+            thumbnail.addEventListener('click', function() {
+                document.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                // In a real implementation, would change the main image src here
+            });
+        });
+        
+        // Variant Click Handler
+        document.querySelectorAll('.variant-option').forEach(variant => {
+            variant.addEventListener('click', function() {
+                document.querySelectorAll('.variant-option').forEach(v => v.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+        
+        // Size Click Handler
+        document.querySelectorAll('.size-option').forEach(size => {
+            size.addEventListener('click', function() {
+                document.querySelectorAll('.size-option').forEach(s => s.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>
