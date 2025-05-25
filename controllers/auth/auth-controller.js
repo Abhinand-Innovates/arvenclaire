@@ -193,17 +193,19 @@ const signup = async (req, res) => {
 
 const loadDashboard = async (req, res) => {
   try {
-    console.log(req.session.userId);
-    if(req.session.userId) {
-      return res.render("dashboard");
+    const user = req.session.userId;
+    if (user) {
+      const userData = await User.findOne({ _id: user });
+      res.render("dashboard", { user: userData });
     } else {
-      res.redirect('/login');
+      return res.render("dashboard");
     }
   } catch (error) {
     console.log("Home page not loading", error);
     res.status(500).send("Server Error");
   }
 };
+
 
 
 
@@ -487,6 +489,18 @@ const resetPassword = async (req, res) => {
 
 
 
+const loadAdminLogin = async (req, res) => {
+  try {
+      return res.render("admin-login");
+    }
+    catch (error) {
+    console.log("Admin login page not loading", error);
+    res.status(500).send("Server Error");
+  }
+};
+
+
+
 
 module.exports = {
   loadLanding,
@@ -507,5 +521,7 @@ module.exports = {
   resendForgotPasswordOtp,
   loadNewPassword,
   resetPassword,
+
+  loadAdminLogin,
 
 };

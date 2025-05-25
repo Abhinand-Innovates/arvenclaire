@@ -10,12 +10,9 @@
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
     <link rel="stylesheet" href="../../styles/user/user-dashboard.css">
-
 </head>
 
 <body>
-
-
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-light bg-white py-3 shadow-sm sticky-top">
         <div class="container">
@@ -28,7 +25,6 @@
                     <li class="nav-item">
                         <a class="nav-link active" href="/dashboard">Home</a>
                     </li>
-
                     <li class="nav-item">
                         <a class="nav-link" href="#">About</a>
                     </li>
@@ -45,31 +41,62 @@
                     </div>
                 </form>
 
-                <!-- User Dropdown -->
-                <div class="dropdown me-3">
-                    <a href="#" class="d-flex align-items-center text-dark text-decoration-none dropdown-toggle"
-                        id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                        <div class="user-avatar">A</div>
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                        <li class="user-info">
-                            <div class="user-avatar">A</div>
-                            <div>
-                                <p class="user-name mb-0">Alex John</p>
-                                <p class="user-email">alex@example.com</p>
+                <!-- Conditional User Section -->
+                <% if (typeof user !== 'undefined' && user) { %>
+                    <% 
+                        // Handle different authentication methods
+                        let userName = '';
+                        
+                        // Check if user logged in via Google OAuth
+                        if (user.googleId || user.authMethod === 'google' || user.provider === 'google') {
+                            userName = user.name || user.displayName || user.googleName || 'User';
+                        } else {
+                            // Regular signup user
+                            userName = user.fullname || 'User';
+                        }
+                        
+                        let userEmail = user.email || 'No email';
+                        let avatarLetter = userName.charAt(0).toUpperCase();
+                    %>
+                    
+                    <!-- User Dropdown (Logged In) -->
+                    <div class="dropdown me-3">
+                        <a href="#" class="d-flex align-items-center text-dark text-decoration-none dropdown-toggle"
+                            id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <div class="user-avatar">
+                                <%= avatarLetter %>
                             </div>
-                        </li>
-                        <li>
-                            <hr class="dropdown-divider">
-                        </li>
-                        <li><a class="dropdown-item" href="#">Profile</a></li>
-                        <li><a class="dropdown-item" href="#">Orders</a></li>
-                        <li><a class="dropdown-item" href="/login">Logout</a></li>
-                    </ul>
-                </div>
-
+                            <span class="ms-2 d-none d-md-inline"><%= userName %></span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                            <li class="user-info">
+                                <div class="user-avatar">
+                                    <%= avatarLetter %>
+                                </div>
+                                <div>
+                                    <p class="user-name mb-0"><%= userName %></p>
+                                    <p class="user-email"><%= userEmail %></p>
+                                </div>
+                            </li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><a class="dropdown-item" href="#">Profile</a></li>
+                            <li><a class="dropdown-item" href="#">Orders</a></li>
+                            <li><a class="dropdown-item" href="/login">Logout</a></li>
+                        </ul>
+                    </div>
+                <% } else { %>
+                    <!-- Guest User Section (Not Logged In) -->
+                    <div class="d-flex align-items-center me-3">
+                        <a href="/login" class="btn btn-outline-primary me-2">Login</a>
+                        <a href="/register" class="btn btn-primary">Sign Up</a>
+                    </div>
+                <% } %>
 
             </div>
+            
+            <!-- Cart and Wishlist Icons -->
             <a href="#" class="me-3 text-dark cart-icon">
                 <i class="bi bi-cart"></i>
                 <span class="cart-count">2</span>
@@ -78,8 +105,43 @@
                 <i class="bi bi-heart"></i>
             </a>
         </div>
-        </div>
-        </div>
     </nav>
 
     <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom Script to ensure dropdown works -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize all dropdowns manually
+            var dropdownElementList = [].slice.call(document.querySelectorAll('.dropdown-toggle'));
+            var dropdownList = dropdownElementList.map(function (dropdownToggleEl) {
+                return new bootstrap.Dropdown(dropdownToggleEl);
+            });
+            
+            // Add click event listener as backup
+            const userDropdown = document.getElementById('userDropdown');
+            if (userDropdown) {
+                userDropdown.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const dropdownMenu = this.nextElementSibling;
+                    if (dropdownMenu) {
+                        dropdownMenu.classList.toggle('show');
+                    }
+                });
+                
+                // Close dropdown when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (!userDropdown.contains(e.target)) {
+                        const dropdownMenu = userDropdown.nextElementSibling;
+                        if (dropdownMenu && dropdownMenu.classList.contains('show')) {
+                            dropdownMenu.classList.remove('show');
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>

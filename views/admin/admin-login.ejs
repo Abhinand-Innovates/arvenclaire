@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,24 +10,25 @@
     <link rel="stylesheet" href="../../styles/admin/admin-login.css">
 
 </head>
+
 <body>
     <div class="container-fluid login-container">
         <!-- Admin Badge -->
         <div class="admin-badge">ADMIN</div>
-        
+
         <!-- Image Column - Hidden on Small Screens -->
         <div class="col-md-7 d-none d-md-block p-0 d-flex align-items-center justify-content-center">
             <img src="/assets/login-img.jpg" alt="Login Image"
                 style="width: 100%; height: 90vh; object-fit: cover; transform: translateX(-10px); border-radius: 10px;">
         </div>
-        
+
         <!-- Login Form Column -->
         <div class="col-md-5 login-form-col">
             <div class="login-form">
                 <div class="text-center mb-4">
                     <h2>Login to your account</h2>
                 </div>
-                
+
                 <form>
                     <div class="mb-3">
                         <label for="email" class="form-label">Email address</label>
@@ -41,19 +43,21 @@
                             <input type="checkbox" class="form-check-input" id="rememberMe">
                             <label class="form-check-label" for="rememberMe">Remember me</label>
                         </div>
-                        <a href="#" class="text-dark text-decoration-none">Forgot Password?</a>
                     </div>
                     <button type="submit" class="btn btn-login w-100 mb-3">Log In</button>
-                    
+
                     <div class="divider">
                         <span class="text-muted">or</span>
                     </div>
-                    
-                    <button type="button" class="btn btn-google w-100 mb-3">
-                        <img src="../../assets/google-icon.png"  width="20" class="me-2">
-                        Sign in with Google
-                    </button>
-                    
+
+                    <a href="/auth/google"
+                        class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center p-2"
+                        role="button">
+                        <img src="../../assets/google-icon.png" alt="Google logo" width="20" height="20"
+                            style="margin-right: 10px;">
+                        Sign up with Google
+                    </a>
+
                     <div class="text-center mt-3">
                         Don't have an account? <a href="#" class="text-dark">Contact Administrator</a>
                     </div>
@@ -65,4 +69,5 @@
     <!-- Bootstrap JS (Optional) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>
