@@ -501,15 +501,47 @@ const loadAdminLogin = async (req, res) => {
 };
 
 
-const loadAdminDashboard = async (req,res) => {
-  try {
 
-    
-    
-  } catch (error) {
-    
+
+const loginAdmin = async (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) {
+    return res.render('admin-login', { error: 'Email and password are required' });
   }
-}
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user || !user.isAdmin) {
+      return res.render('admin-login', { error: 'Access denied: Not an admin' });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.render('admin-login', { error: 'Invalid credentials' });
+    }
+
+    req.session.adminId = user._id;
+
+    // 🔥 Redirect to dashboard
+    res.redirect('/admin-dashboard');
+  } catch (err) {
+    res.render('admin-login', { error: 'Server error' });
+  }
+};
+
+
+
+
+// Show dashboard
+const showDashboard = async (req, res) => {
+  try {
+    const admin = await User.findById(req.session.adminId).select('-password');
+    res.render('admin-dashboard', { admin });
+  } catch (err) {
+    res.status(500).send('Error loading dashboard');
+  }
+};
+
 
 
 
@@ -535,6 +567,7 @@ module.exports = {
   resetPassword,
 
   loadAdminLogin,
-  loadAdminDashboard,
+  loginAdmin,
+  showDashboard
 
 };

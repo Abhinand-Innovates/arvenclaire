@@ -37,7 +37,9 @@ router.post("/reset-password",authController.resetPassword);
 
 
 router.get("/admin-login",authController.loadAdminLogin);
-router.post("/admin-login",authController.loadAdminDashboard);
+router.post('admin/login',authController.loginAdmin);
+router.get("/admin-dashboard",authController.showDashboard);
+
 
 
 
