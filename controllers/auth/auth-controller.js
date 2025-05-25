@@ -1,4 +1,5 @@
 const User = require("../../models/user-schema");
+const Admin = require('../../models/admin-schema');
 const generateOtp = require("../../utils/generateOtp");
 const sendEmail = require("../../utils/sendEmail");
 const bcrypt = require("bcrypt");
@@ -500,6 +501,17 @@ const loadAdminLogin = async (req, res) => {
 };
 
 
+const loadAdminDashboard = async (req,res) => {
+  try {
+
+    
+    
+  } catch (error) {
+    
+  }
+}
+
+
 
 
 module.exports = {
@@ -523,5 +535,6 @@ module.exports = {
   resetPassword,
 
   loadAdminLogin,
+  loadAdminDashboard,
 
 };
