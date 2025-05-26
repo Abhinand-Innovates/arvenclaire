@@ -69,6 +69,12 @@
       pointer-events: none;
       opacity: 0.65;
     }
+
+    /* Only center the heading and paragraph text */
+    .signup-form h2,
+    .signup-form > p {
+      text-align: center;
+    }
   </style>
 </head>
 
@@ -79,7 +85,8 @@
         <img src="/assets/register-img.jpg" style="width: 100%; height: 100%; object-fit: cover;" alt="Watch Haven">
       </div>
       <div class="signup-form">
-        <h2 class="mb-3">Create your account</h2>
+        <h2 class="mb-3" style="font-weight: bolder;font-family: 'Times New Roman', Times, serif;">ARVENCLAIRE</h2>
+        <p style="font-weight: bold;">Create your account</p>
         <form id="signupForm" novalidate>
           <div class="mb-3">
             <input type="text" id="fullname" name="fullname" class="form-control" placeholder="Fullname" required>

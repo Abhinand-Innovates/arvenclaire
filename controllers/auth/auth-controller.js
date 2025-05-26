@@ -1,5 +1,4 @@
 const User = require("../../models/user-schema");
-const Admin = require('../../models/admin-schema');
 const generateOtp = require("../../utils/generateOtp");
 const sendEmail = require("../../utils/sendEmail");
 const bcrypt = require("bcrypt");
@@ -504,43 +503,38 @@ const loadAdminLogin = async (req, res) => {
 
 
 const loginAdmin = async (req, res) => {
-  const { email, password } = req.body;
-  if (!email || !password) {
-    return res.render('admin-login', { error: 'Email and password are required' });
-  }
-
   try {
+    const { email, password } = req.body;
+
     const user = await User.findOne({ email });
+
     if (!user || !user.isAdmin) {
-      return res.render('admin-login', { error: 'Access denied: Not an admin' });
+      return res.status(401).json({ success: false, message: 'Access denied' });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.render('admin-login', { error: 'Invalid credentials' });
+      return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
 
     req.session.adminId = user._id;
+    res.status(200).json({ success: true, redirectUrl: '/admin-dashboard' });
 
-    // 🔥 Redirect to dashboard
-    res.redirect('/admin-dashboard');
-  } catch (err) {
-    res.render('admin-login', { error: 'Server error' });
+  } catch (error) {
+    console.error('Admin login error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
   }
 };
 
-
-
-
-// Show dashboard
 const showDashboard = async (req, res) => {
-  try {
-    const admin = await User.findById(req.session.adminId).select('-password');
-    res.render('admin-dashboard', { admin });
-  } catch (err) {
-    res.status(500).send('Error loading dashboard');
-  }
+  res.render('admin-dashboard');
 };
+
+module.exports = {
+  loginAdmin,
+  showDashboard
+};
+
 
 
 
