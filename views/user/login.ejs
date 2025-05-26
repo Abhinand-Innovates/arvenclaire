@@ -164,19 +164,19 @@
         input.addEventListener('input', () => validateField(field));
       });
 
-      // Password toggle functionality
-      function setupPasswordToggle(inputId, toggleId) {
-        const input = document.getElementById(inputId);
-        const toggle = document.getElementById(toggleId);
-        toggle.addEventListener('click', () => {
-          const isPassword = input.type === 'password';
-          input.type = isPassword ? 'text' : 'password';
-          toggle.classList.toggle('bi-unlock', isPassword);
-          toggle.classList.toggle('bi-lock', !isPassword);
-        });
-      }
+     // Password toggle functionality
+    function setupPasswordToggle(inputId, toggleId) {
+      const input = document.getElementById(inputId);
+      const toggle = document.getElementById(toggleId);
+      toggle.addEventListener("click", () => {
+        const isPassword = input.type === "password";
+        input.type = isPassword ? "text" : "password";
+        toggle.classList.toggle("bi-unlock", isPassword);
+        toggle.classList.toggle("bi-lock", !isPassword);
+      });
+    }
 
-      setupPasswordToggle('password', 'password-toggle');
+    setupPasswordToggle("password", "password-toggle");
 
       // Form submit handling
       loginForm.addEventListener('submit', async (event) => {
@@ -210,7 +210,7 @@
             Swal.fire({
               icon: 'success',
               title: 'Login Successful',
-              text: 'Redirecting to your dashboard...',
+              text: 'Welcome to Home page',
               timer: 1500,
               showConfirmButton: false,
             }).then(() => {

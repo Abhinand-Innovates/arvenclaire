@@ -23,7 +23,7 @@ const postAdminLogin = async (req, res) => {
     if (!admin) {
       return res.status(401).json({
         success: false,
-        message: "Admin not found or not authorized",
+        message: "Administrator not found",
       });
     }
 
