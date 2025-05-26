@@ -6,7 +6,7 @@ const cookieParser = require("cookie-parser");
 const passport = require("./config/passport");
 const env = require("dotenv").config();
 const port = process.env.PORT || 3001;
-const authRoute = require("./routes/auth-route")
+const userRoute = require("./routes/user-route")
 const adminRoute = require("./routes/admin-route")
 const db = require("./config/db");
 db();
@@ -38,8 +38,8 @@ app.set("view engine","ejs");
 app.set("views",[path.join(__dirname,"views/user"),path.join(__dirname,"views/admin")])
 
 
-app.use("/",authRoute)
-app.use("/admin",adminRoute)
+app.use("/",userRoute);
+app.use("/",adminRoute);
 
 // app.get("/",(req,res) => {
 //   res.render("new-password")

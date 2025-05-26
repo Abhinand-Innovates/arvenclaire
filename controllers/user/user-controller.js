@@ -1,0 +1,554 @@
+const User = require("../../models/user-schema");
+const generateOtp = require("../../utils/generateOtp");
+const sendEmail = require("../../utils/sendEmail");
+const bcrypt = require("bcrypt");
+
+
+
+
+
+const loadLanding = async (req, res) => {
+  try {
+    return res.render("landing");
+  } catch (error) {
+    console.log("Landing page not loading");
+    res.status(500).send("Server error");
+  }
+};
+
+
+
+
+const loadSignup = async (req, res) => {
+  try {
+    return res.render("signup");
+  } catch (error) {
+    console.log("Home page not loading", error);
+    res.status(500).send("Server Error");
+  }
+};
+
+
+
+
+
+const loadLogin = async (req, res) => {
+  try {
+    return res.render("login");
+  } catch (error) {
+    console.log("Login page not loading", error);
+    res.status(500).send("Server error");
+  }
+};
+
+
+
+
+
+const loadOtpPage = async (req, res) => {
+  try {
+    return res.render("verify-otp");
+  } catch (error) {
+    console.log("otp-validation page not loading");
+    res.status(500).send("Internal server error");
+  }
+};
+
+
+
+
+const verifyOtp = async (req, res) => {
+  try {
+    const { otp } = req.body;
+
+    console.log(otp);
+    console.log(req.session.userOtp);
+
+    if (otp === req.session.userOtp) {
+      const user = req.session.userData;
+      const passwordHash = await securePassword(user.password);
+      const saveUserData = new User({
+        fullname: user.fullname,
+        phone: user.phone,
+        email: user.email,
+        password: passwordHash,
+      });
+
+      await saveUserData.save();
+      req.session.user = saveUserData._id;
+      res.json({
+        success: true,
+        redirectUrl: "/login",
+      });
+    } else {
+      res.status(400).json({
+        success: false,
+        message: "Invalid OTP, Please try again",
+      });
+    }
+  } catch (error) {
+    console.error("Error Varifying OTP", error);
+    res.status(500).json({ success: false, message: `${error.message}` });
+  }
+};
+
+
+
+
+const resendOtp = async (req, res) => {
+  try {
+    const { email } = req.session.userData;
+
+    if (!email) {
+      res.status(401).json({ message: "email not found, session ends" });
+    }
+
+    // otp Generation
+    const otp = generateOtp();
+    req.session.userOtp = otp;
+
+    const isSendMail = await sendEmail(email, otp);
+
+    if (!isSendMail) {
+      return res.json({
+        success: false,
+        message: "Failed to send OTP",
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "otp sent successfully",
+    });
+  } catch (error) {
+    console.error("Error in resending otp", error);
+    res.status(500).send("Internal server error");
+  }
+};
+
+
+
+
+const signup = async (req, res) => {
+  try {
+    const { fullname, phone, email, password } = req.body;
+
+    if (!fullname || fullname.length < 4) {
+      return res.status(400).json({ success: false, message: "Full name must be at least 4 characters" });
+    }
+
+    const emailRegex = /^\S+@\S+\.\S+$/;
+    if (!email || !emailRegex.test(email)) {
+      return res.status(400).json({ success: false, message: "Please enter a valid email" });
+    }
+
+    if (!password || password.length < 8) {
+      return res.status(400).json({ success: false, message: "Password must be at least 8 characters" });
+    }
+
+    if (phone && !/^\d{10}$/.test(phone)) {
+      return res.status(400).json({ success: false, message: "Phone must be 10 digits" });
+    }
+
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(403).json({
+        success: false,
+        message: "User already exists",
+      });
+    }
+
+    // otp Generation
+    const otp = generateOtp();
+    const isSendMail = await sendEmail(email, otp);
+
+    if (!isSendMail) {
+      return res.json({
+        success: false,
+        message: "Failed to send OTP",
+      });
+    }
+
+    req.session.userData = { fullname, phone, email, password };
+    req.session.userOtp = otp;
+
+    res.json({
+      success: true,
+      message: "otp sent successfully",
+    });
+  } catch (error) {
+    console.error("Error in loading signup page", error);
+    res.status(500).send("Internal server error");
+  }
+};
+
+const loadDashboard = async (req, res) => {
+  try {
+    const user = req.session.userId;
+    if (user) {
+      const userData = await User.findOne({ _id: user });
+      res.render("dashboard", { user: userData });
+    } else {
+      return res.render("dashboard");
+    }
+  } catch (error) {
+    console.log("Home page not loading", error);
+    res.status(500).send("Server Error");
+  }
+};
+
+
+
+
+const securePassword = async (password) => {
+  try {
+    const passwordHash = await bcrypt.hash(password, 10);
+    return passwordHash;
+  } catch (error) {}
+};
+
+
+
+
+const login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    // Validate input
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Email and password are required",
+      });
+    }
+
+    // Find user by email
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid email or password",
+      });
+    }
+
+    // Verify password
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordValid) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid email or password",
+      });
+    }
+
+    // Set user session
+    req.session.userId = user._id;
+
+    // Redirect to dashboard
+    return res.status(200).redirect('/dashboard');
+  } catch (error) {
+    console.error('Login error:', error);
+    return res.status(500).json({
+      success: false,
+      message: "An error occurred during login. Please try again later.",
+    });
+  }
+};
+
+
+
+
+const loadForgotPassword = async (req, res) => {
+  try {
+    return res.render("forgot-password");
+  } catch (error) {
+    console.log("Verify email page not loading", error);
+    res.status(500).send("Server Error");
+  }
+};
+
+
+
+const loadForgotVerifyOtp = async (req, res) => {
+  try {
+    return res.render("forgot-verify-otp");
+  } catch (error) {
+    console.log("otp-validation page not loading");
+    res.status(500).send("Internal server error");
+  }
+};
+
+
+// Send OTP for Forgot Password
+const verifyForgotPasswordEmail = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    // Check if user exists
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: "Please enter a valid email",
+      });
+    }
+
+    // Generate OTP
+    const otp = generateOtp();
+
+    // Store OTP in session with expiry time (5 minutes)
+    req.session.userOtp = {
+      otp,
+      expiresAt: Date.now() + 5 * 60 * 1000,
+      email,
+    };
+
+    // Send OTP via email
+    const isSendMail = await sendEmail(email, otp);
+    if (!isSendMail) {
+      return res.status(500).json({
+        success: false,
+        message: "Failed to send OTP",
+      });
+    }
+
+    // Send success response
+    res.status(200).json({
+      success: true,
+      message: "OTP sent successfully",
+    });
+  } catch (error) {
+    console.error("Error in verifyForgotEmail:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};
+
+const resendForgotPasswordOtp = async (req, res) => {
+  try {
+
+    const email = req.session.userOtp.email;
+
+    if (!email) {
+      res.status(401).json({ message: "email not found, session ends" });
+    }
+
+    // otp Generation
+    const otp = generateOtp();
+    req.session.userOtp = {
+      otp,
+      expiresAt: Date.now() + 5 * 60 * 1000,
+      email,
+    };
+
+    const isSendMail = await sendEmail(email, otp);
+
+    if (!isSendMail) {
+      return res.json({
+        success: false,
+        message: "Failed to send OTP",
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "otp sent successfully",
+    });
+  } catch (error) {
+    console.error("Error in resending otp", error);
+    res.status(500).send("Internal server error");
+  }
+};
+
+
+
+
+
+// Verify OTP
+const verifyForgotPasswordOtp = (req, res) => {
+  try {
+    const { otp } = req.body;
+    const sessionOtp = req.session.userOtp.otp;
+
+    console.log(otp, sessionOtp)
+
+    if (!sessionOtp) {
+      return res.status(400).json({
+        success: false,
+        message: "No OTP session found. Please request again.",
+      });
+    }
+
+    // if (Date.now() > sessionOtp.expiresAt) {
+    //   // Clear expired session data
+    //   req.session.userOtp = null;
+    //   return res.status(400).json({
+    //     success: false,
+    //     message: "OTP expired. Please request a new one.",
+    //   });
+    // }
+
+    // Ensure OTP comparison handles string/number types
+    if (String(otp) !== String(sessionOtp)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid OTP. Please try again.",
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "OTP verified successfully",
+      redirectUrl: "/new-password"
+    });
+
+  } catch (error) {
+    console.error("Error in verifyForgotOtp:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server Error"
+    });
+  }
+};
+
+
+const loadNewPassword = async (req, res) => {
+  try {
+    return res.render("new-password");
+  } catch (error) {
+    console.log("New password page not loading");
+    res.status(500).send("Internal server error");
+  }
+};
+
+
+
+const resetPassword = async (req, res) => {
+  try {
+    const { newPassword, confirmPassword } = req.body;
+    const email = req.session.userOtp.email; 
+    
+    const { _id } = await User.findOne({ email });
+
+    console.log(_id)
+
+    // 1. Validate passwords match
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "Passwords do not match",
+      });
+    }
+
+    // 2. Hash the new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // 3. Update user password
+    const user = await User.findByIdAndUpdate(
+      _id,
+      { password: hashedPassword },
+      { new: true }
+    );
+
+    // 4. Handle user not found
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // 5. Send success response
+    res.status(200).json({
+      success: true,
+      message: "Password updated successfully",
+    });
+
+  } catch (error) {
+    console.error("Reset password error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
+
+
+
+
+
+const loadAdminLogin = async (req, res) => {
+  try {
+      return res.render("admin-login");
+    }
+    catch (error) {
+    console.log("Admin login page not loading", error);
+    res.status(500).send("Server Error");
+  }
+};
+
+
+
+
+const loginAdmin = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    const user = await User.findOne({ email });
+
+    if (!user || !user.isAdmin) {
+      return res.status(401).json({ success: false, message: 'Access denied' });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ success: false, message: 'Invalid credentials' });
+    }
+
+    req.session.adminId = user._id;
+    res.status(200).json({ success: true, redirectUrl: '/admin-dashboard' });
+
+  } catch (error) {
+    console.error('Admin login error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
+const showDashboard = async (req, res) => {
+  res.render('admin-dashboard');
+};
+
+
+
+
+
+
+
+module.exports = {
+  loadLanding,
+  loadSignup,
+  loadLogin,
+  loadOtpPage,
+  verifyOtp,
+  resendOtp,
+  signup,
+
+  login,
+  loadDashboard,
+
+  loadForgotPassword,
+  verifyForgotPasswordEmail,
+  verifyForgotPasswordOtp,
+  loadForgotVerifyOtp,
+  resendForgotPasswordOtp,
+  loadNewPassword,
+  resetPassword,
+
+  loadAdminLogin,
+  loginAdmin,
+  showDashboard
+
+};

@@ -1,12 +1,48 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Arvenclaire Dashboard</title>
+    <title>Arvenclaire admin dashboard</title>
     <link rel="stylesheet" href="../../styles/admin/admin-dashboard.css">
+    <style>
+        #logoutBtn {
+            background-color: #dc3545;
+            /* Bootstrap red */
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 90%;
+            max-width: 200px;
+            margin: 20px auto;
+            display: block;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
 
+        #logoutBtn:hover {
+            background-color: #c82333;
+            transform: scale(1.03);
+        }
+
+        #logoutBtn:active {
+            transform: scale(0.98);
+        }
+
+        @media (max-width: 600px) {
+            #logoutBtn {
+                padding: 8px 16px;
+                font-size: 13px;
+                width: 80%;
+            }
+        }
+    </style>
 </head>
+
 <body>
     <!-- Sidebar -->
     <div class="sidebar">
@@ -14,7 +50,7 @@
             <h2>ARVENCLAIRE</h2>
             <p style="font-size: 10px; margin-top: 5px;">Swiss Legacy</p>
         </div>
-        
+
         <div class="nav-item active">Dashboard</div>
         <div class="nav-item">Products</div>
         <div class="nav-item">Order Lists</div>
@@ -24,8 +60,9 @@
         <div class="nav-item">Category</div>
         <div class="nav-item">Banner</div>
         <div class="nav-item">Offer</div>
-        
-        <button class="logout">Logout</button>
+
+        <button id="logoutBtn" class="btn btn-danger">Logout</button>
+
     </div>
 
     <!-- Main Content -->
@@ -35,7 +72,8 @@
             <div class="search-container">
                 <input type="text" placeholder="Search">
                 <button>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <circle cx="11" cy="11" r="8"></circle>
                         <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                     </svg>
@@ -49,7 +87,8 @@
                 <div class="stat-header">
                     <h3>Total Users</h3>
                     <div class="stat-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                             <circle cx="9" cy="7" r="4"></circle>
                             <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
@@ -64,7 +103,8 @@
                 <div class="stat-header">
                     <h3>Total Orders</h3>
                     <div class="stat-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <rect x="1" y="3" width="15" height="13"></rect>
                             <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
                             <circle cx="5.5" cy="18.5" r="2.5"></circle>
@@ -79,7 +119,8 @@
                 <div class="stat-header">
                     <h3>Total Sales</h3>
                     <div class="stat-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="12" cy="12" r="10"></circle>
                             <line x1="12" y1="8" x2="12" y2="16"></line>
                             <line x1="8" y1="12" x2="16" y2="12"></line>
@@ -93,7 +134,8 @@
                 <div class="stat-header">
                     <h3>Total Pending</h3>
                     <div class="stat-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="12" cy="12" r="10"></circle>
                             <polyline points="12 6 12 12 16 14"></polyline>
                         </svg>
@@ -109,7 +151,7 @@
                 <div class="chart-title">Sales Details</div>
                 <div class="dropdown">October ▼</div>
             </div>
-            
+
             <div class="chart-path">
                 <svg class="chart-svg" viewBox="0 0 1000 300" preserveAspectRatio="none">
                     <!-- Y-axis percentage labels -->
@@ -118,11 +160,12 @@
                     <text x="20" y="170" font-size="12" fill="#666">60%</text>
                     <text x="20" y="230" font-size="12" fill="#666">40%</text>
                     <text x="20" y="290" font-size="12" fill="#666">20%</text>
-                    
+
                     <!-- Line chart -->
-                    <path d="M50,250 L100,200 L150,150 L200,180 L250,120 L300,140 L350,100 L400,50 L450,150 L500,130 L550,150 L600,120 L650,90 L700,130 L750,100 L800,120 L850,140 L900,120 L950,140" 
-                          fill="none" stroke="#2e8b57" stroke-width="2" />
-                    
+                    <path
+                        d="M50,250 L100,200 L150,150 L200,180 L250,120 L300,140 L350,100 L400,50 L450,150 L500,130 L550,150 L600,120 L650,90 L700,130 L750,100 L800,120 L850,140 L900,120 L950,140"
+                        fill="none" stroke="#2e8b57" stroke-width="2" />
+
                     <!-- Data points -->
                     <circle cx="50" cy="250" r="4" fill="#800080" />
                     <circle cx="150" cy="150" r="4" fill="#800080" />
@@ -135,13 +178,13 @@
                     <circle cx="750" cy="100" r="4" fill="#800080" />
                     <circle cx="850" cy="140" r="4" fill="#800080" />
                     <circle cx="950" cy="140" r="4" fill="#800080" />
-                    
+
                     <!-- Spike label for highest point -->
                     <rect x="380" y="20" width="90" height="25" rx="5" fill="#4682b4" />
                     <text x="425" y="35" text-anchor="middle" font-size="12" fill="white">₹64,366.77</text>
                     <line x1="400" y1="45" x2="400" y2="50" stroke="#4682b4" stroke-width="2" />
                 </svg>
-                
+
                 <div class="axis-labels">
                     <span>5k</span>
                     <span>10k</span>
@@ -159,5 +202,22 @@
             </div>
         </div>
     </div>
+    <script>
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            fetch('/admin-logout', {
+                method: 'GET',
+                credentials: 'include' // include session cookie
+            })
+                .then(() => {
+                    window.location.href = '/admin-login';
+                })
+                .catch(err => {
+                    console.error('Logout failed:', err);
+                });
+        });
+    </script>
+
+    </script>
 </body>
+
 </html>
