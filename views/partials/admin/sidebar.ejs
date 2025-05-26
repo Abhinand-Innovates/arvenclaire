@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arvenclaire Admin Dashboard</title>
+    <link rel="stylesheet" href="../../styles/admin/admin-dashboard.css">
+    <style>
+        /* Center sidebar text */
+        .nav-item {
+            text-align: center;
+            display: flex;
+            color: black;
+            /* Make text black */
+            text-decoration: none;
+            /* Remove underline */
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .nav-item:hover {
+            background-color: #f0f0f0;
+            /* Light gray on hover (optional) */
+        }
+
+        #logoutBtn {
+            background-color: #dc3545;
+            /* Bootstrap red */
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 90%;
+            max-width: 200px;
+            margin: 20px auto;
+            display: block;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        #logoutBtn:hover {
+            background-color: #c82333;
+            transform: scale(1.03);
+        }
+
+        #logoutBtn:active {
+            transform: scale(0.98);
+        }
+
+        @media (max-width: 600px) {
+            #logoutBtn {
+                padding: 8px 16px;
+                font-size: 13px;
+                width: 80%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="logo">
+            <h2 style="font-family: 'Times New Roman', Times, serif;">ARVENCLAIRE</h2>
+            <p style="font-size: 10px; margin-top: 5px; font-family: 'Times New Roman', Times, serif;">Swiss Legacy</p>
+        </div>
+
+        <a href="/admin/dashboard" class="nav-item active">Dashboard</a>
+        <a href="/admin/products" class="nav-item">Products</a>
+        <a href="/admin/orders" class="nav-item">Order Lists</a>
+        <a href="/get-user" class="nav-item">Users</a>
+        <a href="/admin/sales" class="nav-item">Sales</a>
+        <a href="/admin/coupons" class="nav-item">Coupons</a>
+        <a href="/admin/categories" class="nav-item">Category</a>
+        <a href="/admin/banner" class="nav-item">Banner</a>
+        <a href="/admin/offers" class="nav-item">Offer</a>
+
+        <!-- Logout using anchor tag -->
+        <a href="#" id="logoutBtn" class="nav-item logout-link">Logout</a>
+
+        <script>
+            // Logout functionality using fetch and redirect
+            document.getElementById('logoutBtn').addEventListener('click', function (e) {
+                e.preventDefault(); // prevent default anchor behavior
+                fetch('/admin-logout', {
+                    method: 'GET',
+                    credentials: 'include'
+                })
+                    .then(() => {
+                        window.location.href = '/admin-login';
+                    })
+                    .catch(err => {
+                        console.error('Logout failed:', err);
+                    });
+            });
+        </script>
+    </div>

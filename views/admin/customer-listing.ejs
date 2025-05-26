@@ -4,116 +4,52 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Customer List</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome for Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <style>
-        body {
-            background-color: #f8f9fa;
-            font-family: Arial, sans-serif;
-        }
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        .admin-avatar {
-            width: 40px;
-            height: 40px;
-            background-color: #dee2e6;
-            border-radius: 50%;
-        }
-        .search-section {
-            margin-bottom: 20px;
-        }
-        .table-header {
-            background-color: #4e73df;
-            color: white;
-        }
-        .toggle-switch {
-            position: relative;
-            display: inline-block;
-            width: 50px;
-            height: 24px;
-        }
-        .toggle-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #ccc;
-            transition: .4s;
-            border-radius: 34px;
-        }
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 16px;
-            width: 16px;
-            left: 4px;
-            bottom: 4px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-        }
-        input:checked + .slider {
-            background-color: #2196F3;
-        }
-        input:checked + .slider:before {
-            transform: translateX(26px);
-        }
-        .pagination {
-            margin-top: 20px;
-        }
-        .table-responsive {
-            overflow-x: auto;
-        }
-        /* For very small screens */
-        @media (max-width: 576px) {
-            .table th, .table td {
-                font-size: 0.8rem;
-                padding: 0.5rem;
-            }
-            .btn-info {
-                padding: 0.25rem 0.5rem;
-                font-size: 0.8rem;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="../../styles/admin/customer-listing.css">
+
 </head>
 <body>
-    <div class="container mt-4">
+    <%- include('../partials/admin/sidebar') %>
+    <div class="container-fluid">
+        <!-- Header -->
         <div class="header">
-            <h1 class="h3">Customer List</h1>
-            <div class="d-flex align-items-center">
-                <span class="me-2">Admin</span>
-                <div class="admin-avatar"></div>
+            <div class="container-fluid px-3">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <h2 class="mb-0 text-dark">Customer List</h2>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        <span class="text-muted">Admin</span>
+                    </div>
+                </div>
+                
+                <!-- Search Section -->
+                <div class="row mt-3">
+                    <div class="col-md-8 offset-md-2">
+                        <div class="search-container mx-auto">
+                            <div class="input-group">
+                                <input type="text" class="form-control" placeholder="Search by name, email, or mobile..." id="searchInput">
+                                <button class="btn btn-search" type="button" onclick="searchCustomers()">
+                                    <i class="fas fa-search me-1"></i>Search
+                                </button>
+                                <button class="btn btn-clear" type="button" onclick="clearSearch()">
+                                    <i class="fas fa-times me-1"></i>Clear
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div class="card shadow">
-            <div class="card-body">
-                <div class="search-section d-flex flex-column flex-md-row justify-content-md-end">
-                    <div class="input-group mb-2 mb-md-0">
-                        <input type="text" class="form-control" placeholder="Search by name, email, or mobile...">
-                        <button class="btn btn-primary" type="button">Search</button>
-                        <button class="btn btn-danger" type="button">Clear</button>
-                    </div>
-                </div>
-
+        <!-- Table Container -->
+        <div class="container-fluid px-3">
+            <div class="table-container">
                 <div class="table-responsive">
-                    <table class="table table-bordered">
+                    <table class="table table-hover">
                         <thead>
-                            <tr class="table-header">
+                            <tr>
                                 <th>NAME</th>
                                 <th>EMAIL</th>
                                 <th>MOBILE</th>
@@ -123,163 +59,259 @@
                                 <th>INFO</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="customerTableBody">
                             <tr>
                                 <td>prasanth</td>
                                 <td>prasanth@gmail.com</td>
                                 <td>1651165116</td>
                                 <td>9 May 2025, 10:10 am</td>
-                                <td>Active</td>
+                                <td><span class="status-active">Active</span></td>
                                 <td>
                                     <label class="toggle-switch">
                                         <input type="checkbox" checked>
                                         <span class="slider"></span>
                                     </label>
                                 </td>
-                                <td><button class="btn btn-info btn-sm">Info</button></td>
+                                <td>
+                                    <button class="btn btn-info-custom btn-sm">Info</button>
+                                </td>
                             </tr>
                             <tr>
                                 <td>rony</td>
                                 <td>rony@gmail.com</td>
                                 <td>1656546516</td>
                                 <td>9 May 2025, 10:08 am</td>
-                                <td>Active</td>
+                                <td><span class="status-active">Active</span></td>
                                 <td>
                                     <label class="toggle-switch">
                                         <input type="checkbox" checked>
                                         <span class="slider"></span>
                                     </label>
                                 </td>
-                                <td><button class="btn btn-info btn-sm">Info</button></td>
+                                <td>
+                                    <button class="btn btn-info-custom btn-sm">Info</button>
+                                </td>
                             </tr>
                             <tr>
                                 <td>abhi</td>
                                 <td>abhi@email.com</td>
                                 <td>1234789544</td>
                                 <td>2 May 2025, 11:52 am</td>
-                                <td>Active</td>
+                                <td><span class="status-active">Active</span></td>
                                 <td>
                                     <label class="toggle-switch">
                                         <input type="checkbox" checked>
                                         <span class="slider"></span>
                                     </label>
                                 </td>
-                                <td><button class="btn btn-info btn-sm">Info</button></td>
+                                <td>
+                                    <button class="btn btn-info-custom btn-sm">Info</button>
+                                </td>
                             </tr>
                             <tr>
                                 <td>gokul</td>
                                 <td>gokul@gmail.com</td>
                                 <td>1234578966</td>
                                 <td>2 May 2025, 11:48 am</td>
-                                <td>Active</td>
+                                <td><span class="status-active">Active</span></td>
                                 <td>
                                     <label class="toggle-switch">
                                         <input type="checkbox" checked>
                                         <span class="slider"></span>
                                     </label>
                                 </td>
-                                <td><button class="btn btn-info btn-sm">Info</button></td>
+                                <td>
+                                    <button class="btn btn-info-custom btn-sm">Info</button>
+                                </td>
                             </tr>
                             <tr>
                                 <td>sanjay</td>
                                 <td>sanjaycdv.23@gmail.com</td>
                                 <td>6516544465</td>
                                 <td>25 Apr 2025, 3:25 pm</td>
-                                <td>Active</td>
+                                <td><span class="status-active">Active</span></td>
                                 <td>
                                     <label class="toggle-switch">
                                         <input type="checkbox" checked>
                                         <span class="slider"></span>
                                     </label>
                                 </td>
-                                <td><button class="btn btn-info btn-sm">Info</button></td>
+                                <td>
+                                    <button class="btn btn-info-custom btn-sm">Info</button>
+                                </td>
                             </tr>
                             <tr>
                                 <td>sreenivas</td>
                                 <td>sreenivas@gmail.com</td>
                                 <td>1651651561</td>
                                 <td>24 Apr 2025, 1:56 pm</td>
-                                <td>Active</td>
+                                <td><span class="status-active">Active</span></td>
                                 <td>
                                     <label class="toggle-switch">
                                         <input type="checkbox" checked>
                                         <span class="slider"></span>
                                     </label>
                                 </td>
-                                <td><button class="btn btn-info btn-sm">Info</button></td>
+                                <td>
+                                    <button class="btn btn-info-custom btn-sm">Info</button>
+                                </td>
                             </tr>
                             <tr>
                                 <td>azeem</td>
                                 <td>azeem@gmail.com</td>
                                 <td>2165165161</td>
                                 <td>24 Apr 2025, 1:54 pm</td>
-                                <td>Active</td>
+                                <td><span class="status-active">Active</span></td>
                                 <td>
                                     <label class="toggle-switch">
                                         <input type="checkbox" checked>
                                         <span class="slider"></span>
                                     </label>
                                 </td>
-                                <td><button class="btn btn-info btn-sm">Info</button></td>
+                                <td>
+                                    <button class="btn btn-info-custom btn-sm">Info</button>
+                                </td>
                             </tr>
                             <tr>
-                                <td>abhijith</td>
-                                <td>abhijith@gmail.com</td>
+                                <td>abhijth</td>
+                                <td>abhijth@gmail.com</td>
                                 <td>1658446515</td>
                                 <td>24 Apr 2025, 1:53 pm</td>
-                                <td>Active</td>
+                                <td><span class="status-active">Active</span></td>
                                 <td>
                                     <label class="toggle-switch">
                                         <input type="checkbox" checked>
                                         <span class="slider"></span>
                                     </label>
                                 </td>
-                                <td><button class="btn btn-info btn-sm">Info</button></td>
+                                <td>
+                                    <button class="btn btn-info-custom btn-sm">Info</button>
+                                </td>
                             </tr>
                             <tr>
                                 <td>ismail</td>
-                                <td>ismail@gmsil.com</td>
+                                <td>ismail@gmail.com</td>
                                 <td>4534546546</td>
                                 <td>24 Apr 2025, 1:52 pm</td>
-                                <td>Active</td>
+                                <td><span class="status-active">Active</span></td>
                                 <td>
                                     <label class="toggle-switch">
                                         <input type="checkbox" checked>
                                         <span class="slider"></span>
                                     </label>
                                 </td>
-                                <td><button class="btn btn-info btn-sm">Info</button></td>
+                                <td>
+                                    <button class="btn btn-info-custom btn-sm">Info</button>
+                                </td>
                             </tr>
                             <tr>
                                 <td>sanjay</td>
                                 <td>sanjay@gmail.com</td>
                                 <td>4513165654</td>
                                 <td>24 Apr 2025, 1:49 pm</td>
-                                <td>Active</td>
+                                <td><span class="status-active">Active</span></td>
                                 <td>
                                     <label class="toggle-switch">
                                         <input type="checkbox" checked>
                                         <span class="slider"></span>
                                     </label>
                                 </td>
-                                <td><button class="btn btn-info btn-sm">Info</button></td>
+                                <td>
+                                    <button class="btn btn-info-custom btn-sm">Info</button>
+                                </td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
-
-                <nav aria-label="Page navigation">
-                    <ul class="pagination justify-content-start">
-                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                        <li class="page-item"><a class="page-link" href="#">2</a></li>
-                        <li class="page-item"><a class="page-link" href="#">Next</a></li>
-                    </ul>
-                </nav>
             </div>
+
+            <!-- Pagination -->
+            <nav aria-label="Customer list pagination">
+                <ul class="pagination">
+                    <li class="page-item active">
+                        <a class="page-link" href="#" onclick="changePage(1)">1</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="#" onclick="changePage(2)">2</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="#" onclick="changePage('next')">Next</a>
+                    </li>
+                </ul>
+            </nav>
         </div>
     </div>
 
-    <!-- Bootstrap JS and dependencies -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Search functionality
+        function searchCustomers() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const tableRows = document.querySelectorAll('#customerTableBody tr');
+            
+            tableRows.forEach(row => {
+                const name = row.cells[0].textContent.toLowerCase();
+                const email = row.cells[1].textContent.toLowerCase();
+                const mobile = row.cells[2].textContent.toLowerCase();
+                
+                if (name.includes(searchTerm) || email.includes(searchTerm) || mobile.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        // Clear search
+        function clearSearch() {
+            document.getElementById('searchInput').value = '';
+            const tableRows = document.querySelectorAll('#customerTableBody tr');
+            tableRows.forEach(row => {
+                row.style.display = '';
+            });
+        }
+
+        // Enter key search
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchCustomers();
+            }
+        });
+
+        // Pagination functionality
+        function changePage(page) {
+            const pageItems = document.querySelectorAll('.page-item');
+            pageItems.forEach(item => item.classList.remove('active'));
+            
+            if (page === 'next') {
+                // Logic for next page
+                console.log('Next page clicked');
+            } else {
+                // Activate clicked page
+                event.target.parentElement.classList.add('active');
+                console.log('Page ' + page + ' clicked');
+            }
+        }
+
+        // Toggle switch functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggles = document.querySelectorAll('.toggle-switch input');
+            toggles.forEach(toggle => {
+                toggle.addEventListener('change', function() {
+                    const row = this.closest('tr');
+                    const statusCell = row.querySelector('td:nth-child(5) span');
+                    
+                    if (this.checked) {
+                        statusCell.textContent = 'Active';
+                        statusCell.className = 'status-active';
+                    } else {
+                        statusCell.textContent = 'Blocked';
+                        statusCell.className = 'status-blocked';
+                    }
+                });
+            });
+        });
+
+    </script>
 </body>
 </html>
