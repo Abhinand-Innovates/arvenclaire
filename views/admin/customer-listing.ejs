@@ -1,317 +1,298 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Customer List</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../../styles/admin/customer-listing.css">
 
-</head>
-<body>
-    <%- include('../partials/admin/sidebar') %>
-    <div class="container-fluid">
-        <!-- Header -->
-        <div class="header">
-            <div class="container-fluid px-3">
-                <div class="row align-items-center">
-                    <div class="col-md-6">
-                        <h2 class="mb-0 text-dark">Customer List</h2>
-                    </div>
-                    <div class="col-md-6 text-end">
-                        <span class="text-muted">Admin</span>
-                    </div>
-                </div>
-                
-                <!-- Search Section -->
-                <div class="row mt-3">
-                    <div class="col-md-8 offset-md-2">
-                        <div class="search-container mx-auto">
-                            <div class="input-group">
-                                <input type="text" class="form-control" placeholder="Search by name, email, or mobile..." id="searchInput">
-                                <button class="btn btn-search" type="button" onclick="searchCustomers()">
-                                    <i class="fas fa-search me-1"></i>Search
-                                </button>
-                                <button class="btn btn-clear" type="button" onclick="clearSearch()">
-                                    <i class="fas fa-times me-1"></i>Clear
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <%- include("../partials/admin/sidebar") %>
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1 class="page-title">Customer Management</h1>
+            <p class="page-subtitle">Manage and view all registered customers</p>
         </div>
 
-        <!-- Table Container -->
-        <div class="container-fluid px-3">
-            <div class="table-container">
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th>NAME</th>
-                                <th>EMAIL</th>
-                                <th>MOBILE</th>
-                                <th>JOINING DATE</th>
-                                <th>STATUS</th>
-                                <th>BLOCK/UNBLOCK</th>
-                                <th>INFO</th>
-                            </tr>
-                        </thead>
-                        <tbody id="customerTableBody">
-                            <tr>
-                                <td>prasanth</td>
-                                <td>prasanth@gmail.com</td>
-                                <td>1651165116</td>
-                                <td>9 May 2025, 10:10 am</td>
-                                <td><span class="status-active">Active</span></td>
-                                <td>
-                                    <label class="toggle-switch">
-                                        <input type="checkbox" checked>
-                                        <span class="slider"></span>
-                                    </label>
-                                </td>
-                                <td>
-                                    <button class="btn btn-info-custom btn-sm">Info</button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>rony</td>
-                                <td>rony@gmail.com</td>
-                                <td>1656546516</td>
-                                <td>9 May 2025, 10:08 am</td>
-                                <td><span class="status-active">Active</span></td>
-                                <td>
-                                    <label class="toggle-switch">
-                                        <input type="checkbox" checked>
-                                        <span class="slider"></span>
-                                    </label>
-                                </td>
-                                <td>
-                                    <button class="btn btn-info-custom btn-sm">Info</button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>abhi</td>
-                                <td>abhi@email.com</td>
-                                <td>1234789544</td>
-                                <td>2 May 2025, 11:52 am</td>
-                                <td><span class="status-active">Active</span></td>
-                                <td>
-                                    <label class="toggle-switch">
-                                        <input type="checkbox" checked>
-                                        <span class="slider"></span>
-                                    </label>
-                                </td>
-                                <td>
-                                    <button class="btn btn-info-custom btn-sm">Info</button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>gokul</td>
-                                <td>gokul@gmail.com</td>
-                                <td>1234578966</td>
-                                <td>2 May 2025, 11:48 am</td>
-                                <td><span class="status-active">Active</span></td>
-                                <td>
-                                    <label class="toggle-switch">
-                                        <input type="checkbox" checked>
-                                        <span class="slider"></span>
-                                    </label>
-                                </td>
-                                <td>
-                                    <button class="btn btn-info-custom btn-sm">Info</button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>sanjay</td>
-                                <td>sanjaycdv.23@gmail.com</td>
-                                <td>6516544465</td>
-                                <td>25 Apr 2025, 3:25 pm</td>
-                                <td><span class="status-active">Active</span></td>
-                                <td>
-                                    <label class="toggle-switch">
-                                        <input type="checkbox" checked>
-                                        <span class="slider"></span>
-                                    </label>
-                                </td>
-                                <td>
-                                    <button class="btn btn-info-custom btn-sm">Info</button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>sreenivas</td>
-                                <td>sreenivas@gmail.com</td>
-                                <td>1651651561</td>
-                                <td>24 Apr 2025, 1:56 pm</td>
-                                <td><span class="status-active">Active</span></td>
-                                <td>
-                                    <label class="toggle-switch">
-                                        <input type="checkbox" checked>
-                                        <span class="slider"></span>
-                                    </label>
-                                </td>
-                                <td>
-                                    <button class="btn btn-info-custom btn-sm">Info</button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>azeem</td>
-                                <td>azeem@gmail.com</td>
-                                <td>2165165161</td>
-                                <td>24 Apr 2025, 1:54 pm</td>
-                                <td><span class="status-active">Active</span></td>
-                                <td>
-                                    <label class="toggle-switch">
-                                        <input type="checkbox" checked>
-                                        <span class="slider"></span>
-                                    </label>
-                                </td>
-                                <td>
-                                    <button class="btn btn-info-custom btn-sm">Info</button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>abhijth</td>
-                                <td>abhijth@gmail.com</td>
-                                <td>1658446515</td>
-                                <td>24 Apr 2025, 1:53 pm</td>
-                                <td><span class="status-active">Active</span></td>
-                                <td>
-                                    <label class="toggle-switch">
-                                        <input type="checkbox" checked>
-                                        <span class="slider"></span>
-                                    </label>
-                                </td>
-                                <td>
-                                    <button class="btn btn-info-custom btn-sm">Info</button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>ismail</td>
-                                <td>ismail@gmail.com</td>
-                                <td>4534546546</td>
-                                <td>24 Apr 2025, 1:52 pm</td>
-                                <td><span class="status-active">Active</span></td>
-                                <td>
-                                    <label class="toggle-switch">
-                                        <input type="checkbox" checked>
-                                        <span class="slider"></span>
-                                    </label>
-                                </td>
-                                <td>
-                                    <button class="btn btn-info-custom btn-sm">Info</button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>sanjay</td>
-                                <td>sanjay@gmail.com</td>
-                                <td>4513165654</td>
-                                <td>24 Apr 2025, 1:49 pm</td>
-                                <td><span class="status-active">Active</span></td>
-                                <td>
-                                    <label class="toggle-switch">
-                                        <input type="checkbox" checked>
-                                        <span class="slider"></span>
-                                    </label>
-                                </td>
-                                <td>
-                                    <button class="btn btn-info-custom btn-sm">Info</button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+        <!-- Customer Table Container -->
+        <div class="customer-table-container">
+            <!-- Table Controls -->
+            <div class="table-controls">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" class="form-control" id="customerSearch" placeholder="Search customers...">
                 </div>
+                
+                <div class="filter-controls">
+                    <select class="form-select" id="statusFilter" style="width: auto;">
+                        <option value="">All Status</option>
+                        <option value="active">Active</option>
+                        <option value="blocked">Blocked</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Customers Table -->
+            <div class="table-responsive">
+                <table class="customers-table">
+                    <thead>
+                        <tr>
+                            <th>Customer</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Join Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="customersTableBody">
+                        <!-- Customer rows will be populated here -->
+                    </tbody>
+                </table>
             </div>
 
             <!-- Pagination -->
-            <nav aria-label="Customer list pagination">
-                <ul class="pagination">
-                    <li class="page-item active">
-                        <a class="page-link" href="#" onclick="changePage(1)">1</a>
-                    </li>
-                    <li class="page-item">
-                        <a class="page-link" href="#" onclick="changePage(2)">2</a>
-                    </li>
-                    <li class="page-item">
-                        <a class="page-link" href="#" onclick="changePage('next')">Next</a>
-                    </li>
-                </ul>
-            </nav>
+            <div class="pagination-container">
+                <div class="pagination-info">
+                    Showing <span id="showingStart">1</span> to <span id="showingEnd">10</span> of <span id="totalCustomers">25</span> customers
+                </div>
+                
+                <nav aria-label="Customer pagination">
+                    <ul class="pagination pagination-sm mb-0">
+                        <li class="page-item" id="prevPage">
+                            <a class="page-link" href="#" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                        <li class="page-item"><a class="page-link" href="#">2</a></li>
+                        <li class="page-item"><a class="page-link" href="#">3</a></li>
+                        <li class="page-item" id="nextPage">
+                            <a class="page-link" href="#" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Search functionality
-        function searchCustomers() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const tableRows = document.querySelectorAll('#customerTableBody tr');
-            
-            tableRows.forEach(row => {
-                const name = row.cells[0].textContent.toLowerCase();
-                const email = row.cells[1].textContent.toLowerCase();
-                const mobile = row.cells[2].textContent.toLowerCase();
-                
-                if (name.includes(searchTerm) || email.includes(searchTerm) || mobile.includes(searchTerm)) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            });
-        }
-
-        // Clear search
-        function clearSearch() {
-            document.getElementById('searchInput').value = '';
-            const tableRows = document.querySelectorAll('#customerTableBody tr');
-            tableRows.forEach(row => {
-                row.style.display = '';
-            });
-        }
-
-        // Enter key search
-        document.getElementById('searchInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                searchCustomers();
+        // Sample customer data
+        const customersData = [
+            {
+                id: 1,
+                name: "John Smith",
+                email: "john.smith@email.com",
+                phone: "+1 234 567 8901",
+                joinDate: "2024-01-15",
+                totalOrders: 12,
+                status: "active"
+            },
+            {
+                id: 2,
+                name: "Sarah Johnson",
+                email: "sarah.johnson@email.com",
+                phone: "+1 234 567 8902",
+                joinDate: "2024-02-20",
+                totalOrders: 8,
+                status: "active"
+            },
+            {
+                id: 3,
+                name: "Michael Brown",
+                email: "michael.brown@email.com",
+                phone: "+1 234 567 8903",
+                joinDate: "2024-01-10",
+                totalOrders: 5,
+                status: "blocked"
+            },
+            {
+                id: 4,
+                name: "Emily Davis",
+                email: "emily.davis@email.com",
+                phone: "+1 234 567 8904",
+                joinDate: "2024-03-05",
+                totalOrders: 15,
+                status: "active"
+            },
+            {
+                id: 5,
+                name: "David Wilson",
+                email: "david.wilson@email.com",
+                phone: "+1 234 567 8905",
+                joinDate: "2024-02-14",
+                totalOrders: 0,
+                status: "blocked"
+            },
+            {
+                id: 6,
+                name: "Lisa Garcia",
+                email: "lisa.garcia@email.com",
+                phone: "+1 234 567 8906",
+                joinDate: "2024-03-12",
+                totalOrders: 22,
+                status: "active"
+            },
+            {
+                id: 7,
+                name: "Robert Martinez",
+                email: "robert.martinez@email.com",
+                phone: "+1 234 567 8907",
+                joinDate: "2024-01-28",
+                totalOrders: 7,
+                status: "active"
+            },
+            {
+                id: 8,
+                name: "Amanda Taylor",
+                email: "amanda.taylor@email.com",
+                phone: "+1 234 567 8908",
+                joinDate: "2024-02-03",
+                totalOrders: 3,
+                status: "blocked"
             }
+        ];
+
+        let currentPage = 1;
+        let customersPerPage = 5;
+        let filteredCustomers = [...customersData];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const customerSearch = document.getElementById('customerSearch');
+            const statusFilter = document.getElementById('statusFilter');
+
+            // Initialize customer table
+            renderCustomersTable();
+
+            // Search functionality
+            customerSearch.addEventListener('input', function() {
+                filterCustomers();
+            });
+
+            // Status filter functionality
+            statusFilter.addEventListener('change', function() {
+                filterCustomers();
+            });
         });
 
-        // Pagination functionality
-        function changePage(page) {
-            const pageItems = document.querySelectorAll('.page-item');
-            pageItems.forEach(item => item.classList.remove('active'));
-            
-            if (page === 'next') {
-                // Logic for next page
-                console.log('Next page clicked');
-            } else {
-                // Activate clicked page
-                event.target.parentElement.classList.add('active');
-                console.log('Page ' + page + ' clicked');
+        function filterCustomers() {
+            const searchTerm = document.getElementById('customerSearch').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
+
+            filteredCustomers = customersData.filter(customer => {
+                const matchesSearch = customer.name.toLowerCase().includes(searchTerm) ||
+                                    customer.email.toLowerCase().includes(searchTerm) ||
+                                    customer.phone.includes(searchTerm);
+                
+                const matchesStatus = !statusFilter || customer.status === statusFilter;
+
+                return matchesSearch && matchesStatus;
+            });
+
+            currentPage = 1;
+            renderCustomersTable();
+        }
+
+        function renderCustomersTable() {
+            const startIndex = (currentPage - 1) * customersPerPage;
+            const endIndex = startIndex + customersPerPage;
+            const paginatedCustomers = filteredCustomers.slice(startIndex, endIndex);
+
+            const tableBody = document.getElementById('customersTableBody');
+            tableBody.innerHTML = '';
+
+            paginatedCustomers.forEach(customer => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>
+                        <div class="customer-info">
+                            <div class="customer-avatar">
+                                ${customer.name.charAt(0).toUpperCase()}
+                            </div>
+                            <div class="customer-details">
+                                <h6>${customer.name}</h6>
+                                <p>ID: #${customer.id.toString().padStart(4, '0')}</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td>${customer.email}</td>
+                    <td>${customer.phone}</td>
+                    <td>${new Date(customer.joinDate).toLocaleDateString()}</td>
+                    <td>
+                        <span class="status-badge status-${customer.status}">
+                            ${customer.status}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn-action btn-view" onclick="viewCustomer(${customer.id})">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn-action btn-toggle ${customer.status === 'blocked' ? 'blocked' : ''}" onclick="toggleCustomerStatus(${customer.id})">
+                                ${customer.status === 'active' ? 'Block' : customer.status === 'blocked' ? 'Activate' : 'Activate'}
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+            // Update pagination info
+            document.getElementById('showingStart').textContent = startIndex + 1;
+            document.getElementById('showingEnd').textContent = Math.min(endIndex, filteredCustomers.length);
+            document.getElementById('totalCustomers').textContent = filteredCustomers.length;
+        }
+
+        function viewCustomer(customerId) {
+            const customer = customersData.find(c => c.id === customerId);
+            if (customer) {
+                Swal.fire({
+                    title: 'Customer Details',
+                    html: `
+                        <div class="text-start">
+                            <p><strong>Name:</strong> ${customer.name}</p>
+                            <p><strong>Email:</strong> ${customer.email}</p>
+                            <p><strong>Phone:</strong> ${customer.phone}</p>
+                            <p><strong>Join Date:</strong> ${new Date(customer.joinDate).toLocaleDateString()}</p>
+                            <p><strong>Status:</strong> <span class="status-badge status-${customer.status}">${customer.status}</span></p>
+                        </div>
+                    `,
+                    confirmButtonColor: '#000000'
+                });
             }
         }
 
-        // Toggle switch functionality
-        document.addEventListener('DOMContentLoaded', function() {
-            const toggles = document.querySelectorAll('.toggle-switch input');
-            toggles.forEach(toggle => {
-                toggle.addEventListener('change', function() {
-                    const row = this.closest('tr');
-                    const statusCell = row.querySelector('td:nth-child(5) span');
-                    
-                    if (this.checked) {
-                        statusCell.textContent = 'Active';
-                        statusCell.className = 'status-active';
-                    } else {
-                        statusCell.textContent = 'Blocked';
-                        statusCell.className = 'status-blocked';
+        function toggleCustomerStatus(customerId) {
+            const customer = customersData.find(c => c.id === customerId);
+            if (customer) {
+                const newStatus = customer.status === 'active' ? 'blocked' : 'active';
+                const actionText = newStatus === 'blocked' ? 'block' : 'activate';
+                
+                Swal.fire({
+                    title: 'Confirm Status Change',
+                    text: `Are you sure you want to ${actionText} ${customer.name}?`,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#000000',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: `Yes, ${actionText.charAt(0).toUpperCase() + actionText.slice(1)}`,
+                    cancelButtonText: 'Cancel'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        customer.status = newStatus;
+                        filterCustomers();
+                        
+                        Swal.fire({
+                            title: 'Success!',
+                            text: `Customer has been ${newStatus === 'blocked' ? 'blocked' : 'activated'}.`,
+                            icon: 'success',
+                            confirmButtonColor: '#000000'
+                        });
                     }
                 });
-            });
-        });
-
+            }
+        }
     </script>
 </body>
+
 </html>

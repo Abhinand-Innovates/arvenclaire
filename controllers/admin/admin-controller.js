@@ -84,6 +84,7 @@ const logoutAdminDashboard = async (req, res) => {
       console.log('Error destroying session:', err);
       return res.status(500).send('Something went wrong.');
     }
+
     res.clearCookie('connect.sid'); // or your session cookie name
     res.redirect('/admin-login');  // adjust based on your route structure
   });

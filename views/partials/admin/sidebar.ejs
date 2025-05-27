@@ -5,31 +5,94 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Arvenclaire Admin Dashboard</title>
-    <link rel="stylesheet" href="../../styles/admin/admin-dashboard.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
-        /* Center sidebar text */
-        .nav-item {
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #f8f9fa;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 250px;
+            background-color: #ffffff;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            padding: 20px 0;
+            position: fixed;
+            height: 100vh;
+            left: 0;
+            top: 0;
+            overflow-y: auto;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .logo {
             text-align: center;
+            padding: 20px;
+            border-bottom: 1px solid #e9ecef;
+            margin-bottom: 20px;
+        }
+
+        .logo h2 {
+            font-family: 'Times New Roman', Times, serif;
+            color: #333;
+            margin: 0;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .logo p {
+            font-size: 10px;
+            margin-top: 5px;
+            font-family: 'Times New Roman', Times, serif;
+            color: #666;
+        }
+
+        .nav-item {
             display: flex;
-            color: black;
-            /* Make text black */
-            text-decoration: none;
-            /* Remove underline */
             align-items: center;
             justify-content: center;
+            padding: 15px 20px;
+            color: #666;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            font-size: 14px;
             cursor: pointer;
+            border: none;
+            background: none;
+            width: 100%;
         }
 
         .nav-item:hover {
             background-color: #f0f0f0;
-            /* Light gray on hover (optional) */
+            color: #333;
+            text-decoration: none;
+        }
+
+        .nav-item.active {
+            background-color: #000000;
+            color: #ffffff;
+        }
+
+        .nav-item.active:hover {
+            background-color: #333333;
+            color: #ffffff;
         }
 
         #logoutBtn {
             background-color: #dc3545;
-            /* Bootstrap red */
             color: #fff;
-            padding: 10px 20px;
+            padding: 12px 20px;
             border: none;
             border-radius: 8px;
             font-size: 14px;
@@ -39,63 +102,448 @@
             max-width: 200px;
             margin: 20px auto;
             display: block;
-            transition: background-color 0.3s ease, transform 0.2s ease;
+            transition: all 0.3s ease;
+            text-align: center;
+            text-decoration: none;
         }
 
         #logoutBtn:hover {
             background-color: #c82333;
-            transform: scale(1.03);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+            text-decoration: none;
+            color: #fff;
         }
 
-        #logoutBtn:active {
-            transform: scale(0.98);
+        /* Main Content Area */
+        .main-content {
+            margin-left: 250px;
+            min-height: 100vh;
+            padding: 20px;
         }
 
-        @media (max-width: 600px) {
-            #logoutBtn {
-                padding: 8px 16px;
-                font-size: 13px;
-                width: 80%;
+        .header {
+            background-color: white;
+            border-bottom: 1px solid #e9ecef;
+            padding: 1rem 2rem;
+            margin: -20px -20px 20px -20px;
+            border-radius: 8px 8px 0 0;
+        }
+
+        .search-container {
+            max-width: 400px;
+        }
+
+        .btn-search {
+            background-color: #000000;
+            border-color: #000000;
+            color: white;
+        }
+
+        .btn-search:hover {
+            background-color: #333333;
+            border-color: #333333;
+        }
+
+        .btn-clear {
+            background-color: #dc3545;
+            border-color: #dc3545;
+            color: white;
+        }
+
+        .btn-clear:hover {
+            background-color: #c82333;
+            border-color: #bd2130;
+        }
+
+        /* Content Cards */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            text-align: center;
+            position: relative;
+            border: 1px solid #e9ecef;
+        }
+
+        .stat-card .icon {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 24px;
+            color: #666;
+        }
+
+        .stat-number {
+            font-size: 2.2rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 0.5rem;
+            margin-top: 10px;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        /* Chart Container */
+        .chart-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid #e9ecef;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .chart-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .chart-dropdown {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 6px 12px;
+            font-size: 0.875rem;
+            color: #495057;
+        }
+
+        .chart-canvas {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+
+        /* Mobile Hamburger */
+        .mobile-toggle {
+            display: none;
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 1001;
+            background: #000;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.show {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 60px 15px 15px;
+            }
+
+            .mobile-toggle {
+                display: block;
+            }
+
+            .header {
+                margin: -60px -15px 20px -15px;
+                padding: 1rem;
+            }
+
+            .search-container {
+                max-width: 100%;
+                margin-top: 1rem;
+            }
+
+            .stats-row {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .chart-header {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
+            }
+
+            .chart-canvas {
+                height: 250px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .header {
+                padding: 0.5rem;
+            }
+
+            .stat-card {
+                padding: 1rem;
+            }
+
+            .stat-number {
+                font-size: 1.8rem;
+            }
+
+            .chart-container {
+                padding: 1rem;
             }
         }
     </style>
 </head>
 
 <body>
+    <!-- Mobile Toggle Button -->
+    <button class="mobile-toggle" id="mobileToggle">☰</button>
+
     <!-- Sidebar -->
-    <div class="sidebar">
+    <div class="sidebar" id="sidebar">
         <div class="logo">
-            <h2 style="font-family: 'Times New Roman', Times, serif;">ARVENCLAIRE</h2>
-            <p style="font-size: 10px; margin-top: 5px; font-family: 'Times New Roman', Times, serif;">Swiss Legacy</p>
+            <h2>ARVENCLAIRE</h2>
+            <h6 style="font-family: 'Times New Roman', Times, serif;">Swiss Legacy</h6>
         </div>
 
-        <a href="/admin/dashboard" class="nav-item active">Dashboard</a>
-        <a href="/admin/products" class="nav-item">Products</a>
-        <a href="/admin/orders" class="nav-item">Order Lists</a>
-        <a href="/get-user" class="nav-item">Users</a>
-        <a href="/admin/sales" class="nav-item">Sales</a>
-        <a href="/admin/coupons" class="nav-item">Coupons</a>
-        <a href="/admin/categories" class="nav-item">Category</a>
-        <a href="/admin/banner" class="nav-item">Banner</a>
-        <a href="/admin/offers" class="nav-item">Offer</a>
+        <a href="/admin-dashboard" class="nav-item" data-route="dashboard">Dashboard</a>
+        <a href="/add-product" class="nav-item" data-route="products">Products</a>
+        <a href="#" class="nav-item" data-route="orders">Order Lists</a>
+        <a href="/get-user" class="nav-item" data-route="users">Users</a>
+        <a href="#" class="nav-item" data-route="sales">Sales</a>
+        <a href="#" class="nav-item" data-route="coupons">Coupons</a>
+        <a href="#" class="nav-item" data-route="categories">Category</a>
+        <a href="#" class="nav-item" data-route="banner">Banner</a>
+        <a href="#" class="nav-item" data-route="offers">Offer</a>
 
-        <!-- Logout using anchor tag -->
-        <a href="#" id="logoutBtn" class="nav-item logout-link">Logout</a>
-
-        <script>
-            // Logout functionality using fetch and redirect
-            document.getElementById('logoutBtn').addEventListener('click', function (e) {
-                e.preventDefault(); // prevent default anchor behavior
-                fetch('/admin-logout', {
-                    method: 'GET',
-                    credentials: 'include'
-                })
-                    .then(() => {
-                        window.location.href = '/admin-login';
-                    })
-                    .catch(err => {
-                        console.error('Logout failed:', err);
-                    });
-            });
-        </script>
+        <a href="/admin-logout" id="logoutBtn">Logout</a>
     </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const navItems = document.querySelectorAll('.nav-item[data-route]');
+            const mobileToggle = document.getElementById('mobileToggle');
+            const sidebar = document.getElementById('sidebar');
+
+            // Set Dashboard as active by default
+            document.querySelector('[data-route="dashboard"]')?.classList.add('active');
+
+            // Handle sidebar navigation clicks
+            navItems.forEach(item => {
+                item.addEventListener('click', function (e) {
+                    // Don't prevent default - let the link navigate
+
+                    // Remove active class from all nav items
+                    navItems.forEach(nav => nav.classList.remove('active'));
+
+                    // Add active class to clicked item
+                    this.classList.add('active');
+
+                    // Close mobile sidebar
+                    if (window.innerWidth <= 768) {
+                        sidebar.classList.remove('show');
+                    }
+                });
+            });
+
+            // Mobile toggle functionality
+            mobileToggle.addEventListener('click', function () {
+                sidebar.classList.toggle('show');
+            });
+
+            // Close sidebar when clicking outside on mobile
+            document.addEventListener('click', function (e) {
+                if (window.innerWidth <= 768) {
+                    if (!sidebar.contains(e.target) && !mobileToggle.contains(e.target)) {
+                        sidebar.classList.remove('show');
+                    }
+                }
+            });
+
+            // Initialize Sales Chart
+            const ctx = document.getElementById('salesChart').getContext('2d');
+
+            // Sample data similar to the screenshot
+            const salesData = [
+                { x: '5k', y: 20 },
+                { x: '10k', y: 35 },
+                { x: '15k', y: 45 },
+                { x: '20k', y: 30 },
+                { x: '25k', y: 52 },
+                { x: '30k', y: 48 },
+                { x: '35k', y: 58 },
+                { x: '40k', y: 25 },
+                { x: '45k', y: 42 },
+                { x: '50k', y: 38 },
+                { x: '55k', y: 45 },
+                { x: '60k', y: 50 }
+            ];
+
+            const peakPoint = { x: '22k', y: 85, value: '64,3564.77' }; // Peak point like in screenshot
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: salesData.map(d => d.x),
+                    datasets: [{
+                        label: 'Sales',
+                        data: salesData.map(d => d.y),
+                        borderColor: '#4CAF50',
+                        backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#4CAF50',
+                        pointBorderColor: '#4CAF50',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: '#4CAF50',
+                            titleColor: 'white',
+                            bodyColor: 'white',
+                            borderColor: '#4CAF50',
+                            borderWidth: 1,
+                            displayColors: false,
+                            callbacks: {
+                                label: function (context) {
+                                    if (context.dataIndex === 4) { // Peak point
+                                        return '64,3564.77';
+                                    }
+                                    return context.parsed.y + '%';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            border: {
+                                display: false
+                            },
+                            ticks: {
+                                color: '#666',
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: {
+                                color: 'rgba(0,0,0,0.05)',
+                                borderDash: [5, 5]
+                            },
+                            border: {
+                                display: false
+                            },
+                            ticks: {
+                                stepSize: 20,
+                                callback: function (value) {
+                                    return value + '%';
+                                },
+                                color: '#666',
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        }
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    }
+                }
+            });
+
+            // Logout functionality
+            document.getElementById('logoutBtn').addEventListener('click', function (e) {
+                e.preventDefault();
+
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "Quit",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Yes',
+                    cancelButtonText: 'No'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = '/admin-logout';
+                    }
+                });
+            });
+        });
+        // Add this script to each page to maintain the active sidebar state
+        document.addEventListener('DOMContentLoaded', function () {
+            const currentPath = window.location.pathname;
+            const navItems = document.querySelectorAll('.nav-item[data-route]');
+
+            // Remove active class from all nav items first
+            navItems.forEach(nav => nav.classList.remove('active'));
+
+            // Add active class based on current page URL
+            if (currentPath === '/admin-dashboard' || currentPath.includes('admin-dashboard')) {
+                document.querySelector('[data-route="dashboard"]')?.classList.add('active');
+            }
+            else if (currentPath === '/get-user' || currentPath.includes('get-user')) {
+                document.querySelector('[data-route="users"]')?.classList.add('active');
+            }
+            else if (currentPath.includes('products') || currentPath.includes('product')) {
+                document.querySelector('[data-route="products"]')?.classList.add('active');
+            }
+            else if (currentPath.includes('orders') || currentPath.includes('order')) {
+                document.querySelector('[data-route="orders"]')?.classList.add('active');
+            }
+            else if (currentPath.includes('sales') || currentPath.includes('sale')) {
+                document.querySelector('[data-route="sales"]')?.classList.add('active');
+            }
+            else if (currentPath.includes('coupons') || currentPath.includes('coupon')) {
+                document.querySelector('[data-route="coupons"]')?.classList.add('active');
+            }
+            else if (currentPath.includes('categories') || currentPath.includes('category')) {
+                document.querySelector('[data-route="categories"]')?.classList.add('active');
+            }
+            else if (currentPath.includes('banner')) {
+                document.querySelector('[data-route="banner"]')?.classList.add('active');
+            }
+            else if (currentPath.includes('offer')) {
+                document.querySelector('[data-route="offers"]')?.classList.add('active');
+            }
+        });
+    </script>
