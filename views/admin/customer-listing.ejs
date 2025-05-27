@@ -1,9 +1,15 @@
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="../../styles/admin/customer-listing.css">
-
-    <%- include("../partials/admin/sidebar") %>
+    <link rel="stylesheet" href="/styles/admin/customer-listing.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+    <%- include("../partials/admin/sidebar") %>
     <!-- Main Content -->
     <div class="main-content">
         <!-- Page Header -->
@@ -18,14 +24,14 @@
             <div class="table-controls">
                 <div class="search-box">
                     <i class="fas fa-search"></i>
-                    <input type="text" class="form-control" id="customerSearch" placeholder="Search customers...">
+                    <input type="text" class="form-control" id="customerSearch" placeholder="Search customers..." value="<%= searchTerm %>">
                 </div>
                 
                 <div class="filter-controls">
                     <select class="form-select" id="statusFilter" style="width: auto;">
-                        <option value="">All Status</option>
-                        <option value="active">Active</option>
-                        <option value="blocked">Blocked</option>
+                        <option value="" <%= statusFilter === '' ? 'selected' : '' %>>All Status</option>
+                        <option value="active" <%= statusFilter === 'active' ? 'selected' : '' %>>Active</option>
+                        <option value="blocked" <%= statusFilter === 'blocked' ? 'selected' : '' %>>Blocked</option>
                     </select>
                 </div>
             </div>
@@ -44,7 +50,39 @@
                         </tr>
                     </thead>
                     <tbody id="customersTableBody">
-                        <!-- Customer rows will be populated here -->
+                        <% users.forEach(user => { %>
+                            <tr>
+                                <td>
+                                    <div class="customer-info">
+                                        <div class="customer-avatar">
+                                            <%= user.fullName ? user.fullName.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase() %>
+                                        </div>
+                                        <div class="customer-details">
+                                            <h6><%= user.fullName || user.email %></h6>
+                                            <p>ID: #<%= user._id.toString().slice(-4).padStart(4, '0') %></p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><%= user.email %></td>
+                                <td><%= user.phone || 'N/A' %></td>
+                                <td><%= new Date(user.createdAt).toLocaleDateString() %></td>
+                                <td>
+                                    <span class="status-badge status-<%= user.isBlocked ? 'blocked' : 'active' %>">
+                                        <%= user.isBlocked ? 'blocked' : 'active' %>
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="btn-action btn-view" onclick="viewCustomer('<%= user._id %>')">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn-action btn-toggle <%= user.isBlocked ? 'blocked' : '' %>" onclick="toggleCustomerStatus('<%= user._id %>', <%= user.isBlocked %>)">
+                                            <%= user.isBlocked ? 'Activate' : 'Block' %>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        <% }) %>
                     </tbody>
                 </table>
             </div>
@@ -52,22 +90,24 @@
             <!-- Pagination -->
             <div class="pagination-container">
                 <div class="pagination-info">
-                    Showing <span id="showingStart">1</span> to <span id="showingEnd">10</span> of <span id="totalCustomers">25</span> customers
+                    Showing <span id="showingStart"><%= startIdx + 1 %></span> to <span id="showingEnd"><%= endIdx %></span> of <span id="totalCustomers"><%= totalUsers %></span> customers
                 </div>
                 
                 <nav aria-label="Customer pagination">
-                    <ul class="pagination pagination-sm mb-0">
-                        <li class="page-item" id="prevPage">
+                    <ul class="pagination pagination-sm mb-0" id="pagination">
+                        <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>" id="prevPage">
                             <a class="page-link" href="#" aria-label="Previous">
-                                <span aria-hidden="true">&laquo;</span>
+                                <span aria-hidden="true">«</span>
                             </a>
                         </li>
-                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                        <li class="page-item"><a class="page-link" href="#">2</a></li>
-                        <li class="page-item"><a class="page-link" href="#">3</a></li>
-                        <li class="page-item" id="nextPage">
+                        <% for(let i = Math.max(1, currentPage - 1); i <= Math.min(totalPages, currentPage + 1); i++) { %>
+                            <li class="page-item <%= i === currentPage ? 'active' : '' %>">
+                                <a class="page-link" href="#" onclick="goToPage(<%= i %>)"><%= i %></a>
+                            </li>
+                        <% } %>
+                        <li class="page-item <%= currentPage === totalPages ? 'disabled' : '' %>" id="nextPage">
                             <a class="page-link" href="#" aria-label="Next">
-                                <span aria-hidden="true">&raquo;</span>
+                                <span aria-hidden="true">»</span>
                             </a>
                         </li>
                     </ul>
@@ -77,159 +117,133 @@
     </div>
 
     <script>
-        // Sample customer data
-        const customersData = [
-            {
-                id: 1,
-                name: "John Smith",
-                email: "john.smith@email.com",
-                phone: "+1 234 567 8901",
-                joinDate: "2024-01-15",
-                totalOrders: 12,
-                status: "active"
-            },
-            {
-                id: 2,
-                name: "Sarah Johnson",
-                email: "sarah.johnson@email.com",
-                phone: "+1 234 567 8902",
-                joinDate: "2024-02-20",
-                totalOrders: 8,
-                status: "active"
-            },
-            {
-                id: 3,
-                name: "Michael Brown",
-                email: "michael.brown@email.com",
-                phone: "+1 234 567 8903",
-                joinDate: "2024-01-10",
-                totalOrders: 5,
-                status: "blocked"
-            },
-            {
-                id: 4,
-                name: "Emily Davis",
-                email: "emily.davis@email.com",
-                phone: "+1 234 567 8904",
-                joinDate: "2024-03-05",
-                totalOrders: 15,
-                status: "active"
-            },
-            {
-                id: 5,
-                name: "David Wilson",
-                email: "david.wilson@email.com",
-                phone: "+1 234 567 8905",
-                joinDate: "2024-02-14",
-                totalOrders: 0,
-                status: "blocked"
-            },
-            {
-                id: 6,
-                name: "Lisa Garcia",
-                email: "lisa.garcia@email.com",
-                phone: "+1 234 567 8906",
-                joinDate: "2024-03-12",
-                totalOrders: 22,
-                status: "active"
-            },
-            {
-                id: 7,
-                name: "Robert Martinez",
-                email: "robert.martinez@email.com",
-                phone: "+1 234 567 8907",
-                joinDate: "2024-01-28",
-                totalOrders: 7,
-                status: "active"
-            },
-            {
-                id: 8,
-                name: "Amanda Taylor",
-                email: "amanda.taylor@email.com",
-                phone: "+1 234 567 8908",
-                joinDate: "2024-02-03",
-                totalOrders: 3,
-                status: "blocked"
-            }
-        ];
-
-        let currentPage = 1;
-        let customersPerPage = 5;
-        let filteredCustomers = [...customersData];
+        let currentPage = <%= currentPage %>;
+        const customersPerPage = 5;
+        let totalPages = <%= totalPages %>;
 
         document.addEventListener('DOMContentLoaded', function() {
             const customerSearch = document.getElementById('customerSearch');
             const statusFilter = document.getElementById('statusFilter');
-
-            // Initialize customer table
-            renderCustomersTable();
+            const prevPage = document.getElementById('prevPage');
+            const nextPage = document.getElementById('nextPage');
 
             // Search functionality
-            customerSearch.addEventListener('input', function() {
-                filterCustomers();
-            });
+            customerSearch.addEventListener('input', debounce(function() {
+                currentPage = 1;
+                fetchUsers();
+            }, 300));
 
             // Status filter functionality
             statusFilter.addEventListener('change', function() {
-                filterCustomers();
+                currentPage = 1;
+                fetchUsers();
+            });
+
+            // Pagination controls
+            prevPage.addEventListener('click', function(e) {
+                e.preventDefault();
+                if (currentPage > 1) {
+                    currentPage--;
+                    fetchUsers();
+                }
+            });
+
+            nextPage.addEventListener('click', function(e) {
+                e.preventDefault();
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    fetchUsers();
+                }
             });
         });
 
-        function filterCustomers() {
-            const searchTerm = document.getElementById('customerSearch').value.toLowerCase();
-            const statusFilter = document.getElementById('statusFilter').value;
-
-            filteredCustomers = customersData.filter(customer => {
-                const matchesSearch = customer.name.toLowerCase().includes(searchTerm) ||
-                                    customer.email.toLowerCase().includes(searchTerm) ||
-                                    customer.phone.includes(searchTerm);
-                
-                const matchesStatus = !statusFilter || customer.status === statusFilter;
-
-                return matchesSearch && matchesStatus;
-            });
-
-            currentPage = 1;
-            renderCustomersTable();
+        // Debounce function
+        function debounce(func, wait) {
+            let timeout;
+            return function(...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), wait);
+            };
         }
 
-        function renderCustomersTable() {
-            const startIndex = (currentPage - 1) * customersPerPage;
-            const endIndex = startIndex + customersPerPage;
-            const paginatedCustomers = filteredCustomers.slice(startIndex, endIndex);
+        // Navigate to page
+        function goToPage(page) {
+            currentPage = page;
+            fetchUsers();
+        }
 
+        // Fetch users dynamically
+        async function fetchUsers() {
+            const searchTerm = document.getElementById('customerSearch').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+
+            try {
+                const query = new URLSearchParams({
+                    search: searchTerm,
+                    page: currentPage,
+                    status: statusFilter
+                }).toString();
+
+                const response = await fetch(`/api/users?${query}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch users');
+                }
+
+                const data = await response.json();
+                renderCustomersTable(data.users, data);
+            } catch (error) {
+                console.error('Error fetching users:', error);
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Failed to load customers. Please try again.',
+                    icon: 'error',
+                    confirmButtonColor: '#000000'
+                });
+            }
+        }
+
+        // Render customers table
+        function renderCustomersTable(users, paginationData) {
             const tableBody = document.getElementById('customersTableBody');
             tableBody.innerHTML = '';
 
-            paginatedCustomers.forEach(customer => {
+            users.forEach(user => {
+                const displayName = user.fullName || user.email;
+                const avatarChar = displayName.charAt(0).toUpperCase();
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>
                         <div class="customer-info">
                             <div class="customer-avatar">
-                                ${customer.name.charAt(0).toUpperCase()}
+                                ${avatarChar}
                             </div>
                             <div class="customer-details">
-                                <h6>${customer.name}</h6>
-                                <p>ID: #${customer.id.toString().padStart(4, '0')}</p>
+                                <h6>${displayName}</h6>
+                                <p>ID: #${user._id.toString().slice(-4).padStart(4, '0')}</p>
                             </div>
                         </div>
                     </td>
-                    <td>${customer.email}</td>
-                    <td>${customer.phone}</td>
-                    <td>${new Date(customer.joinDate).toLocaleDateString()}</td>
+                    <td>${user.email}</td>
+                    <td>${user.phone || 'N/A'}</td>
+                    <td>${new Date(user.createdAt).toLocaleDateString()}</td>
                     <td>
-                        <span class="status-badge status-${customer.status}">
-                            ${customer.status}
+                        <span class="status-badge status-${user.isBlocked ? 'blocked' : 'active'}">
+                            ${user.isBlocked ? 'blocked' : 'active'}
                         </span>
                     </td>
                     <td>
                         <div class="action-buttons">
-                            <button class="btn-action btn-view" onclick="viewCustomer(${customer.id})">
+                            <button class="btn-action btn-view" onclick="viewCustomer('${user._id}')">
                                 <i class="fas fa-eye"></i>
                             </button>
-                            <button class="btn-action btn-toggle ${customer.status === 'blocked' ? 'blocked' : ''}" onclick="toggleCustomerStatus(${customer.id})">
-                                ${customer.status === 'active' ? 'Block' : customer.status === 'blocked' ? 'Activate' : 'Activate'}
+                            <button class="btn-action btn-toggle ${user.isBlocked ? 'blocked' : ''}" onclick="toggleCustomerStatus('${user._id}', ${user.isBlocked})">
+                                ${user.isBlocked ? 'Activate' : 'Block'}
                             </button>
                         </div>
                     </td>
@@ -238,61 +252,132 @@
             });
 
             // Update pagination info
-            document.getElementById('showingStart').textContent = startIndex + 1;
-            document.getElementById('showingEnd').textContent = Math.min(endIndex, filteredCustomers.length);
-            document.getElementById('totalCustomers').textContent = filteredCustomers.length;
+            document.getElementById('showingStart').textContent = paginationData.startIdx + 1 || 0;
+            document.getElementById('showingEnd').textContent = paginationData.endIdx || 0;
+            document.getElementById('totalCustomers').textContent = paginationData.totalUsers || 0;
+            totalPages = paginationData.totalPages || 1;
+
+            // Update pagination controls
+            updatePagination();
         }
 
-        function viewCustomer(customerId) {
-            const customer = customersData.find(c => c.id === customerId);
-            if (customer) {
+        // Update pagination links
+        function updatePagination() {
+            const pagination = document.getElementById('pagination');
+            const pageLinks = pagination.querySelectorAll('.page-item:not(#prevPage):not(#nextPage)');
+            pageLinks.forEach(link => link.remove());
+
+            const maxPagesToShow = 3;
+            let startPage = Math.max(1, currentPage - 1);
+            let endPage = Math.min(totalPages, currentPage + 1);
+
+            if (endPage - startPage < maxPagesToShow - 1) {
+                endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                const li = document.createElement('li');
+                li.className = `page-item ${i === currentPage ? 'active' : ''}`;
+                li.innerHTML = `<a class="page-link" href="#" onclick="goToPage(${i})">${i}</a>`;
+                pagination.insertBefore(li, document.getElementById('nextPage'));
+            }
+
+            document.getElementById('prevPage').classList.toggle('disabled', currentPage === 1);
+            document.getElementById('nextPage').classList.toggle('disabled', currentPage === totalPages);
+        }
+
+        // View customer details
+        async function viewCustomer(userId) {
+            try {
+                const response = await fetch(`/api/users/${userId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch user details');
+                }
+
+                const user = await response.json();
+                const displayName = user.fullName || user.email;
                 Swal.fire({
                     title: 'Customer Details',
                     html: `
                         <div class="text-start">
-                            <p><strong>Name:</strong> ${customer.name}</p>
-                            <p><strong>Email:</strong> ${customer.email}</p>
-                            <p><strong>Phone:</strong> ${customer.phone}</p>
-                            <p><strong>Join Date:</strong> ${new Date(customer.joinDate).toLocaleDateString()}</p>
-                            <p><strong>Status:</strong> <span class="status-badge status-${customer.status}">${customer.status}</span></p>
+                            <p><strong>Name:</strong> ${displayName}</p>
+                            <p><strong>Email:</strong> ${user.email}</p>
+                            <p><strong>Phone:</strong> ${user.phone || 'N/A'}</p>
+                            <p><strong>Join Date:</strong> ${new Date(user.createdAt).toLocaleDateString()}</p>
+                            <p><strong>Status:</strong> <span class="status-badge status-${user.isBlocked ? 'blocked' : 'active'}">${user.isBlocked ? 'blocked' : 'active'}</span></p>
                         </div>
                     `,
+                    confirmButtonColor: '#000000'
+                });
+            } catch (error) {
+                console.error('Error fetching user details:', error);
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Failed to load customer details. Please try again.',
+                    icon: 'error',
                     confirmButtonColor: '#000000'
                 });
             }
         }
 
-        function toggleCustomerStatus(customerId) {
-            const customer = customersData.find(c => c.id === customerId);
-            if (customer) {
-                const newStatus = customer.status === 'active' ? 'blocked' : 'active';
-                const actionText = newStatus === 'blocked' ? 'block' : 'activate';
-                
-                Swal.fire({
-                    title: 'Confirm Status Change',
-                    text: `Are you sure you want to ${actionText} ${customer.name}?`,
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#000000',
-                    cancelButtonColor: '#6c757d',
-                    confirmButtonText: `Yes, ${actionText.charAt(0).toUpperCase() + actionText.slice(1)}`,
-                    cancelButtonText: 'Cancel'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        customer.status = newStatus;
-                        filterCustomers();
-                        
+        // Toggle customer status
+        async function toggleCustomerStatus(userId, isBlocked) {
+            const action = isBlocked ? 'unblock' : 'block';
+            const actionText = isBlocked ? 'activate' : 'block';
+
+            Swal.fire({
+                title: 'Confirm Status Change',
+                text: `Are you sure you want to ${actionText} this customer?`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#000000',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: `Yes, ${actionText.charAt(0).toUpperCase() + actionText.slice(1)}`,
+                cancelButtonText: 'Cancel'
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    try {
+                        const response = await fetch(`/api/users/${userId}/${action}`, {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        });
+
+                        if (!response.ok) {
+                            throw new Error(`Failed to ${action} user`);
+                        }
+
+                        const data = await response.json();
+                        if (data.success) {
+                            Swal.fire({
+                                title: 'Success!',
+                                text: `Customer has been ${actionText}ed.`,
+                                icon: 'success',
+                                confirmButtonColor: '#000000'
+                            });
+                            fetchUsers();
+                        } else {
+                            throw new Error(data.message);
+                        }
+                    } catch (error) {
+                        console.error(`Error ${action}ing user:`, error);
                         Swal.fire({
-                            title: 'Success!',
-                            text: `Customer has been ${newStatus === 'blocked' ? 'blocked' : 'activated'}.`,
-                            icon: 'success',
+                            title: 'Error',
+                            text: `Failed to ${actionText} customer. Please try again.`,
+                            icon: 'error',
                             confirmButtonColor: '#000000'
                         });
                     }
-                });
-            }
+                }
+            });
         }
     </script>
 </body>
-
 </html>

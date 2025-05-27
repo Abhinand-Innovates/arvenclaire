@@ -1,327 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
 
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="../../styles/admin/customer-listing.css">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Watch Haven - Create an Account</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="stylesheet" href="../../styles/user/user-register.css">
+  <!-- SweetAlert2 + Animate.css -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+  <style>
+    .error-message {
+      color: #dc3545;
+      font-size: 0.875rem;
+      margin-top: 0.25rem;
+      display: none;
+    }
 
-    <%- include("../partials/admin/sidebar") %>
-    <!-- Main Content -->
-    <div class="main-content">
-        <!-- Page Header -->
-        <div class="page-header">
-            <h1 class="page-title">Customer Management</h1>
-            <p class="page-subtitle">Manage and view all registered customers</p>
-        </div>
+    .is-invalid~.error-message {
+      display: block;
+    }
 
-        <!-- Customer Table Container -->
-        <div class="customer-table-container">
-            <!-- Table Controls -->
-            <div class="table-controls">
-                <div class="search-box">
-                    <i class="fas fa-search"></i>
-                    <input type="text" class="form-control" id="customerSearch" placeholder="Search customers...">
-                </div>
-                <div class="filter-controls">
-                    <select class="form-select" id="statusFilter" style="width: auto;">
-                        <option value="">All Status</option>
-                        <option value="active">Active</option>
-                        <option value="blocked">Blocked</option>
-                    </select>
-                </div>
-            </div>
+    .is-invalid {
+      border-color: #dc3545;
+      background-image: none !important;
+      background-repeat: no-repeat;
+      background-position: right calc(0.375em + 0.1875rem) center;
+      background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+    }
 
-            <!-- Customers Table -->
-            <div class="table-responsive">
-                <table class="customers-table">
-                    <thead>
-                        <tr>
-                            <th>Customer</th>
-                            <th>Email</th>
-                            <th>Phone</th>
-                            <th>Join Date</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="customersTableBody">
-                        <!-- Customer rows will be populated here -->
-                    </tbody>
-                </table>
-            </div>
+    .password-wrapper {
+      position: relative;
+    }
 
-            <!-- Pagination -->
-            <div class="pagination-container">
-                <div class="pagination-info">
-                    Showing <span id="showingStart">1</span> to <span id="showingEnd">10</span> of <span id="totalCustomers">0</span> customers
-                </div>
-                <nav aria-label="Customer pagination">
-                    <ul class="pagination pagination-sm mb-0">
-                        <li class="page-item" id="prevPage">
-                            <a class="page-link" href="#" aria-label="Previous">
-                                <span aria-hidden="true">«</span>
-                            </a>
-                        </li>
-                        <!-- Pagination items will be populated here -->
-                    </ul>
-                </nav>
-            </div>
-        </div>
+    .password-toggle {
+      position: absolute;
+      right: 15px;
+      top: 10px;
+      transform: translateY(0);
+      cursor: pointer;
+      color: #6c757d;
+      z-index: 10;
+      font-size: 1rem;
+    }
+
+    .password-toggle:hover {
+      color: #000;
+    }
+
+    .password-wrapper .form-control {
+      padding-right: 60px;
+    }
+
+    .btn-loading .spinner-border {
+      width: 1.5rem;
+      height: 1.5rem;
+      margin-right: 0.5rem;
+    }
+
+    .btn-loading .btn-text {
+      display: none;
+    }
+
+    .btn-loading {
+      pointer-events: none;
+      opacity: 0.65;
+    }
+
+    /* Only center the heading and paragraph text */
+    .signup-form h2,
+    .signup-form > p {
+      text-align: center;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page-container">
+    <div class="signup-container">
+      <div class="signup-image">
+        <img src="/assets/register-img.jpg" style="width: 100%; height: 100%; object-fit: cover;" alt="Watch Haven">
+      </div>
+      <div class="signup-form">
+        <h2 class="mb-3" style="font-weight: bolder;font-family: 'Times New Roman', Times, serif;">ARVENCLAIRE</h2>
+        <p style="font-weight: bold;">Create your account</p>
+        <form id="signupForm" novalidate>
+          <div class="mb-3">
+            <input type="text" id="fullname" name="fullname" class="form-control" placeholder="Fullname" required>
+            <div class="error-message" id="fullname-error">Full name must be at least 4 characters long</div>
+          </div>
+          <div class="mb-3">
+            <input type="tel" id="phone" name="phone" class="form-control" placeholder="Phone" required>
+            <div class="error-message" id="phone-error">Please enter a valid phone number</div>
+          </div>
+          <div class="mb-3">
+            <input type="email" id="email" name="email" class="form-control" placeholder="Email" required>
+            <div class="error-message" id="email-error">Please enter a valid email address</div>
+          </div>
+          <div class="mb-3 password-wrapper">
+            <input type="password" id="password" name="password" class="form-control" placeholder="Password">
+            <i class="bi bi-lock password-toggle" id="password-toggle"></i>
+            <div class="error-message" id="password-error">Give strong password</div>
+          </div>
+          <div class="mb-3 password-wrapper">
+            <input type="password" id="confirmpassword" name="confirmpassword" class="form-control"
+              placeholder="Confirm Password">
+            <i class="bi bi-lock password-toggle" id="confirmpassword-toggle"></i>
+            <div class="error-message" id="confirmpassword-error">Passwords do not match</div>
+          </div>
+          <div class="form-check mb-2">
+            <input class="form-check-input" type="checkbox" id="rememberMe">
+            <label class="form-check-label text-muted" for="rememberMe">
+              Remember me
+            </label>
+          </div>
+          <button type="submit" class="btn btn-create py-2" id="signupButton">
+            <span class="btn-text">Sign Up</span>
+            <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+          </button>
+          <div class="d-flex align-items-center my-3">
+            <hr class="flex-grow-1">
+            <span class="mx-3 text-muted">or</span>
+            <hr class="flex-grow-1">
+          </div>
+          <a href="/auth/google" class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center p-2"
+            role="button">
+            <img src="../../assets/google-icon.png" alt="Google logo" width="20" height="20"
+              style="margin-right: 10px;">
+            Sign up with Google
+          </a>
+
+
+          <div class="login-link">
+            Already have an account? <a href="/login">Log In</a>
+          </div>
+        </form>
+      </div>
     </div>
+  </div>
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script>
+    const form = document.getElementById("signupForm");
+    const signupButton = document.getElementById("signupButton");
+    const fields = [
+      {
+        id: "fullname",
+        validate: (value) => value.trim().length >= 4,
+        errorElement: "fullname-error"
+      },
+      {
+        id: "phone",
+        validate: (value) => /^\+?[\d\s-]{10,}$/.test(value.trim()),
+        errorElement: "phone-error"
+      },
+      {
+        id: "email",
+        validate: (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim()),
+        errorElement: "email-error"
+      },
+      {
+        id: "password",
+        validate: (value) => /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(value),
+        errorElement: "password-error"
+      },
+      {
+        id: "confirmpassword",
+        validate: (value) => value === document.getElementById("password").value,
+        errorElement: "confirmpassword-error"
+      }
+    ];
 
-    <script>
-        let currentPage = 1;
-        let customersPerPage = 5;
-        let filteredCustomers = [];
+    function validateField(field) {
+      const input = document.getElementById(field.id);
+      const isValid = field.validate(input.value);
+      input.classList.toggle("is-invalid", !isValid);
+      return isValid;
+    }
 
-        document.addEventListener('DOMContentLoaded', function() {
-            const customerSearch = document.getElementById('customerSearch');
-            const statusFilter = document.getElementById('statusFilter');
-            const prevPage = document.getElementById('prevPage');
-            const paginationContainer = document.querySelector('.pagination');
+    // Real-time validation on input
+    fields.forEach(field => {
+      const input = document.getElementById(field.id);
+      input.addEventListener("input", () => validateField(field));
+    });
 
-            // Fetch and render customers on page load
-            fetchCustomers();
+    // Password toggle functionality
+    function setupPasswordToggle(inputId, toggleId) {
+      const input = document.getElementById(inputId);
+      const toggle = document.getElementById(toggleId);
+      toggle.addEventListener("click", () => {
+        const isPassword = input.type === "password";
+        input.type = isPassword ? "text" : "password";
+        toggle.classList.toggle("bi-unlock", isPassword);
+        toggle.classList.toggle("bi-lock", !isPassword);
+      });
+    }
 
-            // Search functionality
-            customerSearch.addEventListener('input', function() {
-                currentPage = 1;
-                filterCustomers();
-            });
+    setupPasswordToggle("password", "password-toggle");
+    setupPasswordToggle("confirmpassword", "confirmpassword-toggle");
 
-            // Status filter functionality
-            statusFilter.addEventListener('change', function() {
-                currentPage = 1;
-                filterCustomers();
-            });
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
 
-            // Pagination: Previous page
-            prevPage.addEventListener('click', function(e) {
-                e.preventDefault();
-                if (currentPage > 1) {
-                    currentPage--;
-                    renderCustomersTable();
-                    updatePagination();
-                }
-            });
+      // Show loader and disable button
+      signupButton.classList.add("btn-loading");
+      signupButton.querySelector(".spinner-border").classList.remove("d-none");
+      signupButton.querySelector(".btn-text").classList.add("d-none");
 
-            // Pagination: Page numbers
-            paginationContainer.addEventListener('click', function(e) {
-                e.preventDefault();
-                if (e.target.classList.contains('page-link') && !e.target.parentElement.classList.contains('active')) {
-                    if (e.target.textContent === '»') {
-                        if (currentPage < Math.ceil(filteredCustomers.length / customersPerPage)) {
-                            currentPage++;
-                            renderCustomersTable();
-                            updatePagination();
-                        }
-                    } else if (!isNaN(e.target.textContent)) {
-                        currentPage = parseInt(e.target.textContent);
-                        renderCustomersTable();
-                        updatePagination();
-                    }
-                }
-            });
+      let isValid = true;
+      fields.forEach(field => {
+        if (!validateField(field)) {
+          isValid = false;
+        }
+      });
+
+      if (!isValid) {
+        // Hide loader and enable button if validation fails
+        signupButton.classList.remove("btn-loading");
+        signupButton.querySelector(".spinner-border").classList.add("d-none");
+        signupButton.querySelector(".btn-text").classList.remove("d-none");
+        return;
+      }
+
+      const fullname = document.getElementById("fullname").value.trim();
+      const phone = document.getElementById("phone").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+
+      try {
+        const response = await fetch("/signup", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            fullname,
+            phone,
+            email,
+            password,
+          }),
         });
 
-        async function fetchCustomers() {
-            try {
-                const response = await fetch('/api/admin/customers', {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                });
-                const data = await response.json();
-                if (data.success) {
-                    filteredCustomers = data.customers.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-                    renderCustomersTable();
-                    updatePagination();
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: 'Failed to fetch customers.'
-                    });
-                }
-            } catch (error) {
-                console.error('Fetch customers error:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'An error occurred while fetching customers.'
-                });
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          window.location.href = "/verify-otp";
+        } else {
+          Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'error',
+            title: 'Signup Failed',
+            text: data.message || 'Signup failed.',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            customClass: {
+              popup: 'small-toast'
+            },
+            showClass: {
+              popup: 'animate__animated animate__fadeInDown'
+            },
+            hideClass: {
+              popup: 'animate__animated animate__fadeOutUp'
             }
+          });
         }
-
-        function filterCustomers() {
-            const searchTerm = document.getElementById('customerSearch').value.toLowerCase();
-            const statusFilter = document.getElementById('statusFilter').value;
-
-            filteredCustomers = filteredCustomers.filter(customer => {
-                const matchesSearch = customer.fullname.toLowerCase().includes(searchTerm) ||
-                                    customer.email.toLowerCase().includes(searchTerm) ||
-                                    (customer.phone && customer.phone.includes(searchTerm));
-                const matchesStatus = !statusFilter || (statusFilter === 'active' ? !customer.isBlocked : customer.isBlocked);
-                return matchesSearch && matchesStatus;
-            });
-
-            renderCustomersTable();
-            updatePagination();
-        }
-
-        function renderCustomersTable() {
-            const startIndex = (currentPage - 1) * customersPerPage;
-            const endIndex = startIndex + customersPerPage;
-            const paginatedCustomers = filteredCustomers.slice(startIndex, endIndex);
-
-            const tableBody = document.getElementById('customersTableBody');
-            tableBody.innerHTML = '';
-
-            paginatedCustomers.forEach(customer => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>
-                        <div class="customer-info">
-                            <div class="customer-avatar">
-                                ${customer.fullname.charAt(0).toUpperCase()}
-                            </div>
-                            <div class="customer-details">
-                                <h6>${customer.fullname}</h6>
-                                <p>ID: #${customer._id.toString().padStart(4, '0')}</p>
-                            </div>
-                        </div>
-                    </td>
-                    <td>${customer.email}</td>
-                    <td>${customer.phone || 'N/A'}</td>
-                    <td>${new Date(customer.createdAt).toLocaleDateString()}</td>
-                    <td>
-                        <span class="status-badge status-${customer.isBlocked ? 'blocked' : 'active'}">
-                            ${customer.isBlocked ? 'Blocked' : 'Active'}
-                        </span>
-                    </td>
-                    <td>
-                        <div class="action-buttons">
-                            <button class="btn-action btn-view" onclick="viewCustomer('${customer._id}')">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                            <button class="btn-action btn-toggle ${customer.isBlocked ? 'blocked' : ''}" onclick="toggleCustomerStatus('${customer._id}')">
-                                ${customer.isBlocked ? 'Activate' : 'Block'}
-                            </button>
-                        </div>
-                    </td>
-                `;
-                tableBody.appendChild(row);
-            });
-
-            // Update pagination info
-            document.getElementById('showingStart').textContent = startIndex + 1;
-            document.getElementById('showingEnd').textContent = Math.min(endIndex, filteredCustomers.length);
-            document.getElementById('totalCustomers').textContent = filteredCustomers.length;
-        }
-
-        function updatePagination() {
-            const paginationContainer = document.querySelector('.pagination');
-            const totalPages = Math.ceil(filteredCustomers.length / customersPerPage);
-            paginationContainer.innerHTML = `
-                <li class="page-item ${currentPage === 1 ? 'disabled' : ''}" id="prevPage">
-                    <a class="page-link" href="#" aria-label="Previous">
-                        <span aria-hidden="true">«</span>
-                    </a>
-                </li>
-            `;
-
-            for (let i = 1; i <= totalPages; i++) {
-                paginationContainer.innerHTML += `
-                    <li class="page-item ${i === currentPage ? 'active' : ''}">
-                        <a class="page-link" href="#">${i}</a>
-                    </li>
-                `;
-            }
-
-            paginationContainer.innerHTML += `
-                <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}" id="nextPage">
-                    <a class="page-link" href="#" aria-label="Next">
-                        <span aria-hidden="true">»</span>
-                    </a>
-                </li>
-            `;
-        }
-
-        function viewCustomer(customerId) {
-            const customer = filteredCustomers.find(c => c._id === customerId);
-            if (customer) {
-                Swal.fire({
-                    title: 'Customer Details',
-                    html: `
-                        <div class="text-start">
-                            <p><strong>Name:</strong> ${customer.fullname}</p>
-                            <p><strong>Email:</strong> ${customer.email}</p>
-                            <p><strong>Phone:</strong> ${customer.phone || 'N/A'}</p>
-                            <p><strong>Join Date:</strong> ${new Date(customer.createdAt).toLocaleDateString()}</p>
-                            <p><strong>Status:</strong> <span class="status-badge status-${customer.isBlocked ? 'blocked' : 'active'}">${customer.isBlocked ? 'Blocked' : 'Active'}</span></p>
-                        </div>
-                    `,
-                    confirmButtonColor: '#000000'
-                });
-            }
-        }
-
-        async function toggleCustomerStatus(customerId) {
-            const customer = filteredCustomers.find(c => c._id === customerId);
-            if (customer) {
-                const newStatus = customer.isBlocked ? 'active' : 'blocked';
-                const actionText = newStatus === 'blocked' ? 'block' : 'activate';
-
-                const result = await Swal.fire({
-                    title: 'Confirm Status Change',
-                    text: `Are you sure you want to ${actionText} ${customer.fullname}?`,
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#000000',
-                    cancelButtonColor: '#6c757d',
-                    confirmButtonText: `Yes, ${actionText.charAt(0).toUpperCase() + actionText.slice(1)}`,
-                    cancelButtonText: 'Cancel'
-                });
-
-                if (result.isConfirmed) {
-                    try {
-                        const response = await fetch(`/api/admin/toggle-status/${customerId}`, {
-                            method: 'PATCH',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({ isBlocked: newStatus === 'blocked' })
-                        });
-
-                        const data = await response.json();
-                        if (data.success) {
-                            customer.isBlocked = newStatus === 'blocked';
-                            renderCustomersTable();
-                            updatePagination();
-                            Swal.fire({
-                                title: 'Success!',
-                                text: `Customer has been ${newStatus === 'blocked' ? 'blocked' : 'activated'}.`,
-                                icon: 'success',
-                                confirmButtonColor: '#000000'
-                            });
-                        } else {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Error',
-                                text: data.message || 'Failed to update customer status.'
-                            });
-                        }
-                    } catch (error) {
-                        console.error('Toggle status error:', error);
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: 'An error occurred while updating customer status.'
-                        });
-                    }
-                }
-            }
-        }
-    </script>
+      } catch (error) {
+        console.error("Signup error:", error);
+        Swal.fire({
+          position: 'top-end',
+          icon: 'error',
+          title: 'Error',
+          text: 'An error occurred during signup.',
+        });
+      } finally {
+        // Hide loader and enable button after request completes
+        signupButton.classList.remove("btn-loading");
+        signupButton.querySelector(".spinner-border").classList.add("d-none");
+        signupButton.querySelector(".btn-text").classList.remove("d-none");
+      }
+    });
+  </script>
 </body>
+
 </html>

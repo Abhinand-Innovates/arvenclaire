@@ -2,10 +2,69 @@ const User = require("../../models/user-schema");
 
 const getUsers = async (req, res) => {
   try {
-    // Get search parameter if any
     const searchTerm = req.query.search || "";
+    const statusFilter = req.query.status || "";
+    const page = parseInt(req.query.page) || 1;
+    const limit = 5; // Users per page
 
-    // Build search query
+    // 1. Build dynamic search query
+    let searchQuery = {};
+    
+    // Search by name, email, or phone (case-insensitive)
+    if (searchTerm) {
+      searchQuery.$or = [
+        { fullName: { $regex: searchTerm, $options: "i" } },
+        { email: { $regex: searchTerm, $options: "i" } },
+        { phone: { $regex: searchTerm, $options: "i" } },
+      ];
+    }
+
+    // Filter by status: 'blocked' or not
+    if (statusFilter) {
+      searchQuery.isBlocked = statusFilter === "blocked";
+    }
+
+    // 2. Count total matched users
+    const totalUsers = await User.countDocuments(searchQuery);
+
+    // 3. Fetch paginated user list sorted by latest signup
+    const users = await User.find(searchQuery)
+      .sort({ createdAt: -1 }) // Newest first
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .select("fullName email phone createdAt isBlocked _id");
+
+    // 4. Pagination variables
+    const totalPages = Math.ceil(totalUsers / limit);
+    const startIdx = (page - 1) * limit + 1;
+    const endIdx = Math.min(page * limit, totalUsers);
+
+    // 5. Render EJS view
+    res.render("customer-listing", {
+      users,
+      currentPage: page,
+      totalPages,
+      totalUsers,
+      startIdx,
+      endIdx,
+      searchTerm,
+      statusFilter,
+    });
+
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    res.status(500).send("Server error");
+  }
+};
+
+
+const getUsersApi = async (req, res) => {
+  try {
+    const searchTerm = req.query.search || "";
+    const statusFilter = req.query.status || "";
+    const page = parseInt(req.query.page) || 1;
+    const limit = 5;
+
     let searchQuery = {};
     if (searchTerm) {
       searchQuery = {
@@ -17,42 +76,51 @@ const getUsers = async (req, res) => {
       };
     }
 
-    // Pagination setup
-    const page = parseInt(req.query.page) || 1;
-    const limit = 10; // Users per page
-    const skip = (page - 1) * limit;
+    if (statusFilter) {
+      searchQuery.isBlocked = statusFilter === "blocked";
+    }
 
-    // Get total user count matching the search
     const totalUsers = await User.countDocuments(searchQuery);
+    const users = await User.find(searchQuery)
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .select("fullName email phone createdAt isBlocked _id");
 
-    // Get users for current page
-    const users = await User.find(searchQuery).skip(skip).limit(limit);
-
-    // Calculate pagination variables
     const totalPages = Math.ceil(totalUsers / limit);
-    const startIdx = skip;
-    const endIdx = Math.min(skip + limit, totalUsers);
+    const startIdx = (page - 1) * limit;
+    const endIdx = Math.min(startIdx + limit, totalUsers);
 
-    // Render view with all required data
-    res.render("customer-listing", {
-      users: users || [],
+    res.status(200).json({
+      users,
       currentPage: page,
       totalPages,
       totalUsers,
       startIdx,
       endIdx,
-      searchTerm,
     });
   } catch (error) {
-    console.log("Error in getting User", error);
-    res.status(500).send("Server error");
+    console.error("Error fetching users for API:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+const getUserById = async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const user = await User.findById(userId).select("fullName email phone createdAt isBlocked");
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+    res.status(200).json(user);
+  } catch (error) {
+    console.error("Error fetching user details:", error);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
 const blockUser = async (req, res) => {
   try {
     const userId = req.params.id;
-
     const user = await User.findByIdAndUpdate(
       userId,
       { isBlocked: true },
@@ -64,17 +132,16 @@ const blockUser = async (req, res) => {
         message: "User not found",
       });
     }
-
-    return res.status(200).json({
+    res.status(200).json({
       success: true,
-      message: "User blocked successfully ",
+      message: "User blocked successfully",
       user: { id: user._id, isBlocked: user.isBlocked },
     });
   } catch (error) {
-    console.log(`Error in deleting user,${error}`);
-    return res.status(400).json({
+    console.error("Error blocking user:", error);
+    res.status(500).json({
       success: false,
-      message: "server error",
+      message: "Server error",
     });
   }
 };
@@ -84,28 +151,27 @@ const unblockUser = async (req, res) => {
     const userId = req.params.id;
     const user = await User.findByIdAndUpdate(
       userId,
-      { isBlocked: false},
+      { isBlocked: false },
       { new: true }
     );
-
     if (!user) {
       return res.status(404).json({
         success: false,
         message: "User not found",
       });
     }
-
-    return res.status(200).json({
+    res.status(200).json({
       success: true,
       message: "User unblocked successfully",
+      user: { id: user._id, isBlocked: user.isBlocked },
     });
   } catch (error) {
-    console.log(`Error in unblocking user,${error}`);
-    res.status(400).json({
+    console.error("Error unblocking user:", error);
+    res.status(500).json({
       success: false,
-      message: "Server Error",
+      message: "Server error",
     });
   }
 };
 
-module.exports = { getUsers,blockUser,unblockUser };
+module.exports = { getUsers, getUsersApi, getUserById, blockUser, unblockUser };
