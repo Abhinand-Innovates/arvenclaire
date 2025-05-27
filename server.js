@@ -42,7 +42,7 @@ app.use("/",userRoute);
 app.use("/",adminRoute);
 
 // app.get("/",(req,res) => {
-//   res.render("customer-listing")
+//   res.render("get-product")
 // })
 
 
