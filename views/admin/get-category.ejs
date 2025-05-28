@@ -1,0 +1,377 @@
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../styles/admin/get-category.css">
+
+
+    <%- include("../partials/admin/sidebar") %>
+
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="#"><i class="fas fa-home"></i> Dashboard</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Categories</li>
+            </ol>
+        </nav>
+
+        <!-- Page Header -->
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Categories Management</h1>
+                <p class="text-muted mb-0">Manage your content categories</p>
+            </div>
+            <button class="btn-black" onclick="showAddModal()">
+                <i class="fas fa-plus"></i>
+                Add New Category
+            </button>
+        </div>
+
+        <!-- Content Container -->
+        <div class="content-container">
+            <!-- Table Header -->
+            <div class="table-header">
+                <h5 class="mb-0 text-dark">All Categories</h5>
+                <div class="search-box">
+                    <input type="text" class="form-control search-input" placeholder="Search categories..." id="searchInput">
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="table-responsive" id="tableContainer">
+                <table class="table mb-0">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Category Name</th>
+                            <th>Description</th>
+                            <th>Status</th>
+                            <th>Created Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="categoryTableBody">
+                        <!-- Table content will be populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination-container">
+                <div class="pagination-info" id="paginationInfo">
+                    Showing 1 to 5 of 5 entries
+                </div>
+                <nav aria-label="Category pagination">
+                    <ul class="pagination">
+                        <li class="page-item disabled">
+                            <a class="page-link" href="#" aria-label="Previous">
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
+                        </li>
+                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                        <li class="page-item">
+                            <a class="page-link" href="#" aria-label="Next">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.10.5/sweetalert2.all.min.js"></script>
+    <script>
+        // Sample data for demonstration
+        let categories = [
+            {id: 1, name: 'Technology', description: 'Latest technology trends and innovations', status: true, date: '2024-01-15'},
+            {id: 2, name: 'Business', description: 'Business strategies and market insights', status: true, date: '2024-01-12'},
+            {id: 3, name: 'Lifestyle', description: 'Health, wellness, and lifestyle tips', status: false, date: '2024-01-10'},
+            {id: 4, name: 'Education', description: 'Learning resources and educational content', status: true, date: '2024-01-08'},
+            {id: 5, name: 'Entertainment', description: 'Movies, music, and entertainment news', status: true, date: '2024-01-05'}
+        ];
+
+        let filteredCategories = [...categories];
+
+        // Mobile sidebar toggle
+        const mobileToggle = document.getElementById('mobileToggle');
+        const sidebar = document.getElementById('sidebar');
+        
+        mobileToggle.addEventListener('click', function() {
+            sidebar.classList.toggle('show');
+        });
+
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase().trim();
+            
+            if (searchTerm === '') {
+                filteredCategories = [...categories];
+            } else {
+                filteredCategories = categories.filter(category => 
+                    category.name.toLowerCase().includes(searchTerm) || 
+                    category.description.toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            renderTable();
+        });
+
+        // Render table with filtered data
+        function renderTable() {
+            const tbody = document.getElementById('categoryTableBody');
+            const paginationInfo = document.getElementById('paginationInfo');
+            
+            if (filteredCategories.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="no-results">
+                            <i class="fas fa-search"></i>
+                            <h5>No categories found</h5>
+                            <p>Try adjusting your search terms or add a new category</p>
+                        </td>
+                    </tr>
+                `;
+                paginationInfo.textContent = 'Showing 0 to 0 of 0 entries';
+                return;
+            }
+            
+            tbody.innerHTML = filteredCategories.map((category, index) => `
+                <tr>
+                    <td>${index + 1}</td>
+                    <td><strong>${category.name}</strong></td>
+                    <td><span class="category-description" title="${category.description}">${category.description}</span></td>
+                    <td>
+                        <label class="status-toggle">
+                            <input type="checkbox" ${category.status ? 'checked' : ''} onchange="toggleStatus(${category.id}, this)">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </td>
+                    <td>${category.date}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn-outline-black" onclick="editCategory(${category.id})">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <button class="btn-danger-outline" onclick="deleteCategory(${category.id})">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+
+            paginationInfo.textContent = `Showing 1 to ${filteredCategories.length} of ${filteredCategories.length} entries`;
+        }
+
+        // Show Add Category Modal
+        function showAddModal() {
+            Swal.fire({
+                title: '<i class="fas fa-plus-circle me-2"></i>Add New Category',
+                html: `
+                    <div class="text-start">
+                        <div class="mb-3">
+                            <label for="swal-name" class="form-label">Category Name <span class="text-danger">*</span></label>
+                            <input type="text" id="swal-name" class="swal2-input" placeholder="Enter category name" style="display: block; width: 100%; margin: 0;">
+                        </div>
+                        <div class="mb-3">
+                            <label for="swal-desc" class="form-label">Description</label>
+                            <textarea id="swal-desc" class="swal2-textarea" placeholder="Enter category description..." style="display: block; width: 100%; margin: 0; height: 100px;"></textarea>
+                        </div>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: '<i class="fas fa-save me-2"></i>Save Category',
+                cancelButtonText: '<i class="fas fa-times me-2"></i>Cancel',
+                confirmButtonColor: '#000000',
+                width: '500px',
+                preConfirm: () => {
+                    const name = document.getElementById('swal-name').value.trim();
+                    const description = document.getElementById('swal-desc').value.trim();
+                    
+                    if (!name) {
+                        Swal.showValidationMessage('Please enter a category name');
+                        return false;
+                    }
+                    
+                    if (categories.some(c => c.name.toLowerCase() === name.toLowerCase())) {
+                        Swal.showValidationMessage('A category with this name already exists');
+                        return false;
+                    }
+                    
+                    return { name, description };
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const { name, description } = result.value;
+                    addCategory(name, description);
+                }
+            });
+        }
+
+        // Add new category
+        function addCategory(name, description) {
+            const newId = Math.max(...categories.map(c => c.id)) + 1;
+            const newCategory = {
+                id: newId,
+                name: name,
+                description: description,
+                status: true, // Default to active
+                date: new Date().toISOString().split('T')[0]
+            };
+            
+            categories.push(newCategory);
+            filteredCategories = [...categories]; // Reset filter
+            renderTable();
+            
+            Swal.fire({
+                title: 'Success!',
+                text: 'Category added successfully!',
+                icon: 'success',
+                timer: 2000,
+                showConfirmButton: false
+            });
+        }
+
+        // Toggle status function
+        function toggleStatus(id, toggleElement) {
+            const category = categories.find(c => c.id === id);
+            if (category) {
+                category.status = toggleElement.checked;
+                
+                // Update filtered categories to reflect the change
+                const filteredCategory = filteredCategories.find(c => c.id === id);
+                if (filteredCategory) {
+                    filteredCategory.status = toggleElement.checked;
+                }
+                
+                Swal.fire({
+                    title: 'Status Updated!',
+                    text: `Category "${category.name}" has been ${category.status ? 'activated' : 'deactivated'}.`,
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            }
+        }
+
+        // Edit category function
+        function editCategory(id) {
+            const category = categories.find(c => c.id === id);
+            if (!category) return;
+            
+            Swal.fire({
+                title: '<i class="fas fa-edit me-2"></i>Edit Category',
+                html: `
+                    <div class="text-start">
+                        <div class="mb-3">
+                            <label for="swal-edit-name" class="form-label">Category Name <span class="text-danger">*</span></label>
+                            <input type="text" id="swal-edit-name" class="swal2-input" value="${category.name}" style="display: block; width: 100%; margin: 0;">
+                        </div>
+                        <div class="mb-3">
+                            <label for="swal-edit-desc" class="form-label">Description</label>
+                            <textarea id="swal-edit-desc" class="swal2-textarea" style="display: block; width: 100%; margin: 0; height: 100px;">${category.description}</textarea>
+                        </div>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: '<i class="fas fa-save me-2"></i>Update Category',
+                cancelButtonText: '<i class="fas fa-times me-2"></i>Cancel',
+                confirmButtonColor: '#000000',
+                width: '500px',
+                preConfirm: () => {
+                    const name = document.getElementById('swal-edit-name').value.trim();
+                    const description = document.getElementById('swal-edit-desc').value.trim();
+                    
+                    if (!name) {
+                        Swal.showValidationMessage('Please enter a category name');
+                        return false;
+                    }
+                    
+                    // Check if name exists for other categories
+                    if (categories.some(c => c.id !== id && c.name.toLowerCase() === name.toLowerCase())) {
+                        Swal.showValidationMessage('A category with this name already exists');
+                        return false;
+                    }
+                    
+                    return { name, description };
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const { name, description } = result.value;
+                    updateCategory(id, name, description);
+                }
+            });
+        }
+
+        // Update category function
+        function updateCategory(id, name, description) {
+            const category = categories.find(c => c.id === id);
+            if (category) {
+                category.name = name;
+                category.description = description;
+                
+                // Update filtered categories as well
+                const filteredCategory = filteredCategories.find(c => c.id === id);
+                if (filteredCategory) {
+                    filteredCategory.name = name;
+                    filteredCategory.description = description;
+                }
+                
+                renderTable();
+                
+                Swal.fire({
+                    title: 'Success!',
+                    text: 'Category updated successfully!',
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            }
+        }
+
+        // Delete category function
+        function deleteCategory(id) {
+            const category = categories.find(c => c.id === id);
+            if (!category) return;
+            
+            Swal.fire({
+                title: 'Are you sure?',
+                text: `You are about to delete the category "${category.name}". This action cannot be undone!`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: '<i class="fas fa-trash me-2"></i>Yes, delete it!',
+                cancelButtonText: '<i class="fas fa-times me-2"></i>Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Remove from categories array
+                    categories = categories.filter(c => c.id !== id);
+                    
+                    // Remove from filtered categories array
+                    filteredCategories = filteredCategories.filter(c => c.id !== id);
+                    
+                    renderTable();
+                    
+                    Swal.fire({
+                        title: 'Deleted!',
+                        text: `Category "${category.name}" has been deleted.`,
+                        icon: 'success',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                }
+            });
+        }
+
+        // Initialize the table on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            renderTable();
+        });
+    </script>
+</body>
+</html>

@@ -58,8 +58,8 @@
                                             <%= user.fullName ? user.fullName.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase() %>
                                         </div>
                                         <div class="customer-details">
-                                            <h6><%= user.fullName || user.email %></h6>
-                                            <p>ID: #<%= user._id.toString().slice(-4).padStart(4, '0') %></p>
+                                            <h6><%= user.fullname || user.email %></h6>
+                                            <p>ID: #<%=  %></p>
                                         </div>
                                     </div>
                                 </td>

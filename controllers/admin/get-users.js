@@ -121,7 +121,6 @@ const getUserById = async (req, res) => {
 
 const blockUser = async (req, res) => {
   try {
-    console.log("block log")
     const userId = req.params.id;
     const user = await User.findByIdAndUpdate(
       userId,
