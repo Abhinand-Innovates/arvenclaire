@@ -1,8 +1,10 @@
 const express = require("express");
 const adminRoute = express.Router();
 
-const adminController = require("../controllers/admin/admin-controller");
-const getUsersController = require("../controllers/admin/get-users");
+const adminController = require("../controllers/admin/admin-auth-controller");
+const getUsersController = require("../controllers/admin/get-usersController");
+const getCategoryController = require("../controllers/admin/get-categoryController")
+
 const { isAdminAuthenticated, isAdminNotAuthenticated, preventCache } = require("../middlewares/admin-middleware");
 
 adminRoute.get("/admin-login", isAdminNotAuthenticated, preventCache, adminController.getAdminLogin);
@@ -24,7 +26,7 @@ adminRoute.put("/api/users/:id/unblock", getUsersController.unblockUser);
 
 
 //Category Management
-
+adminRoute.get('/get-categories',getCategoryController.getCategory);
 
 
 
