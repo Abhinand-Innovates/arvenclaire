@@ -100,7 +100,7 @@
                                 <span aria-hidden="true">«</span>
                             </a>
                         </li>
-                        <% for(let i = Math.max(1, currentPage - 1); i <= Math.min(totalPages, currentPage + 1); i++) { %>
+                        <% for(let i = 1; i <= totalPages; i++) { %>
                             <li class="page-item <%= i === currentPage ? 'active' : '' %>">
                                 <a class="page-link" href="#" onclick="goToPage(<%= i %>)"><%= i %></a>
                             </li>
@@ -118,7 +118,7 @@
 
     <script>
         let currentPage = <%= currentPage %>;
-        const customersPerPage = 5;
+        const customersPerPage = 10; // Changed to 10 users per page
         let totalPages = <%= totalPages %>;
 
         document.addEventListener('DOMContentLoaded', function() {
@@ -155,6 +155,9 @@
                     fetchUsers();
                 }
             });
+
+            // Initial fetch to ensure correct data
+            fetchUsers();
         });
 
         // Debounce function
@@ -192,13 +195,17 @@
                 });
 
                 if (!response.ok) {
-                    throw new Error('Failed to fetch users');
+                    throw new Error(`Failed to fetch users: ${response.status}`);
                 }
 
                 const data = await response.json();
+                console.log('Fetched users:', data); // Debug log
+                if (data.users.length > customersPerPage) {
+                    console.warn(`Received ${data.users.length} users, expected up to ${customersPerPage}`);
+                }
                 renderCustomersTable(data.users, data);
             } catch (error) {
-                console.error('Error fetching users:', error);
+                console.error('Error fetching users:', error.message);
                 Swal.fire({
                     title: 'Error',
                     text: 'Failed to load customers. Please try again.',
@@ -267,15 +274,8 @@
             const pageLinks = pagination.querySelectorAll('.page-item:not(#prevPage):not(#nextPage)');
             pageLinks.forEach(link => link.remove());
 
-            const maxPagesToShow = 3;
-            let startPage = Math.max(1, currentPage - 1);
-            let endPage = Math.min(totalPages, currentPage + 1);
-
-            if (endPage - startPage < maxPagesToShow - 1) {
-                endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
-            }
-
-            for (let i = startPage; i <= endPage; i++) {
+            // Show all pages
+            for (let i = 1; i <= totalPages; i++) {
                 const li = document.createElement('li');
                 li.className = `page-item ${i === currentPage ? 'active' : ''}`;
                 li.innerHTML = `<a class="page-link" href="#" onclick="goToPage(${i})">${i}</a>`;
@@ -351,7 +351,7 @@
                         });
 
                         if (!response.ok) {
-                            throw new Error(`Failed to ${action} user`);
+                            throw new Error(`Failed to ${action} user: ${response.status}`);
                         }
 
                         const data = await response.json();
@@ -367,7 +367,7 @@
                             throw new Error(data.message);
                         }
                     } catch (error) {
-                        console.error(`Error ${action}ing user:`, error);
+                        console.error(`Error ${action}ing user:`, error.message);
                         Swal.fire({
                             title: 'Error',
                             text: `Failed to ${actionText} customer. Please try again.`,

@@ -1,5 +1,5 @@
 
-const User = require("../models/userSchema");
+const User = require("../models/user-schema");
 
 const userMiddleware = async (req, res, next) => {
   res.locals.user = null;
@@ -25,4 +25,46 @@ const userMiddleware = async (req, res, next) => {
   next();
 };
 
-module.exports = userMiddleware;
+
+
+// Middleware to restrict blocked users
+const restrictBlockedUser = async (req, res, next) => {
+  try {
+    if (!req.session.userId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized: No active session",
+      });
+    }
+
+    const user = await User.findById(req.session.userId);
+    if (user && user.isBlocked) {
+      req.session.destroy((err) => {
+        if (err) {
+          console.error("Session destruction error:", err);
+          return res.status(500).json({
+            success: false,
+            message: "Server error during session cleanup",
+          });
+        }
+        res.clearCookie("connect.sid");
+        return res.redirect("/login");
+      });
+    } else {
+      next();
+    }
+  } catch (error) {
+    console.error("Error in restrictBlockedUser middleware:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
+
+
+module.exports = {
+
+  userMiddleware,
+  restrictBlockedUser,
+}

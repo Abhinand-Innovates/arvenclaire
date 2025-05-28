@@ -66,16 +66,14 @@ const verifyOtp = async (req, res) => {
 
     if (otp === req.session.userOtp) {
       const user = req.session.userData;
-      const passwordHash = await securePassword(user.password);
       const saveUserData = new User({
         fullname: user.fullname,
         phone: user.phone,
         email: user.email,
-        password: passwordHash,
+        password: user.password,
       });
 
       await saveUserData.save();
-      req.session.user = saveUserData._id;
       res.json({
         success: true,
         redirectUrl: "/login",
@@ -168,8 +166,8 @@ const signup = async (req, res) => {
         message: "Failed to send OTP",
       });
     }
-
-    req.session.userData = { fullname, phone, email, password };
+    const hashedPassword = await bcrypt.hash(password,10)
+    req.session.userData = { fullname, phone, email, password: hashedPassword};
     req.session.userOtp = otp;
 
     res.json({
@@ -232,6 +230,12 @@ const login = async (req, res) => {
       });
     }
 
+    if(user.isBlocked){
+      return res.status(403).json({
+        success : false,
+        message: "Your account is blocked, Please contact support"
+      })
+    }
     // Verify password
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
@@ -244,6 +248,7 @@ const login = async (req, res) => {
 
     // Set user session
     req.session.userId = user._id;
+    req.session.email = user.email;
 
     // Redirect to dashboard
     return res.status(200).redirect('/dashboard');
@@ -288,7 +293,7 @@ const verifyForgotPasswordEmail = async (req, res) => {
     // Check if user exists
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(401).json({
+      return res.status(404).json({
         success: false,
         message: "Please enter a valid email",
       });
@@ -297,10 +302,9 @@ const verifyForgotPasswordEmail = async (req, res) => {
     // Generate OTP
     const otp = generateOtp();
 
-    // Store OTP in session with expiry time (5 minutes)
+    // Store OTP in session 
     req.session.userOtp = {
       otp,
-      expiresAt: Date.now() + 5 * 60 * 1000,
       email,
     };
 
@@ -326,6 +330,7 @@ const verifyForgotPasswordEmail = async (req, res) => {
     });
   }
 };
+
 
 const resendForgotPasswordOtp = async (req, res) => {
   try {
@@ -477,49 +482,47 @@ const resetPassword = async (req, res) => {
 };
 
 
+const logout = async (req,res) => {
 
-
-
-const loadAdminLogin = async (req, res) => {
   try {
-      return res.render("admin-login");
+    if(!req.session.userId) {
+      return res.status(400).json({
+        success : false,
+        message : "No active session to logout from",
+      })
     }
-    catch (error) {
-    console.log("Admin login page not loading", error);
-    res.status(500).send("Server Error");
-  }
-};
+    
+    req.session.destroy((err) => {
+      if(err) {
+        console.error("Session destruction error",err)
+        return res.status (500).json({
+          success : false,
+          message : "Failed to logout, Please try again",
+        })
+      }
 
 
+    res.clearCookie("connect.sid");
 
-
-const loginAdmin = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    const user = await User.findOne({ email });
-
-    if (!user || !user.isAdmin) {
-      return res.status(401).json({ success: false, message: 'Access denied' });
-    }
-
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(401).json({ success: false, message: 'Invalid credentials' });
-    }
-
-    req.session.adminId = user._id;
-    res.status(200).json({ success: true, redirectUrl: '/admin-dashboard' });
+    // return res.status(200).json({
+    //   success : false,
+    //   message : "Successfully logged in",
+    //   redirectUrl : "/login",
+    // })
+    return res.status(200).redirect("/login")
+  })
 
   } catch (error) {
-    console.error('Admin login error:', error);
-    res.status(500).json({ success: false, message: 'Server error' });
+    console.error("Logout error",error);
+    return res.status(500).json({
+      success : false,
+      message : "Internal server error",
+    })
   }
-};
+}
 
-const showDashboard = async (req, res) => {
-  res.render('admin-dashboard');
-};
+
+
 
 
 
@@ -547,8 +550,6 @@ module.exports = {
   loadNewPassword,
   resetPassword,
 
-  loadAdminLogin,
-  loginAdmin,
-  showDashboard
+  logout,
 
 };

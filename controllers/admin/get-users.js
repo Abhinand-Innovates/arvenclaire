@@ -2,10 +2,10 @@ const User = require("../../models/user-schema");
 
 const getUsers = async (req, res) => {
   try {
-    const searchTerm = req.query.search || "";
-    const statusFilter = req.query.status || "";
+    const searchTerm = req.query.search || '';
+    const statusFilter = req.query.status || '';
     const page = parseInt(req.query.page) || 1;
-    const limit = 5; // Users per page
+    const limit = 10; // Changed to 10 users per page
 
     // 1. Build dynamic search query
     let searchQuery = {};
@@ -13,15 +13,15 @@ const getUsers = async (req, res) => {
     // Search by name, email, or phone (case-insensitive)
     if (searchTerm) {
       searchQuery.$or = [
-        { fullName: { $regex: searchTerm, $options: "i" } },
-        { email: { $regex: searchTerm, $options: "i" } },
-        { phone: { $regex: searchTerm, $options: "i" } },
+        { fullName: { $regex: searchTerm, $options: 'i' } },
+        { email: { $regex: searchTerm, $options: 'i' } },
+        { phone: { $regex: searchTerm, $options: 'i' } },
       ];
     }
 
-    // Filter by status: 'blocked' or not
+    // Filter by status: 'blocked' or 'active'
     if (statusFilter) {
-      searchQuery.isBlocked = statusFilter === "blocked";
+      searchQuery.isBlocked = statusFilter === 'blocked';
     }
 
     // 2. Count total matched users
@@ -32,15 +32,16 @@ const getUsers = async (req, res) => {
       .sort({ createdAt: -1 }) // Newest first
       .skip((page - 1) * limit)
       .limit(limit)
-      .select("fullName email phone createdAt isBlocked _id");
+      .select('fullName email phone createdAt isBlocked _id');
+
 
     // 4. Pagination variables
     const totalPages = Math.ceil(totalUsers / limit);
-    const startIdx = (page - 1) * limit + 1;
-    const endIdx = Math.min(page * limit, totalUsers);
+    const startIdx = (page - 1) * limit;
+    const endIdx = Math.min(startIdx + limit, totalUsers);
 
     // 5. Render EJS view
-    res.render("customer-listing", {
+    res.render('customer-listing', {
       users,
       currentPage: page,
       totalPages,
@@ -52,45 +53,45 @@ const getUsers = async (req, res) => {
     });
 
   } catch (error) {
-    console.error("Error fetching users:", error);
-    res.status(500).send("Server error");
+    console.error('Error fetching users:', error.message);
+    res.status(500).send('Server error');
   }
 };
 
 
 const getUsersApi = async (req, res) => {
   try {
-    const searchTerm = req.query.search || "";
-    const statusFilter = req.query.status || "";
+    const searchTerm = req.query.search || '';
+    const statusFilter = req.query.status || '';
     const page = parseInt(req.query.page) || 1;
-    const limit = 5;
+    const limit = 8; // Changed to 10 users per page
 
     let searchQuery = {};
     if (searchTerm) {
-      searchQuery = {
-        $or: [
-          { fullName: { $regex: searchTerm, $options: "i" } },
-          { email: { $regex: searchTerm, $options: "i" } },
-          { phone: { $regex: searchTerm, $options: "i" } },
-        ],
-      };
+      searchQuery.$or = [
+        { fullName: { $regex: searchTerm, $options: 'i' } },
+        { email: { $regex: searchTerm, $options: 'i' } },
+        { phone: { $regex: searchTerm, $options: 'i' } },
+      ];
     }
 
     if (statusFilter) {
-      searchQuery.isBlocked = statusFilter === "blocked";
+      searchQuery.isBlocked = statusFilter === 'blocked';
     }
 
     const totalUsers = await User.countDocuments(searchQuery);
     const users = await User.find(searchQuery)
+      .sort({ createdAt: -1 }) // Newest first
       .skip((page - 1) * limit)
       .limit(limit)
-      .select("fullName email phone createdAt isBlocked _id");
+      .select('fullName email phone createdAt isBlocked _id');
 
     const totalPages = Math.ceil(totalUsers / limit);
     const startIdx = (page - 1) * limit;
     const endIdx = Math.min(startIdx + limit, totalUsers);
 
     res.status(200).json({
+      success: true,
       users,
       currentPage: page,
       totalPages,
@@ -99,8 +100,8 @@ const getUsersApi = async (req, res) => {
       endIdx,
     });
   } catch (error) {
-    console.error("Error fetching users for API:", error);
-    res.status(500).json({ success: false, message: "Server error" });
+    console.error('Error fetching users for API:', error.message);
+    res.status(500).json({ success: false, message: 'Server error: ' + error.message });
   }
 };
 
@@ -120,6 +121,7 @@ const getUserById = async (req, res) => {
 
 const blockUser = async (req, res) => {
   try {
+    console.log("block log")
     const userId = req.params.id;
     const user = await User.findByIdAndUpdate(
       userId,
