@@ -1,6 +1,4 @@
-
-    
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../../styles/admin/get-category.css">
 
@@ -171,7 +169,7 @@
                     <td><span class="category-description" title="${category.description || ''}">${category.description || 'N/A'}</span></td>
                     <td>
                         <label class="status-toggle">
-                            <input type="checkbox" ${category.status ? 'checked' : ''} onchange="toggleStatus('${category._id}', this)">
+                            <input type="checkbox" ${category.isListed ? 'checked' : ''} onchange="toggleStatus('${category._id}', this)">
                             <span class="toggle-slider"></span>
                         </label>
                     </td>

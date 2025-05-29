@@ -20,10 +20,10 @@ const getAllCategoriesAPI = async (req, res) => {
         const categories = await Category.find().sort({ createdAt: -1 }); // Sort by newest
         // Map to match frontend expected structure if needed, especially for 'date'
         const formattedCategories = categories.map(cat => ({
-            _id: cat._id, // Use _id from MongoDB
+            _id: cat._id,
             name: cat.name,
             description: cat.description,
-            status: cat.status,
+            isListed: cat.isListed, // Use isListed, not status
             date: cat.createdAt.toISOString().split('T')[0] // Format date
         }));
         res.status(200).json(formattedCategories);
@@ -121,7 +121,6 @@ const updateCategoryAPI = async (req, res) => {
 
 
 
-
 // API: Toggle category status
 const toggleCategoryStatusAPI = async (req, res) => {
     try {
@@ -157,7 +156,6 @@ const toggleCategoryStatusAPI = async (req, res) => {
         res.status(500).json({ message: 'Error toggling category status', error: error.message });
     }
 };
-
 
 
 
