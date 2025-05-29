@@ -1,17 +1,22 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/styles/admin/customer-listing.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-</head>
-<body>
+
     <%- include("../partials/admin/sidebar") %>
     <!-- Main Content -->
     <div class="main-content">
+        <!-- Breadcrumbs -->
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/admin">Dashboard</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Customer Management</li>
+            </ol>
+        </nav>
+
         <!-- Page Header -->
         <div class="page-header">
             <h1 class="page-title">Customer Management</h1>
@@ -59,7 +64,7 @@
                                         </div>
                                         <div class="customer-details">
                                             <h6><%= user.fullname%></h6>
-                                            <p>ID: #<%=  %></p>
+                                            <p>ID: #<%= user._id.toString().slice(-4).padStart(4, '0') %></p>
                                         </div>
                                     </div>
                                 </td>
@@ -73,9 +78,6 @@
                                 </td>
                                 <td>
                                     <div class="action-buttons">
-                                        <button class="btn-action btn-view" onclick="viewCustomer('<%= user._id %>')">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
                                         <button class="btn-action btn-toggle <%= user.isBlocked ? 'blocked' : '' %>" onclick="toggleCustomerStatus('<%= user._id %>', <%= user.isBlocked %>)">
                                             <%= user.isBlocked ? 'Activate' : 'Block' %>
                                         </button>
@@ -118,7 +120,7 @@
 
     <script>
         let currentPage = <%= currentPage %>;
-        const customersPerPage = 10; // Changed to 10 users per page
+        const customersPerPage = 10;
         let totalPages = <%= totalPages %>;
 
         document.addEventListener('DOMContentLoaded', function() {
@@ -199,7 +201,7 @@
                 }
 
                 const data = await response.json();
-                console.log('Fetched users:', data); // Debug log
+                console.log('Fetched users:', data);
                 if (data.users.length > customersPerPage) {
                     console.warn(`Received ${data.users.length} users, expected up to ${customersPerPage}`);
                 }
@@ -246,9 +248,6 @@
                     </td>
                     <td>
                         <div class="action-buttons">
-                            <button class="btn-action btn-view" onclick="viewCustomer('${user._id}')">
-                                <i class="fas fa-eye"></i>
-                            </button>
                             <button class="btn-action btn-toggle ${user.isBlocked ? 'blocked' : ''}" onclick="toggleCustomerStatus('${user._id}', ${user.isBlocked})">
                                 ${user.isBlocked ? 'Activate' : 'Block'}
                             </button>
@@ -274,7 +273,6 @@
             const pageLinks = pagination.querySelectorAll('.page-item:not(#prevPage):not(#nextPage)');
             pageLinks.forEach(link => link.remove());
 
-            // Show all pages
             for (let i = 1; i <= totalPages; i++) {
                 const li = document.createElement('li');
                 li.className = `page-item ${i === currentPage ? 'active' : ''}`;
@@ -284,46 +282,6 @@
 
             document.getElementById('prevPage').classList.toggle('disabled', currentPage === 1);
             document.getElementById('nextPage').classList.toggle('disabled', currentPage === totalPages);
-        }
-
-        // View customer details
-        async function viewCustomer(userId) {
-            try {
-                const response = await fetch(`/api/users/${userId}`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                if (!response.ok) {
-                    throw new Error('Failed to fetch user details');
-                }
-
-                const user = await response.json();
-                const displayName = user.fullName || user.email;
-                Swal.fire({
-                    title: 'Customer Details',
-                    html: `
-                        <div class="text-start">
-                            <p><strong>Name:</strong> ${displayName}</p>
-                            <p><strong>Email:</strong> ${user.email}</p>
-                            <p><strong>Phone:</strong> ${user.phone || 'N/A'}</p>
-                            <p><strong>Join Date:</strong> ${new Date(user.createdAt).toLocaleDateString()}</p>
-                            <p><strong>Status:</strong> <span class="status-badge status-${user.isBlocked ? 'blocked' : 'active'}">${user.isBlocked ? 'blocked' : 'active'}</span></p>
-                        </div>
-                    `,
-                    confirmButtonColor: '#000000'
-                });
-            } catch (error) {
-                console.error('Error fetching user details:', error);
-                Swal.fire({
-                    title: 'Error',
-                    text: 'Failed to load customer details. Please try again.',
-                    icon: 'error',
-                    confirmButtonColor: '#000000'
-                });
-            }
         }
 
         // Toggle customer status
