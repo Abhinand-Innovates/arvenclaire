@@ -55,10 +55,10 @@
                                 <td>
                                     <div class="customer-info">
                                         <div class="customer-avatar">
-                                            <%= user.fullName ? user.fullName.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase() %>
+                                            <%= user.fullname ? user.fullname.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase() %>
                                         </div>
                                         <div class="customer-details">
-                                            <h6><%= user.fullname || user.email %></h6>
+                                            <h6><%= user.fullname%></h6>
                                             <p>ID: #<%=  %></p>
                                         </div>
                                     </div>

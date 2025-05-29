@@ -14,16 +14,28 @@ const categorySchema = new mongoose.Schema({
   },
   image: {
     type: String,
-    required: true
+    required: false
   },
   isListed: {
     type: Boolean,
     default: true
   },
-  createdAt: {
-    type: Date,
-    default: Date.now
-  }
+},{timestamps: true});
+
+
+categorySchema.pre('save', async function(next) {
+    if (this.isModified('name')) {
+        const existingCategory = await this.constructor.findOne({ name: new RegExp(`^${this.name}$`, 'i') });
+        if (existingCategory && existingCategory._id.toString() !== this._id.toString()) {
+            const err = new Error('A category with this name already exists.');
+            err.statusCode = 409; // Conflict
+            return next(err);
+        }
+    }
+    next();
 });
 
-module.exports = mongoose.model('Category', categorySchema);
+
+const Category = mongoose.model('Category', categorySchema);
+
+module.exports = Category;

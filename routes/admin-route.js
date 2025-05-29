@@ -25,9 +25,14 @@ adminRoute.put("/api/users/:id/block", getUsersController.blockUser);
 adminRoute.put("/api/users/:id/unblock", getUsersController.unblockUser);
 
 
-//Category Management
-adminRoute.get('/get-categories',getCategoryController.getCategory);
-
+// Page rendering route
+adminRoute.get('/get-category', getCategoryController.renderCategoryManagementPage);
+// API routes for categories
+adminRoute.get('/api/categories', getCategoryController.getAllCategoriesAPI);
+adminRoute.post('/api/categories', getCategoryController.addCategoryAPI);
+adminRoute.put('/api/categories/:id', getCategoryController.updateCategoryAPI);
+adminRoute.patch('/api/categories/:id/status', getCategoryController.toggleCategoryStatusAPI); // PATCH is suitable for partial updates
+adminRoute.delete('/api/categories/:id', getCategoryController.deleteCategoryAPI);
 
 
 
