@@ -327,7 +327,7 @@
         </div>
 
         <a href="/admin-dashboard" class="nav-item" data-route="dashboard">Dashboard</a>
-        <a href="/add-product" class="nav-item" data-route="products">Products</a>
+        <a href="#" class="nav-item" data-route="products">Products</a>
         <a href="#" class="nav-item" data-route="orders">Order Lists</a>
         <a href="/get-user" class="nav-item" data-route="users">Users</a>
         <a href="#" class="nav-item" data-route="sales">Sales</a>
@@ -340,34 +340,33 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const navItems = document.querySelectorAll('.nav-item[data-route]');
-            const mobileToggle = document.getElementById('mobileToggle');
-            const sidebar = document.getElementById('sidebar');
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const navItems = document.querySelectorAll('.nav-item[data-route]');
+        const mobileToggle = document.getElementById('mobileToggle');
+        const sidebar = document.getElementById('sidebar');
 
-            // Set Dashboard as active by default
-            document.querySelector('[data-route="dashboard"]')?.classList.add('active');
 
-            // Handle sidebar navigation clicks
-            navItems.forEach(item => {
-                item.addEventListener('click', function (e) {
-                    // Don't prevent default - let the link navigate
+        // Handle sidebar navigation clicks
+        navItems.forEach(item => {
+            item.addEventListener('click', function (e) {
+                // Don't prevent default - let the link navigate
 
-                    // Remove active class from all nav items
-                    navItems.forEach(nav => nav.classList.remove('active'));
+                // Remove active class from all nav items
+                navItems.forEach(nav => nav.classList.remove('active'));
 
-                    // Add active class to clicked item
-                    this.classList.add('active');
+                // Add active class to clicked item
+                this.classList.add('active');
 
-                    // Close mobile sidebar
-                    if (window.innerWidth <= 768) {
-                        sidebar.classList.remove('show');
-                    }
-                });
+                // Close mobile sidebar
+                if (window.innerWidth <= 768) {
+                    sidebar.classList.remove('show');
+                }
             });
+        });
 
-            // Mobile toggle functionality
+        // Mobile toggle functionality
+        if (mobileToggle && sidebar) { // Add checks for these elements too for robustness
             mobileToggle.addEventListener('click', function () {
                 sidebar.classList.toggle('show');
             });
@@ -380,27 +379,23 @@
                     }
                 }
             });
+        }
 
-            // Initialize Sales Chart
-            const ctx = document.getElementById('salesChart').getContext('2d');
+
+        // Initialize Sales Chart - ONLY IF THE ELEMENT EXISTS
+        const salesChartElement = document.getElementById('salesChart');
+        if (salesChartElement) {
+            const ctx = salesChartElement.getContext('2d');
 
             // Sample data similar to the screenshot
             const salesData = [
-                { x: '5k', y: 20 },
-                { x: '10k', y: 35 },
-                { x: '15k', y: 45 },
-                { x: '20k', y: 30 },
-                { x: '25k', y: 52 },
-                { x: '30k', y: 48 },
-                { x: '35k', y: 58 },
-                { x: '40k', y: 25 },
-                { x: '45k', y: 42 },
-                { x: '50k', y: 38 },
-                { x: '55k', y: 45 },
-                { x: '60k', y: 50 }
+                { x: '5k', y: 20 }, { x: '10k', y: 35 }, { x: '15k', y: 45 },
+                { x: '20k', y: 30 }, { x: '25k', y: 52 }, { x: '30k', y: 48 },
+                { x: '35k', y: 58 }, { x: '40k', y: 25 }, { x: '45k', y: 42 },
+                { x: '50k', y: 38 }, { x: '55k', y: 45 }, { x: '60k', y: 50 }
             ];
 
-            const peakPoint = { x: '22k', y: 85, value: '64,3564.77' }; // Peak point like in screenshot
+            // const peakPoint = { x: '22k', y: 85, value: '64,3564.77' }; // Not used in your chart.js code directly
 
             new Chart(ctx, {
                 type: 'line',
@@ -437,8 +432,8 @@
                             displayColors: false,
                             callbacks: {
                                 label: function (context) {
-                                    if (context.dataIndex === 4) { // Peak point
-                                        return '64,3564.77';
+                                    if (context.dataset.label === 'Sales' && context.dataIndex === 4) { // Check label and index for peak point
+                                        return '64,3564.77'; // Assuming '25k' is your intended peak display
                                     }
                                     return context.parsed.y + '%';
                                 }
@@ -447,38 +442,20 @@
                     },
                     scales: {
                         x: {
-                            grid: {
-                                display: false
-                            },
-                            border: {
-                                display: false
-                            },
-                            ticks: {
-                                color: '#666',
-                                font: {
-                                    size: 12
-                                }
-                            }
+                            grid: { display: false },
+                            border: { display: false },
+                            ticks: { color: '#666', font: { size: 12 } }
                         },
                         y: {
                             beginAtZero: true,
                             max: 100,
-                            grid: {
-                                color: 'rgba(0,0,0,0.05)',
-                                borderDash: [5, 5]
-                            },
-                            border: {
-                                display: false
-                            },
+                            grid: { color: 'rgba(0,0,0,0.05)', borderDash: [5, 5] },
+                            border: { display: false },
                             ticks: {
                                 stepSize: 20,
-                                callback: function (value) {
-                                    return value + '%';
-                                },
+                                callback: function (value) { return value + '%'; },
                                 color: '#666',
-                                font: {
-                                    size: 12
-                                }
+                                font: { size: 12 }
                             }
                         }
                     },
@@ -488,62 +465,63 @@
                     }
                 }
             });
+        } // End of if (salesChartElement)
 
-            // Logout functionality
-            document.getElementById('logoutBtn').addEventListener('click', function (e) {
+        // Logout functionality
+        const logoutButton = document.getElementById('logoutBtn');
+        if (logoutButton) { // Good practice to check if the button exists
+            logoutButton.addEventListener('click', function (e) {
                 e.preventDefault();
 
                 Swal.fire({
                     title: 'Are you sure?',
-                    text: "Quit",
+                    text: "You are about to quit!", // Slightly more descriptive text
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#d33',
                     cancelButtonColor: '#3085d6',
-                    confirmButtonText: 'Yes',
-                    cancelButtonText: 'No'
+                    confirmButtonText: 'Yes, logout!',
+                    cancelButtonText: 'No, stay'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        window.location.href = '/admin-logout';
+                        window.location.href = '/admin-logout'; // Ensure this route is correct
                     }
                 });
             });
-        });
-        // Add this script to each page to maintain the active sidebar state
-        document.addEventListener('DOMContentLoaded', function () {
-            const currentPath = window.location.pathname;
-            const navItems = document.querySelectorAll('.nav-item[data-route]');
+        }
+    });
 
-            // Remove active class from all nav items first
-            navItems.forEach(nav => nav.classList.remove('active'));
+    document.addEventListener('DOMContentLoaded', function () {
+        const currentPath = window.location.pathname;
+        const navItems = document.querySelectorAll('.nav-item[data-route]');
 
-            // Add active class based on current page URL
-            if (currentPath === '/admin-dashboard' || currentPath.includes('admin-dashboard')) {
-                document.querySelector('[data-route="dashboard"]')?.classList.add('active');
-            }
-            else if (currentPath === '/get-user' || currentPath.includes('get-user')) {
-                document.querySelector('[data-route="users"]')?.classList.add('active');
-            }
-            else if (currentPath.includes('products') || currentPath.includes('product')) {
-                document.querySelector('[data-route="products"]')?.classList.add('active');
-            }
-            else if (currentPath.includes('orders') || currentPath.includes('order')) {
-                document.querySelector('[data-route="orders"]')?.classList.add('active');
-            }
-            else if (currentPath.includes('sales') || currentPath.includes('sale')) {
-                document.querySelector('[data-route="sales"]')?.classList.add('active');
-            }
-            else if (currentPath.includes('coupons') || currentPath.includes('coupon')) {
-                document.querySelector('[data-route="coupons"]')?.classList.add('active');
-            }
-            else if (currentPath.includes('categories') || currentPath.includes('category')) {
-                document.querySelector('[data-route="categories"]')?.classList.add('active');
-            }
-            else if (currentPath.includes('banner')) {
-                document.querySelector('[data-route="banner"]')?.classList.add('active');
-            }
-            else if (currentPath.includes('offer')) {
-                document.querySelector('[data-route="offers"]')?.classList.add('active');
-            }
-        });
-    </script>
+        navItems.forEach(nav => nav.classList.remove('active'));
+
+        let itemToActivate = null;
+
+        if (currentPath === '/admin-dashboard' || currentPath.includes('admin-dashboard')) {
+            itemToActivate = document.querySelector('[data-route="dashboard"]');
+        } else if (currentPath === '/get-user' || currentPath.includes('get-user')) {
+            itemToActivate = document.querySelector('[data-route="users"]');
+        } else if (currentPath.includes('products') || currentPath.includes('product')) {
+            itemToActivate = document.querySelector('[data-route="products"]');
+        } else if (currentPath.includes('orders') || currentPath.includes('order')) {
+            itemToActivate = document.querySelector('[data-route="orders"]');
+        } else if (currentPath.includes('sales') || currentPath.includes('sale')) { // Make sure 'sales' route doesn't conflict with chart page if it's different
+            itemToActivate = document.querySelector('[data-route="sales"]');
+        } else if (currentPath.includes('coupons') || currentPath.includes('coupon')) {
+            itemToActivate = document.querySelector('[data-route="coupons"]');
+        } else if (currentPath.includes('categories') || currentPath.includes('category')) {
+            itemToActivate = document.querySelector('[data-route="categories"]');
+        } else if (currentPath.includes('banner')) {
+            itemToActivate = document.querySelector('[data-route="banner"]');
+        } else if (currentPath.includes('offer')) {
+            itemToActivate = document.querySelector('[data-route="offers"]');
+        } else {
+             // Fallback: if no specific route matches, you might want to default to dashboard or nothing
+            itemToActivate = document.querySelector('[data-route="dashboard"]');
+        }
+
+        itemToActivate?.classList.add('active');
+    });
+</script>
