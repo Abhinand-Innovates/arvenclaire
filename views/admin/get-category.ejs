@@ -387,42 +387,29 @@
             }
         }
 
-        // Delete category function
-        async function deleteCategory(categoryId) {
-            const category = categories.find(c => c._id === categoryId);
-            if (!category) return;
-            
-            Swal.fire({
-                title: 'Are you sure?',
-                text: `You are about to delete the category "${category.name}". This action cannot be undone!`,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#ef4444',
-                cancelButtonColor: '#6b7280',
-                confirmButtonText: '<i class="fas fa-trash me-2"></i>Yes, delete it!',
-                cancelButtonText: '<i class="fas fa-times me-2"></i>Cancel'
-            }).then(async (result) => {
-                if (result.isConfirmed) {
-                    try {
-                        const response = await fetch(`/api/categories/${categoryId}`, {
-                            method: 'DELETE'
-                        });
-                        if (!response.ok) {
-                            const errorData = await response.json();
-                            throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
-                        }
-                        // categories = categories.filter(c => c._id !== categoryId);
-                        // applySearchFilter();
-                        await fetchCategories(); // Re-fetch all
+       async function deleteCategory(categoryId) {
+    const category = categories.find(c => c._id === categoryId);
+    if (!category) return;
 
-                        Swal.fire('Deleted!', `Category "${category.name}" has been deleted.`, 'success');
-                    } catch (error) {
-                        console.error('Error deleting category:', error);
-                        Swal.fire('Error!', `Could not delete category: ${error.message}`, 'error');
-                    }
-                }
-            });
+    Swal.fire({
+        title: 'Are you sure?',
+        text: `You are about to delete the category "${category.name}". This action cannot be undone!`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: '<i class="fas fa-trash me-2"></i>Yes, delete it!',
+        cancelButtonText: '<i class="fas fa-times me-2"></i>Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Remove category from frontend array
+            categories = categories.filter(c => c._id !== categoryId);
+            applySearchFilter(); // Update the UI
+
+            Swal.fire('Deleted!', `Category "${category.name}" has been deleted.`, 'success');
         }
+    });
+}
 
         // Initialize the table on page load
         document.addEventListener('DOMContentLoaded', function() {

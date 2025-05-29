@@ -32,7 +32,7 @@ adminRoute.get('/api/categories', getCategoryController.getAllCategoriesAPI);
 adminRoute.post('/api/categories', getCategoryController.addCategoryAPI);
 adminRoute.put('/api/categories/:id', getCategoryController.updateCategoryAPI);
 adminRoute.patch('/api/categories/:id/status', getCategoryController.toggleCategoryStatusAPI); // PATCH is suitable for partial updates
-adminRoute.delete('/api/categories/:id', getCategoryController.deleteCategoryAPI);
+// adminRoute.delete('/api/categories/:id', getCategoryController.deleteCategoryAPI);
 
 
 

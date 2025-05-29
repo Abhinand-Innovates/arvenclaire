@@ -160,25 +160,25 @@ const toggleCategoryStatusAPI = async (req, res) => {
 
 
 // API: Delete a category
-const deleteCategoryAPI = async (req, res) => {
-    try {
-        const { id } = req.params;
+// const deleteCategoryAPI = async (req, res) => {
+//     try {
+//         const { id } = req.params;
 
-        if (!mongoose.Types.ObjectId.isValid(id)) {
-            return res.status(400).json({ message: 'Invalid category ID.' });
-        }
+//         if (!mongoose.Types.ObjectId.isValid(id)) {
+//             return res.status(400).json({ message: 'Invalid category ID.' });
+//         }
 
-        const deletedCategory = await Category.findByIdAndDelete(id);
+//         const deletedCategory = await Category.findByIdAndDelete(id);
 
-        if (!deletedCategory) {
-            return res.status(404).json({ message: 'Category not found.' });
-        }
-        res.status(200).json({ message: `Category "${deletedCategory.name}" deleted successfully.` });
-    } catch (error) {
-        console.error("Error deleting category:", error);
-        res.status(500).json({ message: 'Error deleting category', error: error.message });
-    }
-};
+//         if (!deletedCategory) {
+//             return res.status(404).json({ message: 'Category not found.' });
+//         }
+//         res.status(200).json({ message: `Category "${deletedCategory.name}" deleted successfully.` });
+//     } catch (error) {
+//         console.error("Error deleting category:", error);
+//         res.status(500).json({ message: 'Error deleting category', error: error.message });
+//     }
+// };
 
 
 
@@ -189,6 +189,6 @@ module.exports = {
     addCategoryAPI,
     updateCategoryAPI,
     toggleCategoryStatusAPI,
-    deleteCategoryAPI,
+    // deleteCategoryAPI,
 
 };
