@@ -19,7 +19,7 @@ router.get(
 );
 
 // Public routes
-router.get("/", userController.loadLanding);
+router.get("/", userController.loadDashboard);
 router.get("/signup", userController.loadSignup);
 router.get("/login", userController.loadLogin);
 router.post("/signup", userController.signup);
