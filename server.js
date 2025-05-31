@@ -41,7 +41,7 @@ app.set("views",[path.join(__dirname,"views/user"),path.join(__dirname,"views/ad
 // app.use("/",adminRoute);
 
 app.get("/",(req,res) => {
-  res.render("get-product")
+  res.render("add-new-product")
 })
 
 
