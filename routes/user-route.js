@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const passport = require("passport");
 const userController = require("../controllers/user/user-controller");
-const { restrictBlockedUser } = require("../middlewares/user-middleware");
+
 
 // Google OAuth routes
 router.get(
@@ -18,6 +18,7 @@ router.get(
   }
 );
 
+
 // Public routes
 router.get("/", userController.loadDashboard);
 router.get("/signup", userController.loadSignup);
@@ -30,7 +31,7 @@ router.post("/resend-otp", userController.resendOtp);
 router.post("/login", userController.login);
 
 // Protected route: Dashboard
-router.get("/dashboard", restrictBlockedUser, userController.loadDashboard);
+router.get("/dashboard",userController.loadDashboard);
 
 // Forgot password routes
 router.get("/forgot-password", userController.loadForgotPassword);

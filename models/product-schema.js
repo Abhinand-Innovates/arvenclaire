@@ -15,9 +15,9 @@ const productSchema = ({
         type : String,
         required : true
     },
-    catagory : {
+    category : {
         type : Schema.Types.ObjectId,
-        ref : "Catagory",
+        ref : "Category",
         required : true
     },
     regularPrice : {
@@ -40,10 +40,14 @@ const productSchema = ({
         type : String,
         required :  true
     },
-    productImage : {
-        type : [String],
+    mainImage: {
+        type : String,
         required : true
     },
+    subImages: [{
+        type : String,
+        required : true
+    }],  
     isBlocked : {
         type : Boolean,
         default : false
@@ -53,6 +57,14 @@ const productSchema = ({
         enum : ["Available","out of stock","Discontinued"],
         required : true,
         default : "Available"
+    },
+    isListed : {
+        type : Boolean,
+        default : true
+    },
+    isDeleted : {
+        type : Boolean,
+        default : false
     },
 },{timestamps : true})
 
