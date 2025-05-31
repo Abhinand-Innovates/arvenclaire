@@ -123,7 +123,7 @@
         // Fetch categories from backend
         async function fetchCategories() {
             try {
-                const response = await fetch('/api/categories');
+                const response = await fetch('/get-categories');
                 if (!response.ok) {
                     const errorData = await response.json();
                     throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
@@ -245,7 +245,7 @@
         // Add new category
         async function addCategory(categoryData) {
             try {
-                const response = await fetch('/api/categories', {
+                const response = await fetch('/get-categories', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(categoryData)
@@ -268,7 +268,7 @@
         async function toggleStatus(categoryId, toggleElement) {
             const newStatus = toggleElement.checked;
             try {
-                const response = await fetch(`/api/categories/${categoryId}/status`, {
+                const response = await fetch(`/get-categories/${categoryId}/status`, {
                     method: 'PATCH',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ status: newStatus })
@@ -364,7 +364,7 @@
         // Update category function
         async function updateCategory(categoryId, categoryData) {
             try {
-                const response = await fetch(`/api/categories/${categoryId}`, {
+                const response = await fetch(`/get-categories/${categoryId}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(categoryData)

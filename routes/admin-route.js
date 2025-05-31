@@ -19,20 +19,20 @@ adminRoute.get("/admin-logout", adminController.logoutAdminDashboard);
 
 //User Management
 adminRoute.get("/get-user", getUsersController.getUsers);
-adminRoute.get("/api/users", getUsersController.getUsersApi);
-adminRoute.get("/api/users/:id", getUsersController.getUserById);
-adminRoute.put("/api/users/:id/block", getUsersController.blockUser);
-adminRoute.put("/api/users/:id/unblock", getUsersController.unblockUser);
+adminRoute.get("/get-users", getUsersController.getUsersApi);
+adminRoute.get("/get-users/:id", getUsersController.getUserById);
+adminRoute.put("/get-users/:id/block", getUsersController.blockUser);
+adminRoute.put("/get-users/:id/unblock", getUsersController.unblockUser);
 
 
 // Page rendering route
 adminRoute.get('/get-category', getCategoryController.renderCategoryManagementPage);
 // API routes for categories
-adminRoute.get('/api/categories', getCategoryController.getAllCategoriesAPI);
-adminRoute.post('/api/categories', getCategoryController.addCategoryAPI);
-adminRoute.put('/api/categories/:id', getCategoryController.updateCategoryAPI);
-adminRoute.patch('/api/categories/:id/status', getCategoryController.toggleCategoryStatusAPI); // PATCH is suitable for partial updates
-// adminRoute.delete('/api/categories/:id', getCategoryController.deleteCategoryAPI);
+adminRoute.get('/get-categories', getCategoryController.getAllCategoriesAPI);
+adminRoute.post('/get-categories', getCategoryController.addCategoryAPI);
+adminRoute.put('/get-categories/:id', getCategoryController.updateCategoryAPI);
+adminRoute.patch('/get-categories/:id/status', getCategoryController.toggleCategoryStatusAPI); // PATCH is suitable for partial updates
+
 
 
 

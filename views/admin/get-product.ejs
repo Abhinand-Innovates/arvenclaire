@@ -1,11 +1,15 @@
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-
     <link rel="stylesheet" href="../../styles/admin/get-product.css">
 
-    <%- include("../partials/admin/sidebar") %>
-
+    <%- include("../partials/admin/sidebar") %>
+</head>
+<body>
     <!-- Main Content -->
     <div class="main-content">
         <!-- Breadcrumb -->
@@ -21,10 +25,10 @@
             <div>
                 <h1 class="page-title">Product Management</h1>
             </div>
-            <button class="btn-black" onclick="showAddModal()">
+            <a href="/admin/add-product" class="btn-black">
                 <i class="fas fa-plus"></i>
                 Add New Product
-            </button>
+            </a>
         </div>
 
         <!-- Content Container -->
@@ -57,8 +61,10 @@
                         <tr>
                             <th>Image</th>
                             <th>Watch Name</th>
+                            <th>Brand</th>
                             <th>Category</th>
-                            <th>Price</th>
+                            <th>Regular Price</th>
+                            <th>Selling Price</th>
                             <th>Stock</th>
                             <th>Status</th>
                             <th>Actions</th>
@@ -87,17 +93,36 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.10.5/sweetalert2.all.min.js"></script>
     <script>
-        let products = [
-            { id: '1', image: 'https://via.placeholder.com/50', name: 'Luxury Chronograph', category: 'Luxury Watches', price: 999.99, stock: 15, status: false },
-            { id: '2', image: 'https://via.placeholder.com/50', name: 'Smart Fitness Tracker', category: 'Smart Watches', price: 199.99, stock: 30, status: false },
-            { id: '3', image: 'https://via.placeholder.com/50', name: 'Dive Master Pro', category: 'Sports Watches', price: 299.99, stock: 25, status: false },
-            { id: '4', image: 'https://via.placeholder.com/50', name: 'Heritage Classic', category: 'Classic Watches', price: 499.99, stock: 20, status: true },
-            { id: '5', image: 'https://via.placeholder.com/50', name: 'Pilot’s Chrono', category: 'Luxury Watches', price: 799.99, stock: 12, status: false },
-            { id: '6', image: 'https://via.placeholder.com/50', name: 'Smart Health Watch', category: 'Smart Watches', price: 249.99, stock: 40, status: false }
-        ];
+        let products = [];
         let filteredProducts = [...products];
+        let categories = [];
         let currentPage = 1;
         const itemsPerPage = 5;
+
+        // Fetch categories from backend
+        async function fetchCategories() {
+            try {
+                const response = await fetch('/get-categories');
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+                }
+                categories = await response.json();
+                populateCategoryFilter();
+            } catch (error) {
+                console.error('Error fetching categories:', error);
+                Swal.fire('Error!', `Could not fetch categories: ${error.message}`, 'error');
+            }
+        }
+
+        // Populate category filter dropdown
+        function populateCategoryFilter() {
+            const categoryFilter = document.getElementById('categoryFilter');
+            categoryFilter.innerHTML = '<option value="">All Categories</option>';
+            categories.forEach(category => {
+                categoryFilter.innerHTML += `<option value="${category.name}">${category.name}</option>`;
+            });
+        }
 
         // Search, Filter, and Sort Functionality
         const searchInput = document.getElementById('searchInput');
@@ -115,7 +140,8 @@
             const searchTerm = searchInput.value.toLowerCase().trim();
             if (searchTerm) {
                 tempProducts = tempProducts.filter(product =>
-                    product.name.toLowerCase().includes(searchTerm)
+                    product.name.toLowerCase().includes(searchTerm) ||
+                    product.brand.toLowerCase().includes(searchTerm)
                 );
             }
 
@@ -131,12 +157,12 @@
             const sortOrder = sortByPrice.value;
             if (sortOrder) {
                 tempProducts.sort((a, b) => {
-                    return sortOrder === 'asc' ? a.price - b.price : b.price - a.price;
+                    return sortOrder === 'asc' ? a.sellingPrice - b.sellingPrice : b.sellingPrice - a.sellingPrice;
                 });
             }
 
             filteredProducts = tempProducts;
-            currentPage = 1; // Reset to first page on filter change
+            currentPage = 1;
             renderTable();
             renderPagination();
         }
@@ -151,7 +177,7 @@
             if (paginatedProducts.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="7" class="text-center">
+                        <td colspan="9" class="text-center">
                             <i class="fas fa-search"></i>
                             <h5>No products found</h5>
                             <p>Try adjusting your search or filters.</p>
@@ -163,10 +189,12 @@
 
             tbody.innerHTML = paginatedProducts.map(product => `
                 <tr>
-                    <td><img src="${product.image}" alt="${product.name}"></td>
+                    <td><img src="${product.mainImage}" alt="${product.name}"></td>
                     <td>${product.name}</td>
+                    <td>${product.brand}</td>
                     <td>${product.category}</td>
-                    <td>$${product.price.toFixed(2)}</td>
+                    <td>$${product.regularPrice.toFixed(2)}</td>
+                    <td>$${product.sellingPrice.toFixed(2)}</td>
                     <td>${product.stock}</td>
                     <td>
                         <label class="status-toggle">
@@ -176,7 +204,7 @@
                     </td>
                     <td>
                         <div class="action-buttons">
-                            <button class="btn-outline-black" onclick="showEditModal('${product.id}')"><i class="fas fa-edit"></i></button>
+                            <a href="/admin/edit-product/${product.id}" class="btn-outline-black"><i class="fas fa-edit"></i></a>
                             <button class="btn-danger-outline" onclick="deleteProduct('${product.id}')"><i class="fas fa-trash"></i></button>
                         </div>
                     </td>
@@ -251,173 +279,6 @@
             }
         }
 
-        // Show Add Product Modal
-        function showAddModal() {
-            Swal.fire({
-                title: '<i class="fas fa-plus-circle me-2"></i>Add New Product',
-                html: `
-                    <div class="text-start">
-                        <div class="mb-3">
-                            <label for="swal-name" class="form-label">Watch Name <span class="text-danger">*</span></label>
-                            <input type="text" id="swal-name" class="swal2-input" placeholder="Enter watch name" style="display: block; width: 100%;">
-                        </div>
-                        <div class="mb-3">
-                            <label for="swal-category" class="form-label">Category <span class="text-danger">*</span></label>
-                            <select id="swal-category" class="swal2-input" style="display: block; width: 100%;">
-                                <option value="Luxury Watches">Luxury Watches</option>
-                                <option value="Smart Watches">Smart Watches</option>
-                                <option value="Sports Watches">Sports Watches</option>
-                                <option value="Classic Watches">Classic Watches</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label for="swal-price" class="form-label">Price <span class="text-danger">*</span></label>
-                            <input type="number" id="swal-price" class="swal2-input" placeholder="Enter price" style="display: block; width: 100%;">
-                        </div>
-                        <div class="mb-3">
-                            <label for="swal-stock" class="form-label">Stock <span class="text-danger">*</span></label>
-                            <input type="number" id="swal-stock" class="swal2-input" placeholder="Enter stock quantity" style="display: block; width: 100%;">
-                        </div>
-                        <div class="mb-3">
-                            <label for="swal-status" class="form-label">Status <span class="text-danger">*</span></label>
-                            <select id="swal-status" class="swal2-input" style="display: block; width: 100%;">
-                                <option value="true">Listed</option>
-                                <option value="false" selected>Unlisted</option>
-                            </select>
-                        </div>
-                    </div>
-                `,
-                showCancelButton: true,
-                confirmButtonText: '<i class="fas fa-save me-2"></i>Save Product',
-                cancelButtonText: '<i class="fas fa-times me-2"></i>Cancel',
-                confirmButtonColor: '#000000',
-                width: '500px',
-                preConfirm: () => {
-                    const name = document.getElementById('swal-name').value.trim();
-                    const category = document.getElementById('swal-category').value;
-                    const price = parseFloat(document.getElementById('swal-price').value);
-                    const stock = parseInt(document.getElementById('swal-stock').value);
-                    const status = document.getElementById('swal-status').value === 'true';
-
-                    if (!name) {
-                        Swal.showValidationMessage('Please enter a watch name');
-                        return false;
-                    }
-                    if (!category) {
-                        Swal.showValidationMessage('Please select a category');
-                        return false;
-                    }
-                    if (isNaN(price) || price <= 0) {
-                        Swal.showValidationMessage('Please enter a valid price');
-                        return false;
-                    }
-                    if (isNaN(stock) || stock < 0) {
-                        Swal.showValidationMessage('Please enter a valid stock quantity');
-                        return false;
-                    }
-                    if (products.some(p => p.name.toLowerCase() === name.toLowerCase())) {
-                        Swal.showValidationMessage('A product with this name already exists');
-                        return false;
-                    }
-                    return { name, category, price, stock, status };
-                }
-            }).then(result => {
-                if (result.isConfirmed) {
-                    const newProduct = {
-                        id: (products.length + 1).toString(),
-                        image: 'https://via.placeholder.com/50',
-                        ...result.value
-                    };
-                    products.push(newProduct);
-                    applyFilters();
-                    Swal.fire('Success!', 'Product added successfully!', 'success');
-                }
-            });
-        }
-
-        // Show Edit Product Modal
-        function showEditModal(productId) {
-            const product = products.find(p => p.id === productId);
-            if (!product) return;
-
-            Swal.fire({
-                title: '<i class="fas fa-edit me-2"></i>Edit Product',
-                html: `
-                    <div class="text-start">
-                        <div class="mb-3">
-                            <label for="swal-name" class="form-label">Watch Name <span class="text-danger">*</span></label>
-                            <input type="text" id="swal-name" class="swal2-input" value="${product.name}" style="display: block; width: 100%;">
-                        </div>
-                        <div class="mb-3">
-                            <label for="swal-category" class="form-label">Category <span class="text-danger">*</span></label>
-                            <select id="swal-category" class="swal2-input" style="display: block; width: 100%;">
-                                <option value="Luxury Watches" ${product.category === 'Luxury Watches' ? 'selected' : ''}>Luxury Watches</option>
-                                <option value="Smart Watches" ${product.category === 'Smart Watches' ? 'selected' : ''}>Smart Watches</option>
-                                <option value="Sports Watches" ${product.category === 'Sports Watches' ? 'selected' : ''}>Sports Watches</option>
-                                <option value="Classic Watches" ${product.category === 'Classic Watches' ? 'selected' : ''}>Classic Watches</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label for="swal-price" class="form-label">Price <span class="text-danger">*</span></label>
-                            <input type="number" id="swal-price" class="swal2-input" value="${product.price}" style="display: block; width: 100%;">
-                        </div>
-                        <div class="mb-3">
-                            <label for="swal-stock" class="form-label">Stock <span class="text-danger">*</span></label>
-                            <input type="number" id="swal-stock" class="swal2-input" value="${product.stock}" style="display: block; width: 100%;">
-                        </div>
-                        <div class="mb-3">
-                            <label for="swal-status" class="form-label">Status <span class="text-danger">*</span></label>
-                            <select id="swal-status" class="swal2-input" style="display: block; width: 100%;">
-                                <option value="true" ${product.status ? 'selected' : ''}>Listed</option>
-                                <option value="false" ${!product.status ? 'selected' : ''}>Unlisted</option>
-                            </select>
-                        </div>
-                    </div>
-                `,
-                showCancelButton: true,
-                confirmButtonText: '<i class="fas fa-save me-2"></i>Update Product',
-                cancelButtonText: '<i class="fas fa-times me-2"></i>Cancel',
-                confirmButtonColor: '#000000',
-                width: '500px',
-                preConfirm: () => {
-                    const name = document.getElementById('swal-name').value.trim();
-                    const category = document.getElementById('swal-category').value;
-                    const price = parseFloat(document.getElementById('swal-price').value);
-                    const stock = parseInt(document.getElementById('swal-stock').value);
-                    const status = document.getElementById('swal-status').value === 'true';
-
-                    if (!name) {
-                        Swal.showValidationMessage('Please enter a watch name');
-                        return false;
-                    }
-                    if (!category) {
-                        Swal.showValidationMessage('Please select a category');
-                        return false;
-                    }
-                    if (isNaN(price) || price <= 0) {
-                        Swal.showValidationMessage('Please enter a valid price');
-                        return false;
-                    }
-                    if (isNaN(stock) || stock < 0) {
-                        Swal.showValidationMessage('Please enter a valid stock quantity');
-                        return false;
-                    }
-                    if (products.some(p => p.id !== productId && p.name.toLowerCase() === name.toLowerCase())) {
-                        Swal.showValidationMessage('A product with this name already exists');
-                        return false;
-                    }
-                    return { name, category, price, stock, status };
-                }
-            }).then(result => {
-                if (result.isConfirmed) {
-                    const index = products.findIndex(p => p.id === productId);
-                    products[index] = { ...products[index], ...result.value };
-                    applyFilters();
-                    Swal.fire('Success!', 'Product updated successfully!', 'success');
-                }
-            });
-        }
-
         // Delete Product
         function deleteProduct(productId) {
             const product = products.find(p => p.id === productId);
@@ -443,6 +304,7 @@
 
         // Initialize on Page Load
         document.addEventListener('DOMContentLoaded', function() {
+            fetchCategories();
             applyFilters();
         });
     </script>

@@ -189,7 +189,7 @@
                     status: statusFilter
                 }).toString();
 
-                const response = await fetch(`/api/users?${query}`, {
+                const response = await fetch(`/get-users?${query}`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json'
@@ -301,7 +301,7 @@
             }).then(async (result) => {
                 if (result.isConfirmed) {
                     try {
-                        const response = await fetch(`/api/users/${userId}/${action}`, {
+                        const response = await fetch(`/get-users/${userId}/${action}`, {
                             method: 'PUT',
                             headers: {
                                 'Content-Type': 'application/json'
