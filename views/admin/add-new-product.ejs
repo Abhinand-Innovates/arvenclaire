@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add New Product - Admin Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../styles/admin/add-new-product.css">
+
+    <%- include("../partials/admin/sidebar") %>
+</head>
+<body>
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/admin/dashboard"><i class="fas fa-home"></i> Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="/admin/products">Products</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Add New Product</li>
+            </ol>
+        </nav>
+
+        <!-- Page Header -->
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Add New Product</h1>
+            </div>
+        </div>
+
+        <!-- Content Container -->
+        <div class="content-container">
+            <form id="addProductForm" enctype="multipart/form-data">
+                <!-- Basic Information -->
+                <div class="form-section">
+                    <h3 class="section-title">Basic Information</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="name" class="form-label">Watch Name <span class="required">*</span></label>
+                            <input type="text" id="name" name="name" class="form-control" placeholder="Enter product name" required>
+                            <div class="error-message">Please enter a product name</div>
+                        </div>
+                        <div class="form-group">
+                            <label for="brand" class="form-label">Brand <span class="required">*</span></label>
+                            <input type="text" id="brand" name="brand" class="form-control" placeholder="Enter brand name" required>
+                            <div class="error-message">Please enter a brand name</div>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="category" class="form-label">Category <span class="required">*</span></label>
+                            <select id="category" name="category" class="form-select" required>
+                                <option value="">Select Category</option>
+                                <!-- Categories will be populated by JavaScript -->
+                            </select>
+                            <div class="error-message">Please select a category</div>
+                        </div>
+                        <div class="form-group">
+                            <label for="material" class="form-label">Material <span class="required">*</span></label>
+                            <input type="text" id="material" name="material" class="form-control" placeholder="e.g., Stainless Steel" required>
+                            <div class="error-message">Please enter the material</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pricing Information -->
+                <div class="form-section">
+                    <h3 class="section-title">Pricing & Stock</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="regularPrice" class="form-label">Regular Price <span class="required">*</span></label>
+                            <input type="number" id="regularPrice" name="regularPrice" class="form-control" placeholder="Enter regular price" step="0.01" required>
+                            <div class="error-message">Please enter a valid regular price</div>
+                        </div>
+                        <div class="form-group">
+                            <label for="sellingPrice" class="form-label">Selling Price <span class="required">*</span></label>
+                            <input type="number" id="sellingPrice" name="sellingPrice" class="form-control" placeholder="Enter selling price" step="0.01" required>
+                            <div class="error-message">Please enter a valid selling price</div>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="stock" class="form-label">Stock Quantity <span class="required">*</span></label>
+                            <input type="number" id="stock" name="stock" class="form-control" placeholder="Enter stock quantity" required>
+                            <div class="error-message">Please enter a valid stock quantity</div>
+                        </div>
+                        <div class="form-group">
+                            <label for="status" class="form-label">Status <span class="required">*</span></label>
+                            <select id="status" name="status" class="form-select" required>
+                                <option value="true">Listed</option>
+                                <option value="false" selected>Unlisted</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Product Details -->
+                <div class="form-section">
+                    <h3 class="section-title">Product Details</h3>
+                    <div class="form-group">
+                        <label for="features" class="form-label">Features</label>
+                        <textarea id="features" name="features" class="form-textarea" placeholder="Enter product features (comma separated)" rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea id="description" name="description" class="form-textarea" placeholder="Enter product description" rows="4"></textarea>
+                    </div>
+                </div>
+
+                <!-- Product Images -->
+                <div class="form-section">
+                    <div class="images-section">
+                        <h3 class="section-title">Product Images</h3>
+                        <div class="images-grid">
+                            <div class="image-upload-item">
+                                <label for="mainImage" class="image-label">Main Image <span class="required">*</span></label>
+                                <input type="file" id="mainImage" name="mainImage" class="image-input" accept="image/*" onchange="handleImageUpload(this, 'main-preview')" required>
+                                <div id="main-preview" class="image-preview" onclick="document.getElementById('mainImage').click()">
+                                    <div class="image-placeholder">
+                                        <i class="fas fa-image"></i>
+                                        Choose Image
+                                    </div>
+                                </div>
+                                <div class="error-message">Please select a main image</div>
+                            </div>
+                            <div class="image-upload-item">
+                                <label for="subImage1" class="image-label">Sub Image 1</label>
+                                <input type="file" id="subImage1" name="subImage1" class="image-input" accept="image/*" onchange="handleImageUpload(this, 'sub1-preview')">
+                                <div id="sub1-preview" class="image-preview" onclick="document.getElementById('subImage1').click()">
+                                    <div class="image-placeholder">
+                                        <i class="fas fa-image"></i>
+                                        Choose Image
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="image-upload-item">
+                                <label for="subImage2" class="image-label">Sub Image 2</label>
+                                <input type="file" id="subImage2" name="subImage2" class="image-input" accept="image/*" onchange="handleImageUpload(this, 'sub2-preview')">
+                                <div id="sub2-preview" class="image-preview" onclick="document.getElementById('subImage2').click()">
+                                    <div class="image-placeholder">
+                                        <i class="fas fa-image"></i>
+                                        Choose Image
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="image-upload-item">
+                                <label for="subImage3" class="image-label">Sub Image 3</label>
+                                <input type="file" id="subImage3" name="subImage3" class="image-input" accept="image/*" onchange="handleImageUpload(this, 'sub3-preview')">
+                                <div id="sub3-preview" class="image-preview" onclick="document.getElementById('subImage3').click()">
+                                    <div class="image-placeholder">
+                                        <i class="fas fa-image"></i>
+                                        Choose Image
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="form-actions" style="display: flex; justify-content: center; gap: 1rem;">
+                    <a href="/admin/products" class="btn-secondary">
+                        <i class="fas fa-times"></i>
+                        Cancel
+                    </a>
+                    <button type="submit" class="btn-success">
+                        <i class="fas fa-save"></i>
+                        Save Product
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.10.5/sweetalert2.all.min.js"></script>
+    <script>
+        let categories = [];
+
+        // Fetch categories from backend
+        async function fetchCategories() {
+            try {
+                const response = await fetch('/get-categories');
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+                }
+                categories = await response.json();
+                populateCategoryDropdown();
+            } catch (error) {
+                console.error('Error fetching categories:', error);
+                Swal.fire('Error!', `Could not fetch categories: ${error.message}`, 'error');
+            }
+        }
+
+        // Populate category dropdown
+        function populateCategoryDropdown() {
+            const categorySelect = document.getElementById('category');
+            categorySelect.innerHTML = '<option value="">Select Category</option>';
+            categories.forEach(category => {
+                categorySelect.innerHTML += `<option value="${category.name}">${category.name}</option>`;
+            });
+        }
+
+        // Handle image upload preview
+        function handleImageUpload(input, previewId) {
+            const file = input.files[0];
+            const preview = document.getElementById(previewId);
+            
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
+                };
+                reader.readAsDataURL(file);
+            } else {
+                preview.innerHTML = `<div class="image-placeholder"><i class="fas fa-image"></i><br>Choose Image</div>`;
+            }
+        }
+
+        // Form validation
+        function validateForm() {
+            let isValid = true;
+            const requiredFields = ['name', 'brand', 'category', 'material', 'regularPrice', 'sellingPrice', 'stock'];
+            
+            // Clear previous errors
+            document.querySelectorAll('.form-group').forEach(group => {
+                group.classList.remove('error');
+            });
+
+            // Validate required fields
+            requiredFields.forEach(fieldName => {
+                const field = document.getElementById(fieldName);
+                const formGroup = field.closest('.form-group');
+                
+                if (!field.value.trim()) {
+                    formGroup.classList.add('error');
+                    isValid = false;
+                }
+            });
+
+            // Validate main image
+            const mainImage = document.getElementById('mainImage');
+            if (!mainImage.files[0]) {
+                const formGroup = mainImage.closest('.image-upload-item');
+                formGroup.querySelector('.error-message').style.display = 'block';
+                isValid = false;
+            }
+
+            // Validate price logic
+            const regularPrice = parseFloat(document.getElementById('regularPrice').value);
+            const sellingPrice = parseFloat(document.getElementById('sellingPrice').value);
+            
+            if (sellingPrice > regularPrice) {
+                const sellingPriceGroup = document.getElementById('sellingPrice').closest('.form-group');
+                sellingPriceGroup.classList.add('error');
+                sellingPriceGroup.querySelector('.error-message').textContent = 'Selling price cannot be higher than regular price';
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        // Handle form submission
+        document.getElementById('addProductForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (!validateForm()) {
+                Swal.fire('Validation Error!', 'Please fill in all required fields correctly.', 'error');
+                return;
+            }
+
+            // Show loading
+            Swal.fire({
+                title: 'Saving Product...',
+                text: 'Please wait while we save your product.',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            // Prepare form data
+            const formData = new FormData(this);
+            
+            try {
+                // Here you would send the data to your backend
+                // const response = await fetch('/api/products', {
+                //     method: 'POST',
+                //     body: formData
+                // });
+                
+                // For demo purposes, simulate success
+                setTimeout(() => {
+                    Swal.fire({
+                        title: 'Success!',
+                        text: 'Product has been added successfully!',
+                        icon: 'success',
+                        confirmButtonText: 'Go to Products'
+                    }).then(() => {
+                        window.location.href = '/admin/products';
+                    });
+                }, 1500);
+                
+            } catch (error) {
+                console.error('Error saving product:', error);
+                Swal.fire('Error!', 'Failed to save product. Please try again.', 'error');
+            }
+        });
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchCategories();
+        });
+
+        // Mobile sidebar toggle (if you have a sidebar toggle button)
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar-space');
+            const mainContent = document.querySelector('.main-content');
+            
+            if (window.innerWidth <= 768) {
+                sidebar.style.transform = sidebar.style.transform === 'translateX(0px)' ? 'translateX(-100%)' : 'translateX(0px)';
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,6 +10,7 @@
 
     <%- include("../partials/admin/sidebar") %>
 </head>
+
 <body>
     <!-- Main Content -->
     <div class="main-content">
@@ -25,10 +27,11 @@
             <div>
                 <h1 class="page-title">Product Management</h1>
             </div>
-            <a href="/admin/add-product" class="btn-black">
+            <a href="/admin/add-product" class="btn-black" style="text-decoration: none;">
                 <i class="fas fa-plus"></i>
                 Add New Product
             </a>
+
         </div>
 
         <!-- Content Container -->
@@ -50,7 +53,8 @@
                     </select>
                 </div>
                 <div class="search-box">
-                    <input type="text" class="form-control search-input" id="searchInput" placeholder="Search by watch name...">
+                    <input type="text" class="form-control search-input" id="searchInput"
+                        placeholder="Search by watch name...">
                 </div>
             </div>
 
@@ -303,10 +307,11 @@
         }
 
         // Initialize on Page Load
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             fetchCategories();
             applyFilters();
         });
     </script>
 </body>
+
 </html>

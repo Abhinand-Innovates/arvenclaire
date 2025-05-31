@@ -37,12 +37,12 @@ app.set("view engine","ejs");
 app.set("views",[path.join(__dirname,"views/user"),path.join(__dirname,"views/admin")])
 
 
-app.use("/",userRoute);
-app.use("/",adminRoute);
+// app.use("/",userRoute);
+// app.use("/",adminRoute);
 
-// app.get("/",(req,res) => {
-//   res.render("get-product")
-// })
+app.get("/",(req,res) => {
+  res.render("get-product")
+})
 
 
 
