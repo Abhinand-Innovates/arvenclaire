@@ -9,7 +9,7 @@ const bcrypt = require("bcrypt");
 
 const loadLanding = async (req, res) => {
   try {
-    return res.render("landing");
+    return res.render("dashboard");
   } catch (error) {
     console.log("Landing page not loading");
     res.status(500).send("Server error");

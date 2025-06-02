@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
+const { Schema } = mongoose;
 
-const categorySchema = new mongoose.Schema({
+const categorySchema = new Schema({
   name: {
     type: String,
     required: true,
@@ -15,23 +16,21 @@ const categorySchema = new mongoose.Schema({
   isListed: {
     type: Boolean,
     default: true
-  },
-},{timestamps: true});
-
+  }
+}, { timestamps: true });
 
 categorySchema.pre('save', async function(next) {
-    if (this.isModified('name')) {
-        const existingCategory = await this.constructor.findOne({ name: new RegExp(`^${this.name}$`, 'i') });
-        if (existingCategory && existingCategory._id.toString() !== this._id.toString()) {
-            const err = new Error('A category with this name already exists.');
-            err.statusCode = 409; // Conflict
-            return next(err);
-        }
+  if (this.isModified('name')) {
+    const exists = await this.constructor.findOne({ name: new RegExp(`^${this.name}$`, 'i') });
+    if (exists && exists._id.toString() !== this._id.toString()) {
+      const err = new Error('A category with this name already exists.');
+      err.statusCode = 409;
+      return next(err);
     }
-    next();
+  }
+  next();
 });
 
+const category = mongoose.model('Category', categorySchema);
 
-const Category = mongoose.model('Category', categorySchema);
-
-module.exports = Category;
+module.exports = category;
