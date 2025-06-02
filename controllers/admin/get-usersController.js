@@ -5,44 +5,41 @@ const getUsers = async (req, res) => {
     const searchTerm = req.query.search || '';
     const statusFilter = req.query.status || '';
     const page = parseInt(req.query.page) || 1;
-    const limit = 10; // Changed to 10 users per page
+    const limit = 10;
 
-    // 1. Build dynamic search query
     let searchQuery = {};
-    
-    // Search by name, email, or phone (case-insensitive)
     if (searchTerm) {
       searchQuery.$or = [
-        { fullName: { $regex: searchTerm, $options: 'i' } },
+        { fullname: { $regex: searchTerm, $options: 'i' } }, // Changed to lowercase
         { email: { $regex: searchTerm, $options: 'i' } },
         { phone: { $regex: searchTerm, $options: 'i' } },
       ];
     }
-
-    // Filter by status: 'blocked' or 'active'
     if (statusFilter) {
       searchQuery.isBlocked = statusFilter === 'blocked';
     }
 
-    // 2. Count total matched users
     const totalUsers = await User.countDocuments(searchQuery);
-
-    // 3. Fetch paginated user list sorted by latest signup
     const users = await User.find(searchQuery)
-      .sort({ createdAt: -1 }) // Newest first
+      .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(limit)
-      .select('fullName email phone createdAt isBlocked _id');
+      .select('fullname email phone createdAt isBlocked _id') // Changed to lowercase
+      .lean();
 
+    // Rename fullname to fullName for frontend compatibility
+    const modifiedUsers = users.map(user => ({
+      ...user,
+      fullName: user.fullname && user.fullname.trim() !== '' ? user.fullname : user.email.split('@')[0],
+      fullname: undefined // Remove original field
+    }));
 
-    // 4. Pagination variables
     const totalPages = Math.ceil(totalUsers / limit);
     const startIdx = (page - 1) * limit;
     const endIdx = Math.min(startIdx + limit, totalUsers);
 
-    // 5. Render EJS view
     res.render('customer-listing', {
-      users,
+      users: modifiedUsers,
       currentPage: page,
       totalPages,
       totalUsers,
@@ -51,40 +48,45 @@ const getUsers = async (req, res) => {
       searchTerm,
       statusFilter,
     });
-
   } catch (error) {
     console.error('Error fetching users:', error.message);
     res.status(500).send('Server error');
   }
 };
 
-
 const getUsersApi = async (req, res) => {
   try {
     const searchTerm = req.query.search || '';
     const statusFilter = req.query.status || '';
     const page = parseInt(req.query.page) || 1;
-    const limit = 8; // Changed to 10 users per page
+    const limit = 10;
 
     let searchQuery = {};
     if (searchTerm) {
       searchQuery.$or = [
-        { fullName: { $regex: searchTerm, $options: 'i' } },
+        { fullname: { $regex: searchTerm, $options: 'i' } }, // Changed to lowercase
         { email: { $regex: searchTerm, $options: 'i' } },
         { phone: { $regex: searchTerm, $options: 'i' } },
       ];
     }
-
     if (statusFilter) {
       searchQuery.isBlocked = statusFilter === 'blocked';
     }
 
     const totalUsers = await User.countDocuments(searchQuery);
     const users = await User.find(searchQuery)
-      .sort({ createdAt: -1 }) // Newest first
+      .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(limit)
-      .select('fullName email phone createdAt isBlocked _id');
+      .select('fullname email phone createdAt isBlocked _id') // Changed to lowercase
+      .lean();
+
+    // Rename fullname to fullName for frontend compatibility
+    const modifiedUsers = users.map(user => ({
+      ...user,
+      fullName: user.fullname && user.fullname.trim() !== '' ? user.fullname : user.email.split('@')[0],
+      fullname: undefined // Remove original field
+    }));
 
     const totalPages = Math.ceil(totalUsers / limit);
     const startIdx = (page - 1) * limit;
@@ -92,7 +94,7 @@ const getUsersApi = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      users,
+      users: modifiedUsers,
       currentPage: page,
       totalPages,
       totalUsers,
@@ -108,14 +110,21 @@ const getUsersApi = async (req, res) => {
 const getUserById = async (req, res) => {
   try {
     const userId = req.params.id;
-    const user = await User.findById(userId).select("fullName email phone createdAt isBlocked");
+    const user = await User.findById(userId)
+      .select('fullname email phone createdAt isBlocked') // Changed to lowercase
+      .lean();
     if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
+      return res.status(404).json({ success: false, message: 'User not found' });
     }
-    res.status(200).json(user);
+    // Rename fullname to fullName
+    res.status(200).json({
+      ...user,
+      fullName: user.fullname && user.fullname.trim() !== '' ? user.fullname : user.email.split('@')[0],
+      fullname: undefined
+    });
   } catch (error) {
-    console.error("Error fetching user details:", error);
-    res.status(500).json({ success: false, message: "Server error" });
+    console.error('Error fetching user details:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
   }
 };
 
@@ -130,19 +139,19 @@ const blockUser = async (req, res) => {
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: "User not found",
+        message: 'User not found',
       });
     }
     res.status(200).json({
       success: true,
-      message: "User blocked successfully",
+      message: 'User blocked successfully',
       user: { id: user._id, isBlocked: user.isBlocked },
     });
   } catch (error) {
-    console.error("Error blocking user:", error);
+    console.error('Error blocking user:', error);
     res.status(500).json({
       success: false,
-      message: "Server error",
+      message: 'Server error',
     });
   }
 };
@@ -158,19 +167,19 @@ const unblockUser = async (req, res) => {
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: "User not found",
+        message: 'User not found',
       });
     }
     res.status(200).json({
       success: true,
-      message: "User unblocked successfully",
+      message: 'User unblocked successfully',
       user: { id: user._id, isBlocked: user.isBlocked },
     });
   } catch (error) {
-    console.error("Error unblocking user:", error);
+    console.error('Error unblocking user:', error);
     res.status(500).json({
       success: false,
-      message: "Server error",
+      message: 'Server error',
     });
   }
 };

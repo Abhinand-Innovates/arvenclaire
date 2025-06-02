@@ -1,11 +1,57 @@
-<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="../../styles/admin/get-category.css">
-
-
-
+    <link rel="stylesheet" href="/styles/admin/get-category.css">
+    <!-- Fix: Properly align Actions column to the far right -->
+    <style>
+        /* Make table take full width */
+        .table {
+            width: 100% !important;
+            table-layout: fixed !important;
+        }
+        
+        /* Set specific widths for columns to push Actions to the right */
+        .table th:nth-child(1) { width: 5% !important; }    /* # column */
+        .table th:nth-child(2) { width: 20% !important; }   /* Category Name */
+        .table th:nth-child(3) { width: 25% !important; }   /* Description */
+        .table th:nth-child(4) { width: 15% !important; }   /* Status */
+        .table th:nth-child(5) { width: 15% !important; }   /* Created Date */
+        .table th:nth-child(6) { width: 20% !important; }   /* Actions */
+        
+        /* Align Actions header and content properly */
+        .table th:last-child {
+            text-align: center !important; /* Center the "Actions" header text */
+            padding-right: 20px !important;
+        }
+        
+        .table td:last-child {
+            text-align: right !important; /* Keep buttons aligned to the right */
+            padding-right: 20px !important;
+        }
+        
+        /* Style the action buttons container */
+        .action-buttons {
+            display: flex !important;
+            justify-content: flex-end !important;
+            align-items: center !important;
+            gap: 8px !important;
+        }
+        
+        /* Ensure buttons are properly styled */
+        .action-buttons .btn-outline-black,
+        .action-buttons .btn-danger-outline {
+            white-space: nowrap !important;
+            margin: 0 !important;
+        }
+    </style>
+    <title>Categories Management</title>
+</head>
+<body>
     <%- include("../partials/admin/sidebar") %>
-
 
     <!-- Main Content -->
     <div class="main-content">
@@ -53,13 +99,12 @@
                         </tr>
                     </thead>
                     <tbody id="categoryTableBody">
-                        <!-- Table content will be populated by JavaScript -->
-                         <tr><td colspan="6" class="text-center">Loading categories...</td></tr>
+                        <tr><td colspan="6" class="text-center">Loading categories...</td></tr>
                     </tbody>
                 </table>
             </div>
 
-            <!-- Pagination (Keep for now, but full pagination needs more backend logic) -->
+            <!-- Pagination -->
             <div class="pagination-container">
                 <div class="pagination-info" id="paginationInfo">
                     Showing 0 to 0 of 0 entries
@@ -86,7 +131,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.10.5/sweetalert2.all.min.js"></script>
     <script>
-        let categories = []; // This will hold categories fetched from backend
+        let categories = [];
         let filteredCategories = [];
 
         // Mobile sidebar toggle
@@ -129,7 +174,7 @@
                     throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
                 }
                 categories = await response.json();
-                applySearchFilter(); // Apply search filter after fetching
+                applySearchFilter();
             } catch (error) {
                 console.error('Error fetching categories:', error);
                 Swal.fire('Error!', `Could not fetch categories: ${error.message}`, 'error');
@@ -187,7 +232,6 @@
                 </tr>
             `).join('');
 
-            // Basic pagination info update (full pagination requires server-side support)
             paginationInfo.textContent = `Showing 1 to ${filteredCategories.length} of ${filteredCategories.length} entries`;
         }
 
@@ -203,11 +247,11 @@
                         </div>
                         <div class="mb-3">
                             <label for="swal-desc" class="form-label">Description</label>
-                            <textarea id="swal-desc" class="swal2-textarea" placeholder="Enter category description..." style="display: block; width: 100%; margin: 0; height: 100px;"></textarea>
+                            <textarea id="swal2-textarea" class="swal2-textarea" placeholder="Enter category description..." style="display: block; width: 100%; margin: 0; height: 100px;"></textarea>
                         </div>
                         <div class="mb-3">
                             <label for="swal-status" class="form-label">Status <span class="text-danger">*</span></label>
-                            <select id="swal-status" class="swal2-input" style="display: block; width: 100%; margin: 0;">
+                            <select id="swal-status" class="form-control" style="display: block; width: 100%; margin: 0;">
                                 <option value="true" selected>Listed</option>
                                 <option value="false">Unlisted</option>
                             </select>
@@ -215,20 +259,19 @@
                     </div>
                 `,
                 showCancelButton: true,
-                confirmButtonText: '<i class="fas fa-save me-2"></i>Save Category',
-                cancelButtonText: '<i class="fas fa-times me-2"></i>Cancel',
+                confirmButtonText: '<i class="fas fa-check"></i> Save',
+                cancelButtonText: '<i class="fas fa-close"></i>',
                 confirmButtonColor: '#000000',
                 width: '500px',
                 preConfirm: () => {
                     const name = document.getElementById('swal-name').value.trim();
-                    const description = document.getElementById('swal-desc').value.trim();
+                    const description = document.getElementById('swal2-textarea').value.trim();
                     const status = document.getElementById('swal-status').value === 'true';
                     
                     if (!name) {
                         Swal.showValidationMessage('Please enter a category name');
                         return false;
                     }
-                    // Frontend check for existing name (case-insensitive)
                     if (categories.some(c => c.name.toLowerCase() === name.toLowerCase())) {
                         Swal.showValidationMessage('A category with this name already exists.');
                         return false;
@@ -254,9 +297,7 @@
                     const errorData = await response.json();
                     throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
                 }
-            
                 await fetchCategories();
-
                 Swal.fire('Success!', 'Category added successfully!', 'success');
             } catch (error) {
                 console.error('Error adding category:', error);
@@ -274,31 +315,24 @@
                     body: JSON.stringify({ status: newStatus })
                 });
                 if (!response.ok) {
-                    const errorData = await response.json();
-                     // Revert checkbox on error
                     toggleElement.checked = !newStatus;
+                    const errorData = await response.json();
                     throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
                 }
                 const data = await response.json();
-                
-                // Update local data
                 const category = categories.find(c => c._id === categoryId);
-                if (category) category.status = newStatus;
+                if (category) category.isListed = newStatus;
                 const filteredCategory = filteredCategories.find(c => c._id === categoryId);
-                if (filteredCategory) filteredCategory.status = newStatus;
-                // No need to re-render table, checkbox already changed.
-                // If you want to re-render for some other reason: renderTable(); 
-
+                if (filteredCategory) filteredCategory.isListed = newStatus;
                 Swal.fire({
-                    title: 'Status Updated!',
-                    text: data.message, // Use message from backend
+                    title: 'Success!',
+                    text: data.message,
                     icon: 'success',
                     timer: 2000,
                     showConfirmButton: false
                 });
             } catch (error) {
                 console.error('Error toggling status:', error);
-                 // Revert checkbox on error if not already done
                 toggleElement.checked = !newStatus;
                 Swal.fire('Error!', `Could not update status: ${error.message}`, 'error');
             }
@@ -327,8 +361,8 @@
                         <div class="mb-3">
                             <label for="swal-edit-status" class="form-label">Status <span class="text-danger">*</span></label>
                             <select id="swal-edit-status" class="swal2-input" style="display: block; width: 100%; margin: 0;">
-                                <option value="true" ${category.status ? 'selected' : ''}>Listed</option>
-                                <option value="false" ${!category.status ? 'selected' : ''}>Unlisted</option>
+                                <option value="true" ${category.isListed ? 'selected' : ''}>Listed</option>
+                                <option value="false" ${!category.isListed ? 'selected' : ''}>Unlisted</option>
                             </select>
                         </div>
                     </div>
@@ -347,7 +381,6 @@
                         Swal.showValidationMessage('Please enter a category name');
                         return false;
                     }
-                     // Frontend check for existing name (case-insensitive, excluding self)
                     if (categories.some(c => c._id !== categoryId && c.name.toLowerCase() === name.toLowerCase())) {
                         Swal.showValidationMessage('Another category with this name already exists.');
                         return false;
@@ -373,13 +406,7 @@
                     const errorData = await response.json();
                     throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
                 }
-                // const updatedCategoryFromServer = await response.json();
-
-                // const index = categories.findIndex(c => c._id === categoryId);
-                // if (index !== -1) categories[index] = { ...categories[index], ...updatedCategoryFromServer };
-                // applySearchFilter();
-                await fetchCategories(); // Re-fetch all
-
+                await fetchCategories();
                 Swal.fire('Success!', 'Category updated successfully!', 'success');
             } catch (error) {
                 console.error('Error updating category:', error);
@@ -387,33 +414,45 @@
             }
         }
 
-       async function deleteCategory(categoryId) {
-    const category = categories.find(c => c._id === categoryId);
-    if (!category) return;
+        // Delete category function
+        async function deleteCategory(categoryId) {
+            const category = categories.find(c => c._id === categoryId);
+            if (!category) return;
 
-    Swal.fire({
-        title: 'Are you sure?',
-        text: `You are about to delete the category "${category.name}". This action cannot be undone!`,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#ef4444',
-        cancelButtonColor: '#6b7280',
-        confirmButtonText: '<i class="fas fa-trash me-2"></i>Yes, delete it!',
-        cancelButtonText: '<i class="fas fa-times me-2"></i>Cancel'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            // Remove category from frontend array
-            categories = categories.filter(c => c._id !== categoryId);
-            applySearchFilter(); // Update the UI
-
-            Swal.fire('Deleted!', `Category "${category.name}" has been deleted.`, 'success');
+            Swal.fire({
+                title: 'Are you sure?',
+                text: `You are about to delete the category "${category.name}". This action cannot be undone!`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: '<i class="fas fa-trash me-2"></i>Yes, delete it!',
+                cancelButtonText: '<i class="fas fa-times me-2"></i>Cancel'
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    try {
+                        const response = await fetch(`/get-categories/${categoryId}`, {
+                            method: 'DELETE',
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+                        if (!response.ok) {
+                            const errorData = await response.json();
+                            throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+                        }
+                        categories = categories.filter(c => c._id !== categoryId);
+                        applySearchFilter();
+                        Swal.fire('Deleted!', `Category "${category.name}" has been deleted.`, 'success');
+                    } catch (error) {
+                        console.error('Error deleting category:', error);
+                        Swal.fire('Error!', `Could not delete category: ${error.message}`, 'error');
+                    }
+                }
+            });
         }
-    });
-}
 
         // Initialize the table on page load
         document.addEventListener('DOMContentLoaded', function() {
-            fetchCategories(); // Fetch categories when the page loads
+            fetchCategories();
         });
     </script>
 </body>

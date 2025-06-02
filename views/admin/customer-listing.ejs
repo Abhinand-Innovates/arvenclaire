@@ -1,12 +1,18 @@
-
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/styles/admin/customer-listing.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
+    <title>Customer Management</title>
+</head>
+<body>
     <%- include("../partials/admin/sidebar") %>
+
     <!-- Main Content -->
     <div class="main-content">
         <!-- Breadcrumbs -->
@@ -31,7 +37,6 @@
                     <i class="fas fa-search"></i>
                     <input type="text" class="form-control" id="customerSearch" placeholder="Search customers..." value="<%= searchTerm %>">
                 </div>
-                
                 <div class="filter-controls">
                     <select class="form-select" id="statusFilter" style="width: auto;">
                         <option value="" <%= statusFilter === '' ? 'selected' : '' %>>All Status</option>
@@ -60,11 +65,10 @@
                                 <td>
                                     <div class="customer-info">
                                         <div class="customer-avatar">
-                                            <%= user.fullname ? user.fullname.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase() %>
+                                            <%= user.fullName ? user.fullName.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase() %>
                                         </div>
                                         <div class="customer-details">
-                                            <h6><%= user.fullname%></h6>
-                                            <p>ID: #<%= user._id.toString().slice(-4).padStart(4, '0') %></p>
+                                            <%= user.fullName || 'Unnamed User' %>
                                         </div>
                                     </div>
                                 </td>
@@ -94,7 +98,6 @@
                 <div class="pagination-info">
                     Showing <span id="showingStart"><%= startIdx + 1 %></span> to <span id="showingEnd"><%= endIdx %></span> of <span id="totalCustomers"><%= totalUsers %></span> customers
                 </div>
-                
                 <nav aria-label="Customer pagination">
                     <ul class="pagination pagination-sm mb-0" id="pagination">
                         <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>" id="prevPage">
@@ -201,7 +204,7 @@
                 }
 
                 const data = await response.json();
-                console.log('Fetched users:', data);
+                console.log('Fetched users response:', JSON.stringify(data, null, 2));
                 if (data.users.length > customersPerPage) {
                     console.warn(`Received ${data.users.length} users, expected up to ${customersPerPage}`);
                 }
@@ -222,9 +225,23 @@
             const tableBody = document.getElementById('customersTableBody');
             tableBody.innerHTML = '';
 
+            if (users.length > 0) {
+                console.log('Sample user data:', users[0]);
+                users.forEach((user, index) => {
+                    console.log(`User ${index + 1} - fullName: ${user.fullName}, email: ${user.email}`);
+                });
+            } else {
+                console.warn('No users received in renderCustomersTable');
+            }
+
             users.forEach(user => {
-                const displayName = user.fullName || user.email;
+                const displayName = user.fullName && user.fullName.trim() !== '' ? user.fullName : 'Unnamed User';
                 const avatarChar = displayName.charAt(0).toUpperCase();
+
+                if (!user.fullName || user.fullName.trim() === '') {
+                    console.warn(`Missing or empty fullName for user ID: ${user._id}, email: ${user.email}`);
+                }
+
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>
@@ -234,7 +251,6 @@
                             </div>
                             <div class="customer-details">
                                 <h6>${displayName}</h6>
-                                <p>ID: #${user._id.toString().slice(-4).padStart(4, '0')}</p>
                             </div>
                         </div>
                     </td>
@@ -257,13 +273,11 @@
                 tableBody.appendChild(row);
             });
 
-            // Update pagination info
             document.getElementById('showingStart').textContent = paginationData.startIdx + 1 || 0;
             document.getElementById('showingEnd').textContent = paginationData.endIdx || 0;
             document.getElementById('totalCustomers').textContent = paginationData.totalUsers || 0;
             totalPages = paginationData.totalPages || 1;
 
-            // Update pagination controls
             updatePagination();
         }
 
@@ -339,3 +353,4 @@
     </script>
 </body>
 </html>
+```
