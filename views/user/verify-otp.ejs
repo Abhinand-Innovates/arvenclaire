@@ -1,40 +1,221 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OTP Verification</title>
-    <link rel="stylesheet" href="../../styles/user/varify-otp.css">
+    <title>Signup OTP Verification</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: #ffffff;
+            color: #1a1a1a;
+        }
+        .otp-card {
+            background: #ffffff;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+        }
+        .otp-card h2 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 10px;
+        }
+        .otp-card p {
+            font-size: 14px;
+            color: #4a4a4a;
+            margin-bottom: 20px;
+        }
+        .otp-container {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        .otp-input {
+            width: 50px;
+            height: 50px;
+            text-align: center;
+            font-size: 18px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            background: #ffffff;
+            color: #1a1a1a;
+            transition: all 0.3s ease;
+        }
+        .otp-input:focus {
+            outline: none;
+            border-color: #1a1a1a;
+            box-shadow: 0 0 5px rgba(26, 26, 26, 0.2);
+        }
+        .otp-input.error {
+            border-color: #ff4d4d;
+            background: #ffe6e6;
+            animation: shake 0.3s ease;
+        }
+        .otp-input.success {
+            border-color: #4caf50;
+            background: #e8f5e9;
+        }
+        #error-message {
+            color: #ff4d4d;
+            font-size: 14px;
+            min-height: 20px;
+            margin: 10px 0;
+            transition: opacity 0.3s ease;
+        }
+        #timer {
+            font-size: 16px;
+            font-weight: 500;
+            color: #1a1a1a;
+            margin: 20px 0;
+            transition: color 0.4s ease;
+        }
+        #timer.expired {
+            color: #ff4d4d;
+            animation: fadeIn 0.5s ease;
+        }
+        .btn {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .btn button {
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: 500;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+        }
+        #verify-btn {
+            background: #1a1a1a;
+            color: #ffffff;
+        }
+        #verify-btn:hover:not(:disabled) {
+            background: #333333;
+            transform: translateY(-2px);
+        }
+        #verify-btn:disabled {
+            background: #e0e0e0;
+            color: #4a4a4a;
+            cursor: not-allowed;
+        }
+        #verify-btn.loading {
+            background: #e0e0e0;
+            position: relative;
+            color: transparent;
+        }
+        #verify-btn.loading::after {
+            content: '';
+            border: 3px solid #ffffff;
+            border-top: 3px solid #1a1a1a;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        #resend-btn {
+            background: #4a4a4a;
+            color: #ffffff;
+        }
+        #resend-btn:hover:not(:disabled) {
+            background: #666666;
+            transform: translateY(-2px);
+        }
+        #resend-btn:disabled {
+            background: #e0e0e0;
+            color: #4a4a4a;
+            cursor: not-allowed;
+        }
+        #resend-btn.loading {
+            background: #e0e0e0;
+            position: relative;
+            color: transparent;
+        }
+        #resend-btn.loading::after {
+            content: '';
+            border: 3px solid #ffffff;
+            border-top: 3px solid #1a1a1a;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        @keyframes spin {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        @keyframes fadeIn {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+        @media (max-width: 480px) {
+            .otp-card {
+                padding: 1.5rem;
+                margin: 0 1rem;
+            }
+            .otp-input {
+                width: 40px;
+                height: 40px;
+                font-size: 16px;
+            }
+            .btn button {
+                padding: 10px 20px;
+                font-size: 14px;
+            }
+        }
+    </style>
 </head>
-
 <body>
-    <div class="container">
-        <h1>OTP Verification</h1>
-        <p>We have sent a 6-digit verification code to your registered email address</p>
-
-
-
+    <div class="otp-card">
+        <h2>Verify Your OTP</h2>
+        <p>Enter the 6-digit code sent to your email</p>
         <div class="otp-container">
-            <input type="text" class="otp-input" maxlength="1" autofocus data-index="0">
-            <input type="text" class="otp-input" maxlength="1" data-index="1">
-            <input type="text" class="otp-input" maxlength="1" data-index="2">
-            <input type="text" class="otp-input" maxlength="1" data-index="3">
-            <input type="text" class="otp-input" maxlength="1" data-index="4">
-            <input type="text" class="otp-input" maxlength="1" data-index="5">
+            <input type="text" class="otp-input" maxlength="1" />
+            <input type="text" class="otp-input" maxlength="1" />
+            <input type="text" class="otp-input" maxlength="1" />
+            <input type="text" class="otp-input" maxlength="1" />
+            <input type="text" class="otp-input" maxlength="1" />
+            <input type="text" class="otp-input" maxlength="1" />
         </div>
-
-        <div class="error-message" id="error-message"></div>
-
-        <div class="timer" id="timer">Timer: 00:30</div>
-
-        <div class="button-container">
-            <button class="btn btn-primary" id="verify-btn">Verify OTP</button>
-            <button class="btn btn-secondary" id="resend-btn" disabled>Resend OTP</button>
+        <div id="error-message"></div>
+        <div id="timer">Timer: 00:30</div>
+        <div class="btn">
+            <button id="verify-btn" disabled>Verify OTP</button>
+            <button id="resend-btn" disabled>Resend OTP</button>
         </div>
     </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
         // OTP Validation Class
@@ -48,7 +229,6 @@
 
             setupEventListeners() {
                 this.otpInputs.forEach((input, index) => {
-                    // Input validation and navigation
                     input.addEventListener('input', (e) => this.handleInput(e, index));
                     input.addEventListener('keydown', (e) => this.handleKeyDown(e, index));
                     input.addEventListener('paste', (e) => this.handlePaste(e));
@@ -59,7 +239,6 @@
             handleInput(e, index) {
                 const value = e.target.value;
                 
-                // Allow only numbers
                 if (!/^\d*$/.test(value)) {
                     e.target.value = '';
                     this.showError('Only numbers are allowed');
@@ -67,28 +246,23 @@
                     return;
                 }
 
-                // Clear error state
                 this.clearError();
                 this.markInputAsSuccess(e.target);
 
-                // Auto-focus next input
                 if (value.length === 1 && index < this.otpInputs.length - 1) {
                     this.otpInputs[index + 1].focus();
                 }
 
-                // Enable/disable verify button
                 this.toggleVerifyButton();
             }
 
             handleKeyDown(e, index) {
-                // Handle backspace
                 if (e.key === 'Backspace') {
                     if (e.target.value === '' && index > 0) {
                         this.otpInputs[index - 1].focus();
                     }
                 }
                 
-                // Handle arrow keys
                 if (e.key === 'ArrowLeft' && index > 0) {
                     this.otpInputs[index - 1].focus();
                     e.preventDefault();
@@ -98,7 +272,6 @@
                     e.preventDefault();
                 }
 
-                // Handle Enter key
                 if (e.key === 'Enter') {
                     this.verifyOTP();
                 }
@@ -108,13 +281,11 @@
                 e.preventDefault();
                 const pastedData = e.clipboardData.getData('text').trim();
                 
-                // Validate pasted data
                 if (!/^\d{6}$/.test(pastedData)) {
                     this.showError('Please paste a valid 6-digit OTP');
                     return;
                 }
 
-                // Fill inputs with pasted data
                 for (let i = 0; i < 6; i++) {
                     this.otpInputs[i].value = pastedData[i];
                     this.markInputAsSuccess(this.otpInputs[i]);
@@ -143,16 +314,27 @@
             validateOTP() {
                 const otpValue = this.getOTPValue();
                 
-                // Check if all fields are filled
                 if (otpValue.length !== 6) {
                     this.showError('Please enter all 6 digits');
                     this.highlightEmptyInputs();
                     return false;
                 }
 
-                // Check if all are numbers
                 if (!/^\d{6}$/.test(otpValue)) {
                     this.showError('OTP must contain only numbers');
+                    return false;
+                }
+
+                if (otpValue === '000000') {
+                    this.showError('Invalid OTP. All zeros are not allowed.');
+                    this.highlightAllInputsAsError();
+                    return false;
+                }
+
+                const isSequential = /^(012345|123456|234567|345678|456789|567890|654321|543210|432109|321098|210987|109876)$/.test(otpValue);
+                if (isSequential) {
+                    this.showError('Suspicious OTP. Sequential numbers are not allowed.');
+                    this.highlightAllInputsAsError();
                     return false;
                 }
 
@@ -170,7 +352,7 @@
 
             showError(message) {
                 this.errorMessage.textContent = message;
-                this.errorMessage.style.color = '#ef4444';
+                this.errorMessage.style.color = '#ff4d4d';
             }
 
             clearError() {
@@ -203,7 +385,7 @@
 
             toggleVerifyButton() {
                 const otpValue = this.getOTPValue();
-                this.verifyButton.disabled = otpValue.length !== 6;
+                this.verifyButton.disabled = otpValue.length !== 6 || this.verifyButton.classList.contains('expired');
             }
 
             verifyOTP() {
@@ -213,21 +395,25 @@
 
                 const otpValue = this.getOTPValue();
                 
-                // Show loading state
                 this.verifyButton.classList.add('loading');
                 this.verifyButton.disabled = true;
                 this.verifyButton.textContent = '';
 
-                // Simulate API call
-                fetch("verify-otp", {
+                fetch("/verify-otp", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json"
                     },
                     body: JSON.stringify({ otp: otpValue })
                 })
-                .then(response => response.json())
+                .then(response => response.json().catch(() => {
+                    throw new Error('Invalid response format');
+                }))
                 .then(data => {
+                    if (typeof data !== 'object' || data === null) {
+                        throw new Error('Invalid response format');
+                    }
+
                     if (data.success) {
                         Swal.fire({
                             icon: "success",
@@ -244,13 +430,18 @@
                 })
                 .catch(error => {
                     console.error("Error:", error);
-                    this.showError('Verification failed. Please try again.');
+                    let errorMessage = "Unable to verify OTP. Please check your connection and try again.";
+                    if (error.message.includes('Invalid response format')) {
+                        errorMessage = "Server response was invalid. Please try again.";
+                    } else if (error.message.includes('Failed to fetch')) {
+                        errorMessage = "Network error. Please check your internet connection.";
+                    }
+                    this.showError(errorMessage);
                     this.highlightAllInputsAsError();
                 })
                 .finally(() => {
-                    // Reset button state
                     this.verifyButton.classList.remove('loading');
-                    this.verifyButton.disabled = false;
+                    this.verifyButton.disabled = this.verifyButton.classList.contains('expired');
                     this.verifyButton.textContent = 'Verify OTP';
                 });
             }
@@ -268,19 +459,26 @@
                 this.duration = duration;
                 this.timerElement = document.getElementById('timer');
                 this.resendButton = document.getElementById('resend-btn');
+                this.verifyButton = document.getElementById('verify-btn');
                 this.timeLeft = 0;
                 this.timerInterval = null;
                 this.initialize();
             }
 
             initialize() {
-                const storedEndTime = sessionStorage.getItem('otpTimerEndTime');
+                const storedEndTime = sessionStorage.getItem('signupOtpTimerEndTime');
+                const currentTime = Date.now();
                 
                 if (storedEndTime) {
                     const endTime = parseInt(storedEndTime);
-                    const currentTime = Date.now();
                     const remainingSeconds = Math.max(0, Math.ceil((endTime - currentTime) / 1000));
-                    this.timeLeft = remainingSeconds;
+                    
+                    if (!isNaN(endTime) && remainingSeconds > 0) {
+                        this.timeLeft = remainingSeconds;
+                    } else {
+                        this.timeLeft = 0;
+                        this.expire();
+                    }
                 } else {
                     this.timeLeft = this.duration;
                     this.storeEndTime();
@@ -308,11 +506,10 @@
                 const seconds = this.timeLeft % 60;
                 this.timerElement.textContent = `Timer: ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
                 
-                // Change color when time is running low
                 if (this.timeLeft <= 10) {
-                    this.timerElement.style.color = '#ef4444';
+                    this.timerElement.style.color = '#ff4d4d';
                 } else {
-                    this.timerElement.style.color = '#6366f1';
+                    this.timerElement.style.color = '#1a1a1a';
                 }
             }
 
@@ -321,9 +518,10 @@
                 this.timerElement.textContent = 'Time expired';
                 this.timerElement.classList.add('expired');
                 this.resendButton.disabled = false;
-                sessionStorage.removeItem('otpTimerEndTime');
+                this.verifyButton.disabled = true;
+                this.verifyButton.classList.add('expired');
+                sessionStorage.removeItem('signupOtpTimerEndTime');
                 
-                // Show expiration notification
                 Swal.fire({
                     icon: 'warning',
                     title: 'OTP Expired',
@@ -338,6 +536,8 @@
                 this.timeLeft = this.duration;
                 this.timerElement.classList.remove('expired');
                 this.resendButton.disabled = true;
+                this.verifyButton.disabled = false;
+                this.verifyButton.classList.remove('expired');
                 this.storeEndTime();
                 this.updateDisplay();
                 this.start();
@@ -345,7 +545,7 @@
 
             storeEndTime() {
                 const endTime = Date.now() + (this.timeLeft * 1000);
-                sessionStorage.setItem('otpTimerEndTime', endTime.toString());
+                sessionStorage.setItem('signupOtpTimerEndTime', endTime.toString());
             }
         }
 
@@ -360,7 +560,6 @@
 
         // Resend button event listener
         document.getElementById('resend-btn').addEventListener('click', () => {
-            // Show loading state
             const resendBtn = document.getElementById('resend-btn');
             resendBtn.classList.add('loading');
             resendBtn.disabled = true;
@@ -374,14 +573,19 @@
                 }
             });
 
-            // Make API call to resend OTP
             fetch('/resend-otp', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
-                }
+                },
+                body: JSON.stringify({}) // Add user identifier (e.g., email) if required
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.success) {
                     Swal.fire({
@@ -392,7 +596,6 @@
                         showConfirmButton: false
                     });
 
-                    // Reset everything
                     timerManager.reset();
                     otpValidator.clearAllInputs();
                 } else {
@@ -414,7 +617,6 @@
                 resendBtn.disabled = false;
             })
             .finally(() => {
-                // Reset button state
                 resendBtn.classList.remove('loading');
                 resendBtn.textContent = 'Resend OTP';
             });
@@ -439,10 +641,9 @@
             }
         });
 
-        // Focus management - ensure at least one input is always focused
+        // Focus management
         document.addEventListener('click', (e) => {
             if (!e.target.classList.contains('otp-input') && !e.target.classList.contains('btn')) {
-                // Find first empty input or last filled input
                 const emptyInput = Array.from(otpValidator.otpInputs).find(input => !input.value);
                 if (emptyInput) {
                     emptyInput.focus();
@@ -453,9 +654,4 @@
         });
     </script>
 </body>
-
 </html>
-
-
-
-
