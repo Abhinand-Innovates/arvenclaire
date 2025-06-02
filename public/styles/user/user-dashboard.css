@@ -500,7 +500,7 @@
         }
         
         .footer-links a:hover {
-            color: var(--primary-color);
+            color: var(--secondary-color);
             padding-left: 5px;
         }
         
@@ -522,7 +522,7 @@
         }
         
         .social-icons a:hover {
-            color: var(--primary-color);
+            color: var(--accent-color);
             transform: translateY(-3px);
         }
         
