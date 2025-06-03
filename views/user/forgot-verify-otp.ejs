@@ -480,10 +480,22 @@
             }
 
             initialize() {
-                // Always start fresh by clearing stored end time
-                sessionStorage.removeItem('forgotOtpTimerEndTime');
-                this.timeLeft = this.duration;
-                this.storeEndTime();
+                const storedEndTime = sessionStorage.getItem('forgotOtpTimerEndTime');
+                if (storedEndTime) {
+                    const endTime = parseInt(storedEndTime, 10);
+                    const currentTime = Date.now();
+                    const remainingTimeMs = endTime - currentTime;
+                    this.timeLeft = Math.max(0, Math.floor(remainingTimeMs / 1000));
+                    
+                    if (this.timeLeft <= 0) {
+                        this.expire();
+                        return;
+                    }
+                } else {
+                    this.timeLeft = this.duration;
+                    this.storeEndTime();
+                }
+                
                 this.updateDisplay();
                 this.start();
             }
@@ -491,6 +503,7 @@
             start() {
                 this.timerInterval = setInterval(() => {
                     this.timeLeft--;
+                    this.storeEndTime();
                     this.updateDisplay();
                     
                     if (this.timeLeft <= 0) {
@@ -576,7 +589,7 @@
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({}) // Add user identifier (e.g., email) if required
+                body: JSON.stringify({})
             })
             .then(response => response.json().catch(() => {
                 throw new Error('Invalid response format');
