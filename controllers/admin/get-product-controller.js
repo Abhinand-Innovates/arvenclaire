@@ -21,7 +21,7 @@ const loadNewProduct = async (req, res) => {
   try {
 
     const categories = await Category.find({ isListed: true });
-    return res.render("add-product", { cat: categories });
+    return res.render("add-new-product", { cat: categories });
     
   } catch (error) { 
     console.log("Error in loading New Product page", error);
