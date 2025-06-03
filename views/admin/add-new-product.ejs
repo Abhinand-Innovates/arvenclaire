@@ -16,8 +16,8 @@
         <!-- Breadcrumb -->
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="/admin/dashboard"><i class="fas fa-home"></i> Dashboard</a></li>
-                <li class="breadcrumb-item"><a href="/admin/products">Products</a></li>
+                <li class="breadcrumb-item"><a href="/admin-dashboard"><i class="fas fa-home"></i>Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="/get-product">Products</a></li>
                 <li class="breadcrumb-item active" aria-current="page">Add New Product</li>
             </ol>
         </nav>
@@ -51,8 +51,10 @@
                         <div class="form-group">
                             <label for="category" class="form-label">Category <span class="required">*</span></label>
                             <select id="category" name="category" class="form-select" required>
-                                <option value="">Select Category</option>
+                                <%for(let i = 0;i < cat.length;i ++){%>
+                                <option value="<%= cat[i].name%>">Select Category</option>
                                 <!-- Categories will be populated by JavaScript -->
+                                 <%}%>
                             </select>
                             <div class="error-message">Please select a category</div>
                         </div>
@@ -173,6 +175,8 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.10.5/sweetalert2.all.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/2.0.0/cropper.min.js"></script>
+
     <script>
         let categories = [];
 
