@@ -4,6 +4,7 @@ const adminRoute = express.Router();
 const adminController = require("../controllers/admin/admin-auth-controller");
 const getUsersController = require("../controllers/admin/get-usersController");
 const getCategoryController = require("../controllers/admin/get-categoryController")
+const getProductController = require("../controllers/admin/get-product-controller");
 
 //Admin Login
 adminRoute.get("/admin-login",adminController.getAdminLogin);
@@ -31,6 +32,9 @@ adminRoute.put('/get-categories/:id', getCategoryController.updateCategoryAPI);
 adminRoute.patch('/get-categories/:id/status', getCategoryController.toggleCategoryStatusAPI);
 
 
+//Product Management
+adminRoute.get('/get-product', getProductController.loadGetProducts);
+adminRoute.get('/add-product', getProductController.loadNewProduct);
 
 
 
