@@ -1,0 +1,25 @@
+
+        .product-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+        .product-table th, .product-table td { padding: 12px; text-align: left; }
+        .product-table th { background-color: #f8f9fa; }
+        .product-table tr { transition: background-color 0.2s; }
+        .product-table tr:hover { background-color: #f1f3f5; }
+        .status-active { color: #28a745; }
+        .status-inactive { color: #dc3545; }
+        .modal-content { border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
+        .modal-header { background-color: #f8f9fa; border-bottom: none; }
+        .modal-title { font-weight: 600; }
+        .form-section { margin-bottom: 20px; }
+        .form-row { display: flex; gap: 20px; flex-wrap: wrap; }
+        .form-group { flex: 1; min-width: 200px; }
+        .form-label { font-weight: 500; margin-bottom: 5px; }
+        .form-control, .form-select, .form-textarea { border-radius: 8px; }
+        .required { color: #dc3545; }
+        .error-message { color: #dc3545; font-size: 0.8em; display: none; }
+        .error .error-message { display: block; }
+        .images-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+        .image-preview img { max-width: 100px; max-height: 100px; object-fit: cover; border-radius: 4px; }
+        .image-remove { position: absolute; top: -5px; right: -5px; background: #dc3545; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; line-height: 20px; }
+        .form-actions { display: flex; gap: 10px; justify-content: flex-end; }
+        .btn-success, .btn-danger, .btn-secondary { border-radius: 8px; padding: 10px 20px; }
+        .cropper-container { max-width: 400px; margin: 0 auto; }

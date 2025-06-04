@@ -1,313 +1,448 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Products - Admin Dashboard</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="../../styles/admin/get-product.css">
-
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/2.0.0/cropper.min.css">
+    <link rel="stylesheet" href="../../styles/admin/product.css">
     <%- include("../partials/admin/sidebar") %>
-</head>
 
+</head>
 <body>
-    <!-- Main Content -->
     <div class="main-content">
-        <!-- Breadcrumb -->
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/admin-dashboard"><i class="fas fa-home"></i> Dashboard</a></li>
                 <li class="breadcrumb-item active" aria-current="page">Products</li>
             </ol>
         </nav>
-
-        <!-- Page Header -->
         <div class="page-header">
-            <div>
-                <h1 class="page-title" style="font-size: xx-large;font-weight:bolder;">Product Management</h1>
-            </div>
-            <a href="/add-product" class="btn-black" style="text-decoration: none;">
-                <i class="fas fa-plus"></i>
-                Add New Product
-            </a>
-
+            <h1 class="page-title">Products</h1>
+            <a href="/add-product" class="btn btn-primary"><i class="fas fa-plus"></i> Add Product</a>
+        </div>
+        <div class="content-container">
+            <table class="product-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Brand</th>
+                        <th>Category</th>
+                        <th>Price</th>
+                        <th>Stock</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (products && Array.isArray(products)) { %>
+                        <% products.forEach(product => { %>
+                            <tr>
+                                <td><%= product.name || 'N/A' %></td>
+                                <td><%= product.brand || 'N/A' %></td>
+                                <td><%= product.category || 'N/A' %></td>
+                                <td>$<%= product.sellingPrice ? product.sellingPrice.toFixed(2) : '0.00' %></td>
+                                <td><%= product.stock || 0 %></td>
+                                <td class="status-<%= product.isActive ? 'active' : 'inactive' %>">
+                                    <%= product.isActive ? 'Active' : 'Inactive' %>
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-primary edit-product-btn" data-id="<%= product._id %>" data-bs-toggle="modal" data-bs-target="#editProductModal">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </button>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    <% } else { %>
+                        <tr>
+                            <td colspan="7">No products found</td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
         </div>
 
-        <!-- Content Container -->
-        <div class="content-container">
-            <!-- Table Header -->
-            <div class="table-header">
-                <div class="table-header-left">
-                    <select id="categoryFilter">
-                        <option value="">All Categories</option>
-                    </select>
-                    <select id="sortByPrice">
-                        <option value="">Sort by Price</option>
-                        <option value="asc">Low to High</option>
-                        <option value="desc">High to Low</option>
-                    </select>
+        <!-- Edit Product Modal -->
+        <div class="modal fade" id="editProductModal" tabindex="-1" aria-labelledby="editProductModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editProductModalLabel">Edit Product</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="editProductForm" enctype="multipart/form-data">
+                            <input type="hidden" name="productId" id="productId">
+                            <div class="form-section">
+                                <h3 class="section-title"><i class="fas fa-info-circle"></i> Basic Information</h3>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="name" class="form-label">Watch Name <span class="required">*</span></label>
+                                        <input type="text" id="name" name="name" class="form-control" required>
+                                        <div class="error-message">Please enter a product name</div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="brand" class="form-label">Brand <span class="required">*</span></label>
+                                        <input type="text" id="brand" name="brand" class="form-control" required>
+                                        <div class="error-message">Please enter a brand name</div>
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="category" class="form-label">Category <span class="required">*</span></label>
+                                        <select id="category" name="category" class="form-select" required>
+                                            <option value="">Select Category</option>
+                                        </select>
+                                        <div class="error-message">Please select a category</div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="material" class="form-label">Material <span class="required">*</span></label>
+                                        <input type="text" id="material" name="material" class="form-control" required>
+                                        <div class="error-message">Please enter the material</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-section">
+                                <h3 class="section-title"><i class="fas fa-dollar-sign"></i> Pricing & Stock</h3>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="regularPrice" class="form-label">Regular Price <span class="required">*</span></label>
+                                        <input type="number" id="regularPrice" name="regularPrice" class="form-control" step="0.01" required>
+                                        <div class="error-message">Please enter a valid regular price</div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="sellingPrice" class="form-label">Selling Price <span class="required">*</span></label>
+                                        <input type="number" id="sellingPrice" name="sellingPrice" class="form-control" step="0.01" required>
+                                        <div class="error-message">Please enter a valid selling price</div>
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="discount" class="form-label">Discount (%)</label>
+                                        <input type="number" id="discount" name="discount" class="form-control" step="0.01" min="0" max="100">
+                                        <div class="error-message">Please enter a valid discount (0-100)</div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="stock" class="form-label">Stock Quantity <span class="required">*</span></label>
+                                        <input type="number" id="stock" name="stock" class="form-control" required>
+                                        <div class="error-message">Please enter a valid stock quantity</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-section">
+                                <h3 class="section-title"><i class="fas fa-list-ul"></i> Product Details</h3>
+                                <div class="form-group full-width">
+                                    <label for="features" class="form-label">Features</label>
+                                    <textarea id="features" name="features" class="form-textarea" rows="3"></textarea>
+                                </div>
+                                <div class="form-group full-width">
+                                    <label for="description" class="form-label">Description</label>
+                                    <textarea id="description" name="description" class="form-textarea" rows="4"></textarea>
+                                </div>
+                            </div>
+                            <div class="form-section">
+                                <h3 class="section-title"><i class="fas fa-images"></i> Product Images (Minimum 3 required)</h3>
+                                <div class="form-group">
+                                    <label for="productImages" class="form-label">Upload New Images</label>
+                                    <input type="file" id="productImages" name="productImages" class="form-control" accept="image/*" multiple>
+                                    <div class="error-message" id="imagesError">Please upload at least 3 images</div>
+                                </div>
+                                <div id="imagePreviews" class="images-grid"></div>
+                            </div>
+                        </form>
+                        <!-- Crop Modal -->
+                        <div id="cropModal" class="modal fade" tabindex="-1">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Crop Image</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div id="cropperImage" style="max-width: 100%;"></div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                        <button type="button" class="btn btn-primary" id="cropConfirm">Crop & Save</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="fas fa-times"></i> Cancel</button>
+                        <button type="button" class="btn btn-danger" id="deactivateProduct"><i class="fas fa-trash"></i> Deactivate Product</button>
+                        <button type="button" class="btn btn-success" id="updateProduct"><i class="fas fa-save"></i> Update Product</button>
+                    </div>
                 </div>
-                <div class="search-box">
-                    <input type="text" class="form-control search-input" id="searchInput"
-                        placeholder="Search by watch name...">
-                </div>
-            </div>
-
-            <!-- Table -->
-            <div class="table-responsive">
-                <table class="table mb-0">
-                    <thead>
-                        <tr>
-                            <th>Image</th>
-                            <th>Watch Name</th>
-                            <th>Brand</th>
-                            <th>Category</th>
-                            <th>Regular Price</th>
-                            <th>Selling Price</th>
-                            <th>Stock</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="productTableBody">
-                        <!-- Populated by JavaScript -->
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Pagination -->
-            <div class="pagination-container">
-                <div class="pagination-info" id="paginationInfo">
-                    Showing 0 to 0 of 0 entries
-                </div>
-                <nav aria-label="Product pagination">
-                    <ul class="pagination" id="paginationNav">
-                        <!-- Populated by JavaScript -->
-                    </ul>
-                </nav>
             </div>
         </div>
     </div>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.10.5/sweetalert2.all.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/2.0.0/cropper.min.js"></script>
     <script>
-        let products = [];
-        let filteredProducts = [...products];
         let categories = [];
-        let currentPage = 1;
-        const itemsPerPage = 5;
+        let croppedImages = [];
+        let removedImages = [];
+        let currentCropper;
+        let currentFileIndex;
 
-        // Fetch categories from backend
         async function fetchCategories() {
             try {
                 const response = await fetch('/get-categories');
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
-                }
+                if (!response.ok) throw new Error('Failed to fetch categories');
                 categories = await response.json();
-                populateCategoryFilter();
+                populateCategoryDropdown();
             } catch (error) {
-                console.error('Error fetching categories:', error);
                 Swal.fire('Error!', `Could not fetch categories: ${error.message}`, 'error');
             }
         }
 
-        // Populate category filter dropdown
-        function populateCategoryFilter() {
-            const categoryFilter = document.getElementById('categoryFilter');
-            categoryFilter.innerHTML = '<option value="">All Categories</option>';
+        function populateCategoryDropdown() {
+            const categorySelect = document.getElementById('category');
+            categorySelect.innerHTML = '<option value="">Select Category</option>';
             categories.forEach(category => {
-                categoryFilter.innerHTML += `<option value="${category.name}">${category.name}</option>`;
+                categorySelect.innerHTML += `<option value="${category.name}">${category.name}</option>`;
             });
         }
 
-        // Search, Filter, and Sort Functionality
-        const searchInput = document.getElementById('searchInput');
-        const categoryFilter = document.getElementById('categoryFilter');
-        const sortByPrice = document.getElementById('sortByPrice');
-
-        searchInput.addEventListener('input', applyFilters);
-        categoryFilter.addEventListener('change', applyFilters);
-        sortByPrice.addEventListener('change', applyFilters);
-
-        function applyFilters() {
-            let tempProducts = [...products];
-
-            // Search Filter
-            const searchTerm = searchInput.value.toLowerCase().trim();
-            if (searchTerm) {
-                tempProducts = tempProducts.filter(product =>
-                    product.name.toLowerCase().includes(searchTerm) ||
-                    product.brand.toLowerCase().includes(searchTerm)
-                );
+        async function fetchProduct(productId) {
+            try {
+                const response = await fetch(`/api/products/${productId}`);
+                if (!response.ok) throw new Error('Failed to fetch product');
+                const product = await response.json();
+                populateModal(product);
+            } catch (error) {
+                Swal.fire('Error!', `Could not fetch product: ${error.message}`, 'error');
+                bootstrap.Modal.getInstance(document.getElementById('editProductModal')).hide();
             }
-
-            // Category Filter
-            const category = categoryFilter.value;
-            if (category) {
-                tempProducts = tempProducts.filter(product =>
-                    product.category === category
-                );
-            }
-
-            // Sort by Price
-            const sortOrder = sortByPrice.value;
-            if (sortOrder) {
-                tempProducts.sort((a, b) => {
-                    return sortOrder === 'asc' ? a.sellingPrice - b.sellingPrice : b.sellingPrice - a.sellingPrice;
-                });
-            }
-
-            filteredProducts = tempProducts;
-            currentPage = 1;
-            renderTable();
-            renderPagination();
         }
 
-        // Render Table
-        function renderTable() {
-            const tbody = document.getElementById('productTableBody');
-            const start = (currentPage - 1) * itemsPerPage;
-            const end = start + itemsPerPage;
-            const paginatedProducts = filteredProducts.slice(start, end);
+        function populateModal(product) {
+            document.getElementById('productId').value = product._id || '';
+            document.getElementById('name').value = product.name || '';
+            document.getElementById('brand').value = product.brand || '';
+            document.getElementById('material').value = product.material || '';
+            document.getElementById('regularPrice').value = product.regularPrice || '';
+            document.getElementById('sellingPrice').value = product.sellingPrice || '';
+            document.getElementById('discount').value = product.discount || '';
+            document.getElementById('stock').value = product.stock || '';
+            document.getElementById('features').value = product.features && Array.isArray(product.features) ? product.features.join(', ') : '';
+            document.getElementById('description').value = product.description || '';
 
-            if (paginatedProducts.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="9" class="text-center">
-                            <i class="fas fa-search"></i>
-                            <h5>No products found</h5>
-                            <p>Try adjusting your search or filters.</p>
-                        </td>
-                    </tr>
-                `;
-                return;
-            }
+            const categorySelect = document.getElementById('category');
+            categorySelect.value = product.category || '';
 
-            tbody.innerHTML = paginatedProducts.map(product => `
-                <tr>
-                    <td><img src="${product.mainImage}" alt="${product.name}"></td>
-                    <td>${product.name}</td>
-                    <td>${product.brand}</td>
-                    <td>${product.category}</td>
-                    <td>$${product.regularPrice.toFixed(2)}</td>
-                    <td>$${product.sellingPrice.toFixed(2)}</td>
-                    <td>${product.stock}</td>
-                    <td>
-                        <label class="status-toggle">
-                            <input type="checkbox" ${product.status ? 'checked' : ''} onchange="toggleStatus('${product.id}', this)">
-                            <span class="toggle-slider"></span>
-                        </label>
-                    </td>
-                    <td>
-                        <div class="action-buttons">
-                            <a href="/admin/edit-product/${product.id}" class="btn-outline-black"><i class="fas fa-edit"></i></a>
-                            <button class="btn-danger-outline" onclick="deleteProduct('${product.id}')"><i class="fas fa-trash"></i></button>
-                        </div>
-                    </td>
-                </tr>
-            `).join('');
-
-            updatePaginationInfo();
-        }
-
-        // Render Pagination
-        function renderPagination() {
-            const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
-            const paginationNav = document.getElementById('paginationNav');
-            let paginationHTML = `
-                <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
-                    <a class="page-link" href="#" onclick="changePage(${currentPage - 1}); return false;" aria-label="Previous">
-                        <i class="fas fa-chevron-left"></i>
-                    </a>
-                </li>
-            `;
-
-            for (let i = 1; i <= totalPages; i++) {
-                paginationHTML += `
-                    <li class="page-item ${currentPage === i ? 'active' : ''}">
-                        <a class="page-link" href="#" onclick="changePage(${i}); return false;">${i}</a>
-                    </li>
-                `;
-            }
-
-            paginationHTML += `
-                <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
-                    <a class="page-link" href="#" onclick="changePage(${currentPage + 1}); return false;" aria-label="Next">
-                        <i class="fas fa-chevron-right"></i>
-                    </a>
-                </li>
-            `;
-
-            paginationNav.innerHTML = paginationHTML;
-        }
-
-        // Update Pagination Info
-        function updatePaginationInfo() {
-            const start = (currentPage - 1) * itemsPerPage + 1;
-            const end = Math.min(currentPage * itemsPerPage, filteredProducts.length);
-            const total = filteredProducts.length;
-            document.getElementById('paginationInfo').textContent = `Showing ${start} to ${end} of ${total} entries`;
-        }
-
-        // Change Page
-        function changePage(page) {
-            const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
-            if (page < 1 || page > totalPages) return;
-            currentPage = page;
-            renderTable();
-            renderPagination();
-        }
-
-        // Toggle Status
-        function toggleStatus(productId, toggleElement) {
-            const newStatus = toggleElement.checked;
-            const product = products.find(p => p.id === productId);
-            if (product) {
-                product.status = newStatus;
-                filteredProducts = filteredProducts.map(p => p.id === productId ? { ...p, status: newStatus } : p);
-                Swal.fire({
-                    title: 'Status Updated!',
-                    text: `Product "${product.name}" is now ${newStatus ? 'listed' : 'unlisted'}.`,
-                    icon: 'success',
-                    timer: 2000,
-                    showConfirmButton: false
+            const imagePreviews = document.getElementById('imagePreviews');
+            imagePreviews.innerHTML = '';
+            if (product.images && Array.isArray(product.images)) {
+                product.images.forEach((img, index) => {
+                    const preview = document.createElement('div');
+                    preview.className = 'image-preview';
+                    preview.innerHTML = `<img src="${img}" alt="Preview"><button type="button" class="image-remove" onclick="removeExistingImage('${img}')"><i class="fas fa-times"></i></button>`;
+                    imagePreviews.appendChild(preview);
                 });
             }
         }
 
-        // Delete Product
-        function deleteProduct(productId) {
-            const product = products.find(p => p.id === productId);
-            if (!product) return;
+        function initializeCropper(file, index) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                const cropperImage = document.getElementById('cropperImage');
+                cropperImage.innerHTML = '';
+                cropperImage.appendChild(img);
 
-            Swal.fire({
-                title: 'Are you sure?',
-                text: `You are about to delete the product "${product.name}". This action cannot be undone!`,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#ef4444',
-                cancelButtonColor: '#6b7280',
-                confirmButtonText: '<i class="fas fa-trash me-2"></i>Yes, delete it!',
-                cancelButtonText: '<i class="fas fa-times me-2"></i>Cancel'
-            }).then(result => {
-                if (result.isConfirmed) {
-                    products = products.filter(p => p.id !== productId);
-                    applyFilters();
-                    Swal.fire('Deleted!', `Product "${product.name}" has been deleted.`, 'success');
+                currentCropper = new Cropper(img, {
+                    aspectRatio: 1,
+                    viewMode: 2,
+                    autoCropArea: 0.8,
+                    responsive: true
+                });
+
+                const cropModal = new bootstrap.Modal(document.getElementById('cropModal'));
+                cropModal.show();
+                currentFileIndex = index;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        document.getElementById('cropConfirm').addEventListener('click', function() {
+            const canvas = currentCropper.getCroppedCanvas({
+                width: 400,
+                height: 400
+            });
+            canvas.toBlob(blob => {
+                const preview = document.createElement('div');
+                preview.className = 'image-preview';
+                preview.innerHTML = `<img src="${canvas.toDataURL()}" alt="Preview"><button type="button" class="image-remove" onclick="removeImage(${currentFileIndex})"><i class="fas fa-times"></i></button>`;
+                document.getElementById('imagePreviews').appendChild(preview);
+
+                const file = new File([blob], `image_${currentFileIndex}.jpg`, { type: 'image/jpeg' });
+                croppedImages[currentFileIndex] = file;
+
+                currentCropper.destroy();
+                bootstrap.Modal.getInstance(document.getElementById('cropModal')).hide();
+            }, 'image/jpeg', 0.8);
+        });
+
+        function removeImage(index) {
+            croppedImages[index] = null;
+            document.getElementById('imagePreviews').children[index].remove();
+        }
+
+        function removeExistingImage(imageUrl) {
+            removedImages.push(imageUrl);
+            const previews = document.getElementById('imagePreviews');
+            Array.from(previews.children).forEach(preview => {
+                if (preview.querySelector('img').src === imageUrl) {
+                    preview.remove();
                 }
             });
         }
 
-        // Initialize on Page Load
-        document.addEventListener('DOMContentLoaded', function () {
-            fetchCategories();
-            applyFilters();
+        document.getElementById('productImages').addEventListener('change', function(e) {
+            const files = Array.from(e.target.files);
+            document.getElementById('imagesError').style.display = 'none';
+            croppedImages = [];
+            files.forEach((file, index) => {
+                initializeCropper(file, index);
+            });
         });
+
+        function validateForm() {
+            let isValid = true;
+            const requiredFields = ['name', 'brand', 'category', 'material', 'regularPrice', 'sellingPrice', 'stock'];
+            document.querySelectorAll('.form-group').forEach(group => group.classList.remove('error'));
+
+            requiredFields.forEach(fieldName => {
+                const field = document.getElementById(fieldName);
+                if (!field.value.trim()) {
+                    field.closest('.form-group').classList.add('error');
+                    isValid = false;
+                }
+            });
+
+            const currentImages = document.getElementById('imagePreviews').children.length + croppedImages.filter(img => img).length - removedImages.length;
+            if (currentImages < 3) {
+                document.getElementById('imagesError').style.display = 'block';
+                isValid = false;
+            }
+
+            const regularPrice = parseFloat(document.getElementById('regularPrice').value);
+            const sellingPrice = parseFloat(document.getElementById('sellingPrice').value);
+            if (sellingPrice > regularPrice) {
+                const sellingPriceGroup = document.getElementById('sellingPrice').closest('.form-group');
+                sellingPriceGroup.classList.add('error');
+                sellingPriceGroup.querySelector('.error-message').textContent = 'Selling price cannot be higher than regular price';
+                isValid = false;
+            }
+
+            const discount = document.getElementById('discount').value.trim() ? parseFloat(document.getElementById('discount').value) : null;
+            if (discount !== null && (discount < 0 || discount > 100)) {
+                document.getElementById('discount').closest('.form-group').classList.add('error');
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        document.getElementById('updateProduct').addEventListener('click', async function() {
+            if (!validateForm()) {
+                Swal.fire('Validation Error!', 'Please fill in all required fields correctly and ensure at least 3 images.', 'error');
+                return;
+            }
+
+            Swal.fire({ title: 'Updating Product...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            const form = document.getElementById('editProductForm');
+            const formData = new FormData(form);
+            croppedImages.filter(img => img).forEach((img, index) => {
+                formData.append('productImages', img);
+            });
+            formData.append('removedImages', JSON.stringify(removedImages));
+
+            try {
+                const productId = document.getElementById('productId').value;
+                const response = await fetch(`/api/products/${productId}`, {
+                    method: 'PUT',
+                    body: formData
+                });
+                if (!response.ok) throw new Error('Failed to update product');
+                Swal.fire({
+                    title: 'Success!',
+                    text: 'Product has been updated successfully!',
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    bootstrap.Modal.getInstance(document.getElementById('editProductModal')).hide();
+                    window.location.reload();
+                });
+            } catch (error) {
+                Swal.fire('Error!', `Failed to update product: ${error.message}`, 'error');
+            }
+        });
+
+        document.getElementById('deactivateProduct').addEventListener('click', async function() {
+            Swal.fire({
+                title: 'Deactivate Product?',
+                text: 'This product will be marked as inactive and can be restored later.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Yes, Deactivate It!',
+                cancelButtonText: 'Cancel'
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    try {
+                        const productId = document.getElementById('productId').value;
+                        const response = await fetch(`/api/products/${productId}/status`, {
+                            method: 'PATCH',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ isActive: false })
+                        });
+                        if (!response.ok) throw new Error('Failed to deactivate product');
+                        Swal.fire({
+                            title: 'Deactivated!',
+                            text: 'Product has been deactivated successfully.',
+                            icon: 'success',
+                            confirmButtonText: 'OK'
+                        }).then(() => {
+                            bootstrap.Modal.getInstance(document.getElementById('editProductModal')).hide();
+                            window.location.reload();
+                        });
+                    } catch (error) {
+                        Swal.fire('Error!', `Failed to deactivate product: ${error.message}`, 'error');
+                    }
+                }
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchCategories();
+            document.getElementById('regularPrice').addEventListener('input', calculateDiscount);
+            document.getElementById('sellingPrice').addEventListener('input', calculateDiscount);
+
+            document.querySelectorAll('.edit-product-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const productId = this.getAttribute('data-id');
+                    fetchProduct(productId);
+                });
+            });
+        });
+
+        function calculateDiscount() {
+            const regularPrice = parseFloat(document.getElementById('regularPrice').value) || 0;
+            const sellingPrice = parseFloat(document.getElementById('sellingPrice').value) || 0;
+            if (regularPrice > 0 && sellingPrice > 0 && sellingPrice <= regularPrice) {
+                const discount = ((regularPrice - sellingPrice) / regularPrice) * 100;
+                document.getElementById('discount').value = discount.toFixed(2);
+            }
+        }
     </script>
 </body>
-
 </html>

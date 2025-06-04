@@ -41,7 +41,7 @@ app.use("/",userRoute);
 app.use("/",adminRoute);
 
 // app.get("/",(req,res) => {
-//   res.render("get-product")
+//   res.render("new-product")
 // })
 
 
