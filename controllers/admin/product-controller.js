@@ -48,9 +48,9 @@ const getProducts = async (req, res) => {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 12;
         const skip = (page - 1) * limit;
-        
+
         const searchQuery = { isDeleted: false };
-        
+
         // Add search functionality
         if (req.query.search) {
             searchQuery.$or = [
@@ -58,23 +58,42 @@ const getProducts = async (req, res) => {
                 { brand: { $regex: req.query.search, $options: 'i' } }
             ];
         }
-        
+
         // Add category filter
         if (req.query.category) {
             searchQuery.category = req.query.category;
         }
-        
-        const products = await Product.find(searchQuery)
-            .populate('category', 'name')
-            .sort({ createdAt: -1 })
-            .skip(skip)
-            .limit(limit);
-            
-        const totalProducts = await Product.countDocuments(searchQuery);
+
+        // Fetch products and categories in parallel
+        const [products, totalProducts, categories] = await Promise.all([
+            Product.find(searchQuery)
+                .populate('category', 'name')
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(limit),
+            Product.countDocuments(searchQuery),
+            Category.find({ isListed: true }).sort({ name: 1 })
+        ]);
+
+        // Get product count for each category
+        const categoriesWithCount = await Promise.all(
+            categories.map(async (category) => {
+                const productCount = await Product.countDocuments({
+                    category: category._id,
+                    isDeleted: false
+                });
+                return {
+                    ...category.toObject(),
+                    productCount
+                };
+            })
+        );
+
         const totalPages = Math.ceil(totalProducts / limit);
-        
-        res.render('product', { 
+
+        res.render('product', {
             products,
+            categories: categoriesWithCount,
             currentPage: page,
             totalPages,
             totalProducts,
@@ -83,8 +102,9 @@ const getProducts = async (req, res) => {
         });
     } catch (error) {
         console.error('Error fetching products:', error);
-        res.status(500).render('product', { 
-            products: [], 
+        res.status(500).render('product', {
+            products: [],
+            categories: [],
             error: 'Failed to load products',
             currentPage: 1,
             totalPages: 1,

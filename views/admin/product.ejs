@@ -272,8 +272,14 @@
                     </div>
                     <div class="col-md-3">
                         <select class="form-select" name="category">
-                            <option value="">All Categories</option>
-                            <!-- Categories will be populated here -->
+                            <option value="">All Categories (<%= totalProducts %>)</option>
+                            <% if (categories && categories.length > 0) { %>
+                                <% categories.forEach(category => { %>
+                                    <option value="<%= category._id %>" <%= selectedCategory === category._id.toString() ? 'selected' : '' %>>
+                                        <%= category.name %> (<%= category.productCount %>)
+                                    </option>
+                                <% }) %>
+                            <% } %>
                         </select>
                     </div>
                     <div class="col-md-2">
