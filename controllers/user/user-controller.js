@@ -307,7 +307,7 @@ const verifyForgotPasswordEmail = async (req, res) => {
     // Generate OTP
     const otp = generateOtp();
 
-    // Store OTP in session 
+    // Store OTP in session
     req.session.userOtp = {
       otp,
       email,
@@ -439,8 +439,8 @@ const loadNewPassword = async (req, res) => {
 const resetPassword = async (req, res) => {
   try {
     const { newPassword, confirmPassword } = req.body;
-    const email = req.session.userOtp.email; 
-    
+    const email = req.session.userOtp.email;
+
     const { _id } = await User.findOne({ email });
 
     console.log(_id)
@@ -496,7 +496,7 @@ const logout = async (req,res) => {
         message : "No active session to logout from",
       })
     }
-    
+
     req.session.destroy((err) => {
       if(err) {
         console.error("Session destruction error",err)
@@ -525,6 +525,57 @@ const logout = async (req,res) => {
     })
   }
 }
+// Load product details page
+const loadProductDetails = async (req, res) => {
+  try {
+    const productId = req.params.id;
+    const user = req.session.userId;
+
+    // Get product details
+    const Product = require('../../models/product-schema');
+    const product = await Product.findById(productId)
+      .populate('category', 'name')
+      .exec();
+
+    if (!product || product.isDeleted || product.isBlocked) {
+      return res.status(404).render('error', {
+        message: 'Product not found',
+        user: user ? await User.findById(user) : null
+      });
+    }
+
+    // Get related products (same category, excluding current product)
+    const relatedProducts = await Product.find({
+      category: product.category._id,
+      _id: { $ne: productId },
+      isDeleted: false,
+      isBlocked: false,
+      isListed: true
+    })
+    .populate('category', 'name')
+    .limit(4)
+    .sort({ createdAt: -1 });
+
+    // Get user data if logged in
+    let userData = null;
+    if (user) {
+      userData = await User.findById(user);
+    }
+
+    res.render('product-details', {
+      product,
+      relatedProducts,
+      user: userData
+    });
+
+  } catch (error) {
+    console.error('Error loading product details:', error);
+    res.status(500).render('error', {
+      message: 'Failed to load product details',
+      user: req.session.userId ? await User.findById(req.session.userId) : null
+    });
+  }
+};
 
 
 
@@ -556,5 +607,6 @@ module.exports = {
   resetPassword,
 
   logout,
+  loadProductDetails,
 
 };

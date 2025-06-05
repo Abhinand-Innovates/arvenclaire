@@ -33,6 +33,9 @@ router.post("/login", userController.login);
 // Protected route: Dashboard
 router.get("/dashboard",userController.loadDashboard);
 
+// Product details route
+router.get("/product/:id", userController.loadProductDetails);
+
 // Forgot password routes
 router.get("/forgot-password", userController.loadForgotPassword);
 router.post("/forgot-password", userController.verifyForgotPasswordEmail);

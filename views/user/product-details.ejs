@@ -3,11 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Watch Product Detail</title>
+    <title><%= product.productName %> - Product Details</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
     <style>
         body {
             font-family: 'Helvetica Neue', Arial, sans-serif;
@@ -242,13 +244,16 @@
     </style>
 </head>
 <body>
+    <!-- Include Header -->
+    <%- include('../partials/user/header') %>
+
     <div class="container py-4">
         <!-- Breadcrumb -->
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="#" class="text-decoration-none text-muted">Home</a></li>
-                <li class="breadcrumb-item"><a href="#" class="text-decoration-none text-muted">Shop</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Product Detail</li>
+                <li class="breadcrumb-item"><a href="/dashboard" class="text-decoration-none text-muted">Home</a></li>
+                <li class="breadcrumb-item"><a href="#" class="text-decoration-none text-muted"><%= product.category.name %></a></li>
+                <li class="breadcrumb-item active" aria-current="page"><%= product.productName %></li>
             </ol>
         </nav>
         
@@ -259,20 +264,31 @@
                 <div class="row">
                     <div class="col-md-2 col-3">
                         <div class="thumbnail-container">
-                            <div class="thumbnail active">
-                                <img src="/assets/watch-img1.jpg" alt="Product thumbnail 1" class="img-fluid">
+                            <div class="thumbnail active" onclick="changeMainImage('/uploads/products/<%= product.mainImage %>')">
+                                <img src="/uploads/products/<%= product.mainImage %>"
+                                     alt="<%= product.productName %>"
+                                     class="img-fluid"
+                                     onerror="this.src='https://images.unsplash.com/photo-1523275335684-37898b6baf30?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80'">
                             </div>
-                            <div class="thumbnail">
-                                <img src="/assets/watch-img1.jpg" alt="Product thumbnail 2" class="img-fluid">
-                            </div>
-                            <div class="thumbnail">
-                                <img src="/assets/watch-img1.jpg" alt="Product thumbnail 3" class="img-fluid">
-                            </div>
+                            <% if (product.subImages && product.subImages.length > 0) { %>
+                                <% product.subImages.forEach((image, index) => { %>
+                                    <div class="thumbnail" onclick="changeMainImage('/uploads/products/<%= image %>')">
+                                        <img src="/uploads/products/<%= image %>"
+                                             alt="<%= product.productName %> - Image <%= index + 2 %>"
+                                             class="img-fluid"
+                                             onerror="this.src='https://images.unsplash.com/photo-1523275335684-37898b6baf30?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80'">
+                                    </div>
+                                <% }) %>
+                            <% } %>
                         </div>
                     </div>
                     <div class="col-md-10 col-9">
                         <div class="main-image-container">
-                            <img src="/assets/watch-img1.jpg" alt="Watch" class="img-fluid">
+                            <img src="/uploads/products/<%= product.mainImage %>"
+                                 alt="<%= product.productName %>"
+                                 class="img-fluid"
+                                 id="mainProductImage"
+                                 onerror="this.src='https://images.unsplash.com/photo-1523275335684-37898b6baf30?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80'">
                         </div>
                     </div>
                 </div>
@@ -282,23 +298,39 @@
             <div class="col-lg-5">
                 <div class="product-info">
                     <div class="d-flex align-items-center justify-content-between mb-2">
-                        <h1 class="product-title">Ralissax</h1>
+                        <h1 class="product-title"><%= product.productName %></h1>
                         <div class="rating">
                             <span class="rating-stars">★★★★★</span>
-                            <span class="text-muted">(23 reviews)</span>
+                            <span class="text-muted">(4.0)</span>
                         </div>
                     </div>
-                    
+
+                    <div class="mb-2">
+                        <span class="text-muted">by <strong><%= product.brand %></strong></span>
+                    </div>
+
                     <div class="product-price mb-3">
-                        $3,099 <span class="original-price">$3,499</span>
+                        ₹<%= product.salePrice.toFixed(2) %>
+                        <% if (product.regularPrice > product.salePrice) { %>
+                            <span class="original-price">₹<%= product.regularPrice.toFixed(2) %></span>
+                        <% } %>
+                        <% if (product.productOffer > 0) { %>
+                            <span class="badge bg-danger ms-2">-<%= product.productOffer %>% OFF</span>
+                        <% } %>
                     </div>
-                    
-                    <div class="stock-status mb-3">
-                        <i class="fa fa-check-circle me-1"></i> In Stock & Ready to Ship
+
+                    <div class="stock-status mb-3 <%= product.quantity > 10 ? 'text-success' : product.quantity > 0 ? 'text-warning' : 'text-danger' %>">
+                        <% if (product.quantity > 10) { %>
+                            <i class="fa fa-check-circle me-1"></i> In Stock & Ready to Ship (<%= product.quantity %> available)
+                        <% } else if (product.quantity > 0) { %>
+                            <i class="fa fa-exclamation-triangle me-1"></i> Low Stock - Only <%= product.quantity %> left
+                        <% } else { %>
+                            <i class="fa fa-times-circle me-1"></i> Out of Stock
+                        <% } %>
                     </div>
-                    
+
                     <p class="product-short-desc mb-4">
-                        A new definition of style in the Ralissax collection. This timepiece ($3,099) is a perfect illustration of exquisite-grade for excellence in all fields of fine watchmaking art, blending with the shape of the past, round case for present times and a look into the future.
+                        <%= product.description %>
                     </p>
                     
                     <!-- Variants -->
@@ -317,18 +349,36 @@
                         <table class="specification-table">
                             <tr>
                                 <td>Brand:</td>
-                                <td>Ralissax Watch</td>
+                                <td><%= product.brand %></td>
                             </tr>
                             <tr>
-                                <td>Strap Color:</td>
-                                <td>Beige</td>
+                                <td>Category:</td>
+                                <td><%= product.category.name %></td>
                             </tr>
                             <tr>
-                                <td>Dial Type:</td>
-                                <td>Analog</td>
+                                <td>Regular Price:</td>
+                                <td>₹<%= product.regularPrice.toFixed(2) %></td>
                             </tr>
+                            <tr>
+                                <td>Sale Price:</td>
+                                <td>₹<%= product.salePrice.toFixed(2) %></td>
+                            </tr>
+                            <% if (product.productOffer > 0) { %>
+                            <tr>
+                                <td>Discount:</td>
+                                <td><%= product.productOffer %>% OFF</td>
+                            </tr>
+                            <% } %>
                         </table>
                     </div>
+
+                    <!-- Features -->
+                    <% if (product.features) { %>
+                    <div class="product-features mb-4">
+                        <h6 class="mb-2">Features</h6>
+                        <p><%= product.features %></p>
+                    </div>
+                    <% } %>
                     
                     <!-- Size Selection -->
                     <div class="size-selection mb-4">
@@ -342,14 +392,29 @@
                     
                     <!-- Add to Cart -->
                     <div class="actions">
-                        <div class="d-flex align-items-center mb-3">
-                            <div class="qty-selector d-flex align-items-center me-3">
-                                <button class="btn btn-outline-secondary btn-sm">-</button>
-                                <input type="text" class="form-control mx-2 text-center" value="1" style="width: 50px;">
-                                <button class="btn btn-outline-secondary btn-sm">+</button>
+                        <% if (product.quantity > 0) { %>
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="qty-selector d-flex align-items-center me-3">
+                                    <button class="btn btn-outline-secondary btn-sm" onclick="decreaseQty()">-</button>
+                                    <input type="number" class="form-control mx-2 text-center" value="1" min="1" max="<%= product.quantity %>" id="quantity" style="width: 60px;">
+                                    <button class="btn btn-outline-secondary btn-sm" onclick="increaseQty()">+</button>
+                                </div>
+                                <button class="add-to-cart" onclick="addToCart()">
+                                    <i class="fas fa-shopping-cart me-2"></i>Add to Cart
+                                </button>
                             </div>
-                            <button class="add-to-cart">Add to Cart</button>
-                        </div>
+                            <div class="d-grid">
+                                <button class="btn btn-success btn-lg" onclick="buyNow()">
+                                    <i class="fas fa-bolt me-2"></i>Buy Now
+                                </button>
+                            </div>
+                        <% } else { %>
+                            <div class="d-grid">
+                                <button class="btn btn-secondary btn-lg" disabled>
+                                    <i class="fas fa-times me-2"></i>Out of Stock
+                                </button>
+                            </div>
+                        <% } %>
                     </div>
                     
                     <!-- Delivery Info -->
@@ -429,66 +494,91 @@
             </div>
         </div>
         
-        <!-- Similar Products -->
+        <!-- Related Products -->
+        <% if (relatedProducts && relatedProducts.length > 0) { %>
         <div class="similar-products">
-            <h4 class="mb-4">You May Also Like</h4>
+            <h4 class="mb-4">Related Products</h4>
             <div class="row">
+                <% relatedProducts.forEach(relatedProduct => { %>
                 <div class="col-6 col-md-3">
-                    <div class="similar-product-item">
-                        <div class="similar-product-img">
-                            <img src="/api/placeholder/250/250" alt="Similar product 1" class="img-fluid">
+                    <a href="/product/<%= relatedProduct._id %>" class="text-decoration-none">
+                        <div class="similar-product-item">
+                            <div class="similar-product-img">
+                                <img src="/uploads/products/<%= relatedProduct.mainImage %>"
+                                     alt="<%= relatedProduct.productName %>"
+                                     class="img-fluid"
+                                     onerror="this.src='https://images.unsplash.com/photo-1523275335684-37898b6baf30?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80'">
+                            </div>
+                            <div class="similar-product-name text-dark"><%= relatedProduct.productName %></div>
+                            <div class="similar-product-price text-success">₹<%= relatedProduct.salePrice.toFixed(2) %></div>
+                            <div class="rating-stars small">★★★★★</div>
                         </div>
-                        <div class="similar-product-name">Classic Watch</div>
-                        <div class="similar-product-price">$2,799</div>
-                        <div class="rating-stars small">★★★★★</div>
-                    </div>
+                    </a>
                 </div>
-                <div class="col-6 col-md-3">
-                    <div class="similar-product-item">
-                        <div class="similar-product-img">
-                            <img src="/api/placeholder/250/250" alt="Similar product 2" class="img-fluid">
-                        </div>
-                        <div class="similar-product-name">Blue Dial Watch</div>
-                        <div class="similar-product-price">$3,499</div>
-                        <div class="rating-stars small">★★★★<span class="text-muted">★</span></div>
-                    </div>
-                </div>
-                <div class="col-6 col-md-3">
-                    <div class="similar-product-item">
-                        <div class="similar-product-img">
-                            <img src="/api/placeholder/250/250" alt="Similar product 3" class="img-fluid">
-                        </div>
-                        <div class="similar-product-name">Gold Tone Watch</div>
-                        <div class="similar-product-price">$4,299</div>
-                        <div class="rating-stars small">★★★★★</div>
-                    </div>
-                </div>
-                <div class="col-6 col-md-3">
-                    <div class="similar-product-item">
-                        <div class="similar-product-img">
-                            <img src="/api/placeholder/250/250" alt="Similar product 4" class="img-fluid">
-                        </div>
-                        <div class="similar-product-name">Green Dial Watch</div>
-                        <div class="similar-product-price">$2,999</div>
-                        <div class="rating-stars small">★★★★<span class="text-muted">★</span></div>
-                    </div>
-                </div>
+                <% }) %>
             </div>
         </div>
+        <% } %>
     </div>
     
     <!-- Bootstrap JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script>
+        // Change main image function
+        function changeMainImage(imageSrc) {
+            document.getElementById('mainProductImage').src = imageSrc;
+
+            // Update active thumbnail
+            document.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('active'));
+            event.target.closest('.thumbnail').classList.add('active');
+        }
+
+        // Quantity controls
+        function increaseQty() {
+            const qtyInput = document.getElementById('quantity');
+            const currentQty = parseInt(qtyInput.value);
+            const maxQty = parseInt(qtyInput.max);
+
+            if (currentQty < maxQty) {
+                qtyInput.value = currentQty + 1;
+            }
+        }
+
+        function decreaseQty() {
+            const qtyInput = document.getElementById('quantity');
+            const currentQty = parseInt(qtyInput.value);
+
+            if (currentQty > 1) {
+                qtyInput.value = currentQty - 1;
+            }
+        }
+
+        // Add to cart function
+        function addToCart() {
+            const quantity = document.getElementById('quantity').value;
+            const productId = '<%= product._id %>';
+
+            // Here you would implement the add to cart functionality
+            alert(`Added ${quantity} item(s) to cart!`);
+        }
+
+        // Buy now function
+        function buyNow() {
+            const quantity = document.getElementById('quantity').value;
+            const productId = '<%= product._id %>';
+
+            // Here you would implement the buy now functionality
+            alert(`Proceeding to checkout with ${quantity} item(s)!`);
+        }
+
         // Thumbnail Click Handler
         document.querySelectorAll('.thumbnail').forEach(thumbnail => {
             thumbnail.addEventListener('click', function() {
                 document.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('active'));
                 this.classList.add('active');
-                // In a real implementation, would change the main image src here
             });
         });
-        
+
         // Variant Click Handler
         document.querySelectorAll('.variant-option').forEach(variant => {
             variant.addEventListener('click', function() {
@@ -496,7 +586,7 @@
                 this.classList.add('active');
             });
         });
-        
+
         // Size Click Handler
         document.querySelectorAll('.size-option').forEach(size => {
             size.addEventListener('click', function() {
