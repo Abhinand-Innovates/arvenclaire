@@ -182,10 +182,168 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
         
-        .pagination-wrapper {
+        .pagination-info {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+
+        .pagination-controls {
             display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: white;
+            padding: 1rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border: 1px solid #e9ecef;
+        }
+
+        .pagination-btn {
+            display: inline-flex;
+            align-items: center;
             justify-content: center;
-            margin-top: 2rem;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            position: relative;
+            border: 2px solid transparent;
+        }
+
+        .pagination-btn i {
+            font-size: 14px;
+        }
+
+        .pagination-btn-first,
+        .pagination-btn-last {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+        }
+
+        .pagination-btn-first:hover,
+        .pagination-btn-last:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            color: white;
+        }
+
+        .pagination-btn-prev,
+        .pagination-btn-next {
+            background: #f8f9fa;
+            color: #495057;
+            border-color: #dee2e6;
+        }
+
+        .pagination-btn-prev:hover,
+        .pagination-btn-next:hover {
+            background: #e9ecef;
+            color: #0056b3;
+            transform: translateX(-2px);
+        }
+
+        .pagination-btn-next:hover {
+            transform: translateX(2px);
+        }
+
+        .pagination-btn-disabled {
+            background: #f8f9fa;
+            color: #6c757d;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .page-numbers {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            margin: 0 1rem;
+        }
+
+        .pagination-btn-page {
+            background: #f8f9fa;
+            color: #6c757d;
+            border-color: #dee2e6;
+            position: relative;
+        }
+
+        .pagination-btn-page:hover {
+            background: #e3f2fd;
+            color: #1976d2;
+            border-color: #1976d2;
+            transform: scale(1.1);
+        }
+
+        .pagination-btn-current {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border-color: #28a745;
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+        }
+
+        .page-number {
+            position: absolute;
+            font-size: 10px;
+            font-weight: 600;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .pagination-btn-page .page-number,
+        .pagination-btn-current .page-number {
+            color: inherit;
+        }
+
+        /* Hover animations */
+        .pagination-btn:not(.pagination-btn-disabled):hover {
+            animation: pulse 0.3s ease-in-out;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1.1); }
+        }
+
+        /* Active state animation */
+        .pagination-btn-current {
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4); }
+            to { box-shadow: 0 6px 20px rgba(40, 167, 69, 0.6); }
+        }
+
+        /* Tooltip-like effect */
+        .pagination-btn:not(.pagination-btn-disabled):hover::after {
+            content: attr(title);
+            position: absolute;
+            bottom: -35px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            white-space: nowrap;
+            z-index: 1000;
+            opacity: 0;
+            animation: fadeIn 0.3s ease-in-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(-50%) translateY(5px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+
+        .items-per-page .form-select {
+            font-size: 0.875rem;
+            padding: 0.375rem 1.75rem 0.375rem 0.75rem;
         }
         
         .status-badge {
@@ -203,6 +361,23 @@
         .status-blocked {
             background: #f8d7da;
             color: #721c24;
+        }
+
+        .filter-summary {
+            background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+            border: 1px solid #bbdefb;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+        }
+
+        .filter-badge {
+            background: rgba(255, 255, 255, 0.9);
+            color: #1976d2;
+            border: 1px solid #1976d2;
+            padding: 0.375rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            margin: 0 0.25rem;
         }
         
         @media (max-width: 768px) {
@@ -241,6 +416,47 @@
                 padding: 0.25rem 0.5rem;
                 font-size: 0.8rem;
             }
+
+            .pagination-info {
+                font-size: 0.8rem;
+                margin-bottom: 1rem;
+                text-align: center;
+            }
+
+            .items-per-page {
+                margin-top: 1rem;
+                text-align: center;
+            }
+
+            .pagination-controls {
+                flex-direction: column;
+                gap: 1rem;
+                padding: 1rem 0.5rem;
+            }
+
+            .page-numbers {
+                margin: 0;
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+
+            .pagination-btn {
+                width: 35px;
+                height: 35px;
+            }
+
+            .pagination-btn i {
+                font-size: 12px;
+            }
+
+            .page-number {
+                font-size: 9px;
+            }
+
+            .d-flex.justify-content-between {
+                flex-direction: column;
+                gap: 1rem;
+            }
         }
     </style>
 </head>
@@ -258,7 +474,7 @@
                 <h1 class="mb-0">Product Management</h1>
                 <p class="text-muted mb-0">Manage your product inventory</p>
             </div>
-            <a href="/add-product" class="btn btn-primary">
+            <a href="/add-product" class="btn btn-dark">
                 <i class="fas fa-plus"></i> Add New Product
             </a>
         </div>
@@ -272,11 +488,11 @@
                     </div>
                     <div class="col-md-3">
                         <select class="form-select" name="category">
-                            <option value="">All Categories (<%= totalProducts %>)</option>
+                            <option value="">All Categories</option>
                             <% if (categories && categories.length > 0) { %>
                                 <% categories.forEach(category => { %>
                                     <option value="<%= category._id %>" <%= selectedCategory === category._id.toString() ? 'selected' : '' %>>
-                                        <%= category.name %> (<%= category.productCount %>)
+                                        <%= category.name %>
                                     </option>
                                 <% }) %>
                             <% } %>
@@ -295,6 +511,32 @@
                 </div>
             </form>
         </div>
+
+        <!-- Filter Summary -->
+        <% if (search || selectedCategory) { %>
+            <div class="filter-summary p-3 d-flex justify-content-between align-items-center">
+                <div>
+                    <i class="fas fa-filter text-primary"></i>
+                    <strong class="text-primary">Active Filters:</strong>
+                    <% if (search) { %>
+                        <span class="filter-badge ms-2">
+                            <i class="fas fa-search"></i> Search: "<%= search %>"
+                        </span>
+                    <% } %>
+                    <% if (selectedCategory) { %>
+                        <% const selectedCat = categories.find(cat => cat._id.toString() === selectedCategory) %>
+                        <% if (selectedCat) { %>
+                            <span class="filter-badge ms-2">
+                                <i class="fas fa-tag"></i> Category: <%= selectedCat.name %>
+                            </span>
+                        <% } %>
+                    <% } %>
+                </div>
+                <a href="/get-product" class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-times"></i> Clear All Filters
+                </a>
+            </div>
+        <% } %>
 
         <!-- Products Table -->
         <% if (products && Array.isArray(products) && products.length > 0) { %>
@@ -370,29 +612,106 @@
             </div>
 
             <!-- Pagination -->
-            <% if (typeof totalPages !== 'undefined' && totalPages > 1) { %>
-                <div class="pagination-wrapper">
+            <% if (totalPages > 1) { %>
+                <div class="d-flex justify-content-between align-items-center mt-4">
+                    <!-- Results Info -->
+                    <div class="pagination-info">
+                        <span class="text-muted">
+                            Showing <%= startResult %> to <%= endResult %> of <%= totalProducts %> products
+                        </span>
+                    </div>
+
+                    <!-- Icon-Based Pagination Controls -->
                     <nav aria-label="Product pagination">
-                        <ul class="pagination">
+                        <div class="pagination-controls">
+                            <!-- First Page -->
                             <% if (currentPage > 1) { %>
-                                <li class="page-item">
-                                    <a class="page-link" href="?page=<%= currentPage - 1 %>&search=<%= search || '' %>&category=<%= selectedCategory || '' %>">Previous</a>
-                                </li>
+                                <a class="pagination-btn pagination-btn-first" href="?page=1<%= baseQuery ? '&' + baseQuery : '' %>" title="First Page">
+                                    <i class="fas fa-angle-double-left"></i>
+                                </a>
+                            <% } else { %>
+                                <span class="pagination-btn pagination-btn-disabled" title="First Page">
+                                    <i class="fas fa-angle-double-left"></i>
+                                </span>
                             <% } %>
-                            
-                            <% for (let i = 1; i <= totalPages; i++) { %>
-                                <li class="page-item <%= i === currentPage ? 'active' : '' %>">
-                                    <a class="page-link" href="?page=<%= i %>&search=<%= search || '' %>&category=<%= selectedCategory || '' %>"><%= i %></a>
-                                </li>
+
+                            <!-- Previous Page -->
+                            <% if (hasPrevPage) { %>
+                                <a class="pagination-btn pagination-btn-prev" href="?page=<%= prevPage %><%= baseQuery ? '&' + baseQuery : '' %>" title="Previous Page">
+                                    <i class="fas fa-chevron-left"></i>
+                                </a>
+                            <% } else { %>
+                                <span class="pagination-btn pagination-btn-disabled" title="Previous Page">
+                                    <i class="fas fa-chevron-left"></i>
+                                </span>
                             <% } %>
-                            
+
+                            <!-- Page Numbers with Icons -->
+                            <div class="page-numbers">
+                                <% pageNumbers.forEach(pageNum => { %>
+                                    <% if (pageNum === currentPage) { %>
+                                        <span class="pagination-btn pagination-btn-current" title="Current Page">
+                                            <i class="fas fa-circle"></i>
+                                            <span class="page-number"><%= pageNum %></span>
+                                        </span>
+                                    <% } else { %>
+                                        <a class="pagination-btn pagination-btn-page" href="?page=<%= pageNum %><%= baseQuery ? '&' + baseQuery : '' %>" title="Go to Page <%= pageNum %>">
+                                            <i class="far fa-circle"></i>
+                                            <span class="page-number"><%= pageNum %></span>
+                                        </a>
+                                    <% } %>
+                                <% }) %>
+                            </div>
+
+                            <!-- Next Page -->
+                            <% if (hasNextPage) { %>
+                                <a class="pagination-btn pagination-btn-next" href="?page=<%= nextPage %><%= baseQuery ? '&' + baseQuery : '' %>" title="Next Page">
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                            <% } else { %>
+                                <span class="pagination-btn pagination-btn-disabled" title="Next Page">
+                                    <i class="fas fa-chevron-right"></i>
+                                </span>
+                            <% } %>
+
+                            <!-- Last Page -->
                             <% if (currentPage < totalPages) { %>
-                                <li class="page-item">
-                                    <a class="page-link" href="?page=<%= currentPage + 1 %>&search=<%= search || '' %>&category=<%= selectedCategory || '' %>">Next</a>
-                                </li>
+                                <a class="pagination-btn pagination-btn-last" href="?page=<%= totalPages %><%= baseQuery ? '&' + baseQuery : '' %>" title="Last Page">
+                                    <i class="fas fa-angle-double-right"></i>
+                                </a>
+                            <% } else { %>
+                                <span class="pagination-btn pagination-btn-disabled" title="Last Page">
+                                    <i class="fas fa-angle-double-right"></i>
+                                </span>
                             <% } %>
-                        </ul>
+                        </div>
                     </nav>
+
+                    <!-- Items Per Page -->
+                    <div class="items-per-page">
+                        <select class="form-select form-select-sm" style="width: auto;" onchange="changeItemsPerPage(this.value)">
+                            <option value="5" <%= limit == 5 ? 'selected' : '' %>>5 per page</option>
+                            <option value="10" <%= limit == 10 ? 'selected' : '' %>>10 per page</option>
+                            <option value="20" <%= limit == 20 ? 'selected' : '' %>>20 per page</option>
+                            <option value="50" <%= limit == 50 ? 'selected' : '' %>>50 per page</option>
+                        </select>
+                    </div>
+                </div>
+            <% } else if (totalProducts > 0) { %>
+                <div class="d-flex justify-content-between align-items-center mt-4">
+                    <div class="pagination-info">
+                        <span class="text-muted">
+                            Showing all <%= totalProducts %> products
+                        </span>
+                    </div>
+                    <div class="items-per-page">
+                        <select class="form-select form-select-sm" style="width: auto;" onchange="changeItemsPerPage(this.value)">
+                            <option value="5" <%= limit == 5 ? 'selected' : '' %>>5 per page</option>
+                            <option value="10" <%= limit == 10 ? 'selected' : '' %>>10 per page</option>
+                            <option value="20" <%= limit == 20 ? 'selected' : '' %>>20 per page</option>
+                            <option value="50" <%= limit == 50 ? 'selected' : '' %>>50 per page</option>
+                        </select>
+                    </div>
                 </div>
             <% } %>
         <% } else { %>
@@ -517,9 +836,20 @@
             });
         }
 
+        // Change items per page
+        function changeItemsPerPage(newLimit) {
+            const url = new URL(window.location);
+            url.searchParams.set('limit', newLimit);
+            url.searchParams.set('page', '1'); // Reset to first page
+            window.location.href = url.toString();
+        }
+
         // Initialize page
         document.addEventListener('DOMContentLoaded', function() {
             console.log('Product listing page loaded');
+            console.log('Current page:', <%= currentPage %>);
+            console.log('Total pages:', <%= totalPages %>);
+            console.log('Total products:', <%= totalProducts %>);
         });
     </script>
 </body>

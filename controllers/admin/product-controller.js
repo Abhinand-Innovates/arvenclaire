@@ -45,23 +45,30 @@ const deleteImageFile = (filename) => {
 // Render product listing page
 const getProducts = async (req, res) => {
     try {
+        // Pagination parameters
         const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 12;
+        const limit = parseInt(req.query.limit) || 10; // Products per page
         const skip = (page - 1) * limit;
 
+        // Search and filter parameters
+        const search = req.query.search || '';
+        const selectedCategory = req.query.category || '';
+
+        // Build search query
         const searchQuery = { isDeleted: false };
 
         // Add search functionality
-        if (req.query.search) {
+        if (search) {
             searchQuery.$or = [
-                { productName: { $regex: req.query.search, $options: 'i' } },
-                { brand: { $regex: req.query.search, $options: 'i' } }
+                { productName: { $regex: search, $options: 'i' } },
+                { brand: { $regex: search, $options: 'i' } },
+                { description: { $regex: search, $options: 'i' } }
             ];
         }
 
         // Add category filter
-        if (req.query.category) {
-            searchQuery.category = req.query.category;
+        if (selectedCategory) {
+            searchQuery.category = selectedCategory;
         }
 
         // Fetch products and categories in parallel
@@ -75,30 +82,51 @@ const getProducts = async (req, res) => {
             Category.find({ isListed: true }).sort({ name: 1 })
         ]);
 
-        // Get product count for each category
-        const categoriesWithCount = await Promise.all(
-            categories.map(async (category) => {
-                const productCount = await Product.countDocuments({
-                    category: category._id,
-                    isDeleted: false
-                });
-                return {
-                    ...category.toObject(),
-                    productCount
-                };
-            })
-        );
-
+        // Calculate pagination data
         const totalPages = Math.ceil(totalProducts / limit);
+        const hasNextPage = page < totalPages;
+        const hasPrevPage = page > 1;
+        const nextPage = hasNextPage ? page + 1 : null;
+        const prevPage = hasPrevPage ? page - 1 : null;
+
+        // Calculate page range for pagination display
+        const startPage = Math.max(1, page - 2);
+        const endPage = Math.min(totalPages, page + 2);
+        const pageNumbers = [];
+        for (let i = startPage; i <= endPage; i++) {
+            pageNumbers.push(i);
+        }
+
+        // Calculate result range
+        const startResult = totalProducts > 0 ? skip + 1 : 0;
+        const endResult = Math.min(skip + limit, totalProducts);
+
+        // Build query string for pagination links
+        const queryParams = new URLSearchParams();
+        if (search) queryParams.set('search', search);
+        if (selectedCategory) queryParams.set('category', selectedCategory);
+        if (req.query.limit && req.query.limit !== '10') queryParams.set('limit', req.query.limit);
+        const baseQuery = queryParams.toString();
 
         res.render('product', {
             products,
-            categories: categoriesWithCount,
+            categories,
+            // Pagination data
             currentPage: page,
             totalPages,
             totalProducts,
-            search: req.query.search || '',
-            selectedCategory: req.query.category || ''
+            hasNextPage,
+            hasPrevPage,
+            nextPage,
+            prevPage,
+            pageNumbers,
+            startResult,
+            endResult,
+            limit,
+            baseQuery,
+            // Filter data
+            search,
+            selectedCategory
         });
     } catch (error) {
         console.error('Error fetching products:', error);
@@ -109,6 +137,15 @@ const getProducts = async (req, res) => {
             currentPage: 1,
             totalPages: 1,
             totalProducts: 0,
+            hasNextPage: false,
+            hasPrevPage: false,
+            nextPage: null,
+            prevPage: null,
+            pageNumbers: [1],
+            startResult: 0,
+            endResult: 0,
+            limit: 10,
+            baseQuery: '',
             search: '',
             selectedCategory: ''
         });
