@@ -3,7 +3,9 @@ const adminRoute = express.Router();
 
 const adminController = require("../controllers/admin/admin-auth-controller");
 const getUsersController = require("../controllers/admin/get-usersController");
-const getCategoryController = require("../controllers/admin/get-categoryController")
+const getCategoryController = require("../controllers/admin/get-categoryController");
+const productController = require("../controllers/admin/product-controller");
+const { productUpload, handleMulterError } = require("../config/multer-config");
 
 
 //Admin Login
@@ -31,6 +33,20 @@ adminRoute.post('/get-categories', getCategoryController.addCategoryAPI);
 adminRoute.put('/get-categories/:id', getCategoryController.updateCategoryAPI);
 adminRoute.patch('/get-categories/:id/status', getCategoryController.toggleCategoryStatusAPI);
 
+// Product Management Routes
+adminRoute.get('/get-product', productController.getProducts);
+adminRoute.get('/add-product', productController.getAddProduct);
+adminRoute.get('/edit-product/:id', productController.getEditProduct);
+
+// Product API Routes
+adminRoute.post('/api/products', productUpload.array('productImages', 10), handleMulterError, productController.addProduct);
+adminRoute.get('/api/products/:id', productController.getProductById);
+adminRoute.put('/api/products/:id', productUpload.array('productImages', 10), handleMulterError, productController.updateProduct);
+adminRoute.delete('/api/products/:id', productController.deleteProduct);
+adminRoute.patch('/api/products/:id/status', productController.toggleProductStatus);
+
+// API for user dashboard
+adminRoute.get('/api/products-for-user', productController.getProductsForUser);
 
 
 

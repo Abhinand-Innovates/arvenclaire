@@ -34,9 +34,9 @@ const productSchema = new Schema({
     type: Number, 
     default: 1 
   },
-  review: { 
-    type: String, 
-    required: true 
+  features: {
+    type: String,
+    required: true
   },
   mainImage: { 
     type: String, 

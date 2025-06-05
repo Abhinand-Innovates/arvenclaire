@@ -2,6 +2,7 @@ const User = require("../../models/user-schema");
 const generateOtp = require("../../utils/generateOtp");
 const sendEmail = require("../../utils/sendEmail");
 const bcrypt = require("bcrypt");
+const Product = require("../../models/product-schema");
 
 
 
@@ -9,7 +10,8 @@ const bcrypt = require("bcrypt");
 
 const loadLanding = async (req, res) => {
   try {
-    return res.render("dashboard");
+    const products = await Product.find()
+    return res.render("dashboard",{products});
   } catch (error) {
     console.log("Landing page not loading");
     res.status(500).send("Server error");
@@ -183,11 +185,14 @@ const signup = async (req, res) => {
 const loadDashboard = async (req, res) => {
   try {
     const user = req.session.userId;
+    console.log(user)
     if (user) {
       const userData = await User.findOne({ _id: user });
-      res.render("dashboard", { user: userData });
+      const products = await Product.find()
+      console.log(products)
+      return res.render("dashboard", { user: userData,products });
     } else {
-      return res.render("dashboard");
+      return res.redirect("/")
     }
   } catch (error) {
     console.log("Home page not loading", error);
@@ -198,12 +203,12 @@ const loadDashboard = async (req, res) => {
 
 
 
-const securePassword = async (password) => {
-  try {
-    const passwordHash = await bcrypt.hash(password, 10);
-    return passwordHash;
-  } catch (error) {}
-};
+// const securePassword = async (password) => {
+//   try {
+//     const passwordHash = await bcrypt.hash(password, 10);
+//     return passwordHash;
+//   } catch (error) {}
+// };
 
 
 

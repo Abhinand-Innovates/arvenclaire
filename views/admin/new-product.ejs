@@ -3,17 +3,253 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add New Product - Admin Dashboard</title>
+    <title>Add Product - Admin Dashboard</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/2.0.0/cropper.min.css">
-    <link rel="stylesheet" href="../../styles/admin/add-new-product.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.10.5/sweetalert2.all.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/cropperjs@1.6.2/dist/cropper.min.css">
     <%- include("../partials/admin/sidebar") %>
     <style>
-        .cropper-container { max-width: 400px; margin: 0 auto; }
-        .image-preview img { max-width: 100px; max-height: 100px; object-fit: cover; }
-        .error-message { color: red; font-size: 0.8em; display: none; }
-        .error .error-message { display: block; }
+        .main-content {
+            margin-left: 250px;
+            padding: 2rem;
+            background-color: #f8f9fa;
+            min-height: 100vh;
+        }
+        
+        .form-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .form-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .form-body {
+            padding: 2rem;
+        }
+        
+        .form-section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            background: #f8f9fa;
+        }
+        
+        .section-title {
+            color: #2c3e50;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #2c3e50;
+        }
+        
+        .required {
+            color: #e74c3c;
+        }
+        
+        .form-control, .form-select, .form-textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .form-control:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .error-message {
+            color: #e74c3c;
+            font-size: 0.8rem;
+            display: none;
+            margin-top: 0.25rem;
+        }
+        
+        .error .error-message {
+            display: block;
+        }
+        
+        .error .form-control,
+        .error .form-select,
+        .error .form-textarea {
+            border-color: #e74c3c;
+        }
+        
+        .images-section {
+            background: white;
+            border: 2px dashed #ddd;
+            border-radius: 10px;
+            padding: 2rem;
+            text-align: center;
+            transition: border-color 0.3s ease;
+        }
+        
+        .images-section:hover {
+            border-color: #667eea;
+        }
+        
+        .images-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .image-preview {
+            position: relative;
+            border: 2px solid #e3f2fd;
+            border-radius: 10px;
+            overflow: hidden;
+            background: white;
+            aspect-ratio: 1;
+        }
+        
+        .image-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        
+        .image-remove {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+        }
+        
+        .image-label {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 0.25rem;
+            text-align: center;
+            font-size: 0.8rem;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            padding-top: 2rem;
+            border-top: 1px solid #e9ecef;
+            margin-top: 2rem;
+        }
+        
+        .btn {
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        
+        .cropper-container {
+            max-width: 100%;
+            max-height: 400px;
+            margin: 0 auto;
+        }
+
+        #cropModal .modal-dialog {
+            max-width: 600px;
+        }
+
+        #cropModal .modal-body {
+            padding: 2rem;
+        }
+
+        #cropModal .modal-header {
+            border-bottom: none;
+        }
+
+        #cropModal .modal-footer {
+            border-top: none;
+            padding-top: 0;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-actions {
+                flex-direction: column;
+            }
+        }
     </style>
 </head>
 <body>
@@ -22,270 +258,754 @@
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/admin-dashboard"><i class="fas fa-home"></i> Dashboard</a></li>
                 <li class="breadcrumb-item"><a href="/get-product">Products</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Add New Product</li>
+                <li class="breadcrumb-item active" aria-current="page">Add Product</li>
             </ol>
         </nav>
-        <div class="page-header">
-            <h1 class="page-title">Add New Product</h1>
-        </div>
-        <div class="content-container">
-            <form id="addProductForm" enctype="multipart/form-data">
-                <div class="form-section">
-                    <h3 class="section-title">Basic Information</h3>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="name" class="form-label">Watch Name <span class="required">*</span></label>
-                            <input type="text" id="name" name="name" class="form-control" placeholder="Enter product name" required>
-                            <div class="error-message">Please enter a product name</div>
+
+        <div class="form-container">
+            <div class="form-header">
+                <h1><i class="fas fa-plus"></i> Add New Product</h1>
+                <p>Fill in the details below to add a new product</p>
+            </div>
+
+            <div class="form-body">
+                <form id="productForm" enctype="multipart/form-data">
+                    <!-- Basic Information -->
+                    <div class="form-section">
+                        <h3 class="section-title">
+                            <i class="fas fa-info-circle"></i> Basic Information
+                        </h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="productName" class="form-label">Product Name <span class="required">*</span></label>
+                                <input type="text" id="productName" name="productName" class="form-control" 
+                                       placeholder="Enter product name" required>
+                                <div class="error-message">Please enter a product name</div>
+                            </div>
+                            <div class="form-group">
+                                <label for="brand" class="form-label">Brand <span class="required">*</span></label>
+                                <input type="text" id="brand" name="brand" class="form-control" 
+                                       placeholder="Enter brand name" required>
+                                <div class="error-message">Please enter a brand name</div>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label for="brand" class="form-label">Brand <span class="required">*</span></label>
-                            <input type="text" id="brand" name="brand" class="form-control" placeholder="Enter brand name" required>
-                            <div class="error-message">Please enter a brand name</div>
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="category" class="form-label">Category <span class="required">*</span></label>
-                            <select id="category" name="category" class="form-select" required>
-                                <option value="">Select Category</option>
-                            </select>
-                            <div class="error-message">Please select a category</div>
-                        </div>
-                        <div class="form-group">
-                            <label for="material" class="form-label">Material <span class="required">*</span></label>
-                            <input type="text" id="material" name="material" class="form-control" placeholder="e.g., Stainless Steel" required>
-                            <div class="error-message">Please enter the material</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="form-section">
-                    <h3 class="section-title">Pricing & Stock</h3>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="regularPrice" class="form-label">Regular Price <span class="required">*</span></label>
-                            <input type="number" id="regularPrice" name="regularPrice" class="form-control" placeholder="Enter regular price" step="0.01" required>
-                            <div class="error-message">Please enter a valid regular price</div>
-                        </div>
-                        <div class="form-group">
-                            <label for="sellingPrice" class="form-label">Selling Price <span class="required">*</span></label>
-                            <input type="number" id="sellingPrice" name="sellingPrice" class="form-control" placeholder="Enter selling price" step="0.01" required>
-                            <div class="error-message">Please enter a valid selling price</div>
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="discount" class="form-label">Discount (%)</label>
-                            <input type="number" id="discount" name="discount" class="form-control" placeholder="Enter discount percentage" step="0.01" min="0" max="100">
-                            <div class="error-message">Please enter a valid discount (0-100)</div>
-                        </div>
-                        <div class="form-group">
-                            <label for="stock" class="form-label">Stock Quantity <span class="required">*</span></label>
-                            <input type="number" id="stock" name="stock" class="form-control" placeholder="Enter stock quantity" required>
-                            <div class="error-message">Please enter a valid stock quantity</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="form-section">
-                    <h3 class="section-title">Product Details</h3>
-                    <div class="form-group">
-                        <label for="features" class="form-label">Features</label>
-                        <textarea id="features" name="features" class="form-textarea" placeholder="Enter product features (comma separated)" rows="3"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label for="description" class="form-label">Description</label>
-                        <textarea id="description" name="description" class="form-textarea" placeholder="Enter product description" rows="4"></textarea>
-                    </div>
-                </div>
-                <div class="form-section">
-                    <h3 class="section-title">Product Images (Minimum 3 required)</h3>
-                    <div class="form-group">
-                        <label for="productImages" class="form-label">Upload Images <span class="required">*</span></label>
-                        <input type="file" id="productImages" name="productImages" class="form-control" accept="image/*" multiple required>
-                        <div class="error-message" id="imagesError">Please upload at least 3 images</div>
-                    </div>
-                    <div id="imagePreviews" class="images-grid"></div>
-                    <div id="cropModal" class="modal fade" tabindex="-1">
-                        <div class="modal-dialog">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title">Crop Image</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                </div>
-                                <div class="modal-body">
-                                    <div id="cropperImage" style="max-width: 100%;"></div>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                    <button type="button" class="btn btn-primary" id="cropConfirm">Crop & Save</button>
-                                </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="category" class="form-label">Category <span class="required">*</span></label>
+                                <select id="category" name="category" class="form-select" required>
+                                    <option value="">Select Category</option>
+                                </select>
+                                <div class="error-message">Please select a category</div>
+                            </div>
+                            <div class="form-group">
+                                <label for="quantity" class="form-label">Stock Quantity <span class="required">*</span></label>
+                                <input type="number" id="quantity" name="quantity" class="form-control" 
+                                       placeholder="Enter stock quantity" required>
+                                <div class="error-message">Please enter a valid stock quantity</div>
                             </div>
                         </div>
                     </div>
+
+                    <!-- Pricing Information -->
+                    <div class="form-section">
+                        <h3 class="section-title">
+                            <i class="fas fa-dollar-sign"></i> Pricing & Offers
+                        </h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="regularPrice" class="form-label">Regular Price <span class="required">*</span></label>
+                                <input type="number" id="regularPrice" name="regularPrice" class="form-control" 
+                                       placeholder="Enter regular price" step="0.01" required>
+                                <div class="error-message">Please enter a valid regular price</div>
+                            </div>
+                            <div class="form-group">
+                                <label for="salePrice" class="form-label">Sale Price <span class="required">*</span></label>
+                                <input type="number" id="salePrice" name="salePrice" class="form-control" 
+                                       placeholder="Enter sale price" step="0.01" required>
+                                <div class="error-message">Please enter a valid sale price</div>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="productOffer" class="form-label">Product Offer (%)</label>
+                                <input type="number" id="productOffer" name="productOffer" class="form-control" 
+                                       placeholder="Enter offer percentage" step="0.01" min="0" max="100">
+                                <div class="error-message">Please enter a valid offer (0-100)</div>
+                            </div>
+                            <div class="form-group">
+                                <label for="features" class="form-label">Features <span class="required">*</span></label>
+                                <input type="text" id="features" name="features" class="form-control"
+                                       placeholder="Enter product features" required>
+                                <div class="error-message">Please enter product features</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Product Details -->
+                    <div class="form-section">
+                        <h3 class="section-title">
+                            <i class="fas fa-list-ul"></i> Product Details
+                        </h3>
+                        <div class="form-group">
+                            <label for="description" class="form-label">Description <span class="required">*</span></label>
+                            <textarea id="description" name="description" class="form-textarea" rows="4" 
+                                      placeholder="Enter product description" required></textarea>
+                            <div class="error-message">Please enter a product description</div>
+                        </div>
+                    </div>
+
+                    <!-- Product Images -->
+                    <div class="form-section">
+                        <h3 class="section-title">
+                            <i class="fas fa-images"></i> Product Images (Minimum 3 required)
+                        </h3>
+                        <div class="images-section">
+                            <div class="form-group">
+                                <label for="productImages" class="form-label">Upload Images <span class="required">*</span></label>
+                                <input type="file" id="productImages" name="productImages" class="form-control"
+                                       accept="image/*" multiple required>
+                                <div class="error-message" id="imagesError">Please upload at least 3 images</div>
+                                <small class="form-text text-muted">Select multiple images. Each image will be cropped individually.</small>
+                            </div>
+                            <div id="imagePreviews" class="images-grid"></div>
+                        </div>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="form-actions">
+                        <a href="/get-product" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Save Product
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Crop Modal -->
+        <div class="modal fade" id="cropModal" tabindex="-1" aria-labelledby="cropModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title" id="cropModalLabel">
+                            <i class="fas fa-crop"></i> Crop Image
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body text-center">
+                        <div id="cropperContainer" style="max-height: 400px; overflow: hidden;">
+                            <img id="cropperImage" style="max-width: 100%; max-height: 400px;">
+                        </div>
+                        <div class="mt-3">
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle"></i>
+                                Drag to move, resize corners to adjust the crop area
+                            </small>
+                        </div>
+                    </div>
+                    <div class="modal-footer justify-content-center">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="fas fa-times"></i> Cancel
+                        </button>
+                        <button type="button" class="btn btn-primary" id="cropConfirm">
+                            <i class="fas fa-check"></i> Crop & Save
+                        </button>
+                    </div>
                 </div>
-                <div class="form-actions" style="display: flex; justify-content: center; gap: 1rem;">
-                    <a href="/get-product" class="btn-secondary"><i class="fas fa-times"></i> Cancel</a>
-                    <button type="submit" class="btn-success"><i class="fas fa-save"></i> Save Product</button>
-                </div>
-            </form>
+            </div>
         </div>
     </div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.10.5/sweetalert2.all.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/2.0.0/cropper.min.js"></script>
+    <script src="https://unpkg.com/cropperjs@1.6.2/dist/cropper.min.js"></script>
     <script>
+        // Fallback for Cropper.js if it doesn't load
+        window.addEventListener('load', function() {
+            if (typeof Cropper === 'undefined') {
+                console.warn('Primary Cropper.js failed to load, trying fallback...');
+                const script = document.createElement('script');
+                script.src = 'https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js';
+                script.onload = function() {
+                    console.log('Fallback Cropper.js loaded successfully');
+                };
+                script.onerror = function() {
+                    console.error('Both primary and fallback Cropper.js failed to load');
+                };
+                document.head.appendChild(script);
+            } else {
+                console.log('Cropper.js loaded successfully from primary source');
+            }
+        });
+    </script>
+    <script>
+        // Global variables
         let categories = [];
         let croppedImages = [];
         let currentCropper;
-        let currentFileIndex;
+        let currentFileIndex = 0;
+        let currentCallback;
+        let selectedFiles = [];
+        let cropModal;
 
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if required libraries are loaded
+            if (typeof bootstrap === 'undefined') {
+                Swal.fire('Error!', 'Bootstrap library is not loaded', 'error');
+                return;
+            }
+
+            if (typeof Cropper === 'undefined') {
+                Swal.fire('Error!', 'Cropper.js library is not loaded', 'error');
+                return;
+            }
+
+            fetchCategories();
+            setupEventListeners();
+
+            // Initialize modal
+            try {
+                cropModal = new bootstrap.Modal(document.getElementById('cropModal'), {
+                    backdrop: 'static',
+                    keyboard: false
+                });
+            } catch (error) {
+                console.error('Error initializing modal:', error);
+                Swal.fire('Error!', 'Failed to initialize modal', 'error');
+            }
+        });
+
+        // Fetch categories from API
         async function fetchCategories() {
             try {
+                console.log('Fetching categories...');
                 const response = await fetch('/get-categories');
+                console.log('Categories response status:', response.status);
+
                 if (!response.ok) throw new Error('Failed to fetch categories');
                 categories = await response.json();
+                console.log('Fetched categories:', categories);
                 populateCategoryDropdown();
             } catch (error) {
+                console.error('Error fetching categories:', error);
                 Swal.fire('Error!', `Could not fetch categories: ${error.message}`, 'error');
             }
         }
 
+        // Populate category dropdown
         function populateCategoryDropdown() {
             const categorySelect = document.getElementById('category');
+            if (!categorySelect) return;
+
             categorySelect.innerHTML = '<option value="">Select Category</option>';
             categories.forEach(category => {
-                categorySelect.innerHTML += `<option value="${category.name}">${category.name}</option>`;
+                const option = document.createElement('option');
+                option.value = category._id;
+                option.textContent = category.name;
+                categorySelect.appendChild(option);
             });
         }
 
-        function initializeCropper(file, index) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const img = document.createElement('img');
-                img.src = e.target.result;
-                const cropperImage = document.getElementById('cropperImage');
-                cropperImage.innerHTML = '';
-                cropperImage.appendChild(img);
-                
-                currentCropper = new Cropper(img, {
-                    aspectRatio: 1,
-                    viewMode: 2,
-                    autoCropArea: 0.8,
-                    responsive: true
-                });
-                
-                const modal = new bootstrap.Modal(document.getElementById('cropModal'));
-                modal.show();
-                currentFileIndex = index;
-            };
-            reader.readAsDataURL(file);
+        // Setup event listeners
+        function setupEventListeners() {
+            // File input change
+            const fileInput = document.getElementById('productImages');
+            if (fileInput) {
+                fileInput.addEventListener('change', handleFileSelection);
+            }
+
+            // Form submission
+            const form = document.getElementById('productForm');
+            if (form) {
+                form.addEventListener('submit', handleFormSubmission);
+            }
+
+            // Crop confirmation
+            const cropConfirm = document.getElementById('cropConfirm');
+            if (cropConfirm) {
+                cropConfirm.addEventListener('click', handleCropConfirm);
+            }
+
+            // Price validation
+            const regularPrice = document.getElementById('regularPrice');
+            const salePrice = document.getElementById('salePrice');
+            if (regularPrice && salePrice) {
+                regularPrice.addEventListener('input', validatePrices);
+                salePrice.addEventListener('input', validatePrices);
+            }
         }
 
-        document.getElementById('cropConfirm').addEventListener('click', function() {
-            const canvas = currentCropper.getCroppedCanvas({
-                width: 400,
-                height: 400
-            });
-            canvas.toBlob(blob => {
-                const preview = document.createElement('div');
-                preview.className = 'image-preview';
-                preview.innerHTML = `<img src="${canvas.toDataURL()}" alt="Preview"><button type="button" class="image-remove" onclick="removeImage(${currentFileIndex})"><i class="fas fa-times"></i></button>`;
-                document.getElementById('imagePreviews').appendChild(preview);
-                
-                const file = new File([blob], `image_${currentFileIndex}.jpg`, { type: 'image/jpeg' });
-                croppedImages[currentFileIndex] = file;
-                
-                currentCropper.destroy();
-                bootstrap.Modal.getInstance(document.getElementById('cropModal')).hide();
-            }, 'image/jpeg', 0.8);
-        });
-
-        function removeImage(index) {
-            croppedImages[index] = null;
-            document.getElementById('imagePreviews').children[index].remove();
-        }
-
-        document.getElementById('productImages').addEventListener('change', function(e) {
+        // Handle file selection
+        function handleFileSelection(e) {
             const files = Array.from(e.target.files);
+            console.log(`Selected ${files.length} files:`, files.map(f => f.name));
+
             if (files.length < 3) {
+                Swal.fire({
+                    title: 'Insufficient Images',
+                    text: 'Please select at least 3 images',
+                    icon: 'warning',
+                    confirmButtonText: 'OK'
+                });
+                document.getElementById('imagesError').textContent = 'Please select at least 3 images';
                 document.getElementById('imagesError').style.display = 'block';
+                e.target.value = ''; // Clear the input
                 return;
             }
+
             document.getElementById('imagesError').style.display = 'none';
             document.getElementById('imagePreviews').innerHTML = '';
             croppedImages = [];
-            files.forEach((file, index) => {
-                initializeCropper(file, index);
-            });
-        });
+            selectedFiles = files;
+            currentFileIndex = 0;
 
+            console.log('Starting image processing sequence...');
+
+            // Show info message
+            Swal.fire({
+                title: 'Image Cropping',
+                text: `You selected ${files.length} images. Each image will be cropped individually.`,
+                icon: 'info',
+                confirmButtonText: 'Start Cropping'
+            }).then(() => {
+                processImageSequentially(files, 0);
+            });
+        }
+
+        // Process images one by one
+        function processImageSequentially(files, index) {
+            console.log(`Processing image ${index + 1} of ${files.length}`);
+
+            if (index >= files.length) {
+                console.log('All images processed!');
+                console.log('Final cropped images array:', croppedImages);
+
+                // Show completion message
+                Swal.fire({
+                    title: 'All Images Cropped!',
+                    text: `Successfully cropped ${files.length} images. You can now fill in the product details and save.`,
+                    icon: 'success',
+                    confirmButtonText: 'Continue'
+                });
+                return;
+            }
+
+            const file = files[index];
+            console.log(`Initializing cropper for file: ${file.name}`);
+
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                console.error(`File ${file.name} is not an image`);
+                Swal.fire('Error!', `File "${file.name}" is not a valid image`, 'error');
+                return;
+            }
+
+            initializeCropper(file, index, () => {
+                console.log(`Finished cropping image ${index + 1}, moving to next...`);
+                processImageSequentially(files, index + 1);
+            });
+        }
+
+        // Initialize cropper for a file
+        function initializeCropper(file, index, callback) {
+            console.log(`Initializing cropper for image ${index + 1}: ${file.name}`);
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                console.log(`File loaded for cropping: ${file.name}`);
+
+                const img = document.getElementById('cropperImage');
+                if (!img) {
+                    console.error('Cropper image element not found!');
+                    return;
+                }
+
+                img.src = e.target.result;
+
+                // Destroy existing cropper if any
+                if (currentCropper) {
+                    console.log('Destroying existing cropper');
+                    currentCropper.destroy();
+                    currentCropper = null;
+                }
+
+                // Wait for image to load before initializing cropper
+                img.onload = function() {
+                    console.log('Image loaded, initializing Cropper.js');
+                    console.log('Image dimensions:', img.naturalWidth, 'x', img.naturalHeight);
+                    console.log('Image src length:', img.src.length);
+
+                    try {
+                        // Check if Cropper is available
+                        if (typeof Cropper === 'undefined') {
+                            throw new Error('Cropper.js is not available');
+                        }
+
+                        console.log('Creating new Cropper instance...');
+
+                        // Try to create cropper with error handling
+                        try {
+                            currentCropper = new Cropper(img, {
+                                aspectRatio: 1,
+                                viewMode: 2,
+                                autoCropArea: 0.8,
+                                responsive: true,
+                                background: false,
+                                guides: true,
+                                center: true,
+                                highlight: false,
+                                cropBoxMovable: true,
+                                cropBoxResizable: true,
+                                toggleDragModeOnDblclick: false,
+                                ready: function() {
+                                    console.log('Cropper is ready and initialized successfully');
+                                },
+                                error: function(event) {
+                                    console.error('Cropper error event:', event);
+                                }
+                            });
+                        } catch (cropperError) {
+                            console.error('Failed to create Cropper instance:', cropperError);
+                            // Fallback to simple canvas cropping
+                            useSimpleCropping(img, index, callback);
+                            return;
+                        }
+
+                        console.log('Cropper instance created:', currentCropper);
+
+                        // Update modal title
+                        document.querySelector('#cropModal .modal-title').textContent = `Crop Image ${index + 1} of ${selectedFiles.length}`;
+
+                        // Show modal
+                        console.log('Showing crop modal');
+                        cropModal.show();
+
+                        currentFileIndex = index;
+                        currentCallback = callback;
+
+                    } catch (error) {
+                        console.error('Error initializing cropper:', error);
+                        console.error('Error stack:', error.stack);
+                        Swal.fire('Error!', `Failed to initialize image cropper: ${error.message}`, 'error');
+                    }
+                };
+
+                img.onerror = function() {
+                    console.error('Failed to load image for cropping');
+                    Swal.fire('Error!', 'Failed to load image for cropping', 'error');
+                };
+            };
+
+            reader.onerror = function() {
+                console.error('Failed to read file');
+                Swal.fire('Error!', 'Failed to read the selected file', 'error');
+            };
+
+            reader.readAsDataURL(file);
+        }
+
+        // Handle crop confirmation
+        function handleCropConfirm() {
+            console.log('Crop confirm clicked');
+
+            if (!currentCropper) {
+                console.error('No cropper instance found');
+                Swal.fire('Error!', 'No cropper instance found', 'error');
+                return;
+            }
+
+            try {
+                console.log('Getting cropped canvas...');
+                const canvas = currentCropper.getCroppedCanvas({
+                    width: 800,
+                    height: 800,
+                    imageSmoothingEnabled: true,
+                    imageSmoothingQuality: 'high'
+                });
+
+                if (!canvas) {
+                    throw new Error('Failed to get cropped canvas');
+                }
+
+                // Convert canvas to base64
+                const croppedImageData = canvas.toDataURL('image/jpeg', 0.9);
+                console.log(`Created cropped image ${currentFileIndex + 1}, size: ${croppedImageData.length} characters`);
+
+                // Create preview
+                const preview = document.createElement('div');
+                preview.className = 'image-preview';
+                preview.innerHTML = `
+                    <img src="${croppedImageData}" alt="Preview ${currentFileIndex + 1}">
+                    <button type="button" class="image-remove" onclick="removeImage(${currentFileIndex})">
+                        <i class="fas fa-times"></i>
+                    </button>
+                    <span class="image-label">Image ${currentFileIndex + 1}</span>
+                `;
+                document.getElementById('imagePreviews').appendChild(preview);
+
+                // Store cropped image data
+                croppedImages[currentFileIndex] = croppedImageData;
+                console.log(`Stored cropped image ${currentFileIndex + 1}`);
+
+                // Clean up
+                currentCropper.destroy();
+                currentCropper = null;
+
+                // Hide modal
+                cropModal.hide();
+
+                // Show success message for this image
+                const remainingImages = selectedFiles.length - currentFileIndex - 1;
+                if (remainingImages > 0) {
+                    Swal.fire({
+                        title: 'Image Cropped!',
+                        text: `Image ${currentFileIndex + 1} cropped successfully. ${remainingImages} more to go.`,
+                        icon: 'success',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                }
+
+                // Call callback to process next image
+                setTimeout(() => {
+                    if (currentCallback) {
+                        currentCallback();
+                    }
+                }, remainingImages > 0 ? 1500 : 500);
+
+            } catch (error) {
+                console.error('Error during crop confirmation:', error);
+                Swal.fire('Error!', `Failed to crop image: ${error.message}`, 'error');
+            }
+        }
+
+        // Remove image
+        function removeImage(index) {
+            croppedImages[index] = null;
+            const previews = document.getElementById('imagePreviews');
+            if (previews.children[index]) {
+                previews.children[index].remove();
+            }
+
+            // Update validation
+            const validImages = croppedImages.filter(img => img);
+            if (validImages.length < 3) {
+                document.getElementById('imagesError').textContent = `At least 3 images required. Currently have: ${validImages.length}`;
+                document.getElementById('imagesError').style.display = 'block';
+            } else {
+                document.getElementById('imagesError').style.display = 'none';
+            }
+        }
+
+        // Validate prices
+        function validatePrices() {
+            const regularPrice = parseFloat(document.getElementById('regularPrice').value) || 0;
+            const salePrice = parseFloat(document.getElementById('salePrice').value) || 0;
+
+            const salePriceGroup = document.getElementById('salePrice').closest('.form-group');
+            const errorMsg = salePriceGroup.querySelector('.error-message');
+
+            if (salePrice > regularPrice && regularPrice > 0) {
+                salePriceGroup.classList.add('error');
+                errorMsg.textContent = 'Sale price cannot be higher than regular price';
+                errorMsg.style.display = 'block';
+            } else {
+                salePriceGroup.classList.remove('error');
+                errorMsg.style.display = 'none';
+            }
+        }
+
+        // Validate form
         function validateForm() {
             let isValid = true;
-            const requiredFields = ['name', 'brand', 'category', 'material', 'regularPrice', 'sellingPrice', 'stock'];
+            const requiredFields = ['productName', 'brand', 'category', 'regularPrice', 'salePrice', 'quantity', 'description', 'features'];
+
+            // Clear previous errors
             document.querySelectorAll('.form-group').forEach(group => group.classList.remove('error'));
 
+            // Check required fields
             requiredFields.forEach(fieldName => {
                 const field = document.getElementById(fieldName);
-                if (!field.value.trim()) {
-                    field.closest('.form-group').classList.add('error');
+                if (!field || !field.value.trim()) {
+                    if (field) {
+                        field.closest('.form-group').classList.add('error');
+                    }
+                    console.log(`Validation failed for field: ${fieldName}`);
                     isValid = false;
                 }
             });
 
-            if (croppedImages.filter(img => img).length < 3) {
+            // Check images
+            const validCroppedImages = croppedImages.filter(img => img);
+            console.log(`Validation: Found ${validCroppedImages.length} cropped images`);
+
+            if (validCroppedImages.length < 3) {
+                document.getElementById('imagesError').textContent = `Please upload and crop at least 3 images. Currently have: ${validCroppedImages.length}`;
                 document.getElementById('imagesError').style.display = 'block';
                 isValid = false;
+            } else {
+                document.getElementById('imagesError').style.display = 'none';
             }
 
+            // Validate prices
             const regularPrice = parseFloat(document.getElementById('regularPrice').value);
-            const sellingPrice = parseFloat(document.getElementById('sellingPrice').value);
-            if (sellingPrice > regularPrice) {
-                const sellingPriceGroup = document.getElementById('sellingPrice').closest('.form-group');
-                sellingPriceGroup.classList.add('error');
-                sellingPriceGroup.querySelector('.error-message').textContent = 'Selling price cannot be higher than regular price';
+            const salePrice = parseFloat(document.getElementById('salePrice').value);
+            if (salePrice > regularPrice) {
+                const salePriceGroup = document.getElementById('salePrice').closest('.form-group');
+                salePriceGroup.classList.add('error');
                 isValid = false;
             }
 
-            const discount = document.getElementById('discount').value.trim() ? parseFloat(document.getElementById('discount').value) : null;
-            if (discount !== null && (discount < 0 || discount > 100)) {
-                document.getElementById('discount').closest('.form-group').classList.add('error');
+            // Validate offer percentage
+            const productOffer = document.getElementById('productOffer').value.trim() ? parseFloat(document.getElementById('productOffer').value) : null;
+            if (productOffer !== null && (productOffer < 0 || productOffer > 100)) {
+                document.getElementById('productOffer').closest('.form-group').classList.add('error');
                 isValid = false;
             }
 
+            console.log(`Form validation result: ${isValid}`);
             return isValid;
         }
 
-        document.getElementById('addProductForm').addEventListener('submit', async function(e) {
+        // Handle form submission
+        async function handleFormSubmission(e) {
             e.preventDefault();
+
             if (!validateForm()) {
                 Swal.fire('Validation Error!', 'Please fill in all required fields correctly and upload at least 3 images.', 'error');
                 return;
             }
 
-            Swal.fire({ title: 'Saving Product...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-            const formData = new FormData(this);
-            croppedImages.filter(img => img).forEach((img, index) => {
-                formData.append('productImages', img);
+            console.log('Submitting form...');
+            console.log('Cropped images:', croppedImages.filter(img => img));
+
+            Swal.fire({
+                title: 'Saving Product...',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
             });
 
             try {
+                // Prepare form data
+                const formData = {
+                    productName: document.getElementById('productName').value,
+                    brand: document.getElementById('brand').value,
+                    category: document.getElementById('category').value,
+                    quantity: document.getElementById('quantity').value,
+                    regularPrice: document.getElementById('regularPrice').value,
+                    salePrice: document.getElementById('salePrice').value,
+                    productOffer: document.getElementById('productOffer').value || '0',
+                    features: document.getElementById('features').value,
+                    description: document.getElementById('description').value,
+                    croppedImages: JSON.stringify(croppedImages.filter(img => img))
+                };
+
+                console.log('Form data:', formData);
+
                 const response = await fetch('/api/products', {
                     method: 'POST',
-                    body: formData
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
                 });
-                if (!response.ok) throw new Error('Failed to save product');
-                Swal.fire({
-                    title: 'Success!',
-                    text: 'Product has been added successfully!',
-                    icon: 'success',
-                    confirmButtonText: 'Go to Products'
-                }).then(() => window.location.href = '/get-product');
+
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
+                console.log('Response content type:', response.headers.get('content-type'));
+
+                // Check if response is JSON
+                const contentType = response.headers.get('content-type');
+                let result;
+
+                if (contentType && contentType.includes('application/json')) {
+                    result = await response.json();
+                    console.log('Server response:', result);
+
+                    if (response.ok && result.success) {
+                        Swal.fire({
+                            title: 'Success!',
+                            text: 'Product has been added successfully!',
+                            icon: 'success',
+                            confirmButtonText: 'Go to Products'
+                        }).then(() => window.location.href = '/get-product');
+                    } else {
+                        throw new Error(result.message || 'Failed to save product');
+                    }
+                } else {
+                    // If not JSON, get text to see what we're receiving
+                    const text = await response.text();
+                    console.log('Non-JSON response received:', text.substring(0, 500));
+                    throw new Error('Server returned HTML instead of JSON. This usually means authentication failed or wrong route.');
+                }
             } catch (error) {
+                console.error('Error submitting form:', error);
                 Swal.fire('Error!', `Failed to save product: ${error.message}`, 'error');
             }
-        });
+        }
 
-        document.addEventListener('DOMContentLoaded', fetchCategories);
+        // Simple canvas-based cropping fallback
+        function useSimpleCropping(img, index, callback) {
+            console.log('Using simple canvas cropping fallback');
+
+            // Create a canvas for simple cropping
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+
+            // Set canvas size to square (800x800)
+            canvas.width = 800;
+            canvas.height = 800;
+
+            // Calculate dimensions to crop to square
+            const size = Math.min(img.naturalWidth, img.naturalHeight);
+            const x = (img.naturalWidth - size) / 2;
+            const y = (img.naturalHeight - size) / 2;
+
+            // Draw cropped image to canvas
+            ctx.drawImage(img, x, y, size, size, 0, 0, 800, 800);
+
+            // Convert to base64
+            const croppedImageData = canvas.toDataURL('image/jpeg', 0.9);
+
+            console.log(`Simple crop completed for image ${index + 1}`);
+
+            // Create preview
+            const preview = document.createElement('div');
+            preview.className = 'image-preview';
+            preview.innerHTML = `
+                <img src="${croppedImageData}" alt="Preview ${index + 1}">
+                <button type="button" class="image-remove" onclick="removeImage(${index})">
+                    <i class="fas fa-times"></i>
+                </button>
+                <span class="image-label">Image ${index + 1} (Auto-cropped)</span>
+            `;
+            document.getElementById('imagePreviews').appendChild(preview);
+
+            // Store cropped image data
+            croppedImages[index] = croppedImageData;
+
+            // Hide modal and continue
+            cropModal.hide();
+
+            // Show success message
+            Swal.fire({
+                title: 'Auto-Cropped!',
+                text: `Image ${index + 1} was automatically cropped to square format.`,
+                icon: 'info',
+                timer: 1500,
+                showConfirmButton: false
+            });
+
+            // Continue to next image
+            setTimeout(() => {
+                if (callback) callback();
+            }, 1500);
+        }
+
+
+
     </script>
 </body>
 </html>

@@ -6,10 +6,243 @@
     <title>Products - Admin Dashboard</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/2.0.0/cropper.min.css">
-    <link rel="stylesheet" href="../../styles/admin/product.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.10.5/sweetalert2.all.min.js"></script>
     <%- include("../partials/admin/sidebar") %>
+    <style>
+        .main-content {
+            margin-left: 250px;
+            padding: 2rem;
+            background-color: #f8f9fa;
+            min-height: 100vh;
+        }
+        
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .search-filters {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .products-table {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
 
+        .table {
+            margin-bottom: 0;
+        }
+
+        .table th {
+            background: #f8f9fa;
+            border-top: none;
+            font-weight: 600;
+            color: #2c3e50;
+            padding: 1rem;
+            vertical-align: middle;
+        }
+
+        .table td {
+            padding: 1rem;
+            vertical-align: middle;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .product-image {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
+
+        .product-name {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 0.25rem;
+        }
+
+        .product-brand {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+
+        .product-category {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            display: inline-block;
+        }
+
+        .price-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .sale-price {
+            font-weight: 700;
+            color: #27ae60;
+        }
+
+        .regular-price {
+            font-size: 0.9rem;
+            color: #95a5a6;
+            text-decoration: line-through;
+        }
+
+        .stock-info {
+            font-weight: 500;
+        }
+
+        .stock-low {
+            color: #e74c3c;
+        }
+
+        .stock-medium {
+            color: #f39c12;
+        }
+
+        .stock-good {
+            color: #27ae60;
+        }
+
+        .product-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .btn-sm {
+            padding: 0.375rem 0.75rem;
+            font-size: 0.875rem;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+        
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+        
+        .btn-warning {
+            background: #f39c12;
+            color: white;
+        }
+        
+        .btn-warning:hover {
+            background: #e67e22;
+        }
+        
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #229954;
+        }
+        
+        .no-products {
+            text-align: center;
+            padding: 3rem;
+            color: #7f8c8d;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .pagination-wrapper {
+            display: flex;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+        
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-blocked {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+
+            .page-header {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .products-table {
+                overflow-x: auto;
+            }
+
+            .table th,
+            .table td {
+                padding: 0.5rem;
+                font-size: 0.9rem;
+            }
+
+            .product-image {
+                width: 40px;
+                height: 40px;
+            }
+
+            .product-actions {
+                flex-direction: column;
+                gap: 0.25rem;
+            }
+
+            .product-actions .btn {
+                padding: 0.25rem 0.5rem;
+                font-size: 0.8rem;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="main-content">
@@ -19,430 +252,269 @@
                 <li class="breadcrumb-item active" aria-current="page">Products</li>
             </ol>
         </nav>
+        
         <div class="page-header">
-            <h1 class="page-title">Products</h1>
-            <a href="/add-product" class="btn btn-primary"><i class="fas fa-plus"></i> Add Product</a>
+            <div>
+                <h1 class="mb-0">Product Management</h1>
+                <p class="text-muted mb-0">Manage your product inventory</p>
+            </div>
+            <a href="/add-product" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Add New Product
+            </a>
         </div>
-        <div class="content-container">
-            <table class="product-table">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Brand</th>
-                        <th>Category</th>
-                        <th>Price</th>
-                        <th>Stock</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <% if (products && Array.isArray(products)) { %>
+
+        <!-- Search and Filters -->
+        <div class="search-filters">
+            <form method="GET" action="/get-product">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <input type="text" class="form-control" name="search" placeholder="Search products..." value="<%= search || '' %>">
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select" name="category">
+                            <option value="">All Categories</option>
+                            <!-- Categories will be populated here -->
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-outline-primary w-100">
+                            <i class="fas fa-search"></i> Search
+                        </button>
+                    </div>
+                    <div class="col-md-2">
+                        <a href="/get-product" class="btn btn-outline-secondary w-100">
+                            <i class="fas fa-refresh"></i> Reset
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Products Table -->
+        <% if (products && Array.isArray(products) && products.length > 0) { %>
+            <div class="products-table">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Image</th>
+                            <th>Product Details</th>
+                            <th>Category</th>
+                            <th>Price</th>
+                            <th>Stock</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
                         <% products.forEach(product => { %>
                             <tr>
-                                <td><%= product.name || 'N/A' %></td>
-                                <td><%= product.brand || 'N/A' %></td>
-                                <td><%= product.category || 'N/A' %></td>
-                                <td>$<%= product.sellingPrice ? product.sellingPrice.toFixed(2) : '0.00' %></td>
-                                <td><%= product.stock || 0 %></td>
-                                <td class="status-<%= product.isActive ? 'active' : 'inactive' %>">
-                                    <%= product.isActive ? 'Active' : 'Inactive' %>
+                                <td>
+                                    <img src="/uploads/products/<%= product.mainImage %>"
+                                         alt="<%= product.productName %>"
+                                         class="product-image"
+                                         onerror="this.src='/assets/placeholder.jpg'">
                                 </td>
                                 <td>
-                                    <button class="btn btn-sm btn-primary edit-product-btn" data-id="<%= product._id %>" data-bs-toggle="modal" data-bs-target="#editProductModal">
-                                        <i class="fas fa-edit"></i> Edit
-                                    </button>
+                                    <div class="product-name"><%= product.productName %></div>
+                                    <div class="product-brand"><%= product.brand %></div>
+                                </td>
+                                <td>
+                                    <span class="product-category"><%= product.category.name %></span>
+                                </td>
+                                <td>
+                                    <div class="price-info">
+                                        <span class="sale-price">₹<%= product.salePrice.toFixed(2) %></span>
+                                        <% if (product.regularPrice > product.salePrice) { %>
+                                            <span class="regular-price">₹<%= product.regularPrice.toFixed(2) %></span>
+                                        <% } %>
+                                        <% if (product.productOffer > 0) { %>
+                                            <span class="badge bg-danger">-<%= product.productOffer %>%</span>
+                                        <% } %>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="stock-info <%= product.quantity <= 5 ? 'stock-low' : product.quantity <= 20 ? 'stock-medium' : 'stock-good' %>">
+                                        <%= product.quantity %> units
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="status-badge <%= product.isBlocked ? 'status-blocked' : 'status-active' %>">
+                                        <%= product.isBlocked ? 'Blocked' : 'Active' %>
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="product-actions">
+                                        <button class="btn btn-sm btn-primary" onclick="editProduct('<%= product._id %>')" title="Edit Product">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm <%= product.isBlocked ? 'btn-success' : 'btn-warning' %>"
+                                                onclick="toggleProductStatus('<%= product._id %>', '<%= product.productName %>', <%= product.isBlocked %>)"
+                                                title="<%= product.isBlocked ? 'Unblock' : 'Block' %> Product">
+                                            <i class="fas fa-<%= product.isBlocked ? 'check' : 'ban' %>"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-danger" onclick="deleteProduct('<%= product._id %>', '<%= product.productName %>')" title="Delete Product">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         <% }) %>
-                    <% } else { %>
-                        <tr>
-                            <td colspan="7">No products found</td>
-                        </tr>
-                    <% } %>
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Edit Product Modal -->
-        <div class="modal fade" id="editProductModal" tabindex="-1" aria-labelledby="editProductModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="editProductModalLabel">Edit Product</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <form id="editProductForm" enctype="multipart/form-data">
-                            <input type="hidden" name="productId" id="productId">
-                            <div class="form-section">
-                                <h3 class="section-title"><i class="fas fa-info-circle"></i> Basic Information</h3>
-                                <div class="form-row">
-                                    <div class="form-group">
-                                        <label for="name" class="form-label">Watch Name <span class="required">*</span></label>
-                                        <input type="text" id="name" name="name" class="form-control" required>
-                                        <div class="error-message">Please enter a product name</div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="brand" class="form-label">Brand <span class="required">*</span></label>
-                                        <input type="text" id="brand" name="brand" class="form-control" required>
-                                        <div class="error-message">Please enter a brand name</div>
-                                    </div>
-                                </div>
-                                <div class="form-row">
-                                    <div class="form-group">
-                                        <label for="category" class="form-label">Category <span class="required">*</span></label>
-                                        <select id="category" name="category" class="form-select" required>
-                                            <option value="">Select Category</option>
-                                        </select>
-                                        <div class="error-message">Please select a category</div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="material" class="form-label">Material <span class="required">*</span></label>
-                                        <input type="text" id="material" name="material" class="form-control" required>
-                                        <div class="error-message">Please enter the material</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="form-section">
-                                <h3 class="section-title"><i class="fas fa-dollar-sign"></i> Pricing & Stock</h3>
-                                <div class="form-row">
-                                    <div class="form-group">
-                                        <label for="regularPrice" class="form-label">Regular Price <span class="required">*</span></label>
-                                        <input type="number" id="regularPrice" name="regularPrice" class="form-control" step="0.01" required>
-                                        <div class="error-message">Please enter a valid regular price</div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="sellingPrice" class="form-label">Selling Price <span class="required">*</span></label>
-                                        <input type="number" id="sellingPrice" name="sellingPrice" class="form-control" step="0.01" required>
-                                        <div class="error-message">Please enter a valid selling price</div>
-                                    </div>
-                                </div>
-                                <div class="form-row">
-                                    <div class="form-group">
-                                        <label for="discount" class="form-label">Discount (%)</label>
-                                        <input type="number" id="discount" name="discount" class="form-control" step="0.01" min="0" max="100">
-                                        <div class="error-message">Please enter a valid discount (0-100)</div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="stock" class="form-label">Stock Quantity <span class="required">*</span></label>
-                                        <input type="number" id="stock" name="stock" class="form-control" required>
-                                        <div class="error-message">Please enter a valid stock quantity</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="form-section">
-                                <h3 class="section-title"><i class="fas fa-list-ul"></i> Product Details</h3>
-                                <div class="form-group full-width">
-                                    <label for="features" class="form-label">Features</label>
-                                    <textarea id="features" name="features" class="form-textarea" rows="3"></textarea>
-                                </div>
-                                <div class="form-group full-width">
-                                    <label for="description" class="form-label">Description</label>
-                                    <textarea id="description" name="description" class="form-textarea" rows="4"></textarea>
-                                </div>
-                            </div>
-                            <div class="form-section">
-                                <h3 class="section-title"><i class="fas fa-images"></i> Product Images (Minimum 3 required)</h3>
-                                <div class="form-group">
-                                    <label for="productImages" class="form-label">Upload New Images</label>
-                                    <input type="file" id="productImages" name="productImages" class="form-control" accept="image/*" multiple>
-                                    <div class="error-message" id="imagesError">Please upload at least 3 images</div>
-                                </div>
-                                <div id="imagePreviews" class="images-grid"></div>
-                            </div>
-                        </form>
-                        <!-- Crop Modal -->
-                        <div id="cropModal" class="modal fade" tabindex="-1">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title">Crop Image</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                        <div id="cropperImage" style="max-width: 100%;"></div>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                        <button type="button" class="btn btn-primary" id="cropConfirm">Crop & Save</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="fas fa-times"></i> Cancel</button>
-                        <button type="button" class="btn btn-danger" id="deactivateProduct"><i class="fas fa-trash"></i> Deactivate Product</button>
-                        <button type="button" class="btn btn-success" id="updateProduct"><i class="fas fa-save"></i> Update Product</button>
-                    </div>
-                </div>
+                    </tbody>
+                </table>
             </div>
-        </div>
+
+            <!-- Pagination -->
+            <% if (typeof totalPages !== 'undefined' && totalPages > 1) { %>
+                <div class="pagination-wrapper">
+                    <nav aria-label="Product pagination">
+                        <ul class="pagination">
+                            <% if (currentPage > 1) { %>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page=<%= currentPage - 1 %>&search=<%= search || '' %>&category=<%= selectedCategory || '' %>">Previous</a>
+                                </li>
+                            <% } %>
+                            
+                            <% for (let i = 1; i <= totalPages; i++) { %>
+                                <li class="page-item <%= i === currentPage ? 'active' : '' %>">
+                                    <a class="page-link" href="?page=<%= i %>&search=<%= search || '' %>&category=<%= selectedCategory || '' %>"><%= i %></a>
+                                </li>
+                            <% } %>
+                            
+                            <% if (currentPage < totalPages) { %>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page=<%= currentPage + 1 %>&search=<%= search || '' %>&category=<%= selectedCategory || '' %>">Next</a>
+                                </li>
+                            <% } %>
+                        </ul>
+                    </nav>
+                </div>
+            <% } %>
+        <% } else { %>
+            <div class="no-products">
+                <i class="fas fa-box-open" style="font-size: 3rem; color: #bdc3c7; margin-bottom: 1rem;"></i>
+                <h3>No Products Found</h3>
+                <p>Start by adding your first product to the inventory.</p>
+                <a href="/add-product" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Add Your First Product
+                </a>
+            </div>
+        <% } %>
     </div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.10.5/sweetalert2.all.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/2.0.0/cropper.min.js"></script>
     <script>
-        let categories = [];
-        let croppedImages = [];
-        let removedImages = [];
-        let currentCropper;
-        let currentFileIndex;
-
-        async function fetchCategories() {
-            try {
-                const response = await fetch('/get-categories');
-                if (!response.ok) throw new Error('Failed to fetch categories');
-                categories = await response.json();
-                populateCategoryDropdown();
-            } catch (error) {
-                Swal.fire('Error!', `Could not fetch categories: ${error.message}`, 'error');
-            }
+        // Edit product function
+        function editProduct(productId) {
+            window.location.href = `/edit-product/${productId}`;
         }
 
-        function populateCategoryDropdown() {
-            const categorySelect = document.getElementById('category');
-            categorySelect.innerHTML = '<option value="">Select Category</option>';
-            categories.forEach(category => {
-                categorySelect.innerHTML += `<option value="${category.name}">${category.name}</option>`;
-            });
-        }
+        // Toggle product status (block/unblock)
+        function toggleProductStatus(productId, productName, isBlocked) {
+            const action = isBlocked ? 'unblock' : 'block';
+            const actionText = isBlocked ? 'Unblock' : 'Block';
 
-        async function fetchProduct(productId) {
-            try {
-                const response = await fetch(`/api/products/${productId}`);
-                if (!response.ok) throw new Error('Failed to fetch product');
-                const product = await response.json();
-                populateModal(product);
-            } catch (error) {
-                Swal.fire('Error!', `Could not fetch product: ${error.message}`, 'error');
-                bootstrap.Modal.getInstance(document.getElementById('editProductModal')).hide();
-            }
-        }
-
-        function populateModal(product) {
-            document.getElementById('productId').value = product._id || '';
-            document.getElementById('name').value = product.name || '';
-            document.getElementById('brand').value = product.brand || '';
-            document.getElementById('material').value = product.material || '';
-            document.getElementById('regularPrice').value = product.regularPrice || '';
-            document.getElementById('sellingPrice').value = product.sellingPrice || '';
-            document.getElementById('discount').value = product.discount || '';
-            document.getElementById('stock').value = product.stock || '';
-            document.getElementById('features').value = product.features && Array.isArray(product.features) ? product.features.join(', ') : '';
-            document.getElementById('description').value = product.description || '';
-
-            const categorySelect = document.getElementById('category');
-            categorySelect.value = product.category || '';
-
-            const imagePreviews = document.getElementById('imagePreviews');
-            imagePreviews.innerHTML = '';
-            if (product.images && Array.isArray(product.images)) {
-                product.images.forEach((img, index) => {
-                    const preview = document.createElement('div');
-                    preview.className = 'image-preview';
-                    preview.innerHTML = `<img src="${img}" alt="Preview"><button type="button" class="image-remove" onclick="removeExistingImage('${img}')"><i class="fas fa-times"></i></button>`;
-                    imagePreviews.appendChild(preview);
-                });
-            }
-        }
-
-        function initializeCropper(file, index) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const img = document.createElement('img');
-                img.src = e.target.result;
-                const cropperImage = document.getElementById('cropperImage');
-                cropperImage.innerHTML = '';
-                cropperImage.appendChild(img);
-
-                currentCropper = new Cropper(img, {
-                    aspectRatio: 1,
-                    viewMode: 2,
-                    autoCropArea: 0.8,
-                    responsive: true
-                });
-
-                const cropModal = new bootstrap.Modal(document.getElementById('cropModal'));
-                cropModal.show();
-                currentFileIndex = index;
-            };
-            reader.readAsDataURL(file);
-        }
-
-        document.getElementById('cropConfirm').addEventListener('click', function() {
-            const canvas = currentCropper.getCroppedCanvas({
-                width: 400,
-                height: 400
-            });
-            canvas.toBlob(blob => {
-                const preview = document.createElement('div');
-                preview.className = 'image-preview';
-                preview.innerHTML = `<img src="${canvas.toDataURL()}" alt="Preview"><button type="button" class="image-remove" onclick="removeImage(${currentFileIndex})"><i class="fas fa-times"></i></button>`;
-                document.getElementById('imagePreviews').appendChild(preview);
-
-                const file = new File([blob], `image_${currentFileIndex}.jpg`, { type: 'image/jpeg' });
-                croppedImages[currentFileIndex] = file;
-
-                currentCropper.destroy();
-                bootstrap.Modal.getInstance(document.getElementById('cropModal')).hide();
-            }, 'image/jpeg', 0.8);
-        });
-
-        function removeImage(index) {
-            croppedImages[index] = null;
-            document.getElementById('imagePreviews').children[index].remove();
-        }
-
-        function removeExistingImage(imageUrl) {
-            removedImages.push(imageUrl);
-            const previews = document.getElementById('imagePreviews');
-            Array.from(previews.children).forEach(preview => {
-                if (preview.querySelector('img').src === imageUrl) {
-                    preview.remove();
-                }
-            });
-        }
-
-        document.getElementById('productImages').addEventListener('change', function(e) {
-            const files = Array.from(e.target.files);
-            document.getElementById('imagesError').style.display = 'none';
-            croppedImages = [];
-            files.forEach((file, index) => {
-                initializeCropper(file, index);
-            });
-        });
-
-        function validateForm() {
-            let isValid = true;
-            const requiredFields = ['name', 'brand', 'category', 'material', 'regularPrice', 'sellingPrice', 'stock'];
-            document.querySelectorAll('.form-group').forEach(group => group.classList.remove('error'));
-
-            requiredFields.forEach(fieldName => {
-                const field = document.getElementById(fieldName);
-                if (!field.value.trim()) {
-                    field.closest('.form-group').classList.add('error');
-                    isValid = false;
-                }
-            });
-
-            const currentImages = document.getElementById('imagePreviews').children.length + croppedImages.filter(img => img).length - removedImages.length;
-            if (currentImages < 3) {
-                document.getElementById('imagesError').style.display = 'block';
-                isValid = false;
-            }
-
-            const regularPrice = parseFloat(document.getElementById('regularPrice').value);
-            const sellingPrice = parseFloat(document.getElementById('sellingPrice').value);
-            if (sellingPrice > regularPrice) {
-                const sellingPriceGroup = document.getElementById('sellingPrice').closest('.form-group');
-                sellingPriceGroup.classList.add('error');
-                sellingPriceGroup.querySelector('.error-message').textContent = 'Selling price cannot be higher than regular price';
-                isValid = false;
-            }
-
-            const discount = document.getElementById('discount').value.trim() ? parseFloat(document.getElementById('discount').value) : null;
-            if (discount !== null && (discount < 0 || discount > 100)) {
-                document.getElementById('discount').closest('.form-group').classList.add('error');
-                isValid = false;
-            }
-
-            return isValid;
-        }
-
-        document.getElementById('updateProduct').addEventListener('click', async function() {
-            if (!validateForm()) {
-                Swal.fire('Validation Error!', 'Please fill in all required fields correctly and ensure at least 3 images.', 'error');
-                return;
-            }
-
-            Swal.fire({ title: 'Updating Product...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-            const form = document.getElementById('editProductForm');
-            const formData = new FormData(form);
-            croppedImages.filter(img => img).forEach((img, index) => {
-                formData.append('productImages', img);
-            });
-            formData.append('removedImages', JSON.stringify(removedImages));
-
-            try {
-                const productId = document.getElementById('productId').value;
-                const response = await fetch(`/api/products/${productId}`, {
-                    method: 'PUT',
-                    body: formData
-                });
-                if (!response.ok) throw new Error('Failed to update product');
-                Swal.fire({
-                    title: 'Success!',
-                    text: 'Product has been updated successfully!',
-                    icon: 'success',
-                    confirmButtonText: 'OK'
-                }).then(() => {
-                    bootstrap.Modal.getInstance(document.getElementById('editProductModal')).hide();
-                    window.location.reload();
-                });
-            } catch (error) {
-                Swal.fire('Error!', `Failed to update product: ${error.message}`, 'error');
-            }
-        });
-
-        document.getElementById('deactivateProduct').addEventListener('click', async function() {
             Swal.fire({
-                title: 'Deactivate Product?',
-                text: 'This product will be marked as inactive and can be restored later.',
+                title: `${actionText} Product?`,
+                text: `Are you sure you want to ${action} "${productName}"?`,
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#ef4444',
-                cancelButtonColor: '#64748b',
-                confirmButtonText: 'Yes, Deactivate It!',
+                confirmButtonColor: isBlocked ? '#27ae60' : '#f39c12',
+                cancelButtonColor: '#95a5a6',
+                confirmButtonText: `Yes, ${actionText} It!`,
                 cancelButtonText: 'Cancel'
             }).then(async (result) => {
                 if (result.isConfirmed) {
                     try {
-                        const productId = document.getElementById('productId').value;
+                        Swal.fire({
+                            title: `${actionText}ing Product...`,
+                            allowOutsideClick: false,
+                            didOpen: () => Swal.showLoading()
+                        });
+
                         const response = await fetch(`/api/products/${productId}/status`, {
                             method: 'PATCH',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ isActive: false })
+                            headers: { 'Content-Type': 'application/json' }
                         });
-                        if (!response.ok) throw new Error('Failed to deactivate product');
-                        Swal.fire({
-                            title: 'Deactivated!',
-                            text: 'Product has been deactivated successfully.',
-                            icon: 'success',
-                            confirmButtonText: 'OK'
-                        }).then(() => {
-                            bootstrap.Modal.getInstance(document.getElementById('editProductModal')).hide();
-                            window.location.reload();
-                        });
+
+                        const result = await response.json();
+
+                        if (response.ok && result.success) {
+                            Swal.fire({
+                                title: 'Success!',
+                                text: result.message,
+                                icon: 'success',
+                                confirmButtonText: 'OK'
+                            }).then(() => window.location.reload());
+                        } else {
+                            throw new Error(result.message || `Failed to ${action} product`);
+                        }
                     } catch (error) {
-                        Swal.fire('Error!', `Failed to deactivate product: ${error.message}`, 'error');
+                        console.error(`Error ${action}ing product:`, error);
+                        Swal.fire({
+                            title: 'Error!',
+                            text: `Failed to ${action} product: ${error.message}`,
+                            icon: 'error',
+                            confirmButtonText: 'OK'
+                        });
                     }
                 }
             });
-        });
-
-        document.addEventListener('DOMContentLoaded', function() {
-            fetchCategories();
-            document.getElementById('regularPrice').addEventListener('input', calculateDiscount);
-            document.getElementById('sellingPrice').addEventListener('input', calculateDiscount);
-
-            document.querySelectorAll('.edit-product-btn').forEach(button => {
-                button.addEventListener('click', function() {
-                    const productId = this.getAttribute('data-id');
-                    fetchProduct(productId);
-                });
-            });
-        });
-
-        function calculateDiscount() {
-            const regularPrice = parseFloat(document.getElementById('regularPrice').value) || 0;
-            const sellingPrice = parseFloat(document.getElementById('sellingPrice').value) || 0;
-            if (regularPrice > 0 && sellingPrice > 0 && sellingPrice <= regularPrice) {
-                const discount = ((regularPrice - sellingPrice) / regularPrice) * 100;
-                document.getElementById('discount').value = discount.toFixed(2);
-            }
         }
+
+        // Delete product function with SweetAlert confirmation
+        function deleteProduct(productId, productName) {
+            Swal.fire({
+                title: 'Delete Product?',
+                text: `Are you sure you want to delete "${productName}"? This action cannot be undone.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#e74c3c',
+                cancelButtonColor: '#95a5a6',
+                confirmButtonText: 'Yes, Delete It!',
+                cancelButtonText: 'Cancel'
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    try {
+                        Swal.fire({
+                            title: 'Deleting Product...',
+                            allowOutsideClick: false,
+                            didOpen: () => Swal.showLoading()
+                        });
+
+                        const response = await fetch(`/api/products/${productId}`, {
+                            method: 'DELETE',
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+
+                        const result = await response.json();
+
+                        if (response.ok && result.success) {
+                            Swal.fire({
+                                title: 'Deleted!',
+                                text: 'Product has been deleted successfully.',
+                                icon: 'success',
+                                confirmButtonText: 'OK'
+                            }).then(() => window.location.reload());
+                        } else {
+                            throw new Error(result.message || 'Failed to delete product');
+                        }
+                    } catch (error) {
+                        console.error('Error deleting product:', error);
+                        Swal.fire({
+                            title: 'Error!',
+                            text: `Failed to delete product: ${error.message}`,
+                            icon: 'error',
+                            confirmButtonText: 'OK'
+                        });
+                    }
+                }
+            });
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Product listing page loaded');
+        });
     </script>
 </body>
 </html>
