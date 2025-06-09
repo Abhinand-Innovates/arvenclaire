@@ -143,21 +143,70 @@
             display: block;
         }
         
-        .image-remove {
+        .image-controls {
             position: absolute;
-            top: 5px;
-            right: 5px;
-            background: #e74c3c;
+            top: 8px;
+            right: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .image-btn {
+            background: rgba(0,0,0,0.8);
             color: white;
             border: none;
             border-radius: 50%;
-            width: 25px;
-            height: 25px;
+            width: 32px;
+            height: 32px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.8rem;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .image-btn:hover {
+            background: rgba(0,0,0,0.9);
+            transform: scale(1.1);
+        }
+
+        .image-btn.main-btn {
+            background: #ffc107;
+            color: #000;
+            border: 2px solid #fff;
+            box-shadow: 0 2px 8px rgba(255, 193, 7, 0.4);
+        }
+
+        .image-btn.main-btn:hover {
+            background: #ffca2c;
+            color: #000;
+            transform: scale(1.2);
+            box-shadow: 0 4px 12px rgba(255, 193, 7, 0.6);
+        }
+
+        .image-btn.main-btn.active {
+            background: #ff6b35;
+            color: #fff;
+            border: 2px solid #fff;
+            box-shadow: 0 4px 15px rgba(255, 107, 53, 0.6);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .image-btn.remove-btn {
+            background: #e74c3c;
+        }
+
+        .image-btn.remove-btn:hover {
+            background: #c82333;
         }
         
         .image-label {
@@ -165,11 +214,89 @@
             bottom: 0;
             left: 0;
             right: 0;
-            background: rgba(0,0,0,0.7);
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
             color: white;
-            padding: 0.25rem;
+            padding: 0.75rem 0.5rem 0.5rem;
             text-align: center;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        /* Enhanced styles for main image functionality */
+        .images-grid {
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .image-preview {
+            border: 3px solid #e3f2fd;
+            border-radius: 15px;
+            cursor: move;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .image-preview:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .image-preview.main-image {
+            border-color: #28a745;
+            box-shadow: 0 0 20px rgba(40, 167, 69, 0.3);
+        }
+
+        .image-preview.dragging {
+            opacity: 0.5;
+            transform: rotate(5deg);
+        }
+
+        .image-preview img {
+            transition: transform 0.3s ease;
+        }
+
+        .image-preview:hover img {
+            transform: scale(1.05);
+        }
+
+        .main-image-badge {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background: #28a745;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .image-order {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .main-image .image-order {
+            background: #28a745;
+        }
+
+        .drag-over {
+            border-color: #007bff;
+            background-color: rgba(0, 123, 255, 0.1);
         }
         
         .form-actions {
@@ -360,6 +487,17 @@
                         <h3 class="section-title">
                             <i class="fas fa-images"></i> Product Images (Minimum 3 required)
                         </h3>
+
+                        <div class="alert alert-info mb-3">
+                            <h6><i class="fas fa-info-circle"></i> Image Management Instructions:</h6>
+                            <ul class="mb-0">
+                                <li><i class="fas fa-star text-warning"></i> <strong>Click the star icon</strong> to set an image as the main product image</li>
+                                <li><i class="fas fa-arrows-alt text-primary"></i> <strong>Drag and drop</strong> images to reorder them</li>
+                                <li><i class="fas fa-crop text-info"></i> Each image will be <strong>cropped individually</strong> for consistency</li>
+                                <li><i class="fas fa-times text-danger"></i> Click the <strong>X icon</strong> to remove an image</li>
+                            </ul>
+                        </div>
+
                         <div class="images-section">
                             <div class="form-group">
                                 <label for="productImages" class="form-label">Upload Images <span class="required">*</span></label>
@@ -449,6 +587,8 @@
         let currentCallback;
         let selectedFiles = [];
         let cropModal;
+        let mainImageIndex = null; // Start with null, set to 0 when first image is added
+        let draggedIndex = null;
 
         // Initialize page
         document.addEventListener('DOMContentLoaded', function() {
@@ -734,17 +874,8 @@
                 const croppedImageData = canvas.toDataURL('image/jpeg', 0.9);
                 console.log(`Created cropped image ${currentFileIndex + 1}, size: ${croppedImageData.length} characters`);
 
-                // Create preview
-                const preview = document.createElement('div');
-                preview.className = 'image-preview';
-                preview.innerHTML = `
-                    <img src="${croppedImageData}" alt="Preview ${currentFileIndex + 1}">
-                    <button type="button" class="image-remove" onclick="removeImage(${currentFileIndex})">
-                        <i class="fas fa-times"></i>
-                    </button>
-                    <span class="image-label">Image ${currentFileIndex + 1}</span>
-                `;
-                document.getElementById('imagePreviews').appendChild(preview);
+                // Create enhanced preview with star button
+                createImagePreview(croppedImageData, currentFileIndex);
 
                 // Store cropped image data
                 croppedImages[currentFileIndex] = croppedImageData;
@@ -784,11 +915,21 @@
 
         // Remove image
         function removeImage(index) {
-            croppedImages[index] = null;
-            const previews = document.getElementById('imagePreviews');
-            if (previews.children[index]) {
-                previews.children[index].remove();
+            console.log(`Removing image at index ${index}`);
+
+            // Remove from arrays
+            croppedImages.splice(index, 1);
+            selectedFiles.splice(index, 1);
+
+            // Update main image index if needed
+            if (mainImageIndex === index) {
+                mainImageIndex = 0; // Set first image as main
+            } else if (mainImageIndex > index) {
+                mainImageIndex--;
             }
+
+            // Update preview display
+            updateImagePreviews();
 
             // Update validation
             const validImages = croppedImages.filter(img => img);
@@ -798,6 +939,8 @@
             } else {
                 document.getElementById('imagesError').style.display = 'none';
             }
+
+            console.log(`Remaining images: ${validImages.length}`);
         }
 
         // Validate prices
@@ -900,10 +1043,13 @@
                     productOffer: document.getElementById('productOffer').value || '0',
                     features: document.getElementById('features').value,
                     description: document.getElementById('description').value,
-                    croppedImages: JSON.stringify(croppedImages.filter(img => img))
+                    croppedImages: JSON.stringify(croppedImages.filter(img => img)),
+                    mainImageIndex: mainImageIndex !== null ? mainImageIndex : 0
                 };
 
                 console.log('Form data:', formData);
+                console.log('Main image index being sent:', formData.mainImageIndex);
+                console.log('Total images being sent:', croppedImages.filter(img => img).length);
 
                 const response = await fetch('/api/products', {
                     method: 'POST',
@@ -1005,7 +1151,158 @@
             }, 1500);
         }
 
+        // Create enhanced image preview with star button for main image selection
+        function createImagePreview(imageData, index) {
+            // Set first image as main if no main image is set yet
+            if (mainImageIndex === null) {
+                mainImageIndex = 0;
+                console.log('Setting first image as main image automatically');
+            }
 
+            const isMainImage = index === mainImageIndex;
+            console.log(`Creating preview for image ${index + 1}, isMain: ${isMainImage}, mainImageIndex: ${mainImageIndex}`);
+
+            const preview = document.createElement('div');
+            preview.className = `image-preview ${isMainImage ? 'main-image' : ''}`;
+            preview.draggable = true;
+            preview.dataset.index = index;
+
+            preview.innerHTML = `
+                <img src="${imageData}" alt="Preview ${index + 1}">
+                <div class="image-controls">
+                    <button type="button" class="image-btn main-btn ${isMainImage ? 'active' : ''}" data-index="${index}" title="Set as main image">
+                        <i class="fas fa-star"></i>
+                    </button>
+                    <button type="button" class="image-btn remove-btn" data-index="${index}" title="Remove image">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="image-order">${index + 1}</div>
+                ${isMainImage ? '<div class="main-image-badge">Main</div>' : ''}
+                <span class="image-label">${isMainImage ? 'Main Image' : `Image ${index + 1}`}</span>
+            `;
+
+            // Add event listeners for buttons
+            const mainBtn = preview.querySelector('.main-btn');
+            const removeBtn = preview.querySelector('.remove-btn');
+
+            mainBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                console.log(`Star clicked for image ${index + 1}`);
+                setMainImage(index);
+            });
+
+            removeBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                console.log(`Remove clicked for image ${index + 1}`);
+                removeImage(index);
+            });
+
+            // Add drag and drop event listeners
+            preview.addEventListener('dragstart', handleDragStart);
+            preview.addEventListener('dragover', handleDragOver);
+            preview.addEventListener('drop', handleDrop);
+            preview.addEventListener('dragend', handleDragEnd);
+
+            document.getElementById('imagePreviews').appendChild(preview);
+        }
+
+        // Set main image function
+        function setMainImage(index) {
+            console.log(`Setting image ${index + 1} as main image`);
+            console.log(`Previous main image index: ${mainImageIndex}`);
+            mainImageIndex = index;
+            console.log(`New main image index: ${mainImageIndex}`);
+            updateImagePreviews();
+
+            // Show confirmation
+            const Toast = Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 2000,
+                timerProgressBar: true
+            });
+
+            Toast.fire({
+                icon: 'success',
+                title: `Image ${index + 1} set as main image!`
+            });
+        }
+
+        // Drag and drop handlers
+        function handleDragStart(e) {
+            draggedIndex = parseInt(e.target.dataset.index);
+            e.target.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            e.target.closest('.image-preview')?.classList.add('drag-over');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            const dropIndex = parseInt(e.target.closest('.image-preview').dataset.index);
+
+            if (draggedIndex !== null && draggedIndex !== dropIndex) {
+                // Reorder arrays
+                const draggedImage = croppedImages[draggedIndex];
+                const draggedFile = selectedFiles[draggedIndex];
+
+                // Remove from original position
+                croppedImages.splice(draggedIndex, 1);
+                selectedFiles.splice(draggedIndex, 1);
+
+                // Insert at new position
+                const newIndex = dropIndex > draggedIndex ? dropIndex - 1 : dropIndex;
+                croppedImages.splice(newIndex, 0, draggedImage);
+                selectedFiles.splice(newIndex, 0, draggedFile);
+
+                // Update main image index if needed
+                if (mainImageIndex === draggedIndex) {
+                    mainImageIndex = newIndex;
+                } else if (draggedIndex < mainImageIndex && newIndex >= mainImageIndex) {
+                    mainImageIndex--;
+                } else if (draggedIndex > mainImageIndex && newIndex <= mainImageIndex) {
+                    mainImageIndex++;
+                }
+
+                updateImagePreviews();
+                console.log('Images reordered successfully');
+            }
+
+            e.target.closest('.image-preview')?.classList.remove('drag-over');
+        }
+
+        function handleDragEnd(e) {
+            e.target.classList.remove('dragging');
+            document.querySelectorAll('.image-preview').forEach(preview => {
+                preview.classList.remove('drag-over');
+            });
+            draggedIndex = null;
+        }
+
+        // Update image previews
+        function updateImagePreviews() {
+            console.log('Updating image previews...');
+            console.log('Current main image index:', mainImageIndex);
+            console.log('Total cropped images:', croppedImages.length);
+
+            const container = document.getElementById('imagePreviews');
+            container.innerHTML = '';
+
+            croppedImages.forEach((imageData, index) => {
+                if (imageData) {
+                    console.log(`Creating preview for image ${index + 1}, isMain: ${index === mainImageIndex}`);
+                    createImagePreview(imageData, index);
+                }
+            });
+
+            console.log('Image previews updated successfully');
+        }
 
     </script>
 </body>

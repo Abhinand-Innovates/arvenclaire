@@ -194,7 +194,8 @@ const addProduct = async (req, res) => {
             productOffer,
             quantity,
             features,
-            croppedImages
+            croppedImages,
+            mainImageIndex
         } = req.body;
 
         // Validation
@@ -228,7 +229,7 @@ const addProduct = async (req, res) => {
         for (let i = 0; i < imageData.length; i++) {
             const timestamp = Date.now();
             const filename = `product-${timestamp}-${i + 1}.jpg`;
-            
+
             try {
                 await saveBase64Image(imageData[i], filename);
                 processedImages.push(filename);
@@ -238,6 +239,18 @@ const addProduct = async (req, res) => {
                 throw new Error(`Failed to process image ${i + 1}`);
             }
         }
+
+        // Determine main image based on mainImageIndex
+        const selectedMainIndex = parseInt(mainImageIndex) || 0;
+        const validMainIndex = selectedMainIndex < processedImages.length ? selectedMainIndex : 0;
+
+        console.log(`Main image index received: ${mainImageIndex}`);
+        console.log(`Using main image index: ${validMainIndex}`);
+        console.log(`Main image file: ${processedImages[validMainIndex]}`);
+
+        // Arrange images with main image first
+        const mainImageFile = processedImages[validMainIndex];
+        const subImageFiles = processedImages.filter((_, index) => index !== validMainIndex);
 
         // Create product
         const newProduct = new Product({
@@ -250,8 +263,8 @@ const addProduct = async (req, res) => {
             productOffer: parseFloat(productOffer) || 0,
             quantity: parseInt(quantity) || 1,
             features,
-            mainImage: processedImages[0],
-            subImages: processedImages.slice(1),
+            mainImage: mainImageFile,
+            subImages: subImageFiles,
             isDeleted: false,
             isBlocked: false,
             isListed: true
