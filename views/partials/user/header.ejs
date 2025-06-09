@@ -113,15 +113,26 @@
         }
 
         .search-btn {
-            background: #f8f9fa;
-            border: 2px solid #e9ecef;
+            background: #000000;
+            border: 2px solid #000000;
             border-left: none;
             border-radius: 0 25px 25px 0;
             padding: 0.375rem 0.75rem;
+            color: #ffffff;
+            transition: all 0.3s ease;
         }
 
         .search-btn:hover {
-            background: #e9ecef;
+            background: #333333;
+            border-color: #333333;
+            color: #ffffff;
+        }
+
+        .search-btn:focus {
+            background: #000000;
+            border-color: #000000;
+            color: #ffffff;
+            box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
         }
 
         /* Cart icon styles */
