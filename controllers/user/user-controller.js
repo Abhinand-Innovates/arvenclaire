@@ -525,6 +525,169 @@ const logout = async (req,res) => {
     })
   }
 }
+// Load shop page with filtering
+const loadShop = async (req, res) => {
+  try {
+    const user = req.session.userId;
+    const Category = require('../../models/category-schema');
+
+    // Check if any filters are applied
+    const hasFilters = Object.keys(req.query).length > 0;
+
+    // Get categories for filter dropdown
+    const categories = await Category.find({ isListed: true }).sort({ name: 1 });
+
+    // Get user data if logged in
+    let userData = null;
+    if (user) {
+      userData = await User.findById(user);
+    }
+
+    // If no filters applied, show initial state
+    if (!hasFilters) {
+      return res.render('shop', {
+        categories,
+        user: userData,
+        // Filter data (empty)
+        selectedCategory: '',
+        search: '',
+        sortBy: 'newest',
+        minPrice: '',
+        maxPrice: ''
+      });
+    }
+
+    // Pagination parameters
+    const page = parseInt(req.query.page) || 1;
+    const limit = 9; // 3 columns × 3 rows = 9 products per page
+    const skip = (page - 1) * limit;
+
+    // Filter parameters
+    const selectedCategory = req.query.category || '';
+    const searchQuery = req.query.search || '';
+    const sortBy = req.query.sort || 'newest';
+    const minPrice = req.query.minPrice ? parseFloat(req.query.minPrice) : null;
+    const maxPrice = req.query.maxPrice ? parseFloat(req.query.maxPrice) : null;
+
+    // Build search query
+    const searchFilter = {
+      isDeleted: false,
+      isBlocked: false,
+      isListed: true
+    };
+
+    // Add category filter
+    if (selectedCategory) {
+      searchFilter.category = selectedCategory;
+    }
+
+    // Add search filter
+    if (searchQuery) {
+      searchFilter.$or = [
+        { productName: { $regex: searchQuery, $options: 'i' } },
+        { brand: { $regex: searchQuery, $options: 'i' } },
+        { description: { $regex: searchQuery, $options: 'i' } }
+      ];
+    }
+
+    // Add price range filter
+    if (minPrice !== null || maxPrice !== null) {
+      searchFilter.salePrice = {};
+      if (minPrice !== null) {
+        searchFilter.salePrice.$gte = minPrice;
+      }
+      if (maxPrice !== null) {
+        searchFilter.salePrice.$lte = maxPrice;
+      }
+    }
+
+    // Build sort query
+    let sortQuery = {};
+    switch (sortBy) {
+      case 'price-low':
+        sortQuery = { salePrice: 1 };
+        break;
+      case 'price-high':
+        sortQuery = { salePrice: -1 };
+        break;
+      case 'name-az':
+        sortQuery = { productName: 1 };
+        break;
+      case 'name-za':
+        sortQuery = { productName: -1 };
+        break;
+      default:
+        sortQuery = { createdAt: -1 }; // newest first
+    }
+
+    // Fetch products and total count
+    const [products, totalProducts] = await Promise.all([
+      Product.find(searchFilter)
+        .populate('category', 'name')
+        .sort(sortQuery)
+        .skip(skip)
+        .limit(limit),
+      Product.countDocuments(searchFilter)
+    ]);
+
+    // Calculate pagination
+    const totalPages = Math.ceil(totalProducts / limit);
+    const hasNextPage = page < totalPages;
+    const hasPrevPage = page > 1;
+    const nextPage = hasNextPage ? page + 1 : null;
+    const prevPage = hasPrevPage ? page - 1 : null;
+
+    // Generate page numbers for pagination
+    const pageNumbers = [];
+    const maxPagesToShow = 5;
+    let startPage = Math.max(1, page - Math.floor(maxPagesToShow / 2));
+    let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
+
+    if (endPage - startPage + 1 < maxPagesToShow) {
+      startPage = Math.max(1, endPage - maxPagesToShow + 1);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      pageNumbers.push(i);
+    }
+
+    // Calculate result range
+    const startResult = totalProducts > 0 ? skip + 1 : 0;
+    const endResult = Math.min(skip + limit, totalProducts);
+
+    res.render('shop', {
+      products,
+      categories,
+      user: userData,
+      // Pagination data
+      currentPage: page,
+      totalPages,
+      totalProducts,
+      hasNextPage,
+      hasPrevPage,
+      nextPage,
+      prevPage,
+      pageNumbers,
+      startResult,
+      endResult,
+      limit,
+      // Filter data
+      selectedCategory,
+      search: req.query.search || '',
+      sortBy,
+      minPrice: req.query.minPrice || '',
+      maxPrice: req.query.maxPrice || ''
+    });
+
+  } catch (error) {
+    console.error('Error loading shop page:', error);
+    res.status(500).render('error', {
+      message: 'Failed to load shop page',
+      user: req.session.userId ? await User.findById(req.session.userId) : null
+    });
+  }
+};
+
 // Load product details page
 const loadProductDetails = async (req, res) => {
   try {
@@ -607,6 +770,7 @@ module.exports = {
   resetPassword,
 
   logout,
+  loadShop,
   loadProductDetails,
 
 };

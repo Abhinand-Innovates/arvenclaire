@@ -33,19 +33,26 @@ router.post("/login", userController.login);
 // Protected route: Dashboard
 router.get("/dashboard",userController.loadDashboard);
 
-// Product details route
-router.get("/product/:id", userController.loadProductDetails);
-
 // Forgot password routes
 router.get("/forgot-password", userController.loadForgotPassword);
 router.post("/forgot-password", userController.verifyForgotPasswordEmail);
-
 router.get("/forgot-verify-otp", userController.loadForgotVerifyOtp);
 router.post("/forgot-verify-otp", userController.verifyForgotPasswordOtp);
 router.post("/resend-forgot-verify-otp", userController.resendForgotPasswordOtp);
 router.get("/new-password", userController.loadNewPassword);
 router.post("/reset-password", userController.resetPassword);
-
 router.get("/logout", userController.logout);
+
+
+// Shop/Products routes
+router.get("/shop", userController.loadShop);
+router.get("/products", userController.loadShop);
+
+// Product details route
+router.get("/product/:id", userController.loadProductDetails);
+
+
+
+
 
 module.exports = router;
