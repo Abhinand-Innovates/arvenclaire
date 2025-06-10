@@ -2,6 +2,9 @@ const express = require("express");
 const router = express.Router();
 const passport = require("passport");
 const userController = require("../controllers/user/user-controller");
+const addUserContext = require("../middleware/user-context");
+const { checkProductAvailabilityForPage } = require("../middleware/product-availability");
+
 
 
 // Google OAuth routes
@@ -19,8 +22,7 @@ router.get(
 );
 
 
-// Public routes
-router.get("/", userController.loadLanding);
+// Public routes (no user context needed)
 router.get("/signup", userController.loadSignup);
 router.get("/login", userController.loadLogin);
 router.post("/signup", userController.signup);
@@ -30,10 +32,7 @@ router.post("/verify-otp", userController.verifyOtp);
 router.post("/resend-otp", userController.resendOtp);
 router.post("/login", userController.login);
 
-// Protected route: Dashboard
-router.get("/dashboard",userController.loadDashboard);
-
-// Forgot password routes
+// Forgot password routes (no user context needed)
 router.get("/forgot-password", userController.loadForgotPassword);
 router.post("/forgot-password", userController.verifyForgotPasswordEmail);
 router.get("/forgot-verify-otp", userController.loadForgotVerifyOtp);
@@ -41,17 +40,24 @@ router.post("/forgot-verify-otp", userController.verifyForgotPasswordOtp);
 router.post("/resend-forgot-verify-otp", userController.resendForgotPasswordOtp);
 router.get("/new-password", userController.loadNewPassword);
 router.post("/reset-password", userController.resetPassword);
+
+// Routes that need user context for dropdown (apply middleware)
+router.get("/", addUserContext, userController.loadLanding);
+router.get("/dashboard", addUserContext, userController.loadDashboard);
+router.get("/shop", addUserContext, userController.loadShop);
+router.get("/products", addUserContext, userController.loadShop);
+router.get("/product/:id", addUserContext, checkProductAvailabilityForPage, userController.loadProductDetails);
 router.get("/logout", userController.logout);
 
 
-// Shop/Products routes
-router.get("/shop", userController.loadShop);
-router.get("/products", userController.loadShop);
-
-// Product details route
-router.get("/product/:id", userController.loadProductDetails);
 
 
+
+// Review routes
+router.post("/submit-review", userController.submitReview);
+router.post("/mark-helpful", userController.markHelpful);
+// API routes
+router.get("/api/product-status/:id", userController.checkProductStatus);
 
 
 

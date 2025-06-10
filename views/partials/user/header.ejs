@@ -155,6 +155,152 @@
             align-items: center;
             justify-content: center;
         }
+
+        /* Footer Styles */
+        footer {
+            background: linear-gradient(135deg, #111827 0%, #1f2937 100%);
+            color: #ffffff;
+            padding: 3rem 0 1rem 0;
+            margin-top: 5rem;
+        }
+
+        .footer-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: #ffffff;
+        }
+
+        .footer-links {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .footer-links li {
+            margin-bottom: 0.75rem;
+        }
+
+        .footer-links a {
+            color: #d1d5db;
+            text-decoration: none;
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: #ffffff;
+            transform: translateX(5px);
+        }
+
+        .qr-code {
+            width: 60px;
+            height: 60px;
+            background: #ffffff;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            color: #111827;
+            font-weight: 600;
+        }
+
+        .qr-code::after {
+            content: 'QR';
+        }
+
+        .social-icons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .social-icons a {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #d1d5db;
+            font-size: 1.125rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .social-icons a:hover {
+            background: #ffffff;
+            color: #111827;
+            transform: translateY(-2px);
+        }
+
+        .sub-footer {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 2rem;
+            margin-top: 2rem;
+        }
+
+        .sub-footer p {
+            margin: 0;
+            color: #9ca3af;
+            font-size: 0.875rem;
+        }
+
+        footer .form-control {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            border-radius: 8px;
+        }
+
+        footer .form-control::placeholder {
+            color: #9ca3af;
+        }
+
+        footer .form-control:focus {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: #ffffff;
+            box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.25);
+            color: #ffffff;
+        }
+
+        footer .btn-light {
+            background: #ffffff;
+            border-color: #ffffff;
+            color: #111827;
+            font-weight: 600;
+            border-radius: 8px;
+        }
+
+        footer .btn-light:hover {
+            background: #f8f9fa;
+            border-color: #f8f9fa;
+            color: #111827;
+        }
+
+        /* Responsive Footer */
+        @media (max-width: 768px) {
+            footer {
+                padding: 2rem 0 1rem 0;
+                margin-top: 3rem;
+            }
+
+            .footer-title {
+                font-size: 1.125rem;
+                margin-bottom: 1rem;
+            }
+
+            .social-icons {
+                justify-content: center;
+                margin-top: 1rem;
+            }
+
+            .qr-code {
+                width: 50px;
+                height: 50px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -241,57 +387,3 @@
             </div>
         </div>
     </nav>
-
-    <!-- Bootstrap JS Bundle with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <!-- Custom Script for Dropdown -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Wait for Bootstrap to be fully loaded
-            setTimeout(function() {
-                // Check if Bootstrap is available
-                if (typeof bootstrap !== 'undefined') {
-                    // Initialize all Bootstrap dropdowns
-                    const dropdownElementList = [].slice.call(document.querySelectorAll('.dropdown-toggle'));
-                    const dropdownList = dropdownElementList.map(function (dropdownToggleEl) {
-                        return new bootstrap.Dropdown(dropdownToggleEl);
-                    });
-                    console.log('Bootstrap dropdowns initialized:', dropdownList.length);
-                } else {
-                    console.error('Bootstrap is not loaded');
-                    // Fallback manual dropdown
-                    initManualDropdown();
-                }
-            }, 100);
-        });
-
-        // Fallback manual dropdown function
-        function initManualDropdown() {
-            const userDropdown = document.getElementById('userDropdown');
-            const dropdownMenu = document.querySelector('.dropdown-menu');
-
-            if (userDropdown && dropdownMenu) {
-                userDropdown.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-
-                    // Toggle dropdown
-                    if (dropdownMenu.classList.contains('show')) {
-                        dropdownMenu.classList.remove('show');
-                    } else {
-                        dropdownMenu.classList.add('show');
-                    }
-                });
-
-                // Close dropdown when clicking outside
-                document.addEventListener('click', function(e) {
-                    if (!userDropdown.contains(e.target) && !dropdownMenu.contains(e.target)) {
-                        dropdownMenu.classList.remove('show');
-                    }
-                });
-            }
-        }
-    </script>
-</body>
-</html>

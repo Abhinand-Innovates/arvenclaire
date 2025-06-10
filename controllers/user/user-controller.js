@@ -3,6 +3,8 @@ const generateOtp = require("../../utils/generateOtp");
 const sendEmail = require("../../utils/sendEmail");
 const bcrypt = require("bcrypt");
 const Product = require("../../models/product-schema");
+const Category = require("../../models/category-schema");
+const Review = require("../../models/review-schema");
 
 
 
@@ -10,8 +12,39 @@ const Product = require("../../models/product-schema");
 
 const loadLanding = async (req, res) => {
   try {
-    const products = await Product.find()
-    return res.render("dashboard",{products});
+    // Only show available, non-blocked, listed products
+    const products = await Product.find({
+      isDeleted: false,
+      isBlocked: false,
+      isListed: true
+    }).populate('category', 'name').sort({ createdAt: -1 }).lean();
+
+    // Calculate average ratings for each product
+    const productsWithRatings = await Promise.all(
+      products.map(async (product) => {
+        const reviews = await Review.find({
+          product: product._id,
+          isHidden: false
+        });
+
+        let averageRating = 0;
+        let totalReviews = reviews.length;
+
+        if (totalReviews > 0) {
+          const totalRating = reviews.reduce((sum, review) => sum + review.rating, 0);
+          averageRating = totalRating / totalReviews;
+        }
+
+        return {
+          ...product,
+          averageRating: averageRating,
+          totalReviews: totalReviews
+        };
+      })
+    );
+
+    // User context is automatically added by middleware
+    return res.render("dashboard", { products: productsWithRatings });
   } catch (error) {
     console.log("Landing page not loading");
     res.status(500).send("Server error");
@@ -184,15 +217,43 @@ const signup = async (req, res) => {
 
 const loadDashboard = async (req, res) => {
   try {
-    const user = req.session.userId;
-    console.log(user)
-    if (user) {
-      const userData = await User.findOne({ _id: user });
-      const products = await Product.find()
-      console.log(products)
-      return res.render("dashboard", { user: userData,products });
+    const userId = req.session.userId;
+    if (userId) {
+      // Only show available, non-blocked, listed products
+      const products = await Product.find({
+        isDeleted: false,
+        isBlocked: false,
+        isListed: true
+      }).populate('category', 'name').sort({ createdAt: -1 }).lean();
+
+      // Calculate average ratings for each product
+      const productsWithRatings = await Promise.all(
+        products.map(async (product) => {
+          const reviews = await Review.find({
+            product: product._id,
+            isHidden: false
+          });
+
+          let averageRating = 0;
+          let totalReviews = reviews.length;
+
+          if (totalReviews > 0) {
+            const totalRating = reviews.reduce((sum, review) => sum + review.rating, 0);
+            averageRating = totalRating / totalReviews;
+          }
+
+          return {
+            ...product,
+            averageRating: averageRating,
+            totalReviews: totalReviews
+          };
+        })
+      );
+
+      // User context is automatically added by middleware
+      return res.render("dashboard", { products: productsWithRatings });
     } else {
-      return res.redirect("/")
+      return res.redirect("/");
     }
   } catch (error) {
     console.log("Home page not loading", error);
@@ -528,34 +589,7 @@ const logout = async (req,res) => {
 // Load shop page with filtering
 const loadShop = async (req, res) => {
   try {
-    const user = req.session.userId;
     const Category = require('../../models/category-schema');
-
-    // Check if any filters are applied
-    const hasFilters = Object.keys(req.query).length > 0;
-
-    // Get categories for filter dropdown
-    const categories = await Category.find({ isListed: true }).sort({ name: 1 });
-
-    // Get user data if logged in
-    let userData = null;
-    if (user) {
-      userData = await User.findById(user);
-    }
-
-    // If no filters applied, show initial state
-    if (!hasFilters) {
-      return res.render('shop', {
-        categories,
-        user: userData,
-        // Filter data (empty)
-        selectedCategory: '',
-        search: '',
-        sortBy: 'newest',
-        minPrice: '',
-        maxPrice: ''
-      });
-    }
 
     // Pagination parameters
     const page = parseInt(req.query.page) || 1;
@@ -568,6 +602,9 @@ const loadShop = async (req, res) => {
     const sortBy = req.query.sort || 'newest';
     const minPrice = req.query.minPrice ? parseFloat(req.query.minPrice) : null;
     const maxPrice = req.query.maxPrice ? parseFloat(req.query.maxPrice) : null;
+
+    // Get categories for filter dropdown
+    const categories = await Category.find({ isListed: true }).sort({ name: 1 });
 
     // Build search query
     const searchFilter = {
@@ -626,9 +663,34 @@ const loadShop = async (req, res) => {
         .populate('category', 'name')
         .sort(sortQuery)
         .skip(skip)
-        .limit(limit),
+        .limit(limit)
+        .lean(),
       Product.countDocuments(searchFilter)
     ]);
+
+    // Calculate average ratings for each product
+    const productsWithRatings = await Promise.all(
+      products.map(async (product) => {
+        const reviews = await Review.find({
+          product: product._id,
+          isHidden: false
+        });
+
+        let averageRating = 0;
+        let totalReviews = reviews.length;
+
+        if (totalReviews > 0) {
+          const totalRating = reviews.reduce((sum, review) => sum + review.rating, 0);
+          averageRating = totalRating / totalReviews;
+        }
+
+        return {
+          ...product,
+          averageRating: averageRating,
+          totalReviews: totalReviews
+        };
+      })
+    );
 
     // Calculate pagination
     const totalPages = Math.ceil(totalProducts / limit);
@@ -655,10 +717,17 @@ const loadShop = async (req, res) => {
     const startResult = totalProducts > 0 ? skip + 1 : 0;
     const endResult = Math.min(skip + limit, totalProducts);
 
+    // Check for redirect message from blocked product access
+    const redirectMessage = req.session.redirectMessage;
+    if (redirectMessage) {
+      delete req.session.redirectMessage; // Clear the message after reading
+    }
+
     res.render('shop', {
-      products,
+      products: productsWithRatings,
       categories,
-      user: userData,
+      redirectMessage, // Pass the redirect message to the view
+      // User context is automatically added by middleware
       // Pagination data
       currentPage: page,
       totalPages,
@@ -682,8 +751,8 @@ const loadShop = async (req, res) => {
   } catch (error) {
     console.error('Error loading shop page:', error);
     res.status(500).render('error', {
-      message: 'Failed to load shop page',
-      user: req.session.userId ? await User.findById(req.session.userId) : null
+      message: 'Failed to load shop page'
+      // User context is automatically added by middleware
     });
   }
 };
@@ -692,50 +761,261 @@ const loadShop = async (req, res) => {
 const loadProductDetails = async (req, res) => {
   try {
     const productId = req.params.id;
-    const user = req.session.userId;
 
-    // Get product details
-    const Product = require('../../models/product-schema');
+    // Product availability is already checked by middleware
+    // Get product details with populated category
     const product = await Product.findById(productId)
-      .populate('category', 'name')
-      .exec();
+      .populate('category')
+      .lean();
 
-    if (!product || product.isDeleted || product.isBlocked) {
-      return res.status(404).render('error', {
-        message: 'Product not found',
-        user: user ? await User.findById(user) : null
-      });
-    }
+    // Get reviews for this product
+    const reviews = await Review.find({
+      product: productId,
+      isHidden: false
+    })
+    .populate('user', 'fullname')
+    .sort({ createdAt: -1 })
+    .lean();
 
-    // Get related products (same category, excluding current product)
-    const relatedProducts = await Product.find({
+    // Get related products from the same category (excluding current product)
+    const relatedProductsRaw = await Product.find({
       category: product.category._id,
-      _id: { $ne: productId },
+      _id: { $ne: productId }, // Exclude current product
       isDeleted: false,
       isBlocked: false,
       isListed: true
     })
     .populate('category', 'name')
-    .limit(4)
-    .sort({ createdAt: -1 });
+    .sort({ createdAt: -1 })
+    .limit(4) // Show up to 4 related products
+    .lean();
 
-    // Get user data if logged in
-    let userData = null;
-    if (user) {
-      userData = await User.findById(user);
+    // Calculate average ratings for related products
+    const relatedProducts = await Promise.all(
+      relatedProductsRaw.map(async (relatedProduct) => {
+        const reviews = await Review.find({
+          product: relatedProduct._id,
+          isHidden: false
+        });
+
+        let averageRating = 0;
+        let totalReviews = reviews.length;
+
+        if (totalReviews > 0) {
+          const totalRating = reviews.reduce((sum, review) => sum + review.rating, 0);
+          averageRating = totalRating / totalReviews;
+        }
+
+        return {
+          ...relatedProduct,
+          averageRating: averageRating,
+          totalReviews: totalReviews
+        };
+      })
+    );
+
+    // Calculate review statistics
+    const totalReviews = reviews.length;
+    let averageRating = 0;
+    const ratingCounts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+    const ratingBreakdown = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+
+    if (totalReviews > 0) {
+      const totalRating = reviews.reduce((sum, review) => sum + review.rating, 0);
+      averageRating = totalRating / totalReviews;
+
+      // Count ratings
+      reviews.forEach(review => {
+        ratingCounts[review.rating]++;
+      });
+
+      // Calculate percentages
+      Object.keys(ratingBreakdown).forEach(rating => {
+        ratingBreakdown[rating] = totalReviews > 0
+          ? (ratingCounts[rating] / totalReviews) * 100
+          : 0;
+      });
     }
 
     res.render('product-details', {
       product,
+      reviews,
       relatedProducts,
-      user: userData
+      // User context is automatically added by middleware
+      averageRating,
+      totalReviews,
+      ratingCounts,
+      ratingBreakdown
     });
 
   } catch (error) {
     console.error('Error loading product details:', error);
     res.status(500).render('error', {
-      message: 'Failed to load product details',
-      user: req.session.userId ? await User.findById(req.session.userId) : null
+      message: 'Internal server error'
+      // User context is automatically added by middleware
+    });
+  }
+};
+
+// Submit Review
+const submitReview = async (req, res) => {
+  try {
+    const userId = req.session.userId;
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: 'Please login to submit a review'
+      });
+    }
+
+    const { productId, rating, title, comment } = req.body;
+
+    // Validate input
+    if (!productId || !rating || !title || !comment) {
+      return res.status(400).json({
+        success: false,
+        message: 'All fields are required'
+      });
+    }
+
+    if (rating < 1 || rating > 5) {
+      return res.status(400).json({
+        success: false,
+        message: 'Rating must be between 1 and 5'
+      });
+    }
+
+    // Check if product exists
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: 'Product not found'
+      });
+    }
+
+    // Check if user already reviewed this product
+    const existingReview = await Review.findOne({
+      user: userId,
+      product: productId
+    });
+
+    if (existingReview) {
+      return res.status(400).json({
+        success: false,
+        message: 'You have already reviewed this product'
+      });
+    }
+
+    // Create new review
+    const newReview = new Review({
+      user: userId,
+      product: productId,
+      rating: parseInt(rating),
+      title: title.trim(),
+      comment: comment.trim()
+    });
+
+    await newReview.save();
+
+    res.json({
+      success: true,
+      message: 'Review submitted successfully'
+    });
+
+  } catch (error) {
+    console.error('Error submitting review:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to submit review'
+    });
+  }
+};
+
+// Mark Review as Helpful
+const markHelpful = async (req, res) => {
+  try {
+    const userId = req.session.userId;
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: 'Please login to mark reviews as helpful'
+      });
+    }
+
+    const { reviewId } = req.body;
+
+    if (!reviewId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Review ID is required'
+      });
+    }
+
+    // Find and update review
+    const review = await Review.findByIdAndUpdate(
+      reviewId,
+      { $inc: { helpfulVotes: 1 } },
+      { new: true }
+    );
+
+    if (!review) {
+      return res.status(404).json({
+        success: false,
+        message: 'Review not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Marked as helpful',
+      helpfulVotes: review.helpfulVotes
+    });
+
+  } catch (error) {
+    console.error('Error marking review as helpful:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to mark as helpful'
+    });
+  }
+};
+// API endpoint to check product availability status
+const checkProductStatus = async (req, res) => {
+  try {
+    const productId = req.params.id;
+
+    const product = await Product.findById(productId);
+
+    if (!product) {
+      return res.json({
+        success: false,
+        available: false,
+        message: 'Product not found'
+      });
+    }
+
+    // Check if product is available to users
+    const isAvailable = !product.isBlocked && !product.isDeleted && product.isListed;
+
+    res.json({
+      success: true,
+      available: isAvailable,
+      status: {
+        isBlocked: product.isBlocked,
+        isDeleted: product.isDeleted,
+        isListed: product.isListed
+      }
+    });
+
+  } catch (error) {
+    console.error('Error checking product status:', error);
+    res.status(500).json({
+      success: false,
+      available: false,
+      message: 'Internal server error'
     });
   }
 };
@@ -772,5 +1052,8 @@ module.exports = {
   logout,
   loadShop,
   loadProductDetails,
+  submitReview,
+  markHelpful,
+  checkProductStatus,
 
 };

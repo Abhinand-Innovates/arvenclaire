@@ -34,7 +34,6 @@ const getAllCategoriesAPI = async (req, res) => {
 };
 
 
-
 // API: Add a new category
 const addCategoryAPI = async (req, res) => {
     try {
@@ -67,8 +66,6 @@ const addCategoryAPI = async (req, res) => {
         res.status(500).json({ message: 'Error adding category', error: error.message });
     }
 };
-
-
 
 
 // API: Update an existing category
@@ -118,7 +115,6 @@ const updateCategoryAPI = async (req, res) => {
         res.status(500).json({ message: 'Error updating category', error: error.message });
     }
 };
-
 
 
 // API: Toggle category status

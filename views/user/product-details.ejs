@@ -1,0 +1,1713 @@
+<%- include('../partials/user/header') %>
+
+<style>
+    /* Product Details Page Styles */
+    .product-details-wrapper {
+        background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+        min-height: 100vh;
+        padding: 6rem 0 2rem 0;
+    }
+
+    .product-details-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 2rem;
+    }
+
+    /* Product Main Section */
+    .product-main {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        padding: 3rem;
+        margin-bottom: 3rem;
+    }
+
+    .product-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 4rem;
+        align-items: start;
+    }
+
+    /* Product Images */
+    .product-images {
+        position: sticky;
+        top: 2rem;
+    }
+
+    .main-image-container {
+        position: relative;
+        background: #f8fafc;
+        border-radius: 16px;
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+        min-height: 400px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .main-image {
+        width: 100%;
+        height: auto;
+        max-height: 400px;
+        object-fit: contain;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .image-thumbnails {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1rem;
+    }
+
+    .thumbnail {
+        aspect-ratio: 1;
+        background: #f8fafc;
+        border-radius: 12px;
+        padding: 0.5rem;
+        cursor: pointer;
+        border: 2px solid transparent;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .thumbnail:hover,
+    .thumbnail.active {
+        border-color: #111827;
+        background: #f1f5f9;
+    }
+
+    .thumbnail img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        border-radius: 8px;
+    }
+
+    /* Product Info */
+    .product-info {
+        padding-left: 2rem;
+    }
+
+    .product-brand {
+        color: #6b7280;
+        font-size: 1rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.5rem;
+    }
+
+    .product-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #111827;
+        line-height: 1.2;
+        margin-bottom: 1rem;
+    }
+
+    .product-rating-summary {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .rating-stars {
+        display: flex;
+        gap: 0.25rem;
+    }
+
+    .star {
+        color: #fbbf24;
+        font-size: 1.25rem;
+    }
+
+    .star.empty {
+        color: #e5e7eb;
+    }
+
+    .rating-text {
+        color: #6b7280;
+        font-weight: 600;
+    }
+
+    .product-price {
+        margin-bottom: 2rem;
+    }
+
+    .current-price {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #111827;
+        margin-right: 1rem;
+    }
+
+    .original-price {
+        font-size: 1.5rem;
+        color: #9ca3af;
+        text-decoration: line-through;
+        margin-right: 1rem;
+    }
+
+    .discount-badge {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 0.875rem;
+        display: inline-block;
+    }
+
+    /* Stock Status */
+    .stock-status {
+        margin-bottom: 1.5rem;
+        padding: 1rem 1.25rem;
+        border-radius: 10px;
+        border: 2px solid;
+        display: flex;
+        align-items: center;
+        gap: 0.875rem;
+        font-weight: 700;
+        font-size: 0.9rem;
+    }
+
+    .stock-status.in-stock {
+        background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%);
+        border-color: #10b981;
+        color: #065f46;
+    }
+
+    .stock-status.low-stock {
+        background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+        border-color: #f59e0b;
+        color: #92400e;
+    }
+
+    .stock-status.out-of-stock {
+        background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+        border-color: #ef4444;
+        color: #991b1b;
+    }
+
+    .stock-status.discontinued {
+        background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+        border-color: #6b7280;
+        color: #374151;
+    }
+
+    .stock-icon {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 0.75rem;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+
+    .stock-status.in-stock .stock-icon {
+        background: #10b981;
+    }
+
+    .stock-status.low-stock .stock-icon {
+        background: #f59e0b;
+    }
+
+    .stock-status.out-of-stock .stock-icon {
+        background: #ef4444;
+    }
+
+    .stock-status.discontinued .stock-icon {
+        background: #6b7280;
+    }
+
+    .stock-details {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .stock-label {
+        font-size: 0.9rem;
+        font-weight: 700;
+    }
+
+    .stock-quantity {
+        font-size: 0.8rem;
+        opacity: 0.8;
+        font-weight: 600;
+    }
+
+    .product-description {
+        color: #6b7280;
+        font-size: 1.125rem;
+        line-height: 1.7;
+        margin-bottom: 3rem;
+    }
+
+    /* Product Actions */
+    .product-actions {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 3rem;
+    }
+
+    .btn-action {
+        padding: 1rem 2rem;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 1rem;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+        justify-content: center;
+        min-width: 180px;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #111827 0%, #374151 100%);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #374151 0%, #4b5563 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(17, 24, 39, 0.3);
+    }
+
+    .btn-secondary {
+        background: white;
+        color: #111827;
+        border: 2px solid #111827;
+    }
+
+    .btn-secondary:hover {
+        background: #111827;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(17, 24, 39, 0.2);
+    }
+
+    .btn-action:disabled {
+        background: #e5e7eb !important;
+        color: #9ca3af !important;
+        cursor: not-allowed !important;
+        transform: none !important;
+        box-shadow: none !important;
+        border-color: #e5e7eb !important;
+    }
+
+    .btn-action:disabled:hover {
+        background: #e5e7eb !important;
+        color: #9ca3af !important;
+        transform: none !important;
+        box-shadow: none !important;
+    }
+
+    /* Product Features */
+    .product-features {
+        background: #f8fafc;
+        border-radius: 16px;
+        padding: 2rem;
+        margin-bottom: 3rem;
+    }
+
+    .features-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 1.5rem;
+    }
+
+    .features-list {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+
+    .feature-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        color: #374151;
+        font-weight: 600;
+    }
+
+    .feature-icon {
+        width: 20px;
+        height: 20px;
+        background: #111827;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 0.75rem;
+    }
+
+    /* Reviews Section */
+    .reviews-section {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        padding: 3rem;
+        margin-bottom: 3rem;
+    }
+
+    .reviews-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 2rem;
+        border-bottom: 2px solid #f1f5f9;
+    }
+
+    .reviews-title {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #111827;
+    }
+
+    .btn-write-review {
+        background: linear-gradient(135deg, #111827 0%, #374151 100%);
+        color: white;
+        padding: 0.875rem 1.5rem;
+        border-radius: 12px;
+        font-weight: 700;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-write-review:hover {
+        background: linear-gradient(135deg, #374151 0%, #4b5563 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(17, 24, 39, 0.3);
+    }
+
+    /* Review Stats */
+    .review-stats {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 3rem;
+        margin-bottom: 3rem;
+    }
+
+    .overall-rating {
+        text-align: center;
+        padding: 2rem;
+        background: #f8fafc;
+        border-radius: 16px;
+    }
+
+    .overall-score {
+        font-size: 4rem;
+        font-weight: 800;
+        color: #111827;
+        margin-bottom: 0.5rem;
+    }
+
+    .overall-stars {
+        display: flex;
+        justify-content: center;
+        gap: 0.25rem;
+        margin-bottom: 1rem;
+    }
+
+    .overall-stars .star {
+        font-size: 1.5rem;
+    }
+
+    .total-reviews {
+        color: #6b7280;
+        font-weight: 600;
+    }
+
+    .rating-breakdown {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .rating-row {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .rating-label {
+        font-weight: 600;
+        color: #374151;
+        min-width: 60px;
+    }
+
+    .rating-bar {
+        flex: 1;
+        height: 8px;
+        background: #e5e7eb;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    .rating-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #fbbf24 0%, #f59e0b 100%);
+        transition: width 0.3s ease;
+    }
+
+    .rating-count {
+        font-weight: 600;
+        color: #6b7280;
+        min-width: 40px;
+        text-align: right;
+    }
+
+    /* Review Form */
+    .review-form {
+        background: #f8fafc;
+        border-radius: 16px;
+        padding: 2rem;
+        margin-bottom: 3rem;
+        display: none;
+    }
+
+    .review-form.active {
+        display: block;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        display: block;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 0.5rem;
+    }
+
+    .rating-input {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .rating-star {
+        font-size: 2rem;
+        color: #e5e7eb;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .rating-star:hover,
+    .rating-star.active {
+        color: #fbbf24;
+        transform: scale(1.1);
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 0.875rem 1rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background: white;
+    }
+
+    .form-input:focus {
+        outline: none;
+        border-color: #111827;
+        box-shadow: 0 0 0 3px rgba(17, 24, 39, 0.1);
+    }
+
+    .form-textarea {
+        min-height: 120px;
+        resize: vertical;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .btn-submit {
+        background: linear-gradient(135deg, #111827 0%, #374151 100%);
+        color: white;
+        padding: 0.875rem 2rem;
+        border-radius: 12px;
+        font-weight: 700;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-submit:hover {
+        background: linear-gradient(135deg, #374151 0%, #4b5563 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(17, 24, 39, 0.3);
+    }
+
+    .btn-cancel {
+        background: white;
+        color: #111827;
+        padding: 0.875rem 2rem;
+        border-radius: 12px;
+        font-weight: 700;
+        border: 2px solid #e5e7eb;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-cancel:hover {
+        border-color: #111827;
+        background: #f8fafc;
+    }
+
+    /* Individual Reviews */
+    .reviews-list {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+    }
+
+    .review-item {
+        background: #f8fafc;
+        border-radius: 16px;
+        padding: 2rem;
+        border: 2px solid transparent;
+        transition: all 0.3s ease;
+    }
+
+    .review-item:hover {
+        border-color: #e5e7eb;
+        background: white;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    .review-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        margin-bottom: 1rem;
+    }
+
+    .reviewer-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .reviewer-avatar {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, #111827 0%, #374151 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 700;
+        font-size: 1.25rem;
+    }
+
+    .reviewer-details h4 {
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 0.25rem;
+    }
+
+    .review-date {
+        color: #6b7280;
+        font-size: 0.875rem;
+    }
+
+    .review-rating {
+        display: flex;
+        gap: 0.25rem;
+    }
+
+    .review-content {
+        margin-bottom: 1rem;
+    }
+
+    .review-title {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 0.5rem;
+    }
+
+    .review-text {
+        color: #6b7280;
+        line-height: 1.6;
+    }
+
+    /* Related Products Section */
+    .related-products-section {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        padding: 3rem;
+        margin-bottom: 3rem;
+    }
+
+    .related-products-header {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+    .related-products-title {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #111827;
+        margin-bottom: 0.5rem;
+    }
+
+    .related-products-subtitle {
+        color: #6b7280;
+        font-size: 1.125rem;
+    }
+
+    .related-products-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 2rem;
+    }
+
+    .related-product-card {
+        background: #f8fafc;
+        border-radius: 16px;
+        overflow: hidden;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 2px solid transparent;
+        position: relative;
+    }
+
+    .related-product-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px -5px rgba(0, 0, 0, 0.15);
+        border-color: #111827;
+    }
+
+    .related-product-image-container {
+        position: relative;
+        background: white;
+        padding: 1.5rem;
+        height: 200px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .related-product-image {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        transition: transform 0.3s ease;
+        border-radius: 8px;
+    }
+
+    .related-product-card:hover .related-product-image {
+        transform: scale(1.05);
+    }
+
+    .related-product-discount {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        color: white;
+        padding: 0.5rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        z-index: 2;
+    }
+
+    .related-product-info {
+        padding: 1.5rem;
+    }
+
+    .related-product-brand {
+        color: #6b7280;
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.5rem;
+    }
+
+    .related-product-name {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 1rem;
+        line-height: 1.4;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .related-product-price {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .related-current-price {
+        font-size: 1.25rem;
+        font-weight: 800;
+        color: #111827;
+    }
+
+    .related-original-price {
+        font-size: 1rem;
+        color: #9ca3af;
+        text-decoration: line-through;
+    }
+
+    .related-product-rating {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .related-rating-stars {
+        display: flex;
+        gap: 0.125rem;
+    }
+
+    .related-rating-stars .star {
+        color: #fbbf24;
+        font-size: 0.875rem;
+    }
+
+    .related-rating-stars .star.empty {
+        color: #e5e7eb;
+    }
+
+    .related-rating-count {
+        color: #6b7280;
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+
+    .related-product-actions {
+        display: flex;
+        gap: 0.75rem;
+    }
+
+    .btn-related {
+        flex: 1;
+        padding: 0.75rem 1rem;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 0.875rem;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .btn-related-primary {
+        background: linear-gradient(135deg, #111827 0%, #374151 100%);
+        color: white;
+    }
+
+    .btn-related-primary:hover {
+        background: linear-gradient(135deg, #374151 0%, #4b5563 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(17, 24, 39, 0.3);
+        color: white;
+        text-decoration: none;
+    }
+
+    .btn-related-secondary {
+        background: white;
+        color: #111827;
+        border: 2px solid #e5e7eb;
+    }
+
+    .btn-related-secondary:hover {
+        border-color: #111827;
+        background: #f8fafc;
+        transform: translateY(-2px);
+    }
+
+    /* Scroll to Top Button */
+    .scroll-to-top {
+        position: fixed;
+        bottom: 2rem;
+        left: 2rem;
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, #111827 0%, #374151 100%);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 1000;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(20px);
+    }
+
+    .scroll-to-top.visible {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+
+    .scroll-to-top:hover {
+        background: linear-gradient(135deg, #374151 0%, #4b5563 100%);
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+    }
+
+    .scroll-to-top:active {
+        transform: translateY(-1px);
+    }
+
+
+
+
+
+    .review-actions {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+    }
+
+    .review-helpful {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #6b7280;
+        font-size: 0.875rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .review-helpful:hover {
+        color: #111827;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .product-details-wrapper {
+            padding: 5rem 0 2rem 0;
+        }
+
+        .product-details-container {
+            padding: 0 1rem;
+        }
+
+        .product-main {
+            padding: 2rem;
+        }
+
+        .product-grid {
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+
+        .product-info {
+            padding-left: 0;
+        }
+
+        .product-title {
+            font-size: 2rem;
+        }
+
+        .current-price {
+            font-size: 2rem;
+        }
+
+        .product-actions {
+            flex-direction: column;
+        }
+
+        .features-list {
+            grid-template-columns: 1fr;
+        }
+
+        .stock-status {
+            padding: 0.875rem 1rem;
+            font-size: 0.8rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .stock-icon {
+            width: 18px;
+            height: 18px;
+            font-size: 0.7rem;
+        }
+
+        .stock-label {
+            font-size: 0.8rem;
+        }
+
+        .stock-quantity {
+            font-size: 0.7rem;
+        }
+
+        .review-stats {
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+
+        .reviews-header {
+            flex-direction: column;
+            gap: 1rem;
+            align-items: stretch;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .review-header {
+            flex-direction: column;
+            gap: 1rem;
+            align-items: start;
+        }
+
+        .reviewer-info {
+            align-self: stretch;
+        }
+
+        /* Related Products Mobile */
+        .related-products-section {
+            padding: 2rem 1.5rem;
+        }
+
+        .related-products-title {
+            font-size: 1.75rem;
+        }
+
+        .related-products-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+        }
+
+        .related-product-image-container {
+            height: 150px;
+            padding: 1rem;
+        }
+
+        .related-product-info {
+            padding: 1rem;
+        }
+
+        .related-product-name {
+            font-size: 1rem;
+        }
+
+        .related-current-price {
+            font-size: 1.125rem;
+        }
+
+        .btn-related {
+            padding: 0.625rem 0.75rem;
+            font-size: 0.8rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .related-products-section {
+            padding: 1.5rem 1rem;
+        }
+
+        .related-products-title {
+            font-size: 1.5rem;
+        }
+
+        .related-products-grid {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .related-product-card {
+            border-radius: 12px;
+        }
+
+        .related-product-image-container {
+            height: 180px;
+        }
+
+        .related-product-actions {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .btn-related {
+            padding: 0.75rem;
+            font-size: 0.875rem;
+        }
+
+        /* Mobile adjustments for scroll button */
+        .scroll-to-top {
+            bottom: 1rem;
+            left: 1rem;
+            width: 45px;
+            height: 45px;
+            font-size: 1.125rem;
+        }
+    }
+</style>
+
+<div class="product-details-wrapper">
+    <div class="product-details-container">
+        <!-- Product Main Section -->
+        <div class="product-main">
+            <div class="product-grid">
+                <!-- Product Images -->
+                <div class="product-images">
+                    <div class="main-image-container">
+                        <img src="/uploads/products/<%= product.mainImage %>"
+                             alt="<%= product.productName %>"
+                             class="main-image"
+                             id="mainImage"
+                             onerror="this.src='https://images.unsplash.com/photo-1523275335684-37898b6baf30?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80'">
+                    </div>
+
+                    <div class="image-thumbnails">
+                        <div class="thumbnail active" onclick="changeMainImage('/uploads/products/<%= product.mainImage %>', this)">
+                            <img src="/uploads/products/<%= product.mainImage %>" alt="Main Image">
+                        </div>
+                        <% if (product.subImages && product.subImages.length > 0) { %>
+                            <% product.subImages.slice(0, 3).forEach(image => { %>
+                                <div class="thumbnail" onclick="changeMainImage('/uploads/products/<%= image %>', this)">
+                                    <img src="/uploads/products/<%= image %>" alt="Product Image">
+                                </div>
+                            <% }) %>
+                        <% } %>
+                    </div>
+                </div>
+
+                <!-- Product Info -->
+                <div class="product-info">
+                    <div class="product-brand"><%= product.brand %></div>
+                    <h1 class="product-title"><%= product.productName %></h1>
+
+                    <div class="product-rating-summary">
+                        <div class="rating-stars">
+                            <% for (let i = 1; i <= 5; i++) { %>
+                                <i class="bi bi-star-fill star <%= averageRating >= i ? '' : 'empty' %>"></i>
+                            <% } %>
+                        </div>
+                        <span class="rating-text">
+                            <%= averageRating ? averageRating.toFixed(1) : '0.0' %>
+                            (<%= totalReviews %> <%= totalReviews === 1 ? 'review' : 'reviews' %>)
+                        </span>
+                    </div>
+
+                    <div class="product-price">
+                        <span class="current-price">₹<%= product.salePrice.toFixed(2) %></span>
+                        <% if (product.regularPrice > product.salePrice) { %>
+                            <span class="original-price">₹<%= product.regularPrice.toFixed(2) %></span>
+                            <span class="discount-badge">
+                                <%= Math.round(((product.regularPrice - product.salePrice) / product.regularPrice) * 100) %>% OFF
+                            </span>
+                        <% } %>
+                    </div>
+
+                    <!-- Stock Status -->
+                    <div class="stock-status <%=
+                        product.status === 'Out of Stock' || product.quantity === 0 ? 'out-of-stock' :
+                        product.status === 'Discontinued' ? 'discontinued' :
+                        product.quantity <= 5 ? 'low-stock' : 'in-stock'
+                    %>">
+                        <div class="stock-icon">
+                            <% if (product.status === 'Out of Stock' || product.quantity === 0) { %>
+                                ✕
+                            <% } else if (product.status === 'Discontinued') { %>
+                                ⚠
+                            <% } else if (product.quantity <= 5) { %>
+                                !
+                            <% } else { %>
+                                ✓
+                            <% } %>
+                        </div>
+                        <div class="stock-details">
+                            <div class="stock-label">
+                                <% if (product.status === 'Out of Stock' || product.quantity === 0) { %>
+                                    Out of Stock
+                                <% } else if (product.status === 'Discontinued') { %>
+                                    Discontinued
+                                <% } else if (product.quantity <= 5) { %>
+                                    Low Stock
+                                <% } else { %>
+                                    In Stock
+                                <% } %>
+                            </div>
+                            <div class="stock-quantity">
+                                <% if (product.status === 'Discontinued') { %>
+                                    This product is no longer available
+                                <% } else if (product.status === 'Out of Stock' || product.quantity === 0) { %>
+                                    Currently unavailable
+                                <% } else if (product.quantity <= 5) { %>
+                                    Only <%= product.quantity %> left in stock
+                                <% } else { %>
+                                    <%= product.quantity %> units available
+                                <% } %>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="product-description">
+                        <%= product.description %>
+                    </div>
+
+                    <div class="product-actions">
+                        <button class="btn-action btn-primary"
+                                onclick="addToCart('<%= product._id %>')"
+                                <%= (product.status === 'Out of Stock' || product.quantity === 0 || product.status === 'Discontinued') ? 'disabled' : '' %>>
+                            <i class="bi bi-cart-plus"></i>
+                            <% if (product.status === 'Out of Stock' || product.quantity === 0) { %>
+                                Out of Stock
+                            <% } else if (product.status === 'Discontinued') { %>
+                                Discontinued
+                            <% } else { %>
+                                Add to Cart
+                            <% } %>
+                        </button>
+                        <button class="btn-action btn-secondary" onclick="addToWishlist('<%= product._id %>')">
+                            <i class="bi bi-heart"></i>
+                            Add to Wishlist
+                        </button>
+                    </div>
+
+                    <% if (product.features && product.features.trim()) { %>
+                        <div class="product-features">
+                            <h3 class="features-title">Key Features</h3>
+                            <div class="features-list">
+                                <%
+                                // Split features by newlines or commas and display each
+                                const featuresList = product.features.split(/[,\n]/).filter(f => f.trim());
+                                featuresList.forEach(feature => { %>
+                                    <div class="feature-item">
+                                        <div class="feature-icon">
+                                            <i class="bi bi-check"></i>
+                                        </div>
+                                        <%= feature.trim() %>
+                                    </div>
+                                <% }) %>
+                            </div>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reviews Section -->
+        <div class="reviews-section">
+            <div class="reviews-header">
+                <h2 class="reviews-title">Customer Reviews</h2>
+                <% if (user) { %>
+                    <button class="btn-write-review" onclick="toggleReviewForm()">
+                        <i class="bi bi-pencil"></i>
+                        Write a Review
+                    </button>
+                <% } %>
+            </div>
+
+            <!-- Review Stats -->
+            <div class="review-stats">
+                <div class="overall-rating">
+                    <div class="overall-score"><%= averageRating ? averageRating.toFixed(1) : '0.0' %></div>
+                    <div class="overall-stars">
+                        <% for (let i = 1; i <= 5; i++) { %>
+                            <i class="bi bi-star-fill star <%= averageRating >= i ? '' : 'empty' %>"></i>
+                        <% } %>
+                    </div>
+                    <div class="total-reviews"><%= totalReviews %> <%= totalReviews === 1 ? 'review' : 'reviews' %></div>
+                </div>
+
+                <div class="rating-breakdown">
+                    <% for (let i = 5; i >= 1; i--) { %>
+                        <div class="rating-row">
+                            <div class="rating-label"><%= i %> star</div>
+                            <div class="rating-bar">
+                                <div class="rating-fill" style="width: <%= ratingBreakdown[i] || 0 %>%"></div>
+                            </div>
+                            <div class="rating-count"><%= ratingCounts[i] || 0 %></div>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+
+            <!-- Review Form -->
+            <% if (user) { %>
+                <div class="review-form" id="reviewForm">
+                    <form id="submitReviewForm">
+                        <div class="form-group">
+                            <label class="form-label">Rating</label>
+                            <div class="rating-input" id="ratingInput">
+                                <% for (let i = 1; i <= 5; i++) { %>
+                                    <i class="bi bi-star-fill rating-star" data-rating="<%= i %>" onclick="setRating(<%= i %>)"></i>
+                                <% } %>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="reviewTitle">Review Title</label>
+                            <input type="text"
+                                   id="reviewTitle"
+                                   name="title"
+                                   class="form-input"
+                                   placeholder="Summarize your experience..."
+                                   maxlength="100"
+                                   required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="reviewComment">Your Review</label>
+                            <textarea id="reviewComment"
+                                      name="comment"
+                                      class="form-input form-textarea"
+                                      placeholder="Share your thoughts about this product..."
+                                      maxlength="1000"
+                                      required></textarea>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn-submit">
+                                <i class="bi bi-send"></i>
+                                Submit Review
+                            </button>
+                            <button type="button" class="btn-cancel" onclick="toggleReviewForm()">
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            <% } %>
+
+            <!-- Reviews List -->
+            <div class="reviews-list">
+                <% if (reviews && reviews.length > 0) { %>
+                    <% reviews.forEach(review => { %>
+                        <div class="review-item">
+                            <div class="review-header">
+                                <div class="reviewer-info">
+                                    <div class="reviewer-avatar">
+                                        <%= review.user.fullname.charAt(0).toUpperCase() %>
+                                    </div>
+                                    <div class="reviewer-details">
+                                        <h4><%= review.user.fullname %></h4>
+                                        <div class="review-date">
+                                            <%= new Date(review.createdAt).toLocaleDateString('en-US', {
+                                                year: 'numeric',
+                                                month: 'long',
+                                                day: 'numeric'
+                                            }) %>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="review-rating">
+                                    <% for (let i = 1; i <= 5; i++) { %>
+                                        <i class="bi bi-star-fill star <%= review.rating >= i ? '' : 'empty' %>"></i>
+                                    <% } %>
+                                </div>
+                            </div>
+
+                            <div class="review-content">
+                                <h3 class="review-title"><%= review.title %></h3>
+                                <p class="review-text"><%= review.comment %></p>
+                            </div>
+
+                            <div class="review-actions">
+                                <div class="review-helpful" onclick="markHelpful('<%= review._id %>')">
+                                    <i class="bi bi-hand-thumbs-up"></i>
+                                    Helpful (<%= review.helpfulVotes %>)
+                                </div>
+                            </div>
+                        </div>
+                    <% }) %>
+                <% } else { %>
+                    <div class="review-item">
+                        <div class="review-content">
+                            <h3 class="review-title">No reviews yet</h3>
+                            <p class="review-text">Be the first to review this product and help other customers make informed decisions.</p>
+                        </div>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+
+        <!-- Related Products Section -->
+        <% if (relatedProducts && relatedProducts.length > 0) { %>
+            <div class="related-products-section">
+                <div class="related-products-header">
+                    <h2 class="related-products-title">Related Products</h2>
+                    <p class="related-products-subtitle">You might also like these products from the same category</p>
+                </div>
+
+                <div class="related-products-grid">
+                    <% relatedProducts.forEach(relatedProduct => { %>
+                        <div class="related-product-card">
+                            <div class="related-product-image-container">
+                                <% if (relatedProduct.regularPrice > relatedProduct.salePrice) { %>
+                                    <div class="related-product-discount">
+                                        <%= Math.round(((relatedProduct.regularPrice - relatedProduct.salePrice) / relatedProduct.regularPrice) * 100) %>% OFF
+                                    </div>
+                                <% } %>
+                                <img src="/uploads/products/<%= relatedProduct.mainImage %>"
+                                     alt="<%= relatedProduct.productName %>"
+                                     class="related-product-image"
+                                     onerror="this.src='https://images.unsplash.com/photo-1523275335684-37898b6baf30?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80'">
+                            </div>
+
+                            <div class="related-product-info">
+                                <div class="related-product-brand"><%= relatedProduct.brand %></div>
+                                <h3 class="related-product-name"><%= relatedProduct.productName %></h3>
+
+                                <div class="related-product-price">
+                                    <span class="related-current-price">₹<%= relatedProduct.salePrice.toFixed(2) %></span>
+                                    <% if (relatedProduct.regularPrice > relatedProduct.salePrice) { %>
+                                        <span class="related-original-price">₹<%= relatedProduct.regularPrice.toFixed(2) %></span>
+                                    <% } %>
+                                </div>
+
+                                <% if (relatedProduct.totalReviews > 0) { %>
+                                    <div class="related-product-rating">
+                                        <div class="related-rating-stars">
+                                            <% for (let i = 1; i <= 5; i++) { %>
+                                                <i class="bi bi-star-fill star <%= relatedProduct.averageRating >= i ? '' : 'empty' %>"></i>
+                                            <% } %>
+                                        </div>
+                                        <span class="related-rating-count">(<%= relatedProduct.averageRating.toFixed(1) %>) - <%= relatedProduct.totalReviews %> <%= relatedProduct.totalReviews === 1 ? 'review' : 'reviews' %></span>
+                                    </div>
+                                <% } %>
+
+                                <div class="related-product-actions">
+                                    <a href="/product/<%= relatedProduct._id %>" class="btn-related btn-related-primary">
+                                        <i class="bi bi-eye"></i>
+                                        View Details
+                                    </a>
+                                    <button class="btn-related btn-related-secondary" onclick="addToWishlist('<%= relatedProduct._id %>')">
+                                        <i class="bi bi-heart"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    <% }) %>
+                </div>
+            </div>
+        <% } %>
+    </div>
+</div>
+
+<!-- Scroll to Top Button -->
+<button class="scroll-to-top" id="scrollToTop" onclick="scrollToTop()">
+    <i class="bi bi-arrow-up"></i>
+</button>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    let selectedRating = 0;
+
+    // Change main image
+    function changeMainImage(imageSrc, thumbnail) {
+        const mainImage = document.getElementById('mainImage');
+        mainImage.src = imageSrc;
+
+        // Update active thumbnail
+        document.querySelectorAll('.thumbnail').forEach(thumb => {
+            thumb.classList.remove('active');
+        });
+        thumbnail.classList.add('active');
+    }
+
+    // Toggle review form
+    function toggleReviewForm() {
+        const form = document.getElementById('reviewForm');
+        form.classList.toggle('active');
+
+        if (form.classList.contains('active')) {
+            form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }
+
+    // Set rating
+    function setRating(rating) {
+        selectedRating = rating;
+        const stars = document.querySelectorAll('.rating-star');
+
+        stars.forEach((star, index) => {
+            if (index < rating) {
+                star.classList.add('active');
+            } else {
+                star.classList.remove('active');
+            }
+        });
+    }
+
+    // Submit review
+    document.getElementById('submitReviewForm')?.addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        if (selectedRating === 0) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Rating Required',
+                text: 'Please select a rating before submitting your review.',
+                confirmButtonColor: '#111827'
+            });
+            return;
+        }
+
+        const formData = {
+            productId: '<%= product._id %>',
+            rating: selectedRating,
+            title: document.getElementById('reviewTitle').value,
+            comment: document.getElementById('reviewComment').value
+        };
+
+        try {
+            const response = await fetch('/submit-review', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData)
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Review Submitted!',
+                    text: 'Thank you for your review. It will help other customers.',
+                    confirmButtonColor: '#111827'
+                }).then(() => {
+                    location.reload();
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: result.message || 'Failed to submit review. Please try again.',
+                    confirmButtonColor: '#111827'
+                });
+            }
+        } catch (error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Something went wrong. Please try again.',
+                confirmButtonColor: '#111827'
+            });
+        }
+    });
+
+    // Mark review as helpful
+    async function markHelpful(reviewId) {
+        try {
+            const response = await fetch('/mark-helpful', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ reviewId })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                location.reload();
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: result.message || 'Failed to mark as helpful.',
+                    confirmButtonColor: '#111827'
+                });
+            }
+        } catch (error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Something went wrong. Please try again.',
+                confirmButtonColor: '#111827'
+            });
+        }
+    }
+
+    // Add to cart
+    async function addToCart(productId) {
+        // Check if product is available
+        const productStatus = '<%= product.status %>';
+        const productQuantity = <%= product.quantity %>;
+
+        if (productStatus === 'Out of Stock' || productQuantity === 0) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Out of Stock',
+                text: 'This product is currently out of stock.',
+                confirmButtonColor: '#111827'
+            });
+            return;
+        }
+
+        if (productStatus === 'Discontinued') {
+            Swal.fire({
+                icon: 'error',
+                title: 'Product Discontinued',
+                text: 'This product is no longer available.',
+                confirmButtonColor: '#111827'
+            });
+            return;
+        }
+
+        try {
+            const response = await fetch('/add-to-cart', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ productId, quantity: 1 })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Added to Cart!',
+                    text: 'Product has been added to your cart.',
+                    confirmButtonColor: '#111827'
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: result.message || 'Failed to add to cart.',
+                    confirmButtonColor: '#111827'
+                });
+            }
+        } catch (error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Please login to add items to cart.',
+                confirmButtonColor: '#111827'
+            });
+        }
+    }
+
+    // Add to wishlist
+    async function addToWishlist(productId) {
+        try {
+            const response = await fetch('/add-to-wishlist', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ productId })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Added to Wishlist!',
+                    text: 'Product has been added to your wishlist.',
+                    confirmButtonColor: '#111827'
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: result.message || 'Failed to add to wishlist.',
+                    confirmButtonColor: '#111827'
+                });
+            }
+        } catch (error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Please login to add items to wishlist.',
+                confirmButtonColor: '#111827'
+            });
+        }
+    }
+
+    // Check product availability periodically (every 30 seconds)
+    setInterval(async function() {
+        try {
+            const response = await fetch(`/api/product-status/<%= product._id %>`);
+            const result = await response.json();
+
+            if (!result.success || !result.available) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Product No Longer Available',
+                    text: 'This product has been removed or is no longer available. You will be redirected to the shop page.',
+                    confirmButtonColor: '#111827',
+                    allowOutsideClick: false,
+                    allowEscapeKey: false
+                }).then(() => {
+                    window.location.href = '/shop';
+                });
+            }
+        } catch (error) {
+            // Silently handle errors - don't disturb user experience
+            console.log('Product availability check failed:', error);
+        }
+    }, 30000); // Check every 30 seconds
+
+    // Scroll to Top Functionality
+    function scrollToTop() {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    }
+
+    // Show/Hide Scroll to Top Button
+    window.addEventListener('scroll', function() {
+        const scrollButton = document.getElementById('scrollToTop');
+        if (window.pageYOffset > 300) {
+            scrollButton.classList.add('visible');
+        } else {
+            scrollButton.classList.remove('visible');
+        }
+    });
+
+
+</script>
+
+<%- include('../partials/user/footer') %>

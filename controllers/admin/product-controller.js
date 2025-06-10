@@ -322,7 +322,8 @@ const updateProduct = async (req, res) => {
             quantity,
             features,
             croppedImages,
-            removedImages
+            removedImages,
+            mainImage
         } = req.body;
 
         // Find existing product
@@ -360,6 +361,7 @@ const updateProduct = async (req, res) => {
         }
 
         // Add new cropped images
+        let newImageFilenames = [];
         if (croppedImages) {
             const newImageData = JSON.parse(croppedImages);
             for (let i = 0; i < newImageData.length; i++) {
@@ -368,6 +370,7 @@ const updateProduct = async (req, res) => {
 
                 try {
                     await saveBase64Image(newImageData[i], filename);
+                    newImageFilenames.push(filename);
                     currentImages.push(filename);
                 } catch (error) {
                     console.error(`Failed to process new image ${i + 1}:`, error);
@@ -383,9 +386,44 @@ const updateProduct = async (req, res) => {
             });
         }
 
+        // Handle main image selection
+        let selectedMainImage;
+
+        if (mainImage) {
+            console.log('Main image selection received:', mainImage);
+
+            // Check if mainImage is a number (index for new images)
+            if (!isNaN(mainImage)) {
+                const newImageIndex = parseInt(mainImage);
+                if (newImageIndex >= 0 && newImageIndex < newImageFilenames.length) {
+                    selectedMainImage = newImageFilenames[newImageIndex];
+                    console.log('Selected new image as main:', selectedMainImage);
+                }
+            } else {
+                // It's an existing image filename
+                if (currentImages.includes(mainImage)) {
+                    selectedMainImage = mainImage;
+                    console.log('Selected existing image as main:', selectedMainImage);
+                }
+            }
+        }
+
+        // If no valid main image selected, use the first image
+        if (!selectedMainImage) {
+            selectedMainImage = currentImages[0];
+            console.log('Using first image as main (fallback):', selectedMainImage);
+        }
+
+        // Arrange images with selected main image first
+        const subImages = currentImages.filter(img => img !== selectedMainImage);
+
         // Update image fields
-        updateData.mainImage = currentImages[0];
-        updateData.subImages = currentImages.slice(1);
+        updateData.mainImage = selectedMainImage;
+        updateData.subImages = subImages;
+
+        console.log('Final image arrangement:');
+        console.log('Main image:', updateData.mainImage);
+        console.log('Sub images:', updateData.subImages);
 
         const updatedProduct = await Product.findByIdAndUpdate(
             productId,
