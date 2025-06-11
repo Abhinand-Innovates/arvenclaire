@@ -2,7 +2,7 @@
 const User = require('../models/user-schema');
 
 
-
+//For admin
 const isAdminAuthenticated = async (req, res, next) => {
   try {
     // Check if admin session exists

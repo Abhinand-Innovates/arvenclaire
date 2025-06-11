@@ -1,9 +1,9 @@
 const express = require("express");
 const router = express.Router();
 const passport = require("passport");
-const userController = require("../controllers/user/user-controller");
-const addUserContext = require("../middleware/user-context");
-const { checkProductAvailabilityForPage } = require("../middleware/product-availability");
+const userController = require("../controllers/user/user-auth-controller");
+const { addUserContext, checkUserBlocked } = require("../middleware/user-middleware");
+const { checkProductAvailabilityForPage } = require("../middleware/product-availability-middleware");
 const { profileUpload, handleMulterError } = require("../config/multer-config");
 
 
@@ -43,25 +43,25 @@ router.get("/new-password", userController.loadNewPassword);
 router.post("/reset-password", userController.resetPassword);
 
 // Routes that need user context for dropdown (apply middleware)
-router.get("/", addUserContext, userController.loadLanding);
-router.get("/dashboard", addUserContext, userController.loadDashboard);
-router.get("/shop", addUserContext, userController.loadShop);
-router.get("/products", addUserContext, userController.loadShop);
-router.get("/product/:id", addUserContext, checkProductAvailabilityForPage, userController.loadProductDetails);
-router.get("/profile", addUserContext, userController.loadProfile);
-router.get("/settings", addUserContext, userController.loadSettings);
-router.get("/logout", userController.logout);
+router.get("/", addUserContext, checkUserBlocked, userController.loadLanding);
+router.get("/dashboard", addUserContext, checkUserBlocked, userController.loadDashboard);
+router.get("/shop", addUserContext, checkUserBlocked, userController.loadShop);
+router.get("/products", addUserContext, checkUserBlocked, userController.loadShop);
+router.get("/product/:id", addUserContext, checkUserBlocked, checkProductAvailabilityForPage, userController.loadProductDetails);
+router.get("/profile", addUserContext, checkUserBlocked, userController.loadProfile);
+router.get("/settings", addUserContext, checkUserBlocked, userController.loadSettings);
+router.get("/logout", checkUserBlocked, userController.logout);
 
 
 // Review routes
-router.post("/submit-review", userController.submitReview);
-router.post("/mark-helpful", userController.markHelpful);
+router.post("/submit-review", checkUserBlocked, userController.submitReview);
+router.post("/mark-helpful", checkUserBlocked, userController.markHelpful);
 
 // Profile photo upload route
-router.post("/upload-profile-photo", profileUpload.single('profilePhoto'), handleMulterError, userController.uploadProfilePhoto);
+router.post("/upload-profile-photo", checkUserBlocked, profileUpload.single('profilePhoto'), handleMulterError, userController.uploadProfilePhoto);
 
 // API routes
-router.get("/api/product-status/:id", userController.checkProductStatus);
+router.get("/api/product-status/:id", checkUserBlocked, userController.checkProductStatus);
 
 
 

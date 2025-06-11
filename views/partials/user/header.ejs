@@ -680,5 +680,59 @@
                     });
                 });
             }
+
+            // Global AJAX error handler for blocked users
+            // Override fetch to handle blocked user responses
+            const originalFetch = window.fetch;
+            window.fetch = function(...args) {
+                return originalFetch.apply(this, args)
+                    .then(response => {
+                        // Check if response indicates user is blocked
+                        if (response.status === 401) {
+                            return response.json().then(data => {
+                                if (data.blocked) {
+                                    Swal.fire({
+                                        icon: 'warning',
+                                        title: 'Account Blocked',
+                                        text: data.message || 'Your account has been blocked. Please contact support.',
+                                        confirmButtonColor: '#dc3545',
+                                        confirmButtonText: 'Go to Login'
+                                    }).then(() => {
+                                        window.location.href = data.redirect || '/login?blocked=true';
+                                    });
+                                    throw new Error('User blocked');
+                                }
+                                throw new Error(data.message || 'Authentication failed');
+                            });
+                        }
+                        return response;
+                    });
+            };
+
+            // Handle XMLHttpRequest for older AJAX calls
+            const originalOpen = XMLHttpRequest.prototype.open;
+            XMLHttpRequest.prototype.open = function(...args) {
+                this.addEventListener('load', function() {
+                    if (this.status === 401) {
+                        try {
+                            const data = JSON.parse(this.responseText);
+                            if (data.blocked) {
+                                Swal.fire({
+                                    icon: 'warning',
+                                    title: 'Account Blocked',
+                                    text: data.message || 'Your account has been blocked. Please contact support.',
+                                    confirmButtonColor: '#dc3545',
+                                    confirmButtonText: 'Go to Login'
+                                }).then(() => {
+                                    window.location.href = data.redirect || '/login?blocked=true';
+                                });
+                            }
+                        } catch (e) {
+                            // Not JSON response, ignore
+                        }
+                    }
+                });
+                return originalOpen.apply(this, args);
+            };
         });
     </script>

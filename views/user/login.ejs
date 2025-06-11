@@ -137,6 +137,20 @@
   <!-- Login Script -->
   <script>
     document.addEventListener('DOMContentLoaded', () => {
+      // Check if user was redirected due to being blocked
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('blocked') === 'true') {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Account Blocked',
+          text: 'Your account has been blocked by the administrator. Please contact support for assistance.',
+          confirmButtonColor: '#dc3545',
+          confirmButtonText: 'Understood'
+        });
+
+        // Clean up the URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
       const loginForm = document.getElementById('loginForm');
       const fields = [
         {
