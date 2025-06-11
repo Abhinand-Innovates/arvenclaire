@@ -13,16 +13,23 @@ const fs = require("fs");
 
 const loadLanding = async (req, res) => {
   try {
-    // Only show available, non-blocked, listed products
+    // Only show available, non-blocked, listed products with listed categories
     const products = await Product.find({
       isDeleted: false,
       isBlocked: false,
       isListed: true
-    }).populate('category', 'name').sort({ createdAt: -1 }).lean();
+    }).populate({
+      path: 'category',
+      match: { isListed: true },
+      select: 'name'
+    }).sort({ createdAt: -1 }).lean();
+
+    // Filter out products with unlisted categories (populate returns null for unmatched)
+    const filteredProducts = products.filter(product => product.category !== null);
 
     // Calculate average ratings for each product
     const productsWithRatings = await Promise.all(
-      products.map(async (product) => {
+      filteredProducts.map(async (product) => {
         const reviews = await Review.find({
           product: product._id,
           isHidden: false
@@ -214,16 +221,23 @@ const loadDashboard = async (req, res) => {
   try {
     const userId = req.session.userId;
     if (userId) {
-      // Only show available, non-blocked, listed products
+      // Only show available, non-blocked, listed products with listed categories
       const products = await Product.find({
         isDeleted: false,
         isBlocked: false,
         isListed: true
-      }).populate('category', 'name').sort({ createdAt: -1 }).lean();
+      }).populate({
+        path: 'category',
+        match: { isListed: true },
+        select: 'name'
+      }).sort({ createdAt: -1 }).lean();
+
+      // Filter out products with unlisted categories (populate returns null for unmatched)
+      const filteredProducts = products.filter(product => product.category !== null);
 
       // Calculate average ratings for each product
       const productsWithRatings = await Promise.all(
-        products.map(async (product) => {
+        filteredProducts.map(async (product) => {
           const reviews = await Review.find({
             product: product._id,
             isHidden: false
@@ -709,16 +723,25 @@ const loadShop = async (req, res) => {
         sortQuery = { createdAt: -1 }; // newest first
     }
 
-    // Fetch products and total count
-    const [products, totalProducts] = await Promise.all([
+    // Fetch products with category filtering
+    const [allProducts, totalProductsBeforeFilter] = await Promise.all([
       Product.find(searchFilter)
-        .populate('category', 'name')
+        .populate({
+          path: 'category',
+          match: { isListed: true },
+          select: 'name'
+        })
         .sort(sortQuery)
-        .skip(skip)
-        .limit(limit)
         .lean(),
       Product.countDocuments(searchFilter)
     ]);
+
+    // Filter out products with unlisted categories (populate returns null for unmatched)
+    const filteredProducts = allProducts.filter(product => product.category !== null);
+
+    // Apply pagination to filtered products
+    const totalProducts = filteredProducts.length;
+    const products = filteredProducts.slice(skip, skip + limit);
 
     // Calculate average ratings for each product
     const productsWithRatings = await Promise.all(
@@ -833,17 +856,28 @@ const loadProductDetails = async (req, res) => {
     .lean();
 
     // Get related products from the same category (excluding current product)
-    const relatedProductsRaw = await Product.find({
-      category: product.category._id,
-      _id: { $ne: productId }, // Exclude current product
-      isDeleted: false,
-      isBlocked: false,
-      isListed: true
-    })
-    .populate('category', 'name')
-    .sort({ createdAt: -1 })
-    .limit(4) // Show up to 4 related products
-    .lean();
+    // Only show if the category is listed
+    let relatedProductsRaw = [];
+    if (product.category && product.category.isListed) {
+      relatedProductsRaw = await Product.find({
+        category: product.category._id,
+        _id: { $ne: productId }, // Exclude current product
+        isDeleted: false,
+        isBlocked: false,
+        isListed: true
+      })
+      .populate({
+        path: 'category',
+        match: { isListed: true },
+        select: 'name'
+      })
+      .sort({ createdAt: -1 })
+      .limit(4) // Show up to 4 related products
+      .lean();
+
+      // Filter out products with unlisted categories
+      relatedProductsRaw = relatedProductsRaw.filter(product => product.category !== null);
+    }
 
     // Calculate average ratings for related products
     const relatedProducts = await Promise.all(
@@ -1119,7 +1153,7 @@ const checkProductStatus = async (req, res) => {
   try {
     const productId = req.params.id;
 
-    const product = await Product.findById(productId);
+    const product = await Product.findById(productId).populate('category', 'isListed');
 
     if (!product) {
       return res.json({
@@ -1129,8 +1163,9 @@ const checkProductStatus = async (req, res) => {
       });
     }
 
-    // Check if product is available to users
-    const isAvailable = !product.isBlocked && !product.isDeleted && product.isListed;
+    // Check if product is available to users (including category status)
+    const isCategoryAvailable = product.category ? product.category.isListed : false;
+    const isAvailable = !product.isBlocked && !product.isDeleted && product.isListed && isCategoryAvailable;
 
     res.json({
       success: true,
@@ -1138,7 +1173,8 @@ const checkProductStatus = async (req, res) => {
       status: {
         isBlocked: product.isBlocked,
         isDeleted: product.isDeleted,
-        isListed: product.isListed
+        isListed: product.isListed,
+        categoryListed: isCategoryAvailable
       }
     });
 

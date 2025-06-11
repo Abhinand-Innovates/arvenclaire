@@ -521,11 +521,19 @@ const getProductsForUser = async (req, res) => {
             isBlocked: false,
             isListed: true
         })
-        .populate('category', 'name')
+        .populate({
+            path: 'category',
+            match: { isListed: true },
+            select: 'name'
+        })
         .sort({ createdAt: -1 })
-        .limit(12);
+        .limit(12)
+        .lean();
 
-        res.json({ success: true, products });
+        // Filter out products with unlisted categories
+        const filteredProducts = products.filter(product => product.category !== null);
+
+        res.json({ success: true, products: filteredProducts });
     } catch (error) {
         console.error('Error fetching products for user:', error);
         res.status(500).json({
