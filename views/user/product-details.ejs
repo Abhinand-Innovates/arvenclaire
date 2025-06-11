@@ -46,6 +46,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
+        overflow: hidden;
     }
 
     .main-image {
@@ -55,6 +56,35 @@
         object-fit: contain;
         border-radius: 12px;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        cursor: zoom-in;
+    }
+
+    /* Zoom Lens */
+    .zoom-lens {
+        position: absolute;
+        width: 100px;
+        height: 100px;
+        background: rgba(255, 255, 255, 0.5);
+        border: 2px solid #111827;
+        border-radius: 50%;
+        pointer-events: none;
+        display: none;
+        z-index: 100;
+    }
+
+    .zoom-result {
+        position: absolute;
+        width: 300px;
+        height: 300px;
+        background: #fff;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        display: none;
+        overflow: hidden;
+        z-index: 100;
+        top: 0;
+        left: calc(100% + 1rem);
     }
 
     .image-thumbnails {
@@ -897,10 +927,6 @@
         transform: translateY(-1px);
     }
 
-
-
-
-
     .review-actions {
         display: flex;
         gap: 1rem;
@@ -1040,6 +1066,19 @@
             padding: 0.625rem 0.75rem;
             font-size: 0.8rem;
         }
+
+        /* Zoom Adjustments */
+        .zoom-result {
+            display: none !important; /* Hide zoom result on smaller screens */
+        }
+
+        .zoom-lens {
+            display: none !important; /* Hide zoom lens on smaller screens */
+        }
+
+        .main-image {
+            cursor: default; /* Remove zoom cursor on mobile */
+        }
     }
 
     @media (max-width: 480px) {
@@ -1092,22 +1131,24 @@
             <div class="product-grid">
                 <!-- Product Images -->
                 <div class="product-images">
-                    <div class="main-image-container">
-                        <img src="/uploads/products/<%= product.mainImage %>"
+                    <div class="main-image-container" id="mainImageContainer">
+                        <img src="/Uploads/products/<%= product.mainImage %>"
                              alt="<%= product.productName %>"
                              class="main-image"
                              id="mainImage"
                              onerror="this.src='https://images.unsplash.com/photo-1523275335684-37898b6baf30?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80'">
+                        <div class="zoom-lens" id="zoomLens"></div>
+                        <div class="zoom-result" id="zoomResult"></div>
                     </div>
 
                     <div class="image-thumbnails">
-                        <div class="thumbnail active" onclick="changeMainImage('/uploads/products/<%= product.mainImage %>', this)">
-                            <img src="/uploads/products/<%= product.mainImage %>" alt="Main Image">
+                        <div class="thumbnail active" onclick="changeMainImage('/Uploads/products/<%= product.mainImage %>', this)">
+                            <img src="/Uploads/products/<%= product.mainImage %>" alt="Main Image">
                         </div>
                         <% if (product.subImages && product.subImages.length > 0) { %>
                             <% product.subImages.slice(0, 3).forEach(image => { %>
-                                <div class="thumbnail" onclick="changeMainImage('/uploads/products/<%= image %>', this)">
-                                    <img src="/uploads/products/<%= image %>" alt="Product Image">
+                                <div class="thumbnail" onclick="changeMainImage('/Uploads/products/<%= image %>', this)">
+                                    <img src="/Uploads/products/<%= image %>" alt="Product Image">
                                 </div>
                             <% }) %>
                         <% } %>
@@ -1382,7 +1423,7 @@
                                         <%= Math.round(((relatedProduct.regularPrice - relatedProduct.salePrice) / relatedProduct.regularPrice) * 100) %>% OFF
                                     </div>
                                 <% } %>
-                                <img src="/uploads/products/<%= relatedProduct.mainImage %>"
+                                <img src="/Uploads/products/<%= relatedProduct.mainImage %>"
                                      alt="<%= relatedProduct.productName %>"
                                      class="related-product-image"
                                      onerror="this.src='https://images.unsplash.com/photo-1523275335684-37898b6baf30?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80'">
@@ -1433,6 +1474,7 @@
     <i class="bi bi-arrow-up"></i>
 </button>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     let selectedRating = 0;
@@ -1447,6 +1489,10 @@
             thumb.classList.remove('active');
         });
         thumbnail.classList.add('active');
+
+        // Update zoom result background
+        const zoomResult = document.getElementById('zoomResult');
+        zoomResult.style.backgroundImage = `url(${imageSrc})`;
     }
 
     // Toggle review form
@@ -1707,7 +1753,98 @@
         }
     });
 
+    // Zoom Functionality
+    function initializeZoom() {
+        const img = document.getElementById('mainImage');
+        const lens = document.getElementById('zoomLens');
+        const result = document.getElementById('zoomResult');
+        const container = document.getElementById('mainImageContainer');
 
+        // Set initial background image for zoom result
+        result.style.backgroundImage = `url(${img.src})`;
+
+        // Zoom factor (2x zoom)
+        const zoomFactor = 2;
+
+        // Calculate the background size for the zoom result
+        function updateBackgroundSize() {
+            const imgWidth = img.naturalWidth;
+            const imgHeight = img.naturalHeight;
+            result.style.backgroundSize = `${imgWidth * zoomFactor}px ${imgHeight * zoomFactor}px`;
+        }
+
+        // Load image and update background size
+        img.addEventListener('load', updateBackgroundSize);
+        if (img.complete) {
+            updateBackgroundSize();
+        }
+
+        // Mouse move handler
+        function moveLens(e) {
+            e.preventDefault();
+
+            // Get container and image bounding rectangles
+            const containerRect = container.getBoundingClientRect();
+            const imgRect = img.getBoundingClientRect();
+
+            // Calculate cursor position relative to the image
+            let x = e.clientX - imgRect.left;
+            let y = e.clientY - imgRect.top;
+
+            // Lens size
+            const lensWidth = lens.offsetWidth;
+            const lensHeight = lens.offsetHeight;
+
+            // Keep lens within image bounds
+            x = Math.max(lensWidth / 2, Math.min(x, imgRect.width - lensWidth / 2));
+            y = Math.max(lensHeight / 2, Math.min(y, imgRect.height - lensHeight / 2));
+
+            // Position the lens
+            lens.style.left = `${x - lensWidth / 2}px`;
+            lens.style.top = `${y - lensHeight / 2}px`;
+
+            // Calculate the background position for the zoomed image
+            const bgX = (x / imgRect.width) * (img.naturalWidth * zoomFactor) - (result.offsetWidth / 2);
+            const bgY = (y / imgRect.height) * (img.naturalHeight * zoomFactor) - (result.offsetHeight / 2);
+            result.style.backgroundPosition = `-${bgX}px -${bgY}px`;
+        }
+
+        // Show lens and result on hover
+        container.addEventListener('mouseenter', () => {
+            if (window.innerWidth > 768) { // Only enable zoom on larger screens
+                lens.style.display = 'block';
+                result.style.display = 'block';
+            }
+        });
+
+        container.addEventListener('mouseleave', () => {
+            lens.style.display = 'none';
+            result.style.display = 'none';
+        });
+
+        container.addEventListener('mousemove', moveLens);
+
+        // Ensure zoom result stays within viewport
+        function adjustZoomResultPosition() {
+            const containerRect = container.getBoundingClientRect();
+            const resultWidth = result.offsetWidth;
+            const viewportWidth = window.innerWidth;
+
+            if (containerRect.right + resultWidth + 20 > viewportWidth) {
+                result.style.left = 'auto';
+                result.style.right = 'calc(100% + 1rem)';
+            } else {
+                result.style.left = 'calc(100% + 1rem)';
+                result.style.right = 'auto';
+            }
+        }
+
+        window.addEventListener('resize', adjustZoomResultPosition);
+        adjustZoomResultPosition();
+    }
+
+    // Initialize zoom when the page loads
+    document.addEventListener('DOMContentLoaded', initializeZoom);
 </script>
 
 <%- include('../partials/user/footer') %>

@@ -364,16 +364,57 @@
             padding-top: 0;
         }
         
+        /* Auto-calculated field styling */
+        .form-control[readonly] {
+            background-color: #f8f9fa !important;
+            cursor: not-allowed;
+            border-style: dashed;
+            border-color: #6c757d;
+        }
+
+        .form-group.calculated .form-control {
+            border-color: #28a745 !important;
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%) !important;
+            color: #155724 !important;
+            font-weight: 600;
+        }
+
+        .form-group.calculated .form-label::after {
+            content: " ✓";
+            color: #28a745;
+            font-weight: bold;
+            margin-left: 0.25rem;
+        }
+
+        /* Price calculation info styling */
+        .form-text {
+            font-size: 0.875rem;
+            color: #6c757d;
+            margin-top: 0.25rem;
+            font-style: italic;
+        }
+
+        /* Savings indicator animation */
+        .form-control.savings-highlight {
+            animation: savingsGlow 0.5s ease-in-out;
+        }
+
+        @keyframes savingsGlow {
+            0% { box-shadow: 0 0 5px rgba(40, 167, 69, 0.3); }
+            50% { box-shadow: 0 0 20px rgba(40, 167, 69, 0.6); }
+            100% { box-shadow: 0 0 5px rgba(40, 167, 69, 0.3); }
+        }
+
         @media (max-width: 768px) {
             .main-content {
                 margin-left: 0;
                 padding: 1rem;
             }
-            
+
             .form-row {
                 grid-template-columns: 1fr;
             }
-            
+
             .form-actions {
                 flex-direction: column;
             }
@@ -448,9 +489,10 @@
                             </div>
                             <div class="form-group">
                                 <label for="salePrice" class="form-label">Sale Price <span class="required">*</span></label>
-                                <input type="number" id="salePrice" name="salePrice" class="form-control" 
-                                       placeholder="Enter sale price" step="0.01" required>
+                                <input type="number" id="salePrice" name="salePrice" class="form-control"
+                                       placeholder="Auto-calculated from regular price and discount" step="0.01" readonly required>
                                 <div class="error-message">Please enter a valid sale price</div>
+                                <small class="form-text text-muted">This field is automatically calculated based on regular price and discount percentage</small>
                             </div>
                         </div>
                         <div class="form-row">
@@ -669,12 +711,40 @@
                 cropConfirm.addEventListener('click', handleCropConfirm);
             }
 
-            // Price validation
+            // Price calculation and validation
             const regularPrice = document.getElementById('regularPrice');
+            const productOffer = document.getElementById('productOffer');
             const salePrice = document.getElementById('salePrice');
-            if (regularPrice && salePrice) {
-                regularPrice.addEventListener('input', validatePrices);
-                salePrice.addEventListener('input', validatePrices);
+
+            if (regularPrice && productOffer && salePrice) {
+                // Calculate sale price when regular price changes
+                regularPrice.addEventListener('input', function() {
+                    calculateSalePrice();
+                });
+
+                // Calculate sale price when discount changes
+                productOffer.addEventListener('input', function() {
+                    calculateSalePrice();
+                });
+
+                // Prevent manual editing of sale price
+                salePrice.addEventListener('focus', function() {
+                    this.blur(); // Remove focus to prevent editing
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Auto-calculated Field',
+                        text: 'Sale price is automatically calculated based on regular price and discount percentage.',
+                        timer: 2000,
+                        showConfirmButton: false,
+                        toast: true,
+                        position: 'top-end'
+                    });
+                });
+
+                // Initial calculation if values exist
+                if (regularPrice.value) {
+                    calculateSalePrice();
+                }
             }
         }
 
@@ -941,6 +1011,74 @@
             }
 
             console.log(`Remaining images: ${validImages.length}`);
+        }
+
+        // Calculate sale price based on regular price and discount
+        function calculateSalePrice() {
+            const regularPriceInput = document.getElementById('regularPrice');
+            const discountInput = document.getElementById('productOffer');
+            const salePriceInput = document.getElementById('salePrice');
+
+            const regularPrice = parseFloat(regularPriceInput.value) || 0;
+            const discount = parseFloat(discountInput.value) || 0;
+
+            if (regularPrice > 0) {
+                // Calculate sale price: Regular Price - (Regular Price * Discount / 100)
+                const discountAmount = (regularPrice * discount) / 100;
+                const salePrice = regularPrice - discountAmount;
+
+                // Set the calculated sale price (rounded to 2 decimal places)
+                salePriceInput.value = salePrice.toFixed(2);
+
+                // Update visual feedback
+                updatePriceDisplay(regularPrice, discount, salePrice);
+
+                // Validate the calculated price
+                validatePrices();
+            } else {
+                salePriceInput.value = '';
+                clearPriceDisplay();
+            }
+        }
+
+        // Update price display with visual feedback
+        function updatePriceDisplay(regularPrice, discount, salePrice) {
+            const salePriceGroup = document.getElementById('salePrice').closest('.form-group');
+            const discountGroup = document.getElementById('productOffer').closest('.form-group');
+
+            // Add success styling
+            salePriceGroup.classList.remove('error');
+            salePriceGroup.classList.add('calculated');
+
+            // Show savings if discount is applied
+            if (discount > 0) {
+                const savings = regularPrice - salePrice;
+                const salePriceInput = document.getElementById('salePrice');
+                salePriceInput.style.background = 'linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%)';
+                salePriceInput.style.color = '#155724';
+                salePriceInput.style.fontWeight = '600';
+
+                // Update placeholder to show savings
+                salePriceInput.placeholder = `Saved $${savings.toFixed(2)} (${discount}% off)`;
+            } else {
+                const salePriceInput = document.getElementById('salePrice');
+                salePriceInput.style.background = '#f8f9fa';
+                salePriceInput.style.color = '#495057';
+                salePriceInput.style.fontWeight = 'normal';
+                salePriceInput.placeholder = 'Same as regular price (no discount)';
+            }
+        }
+
+        // Clear price display styling
+        function clearPriceDisplay() {
+            const salePriceInput = document.getElementById('salePrice');
+            const salePriceGroup = salePriceInput.closest('.form-group');
+
+            salePriceGroup.classList.remove('calculated', 'error');
+            salePriceInput.style.background = '';
+            salePriceInput.style.color = '';
+            salePriceInput.style.fontWeight = '';
+            salePriceInput.placeholder = 'Auto-calculated from regular price and discount';
         }
 
         // Validate prices

@@ -22,9 +22,9 @@ router.get(
 );
 
 
-// Public routes (no user context needed)
-router.get("/signup", userController.loadSignup);
-router.get("/login", userController.loadLogin);
+// Public routes (with user context for navbar)
+router.get("/signup", addUserContext, userController.loadSignup);
+router.get("/login", addUserContext, userController.loadLogin);
 router.post("/signup", userController.signup);
 
 router.get("/verify-otp", userController.loadOtpPage);
@@ -47,10 +47,9 @@ router.get("/dashboard", addUserContext, userController.loadDashboard);
 router.get("/shop", addUserContext, userController.loadShop);
 router.get("/products", addUserContext, userController.loadShop);
 router.get("/product/:id", addUserContext, checkProductAvailabilityForPage, userController.loadProductDetails);
+router.get("/profile", addUserContext, userController.loadProfile);
+router.get("/settings", addUserContext, userController.loadSettings);
 router.get("/logout", userController.logout);
-
-
-
 
 
 // Review routes

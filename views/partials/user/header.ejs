@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,306 +9,449 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="../../styles/user/user-dashboard.css">
+    <!-- SweetAlert2 CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <link rel="stylesheet" href="../../../styles/user/header.css">
+
     <style>
-        /* Custom styles for Login and Sign Up buttons */
-        .btn-custom {
-            background-color: #000000; /* Black background */
-            border: 2px solid #000000;
-            color: #ffffff; /* White text */
-            border-radius: 25px; /* Rounded corners */
-            padding: 10px 20px;
-            font-weight: 600;
-            text-decoration: none;
-            transition: all 0.3s ease;
-            display: inline-block;
-            text-align: center;
-            font-size: 14px;
-            letter-spacing: 0.5px;
+        /* Navbar Link Styling with Shaking Hover Effect */
+        .navbar-nav {
+            gap: 2rem; /* Add gap between nav items */
         }
 
-        .btn-custom:hover {
-            background-color: #ffffff; /* White background on hover */
-            color: #000000; /* Black text on hover */
-            border-color: #000000;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            text-decoration: none;
-        }
-
-        .btn-custom:focus {
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
-        }
-
-        .btn-custom:active {
-            transform: translateY(0);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-        }
-
-        /* User Dropdown Styles */
-        .user-avatar {
-            width: 40px;
-            height: 40px;
-            background: #000000;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 600;
-            font-size: 16px;
-        }
-
-        .dropdown-menu {
-            border: none;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            border-radius: 12px;
-            padding: 0;
-            min-width: 250px;
-            margin-top: 10px;
-        }
-
-        .dropdown-menu .user-info {
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            border-radius: 12px 12px 0 0;
-        }
-
-        .dropdown-menu .user-name {
-            font-weight: 600;
-            color: #2c3e50;
-        }
-
-        .dropdown-menu .user-email {
-            font-size: 0.875rem;
-        }
-
-        .dropdown-item {
-            padding: 12px 20px;
-            transition: all 0.3s ease;
-        }
-
-        .dropdown-item:hover {
-            background-color: #f8f9fa;
-            color: #2c3e50;
-        }
-
-        .dropdown-toggle::after {
-            margin-left: 8px;
-        }
-
-        /* Ensure dropdown shows properly */
-        .dropdown-menu.show {
-            display: block !important;
-        }
-
-        .dropdown {
+        .navbar-nav .nav-item {
             position: relative;
         }
 
-        /* Search box styles */
+        /* Navbar links with fast underline animation */
+        .navbar-nav .nav-link {
+            color: #000000 !important;
+            font-weight: 600;
+            font-size: 16px;
+            padding: 0.75rem 1rem !important;
+            margin: 0 0.5rem;
+            position: relative;
+            background: transparent;
+            border: none;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        /* Fast underline animation */
+        .navbar-nav .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: #000000;
+            transition: width 0.15s ease-in-out; /* Fast movement */
+        }
+
+        /* Hover effect with text shadow and fast underline */
+        .navbar-nav .nav-link:hover {
+            color: #000000 !important;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .navbar-nav .nav-link:hover::after {
+            width: 100%; /* Fast underline appears */
+        }
+
+        /* Active link styling */
+        .navbar-nav .nav-link.active {
+            color: #000000 !important;
+            background: transparent;
+        }
+
+        /* Navbar brand styling - no hover effects */
+        .navbar-brand {
+            font-weight: 700 !important;
+            font-size: 1.75rem !important;
+            color: #000000 !important;
+            letter-spacing: 1.5px;
+            text-decoration: none !important;
+        }
+
+        /* Search box styling with smart hover */
         .search-box {
-            border-radius: 25px 0 0 25px;
             border: 2px solid #e9ecef;
-            border-right: none;
+            border-radius: 25px 0 0 25px;
+            padding: 0.5rem 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .search-box:focus {
+            border-color: #000000;
+            box-shadow: 0 0 0 0.2rem rgba(0, 0, 0, 0.1);
+        }
+
+        .search-box:hover {
+            border-color: #000000;
         }
 
         .search-btn {
             background: #000000;
             border: 2px solid #000000;
-            border-left: none;
             border-radius: 0 25px 25px 0;
-            padding: 0.375rem 0.75rem;
-            color: #ffffff;
-            transition: all 0.3s ease;
+            color: white;
+            padding: 0.5rem 1rem;
+            transition: all 0.2s ease;
         }
 
         .search-btn:hover {
             background: #333333;
-            border-color: #333333;
-            color: #ffffff;
         }
 
-        .search-btn:focus {
-            background: #000000;
-            border-color: #000000;
-            color: #ffffff;
-            box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
-        }
-
-        /* Cart icon styles */
-        .cart-icon {
+        /* Cart and wishlist icons styling with shaking hover effect */
+        .cart-icon, .cart-icon + a {
+            font-size: 1.5rem;
+            color: #000000 !important;
+            padding: 0.5rem;
+            border-radius: 50%;
+            transition: all 0.2s ease;
             position: relative;
-            font-size: 1.2rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 45px;
+            height: 45px;
         }
 
-        .cart-count {
+        /* Shaking animation */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-2px); }
+            20%, 40%, 60%, 80% { transform: translateX(2px); }
+        }
+
+        .cart-icon:hover, .cart-icon + a:hover {
+            color: #000000 !important;
+            background: rgba(0, 0, 0, 0.05);
+            animation: shake 0.5s ease-in-out;
+        }
+
+        /* Account icon styling with smart hover */
+        .account-icon {
+            color: #000000;
+            font-size: 2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.05);
+            border: 2px solid transparent;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .account-icon::after {
+            content: '';
             position: absolute;
-            top: -8px;
-            right: -8px;
-            background: #dc3545;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 3px;
+            background-color: #000000;
+            transition: width 0.25s ease-in-out;
+            transform: translateX(-50%);
+            border-radius: 2px;
+        }
+
+        .account-icon:hover {
+            background: rgba(0, 0, 0, 0.1);
+            border-color: rgba(0, 0, 0, 0.1);
+        }
+
+        .account-icon:hover::after {
+            width: 70%;
+        }
+
+        /* Login/Signup button styling with smart hover */
+        .btn-custom {
+            background: #000000;
+            border: 2px solid #000000;
             color: white;
-            border-radius: 50%;
-            width: 18px;
-            height: 18px;
-            font-size: 0.75rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* Footer Styles */
-        footer {
-            background: linear-gradient(135deg, #111827 0%, #1f2937 100%);
-            color: #ffffff;
-            padding: 3rem 0 1rem 0;
-            margin-top: 5rem;
-        }
-
-        .footer-title {
-            font-size: 1.25rem;
-            font-weight: 700;
-            margin-bottom: 1.5rem;
-            color: #ffffff;
-        }
-
-        .footer-links {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        .footer-links li {
-            margin-bottom: 0.75rem;
-        }
-
-        .footer-links a {
-            color: #d1d5db;
-            text-decoration: none;
-            font-size: 0.875rem;
-            transition: all 0.3s ease;
-        }
-
-        .footer-links a:hover {
-            color: #ffffff;
-            transform: translateX(5px);
-        }
-
-        .qr-code {
-            width: 60px;
-            height: 60px;
-            background: #ffffff;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.75rem;
-            color: #111827;
             font-weight: 600;
-        }
-
-        .qr-code::after {
-            content: 'QR';
-        }
-
-        .social-icons {
-            display: flex;
-            gap: 1rem;
-        }
-
-        .social-icons a {
-            width: 40px;
-            height: 40px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #d1d5db;
-            font-size: 1.125rem;
-            transition: all 0.3s ease;
+            padding: 0.5rem 1.5rem;
+            border-radius: 25px;
             text-decoration: none;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
         }
 
-        .social-icons a:hover {
-            background: #ffffff;
-            color: #111827;
-            transform: translateY(-2px);
+        .btn-custom::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 3px;
+            background-color: #ffffff;
+            transition: width 0.25s ease-in-out;
         }
 
-        .sub-footer {
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            padding-top: 2rem;
-            margin-top: 2rem;
+        .btn-custom:hover {
+            background: #333333;
+            color: white;
+            border-color: #333333;
         }
 
-        .sub-footer p {
-            margin: 0;
-            color: #9ca3af;
-            font-size: 0.875rem;
+        .btn-custom:hover::after {
+            width: 100%;
         }
 
-        footer .form-control {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: #ffffff;
-            border-radius: 8px;
-        }
-
-        footer .form-control::placeholder {
-            color: #9ca3af;
-        }
-
-        footer .form-control:focus {
-            background: rgba(255, 255, 255, 0.15);
-            border-color: #ffffff;
-            box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.25);
-            color: #ffffff;
-        }
-
-        footer .btn-light {
-            background: #ffffff;
-            border-color: #ffffff;
-            color: #111827;
-            font-weight: 600;
-            border-radius: 8px;
-        }
-
-        footer .btn-light:hover {
-            background: #f8f9fa;
-            border-color: #f8f9fa;
-            color: #111827;
-        }
-
-        /* Responsive Footer */
-        @media (max-width: 768px) {
-            footer {
-                padding: 2rem 0 1rem 0;
-                margin-top: 3rem;
-            }
-
-            .footer-title {
-                font-size: 1.125rem;
-                margin-bottom: 1rem;
-            }
-
-            .social-icons {
-                justify-content: center;
+        /* Responsive adjustments for navbar links with fast animations */
+        @media (max-width: 991px) {
+            .navbar-nav {
+                gap: 1rem;
                 margin-top: 1rem;
             }
 
-            .qr-code {
-                width: 50px;
-                height: 50px;
+            .navbar-nav .nav-link {
+                margin: 0.25rem 0;
+                text-align: center;
+            }
+
+            /* Faster animations on mobile */
+            .navbar-nav .nav-link::after,
+            .account-icon::after,
+            .btn-custom::after {
+                transition: width 0.12s ease-in-out; /* Even faster on mobile */
+            }
+        }
+
+        @media (max-width: 768px) {
+            .navbar-nav {
+                gap: 0.5rem;
+            }
+
+            .navbar-nav .nav-link {
+                font-size: 15px;
+                padding: 0.6rem 1rem !important;
+            }
+
+            .account-icon {
+                width: 40px;
+                height: 40px;
+                font-size: 1.8rem;
+            }
+
+            /* Even faster animations on small screens */
+            .navbar-nav .nav-link::after,
+            .account-icon::after,
+            .btn-custom::after {
+                transition: width 0.1s ease-in-out; /* Super fast on small screens */
+            }
+        }
+
+        /* Solid white navbar background */
+        .navbar {
+            background-color: #ffffff !important;
+            opacity: 1 !important;
+        }
+
+        /* Custom SweetAlert2 Styling for Logout */
+        .logout-swal-popup {
+            border-radius: 16px !important;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+        }
+
+        .logout-swal-title {
+            color: #111827 !important;
+            font-weight: 600 !important;
+            font-size: 1.5rem !important;
+        }
+
+        .logout-swal-content {
+            color: #6b7280 !important;
+            font-size: 1rem !important;
+        }
+
+        .logout-swal-confirm {
+            background-color: #dc3545 !important;
+            border: none !important;
+            border-radius: 8px !important;
+            font-weight: 600 !important;
+            padding: 12px 24px !important;
+            font-size: 14px !important;
+        }
+
+        .logout-swal-confirm:hover {
+            background-color: #c82333 !important;
+            transform: translateY(-1px) !important;
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4) !important;
+        }
+
+        .logout-swal-cancel {
+            background-color: #6c757d !important;
+            border: none !important;
+            border-radius: 8px !important;
+            font-weight: 600 !important;
+            padding: 12px 24px !important;
+            font-size: 14px !important;
+        }
+
+        .logout-swal-cancel:hover {
+            background-color: #5a6268 !important;
+            transform: translateY(-1px) !important;
+            box-shadow: 0 4px 12px rgba(108, 117, 125, 0.4) !important;
+        }
+
+        /* SweetAlert2 Loading Animation */
+        .swal2-loading .swal2-styled.swal2-confirm {
+            background-color: #17a2b8 !important;
+        }
+
+        /* Custom animation for SweetAlert2 */
+        .swal2-popup.swal2-show {
+            animation: swal2-show 0.3s ease-out !important;
+        }
+
+        @keyframes swal2-show {
+            0% {
+                transform: scale(0.7);
+                opacity: 0;
+            }
+            45% {
+                transform: scale(1.05);
+                opacity: 1;
+            }
+            80% {
+                transform: scale(0.95);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        /* User Information Header Styling */
+        .user-info-header {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 12px 12px 0 0;
+            margin: 0;
+            padding: 0 !important;
+        }
+
+        .user-info-header .d-flex {
+            padding: 1rem !important;
+        }
+
+        .user-avatar {
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(135deg, #000000 0%, #333333 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 18px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            border: 2px solid #ffffff;
+        }
+
+        .user-details {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 16px;
+            color: #2c3e50;
+            margin-bottom: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .user-email {
+            font-size: 13px;
+            color: #6c757d;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-style: italic;
+        }
+
+        /* Adjust dropdown menu styling for user info */
+        .account-dropdown {
+            min-width: 280px !important;
+            padding: 0 !important;
+        }
+
+        .account-dropdown .dropdown-divider {
+            margin: 0.5rem 1rem;
+            border-color: rgba(0, 0, 0, 0.1);
+        }
+
+        .account-dropdown .dropdown-item {
+            padding: 0.75rem 1.25rem;
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+            border: none;
+            background: transparent;
+            margin: 0 0.5rem;
+            border-radius: 6px;
+        }
+
+        .account-dropdown .dropdown-item:hover {
+            background: rgba(0, 0, 0, 0.05);
+            color: #000000;
+        }
+
+        .account-dropdown .dropdown-item i {
+            font-size: 16px;
+            width: 20px;
+        }
+
+        .account-dropdown .logout-btn {
+            color: #dc3545;
+        }
+
+        .account-dropdown .logout-btn:hover {
+            background: rgba(220, 53, 69, 0.1);
+            color: #dc3545;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .account-dropdown {
+                min-width: 250px !important;
+            }
+
+            .user-name {
+                font-size: 15px;
+            }
+
+            .user-email {
+                font-size: 12px;
+            }
+
+            .user-avatar {
+                width: 40px;
+                height: 40px;
+                font-size: 16px;
             }
         }
     </style>
+
 </head>
+
 <body>
     <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-white py-3 shadow-sm sticky-top">
+    <nav class="navbar navbar-expand-lg navbar-light py-3 shadow-sm sticky-top" style="background-color: #ffffff !important;">
         <div class="container">
-            <a class="navbar-brand" href="/dashboard" style="font-family: 'Times New Roman', Times, serif;">ARVENCLAIRE</a>
+            <a class="navbar-brand" href="/dashboard"
+                style="font-family: 'Times New Roman', Times, serif;">ARVENCLAIRE</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -336,54 +480,203 @@
                 </form>
 
                 <!-- Conditional User Section -->
-                <% if (typeof user !== 'undefined' && user) { %>
-                    <% 
-                        // Handle user name for different authentication methods
+                <% if (typeof user !=='undefined' && user) { %>
+                    <%
+                        // Handle user name and email for different authentication methods
                         let userName = user.fullname || user.name || user.displayName || user.googleName || 'User';
-                        let userEmail = user.email || 'No email';
+                        let userEmail = user.email || 'No email provided';
                         let avatarLetter = userName.charAt(0).toUpperCase();
                     %>
-                    <!-- User Dropdown (Logged In) -->
-                    <div class="dropdown me-3">
-                        <a href="#" class="d-flex align-items-center text-dark text-decoration-none dropdown-toggle"
-                           id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                            <div class="user-avatar">
-                                <%= avatarLetter %>
-                            </div>
-                            <span class="ms-2 d-none d-md-inline"><%= userName %></span>
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                            <li class="user-info d-flex align-items-center p-3">
-                                <div class="user-avatar me-2">
-                                    <%= avatarLetter %>
-                                </div>
-                                <div>
-                                    <p class="user-name mb-0"><%= userName %></p>
-                                    <p class="user-email mb-0 text-muted"><%= userEmail %></p>
+                    <!-- Logged In User - Account Icon with Dropdown -->
+                    <div class="dropdown me-3" style="position: relative; z-index: 10001;">
+                        <button class="account-icon btn p-0" type="button" id="accountDropdown"
+                            data-bs-toggle="dropdown" aria-expanded="false" style="border: none; background: none;">
+                            <i class="bi bi-person-circle"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end account-dropdown" aria-labelledby="accountDropdown"
+                            style="z-index: 10002;">
+                            <!-- User Information Header -->
+                            <li class="user-info-header">
+                                <div class="d-flex align-items-center p-3">
+                                    <div class="user-avatar me-3">
+                                        <%= avatarLetter %>
+                                    </div>
+                                    <div class="user-details">
+                                        <div class="user-name"><%= userName %></div>
+                                        <div class="user-email"><%= userEmail %></div>
+                                    </div>
                                 </div>
                             </li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="/profile">Profile</a></li>
-                            <li><a class="dropdown-item" href="/orders">Orders</a></li>
-                            <li><a class="dropdown-item" href="/logout">Logout</a></li>
+                            <!-- Menu Items -->
+                            <li><a class="dropdown-item" href="/profile"><i class="bi bi-person me-2"></i>My Account</a>
+                            </li>
+                            <li><a class="dropdown-item" href="/settings"><i class="bi bi-gear me-2"></i>Settings</a>
+                            </li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><a class="dropdown-item logout-btn" href="/logout"><i
+                                        class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
                         </ul>
                     </div>
-                <% } else { %>
-                    <!-- Guest User Section (Not Logged In) -->
-                    <div class="d-flex align-items-center me-3">
-                        <a href="/login" class="btn btn-custom me-2">Login</a>
-                        <a href="/signup" class="btn btn-custom">Sign Up</a>
-                    </div>
-                <% } %>
+                    <% } else { %>
+                        <!-- Guest User - Login/Signup buttons -->
+                        <div class="d-flex align-items-center me-3">
+                            <a href="/login" class="btn btn-custom me-2">Login</a>
+                            <a href="/signup" class="btn btn-custom">Sign Up</a>
+                        </div>
+                        <% } %>
 
-                <!-- Cart and Wishlist Icons -->
-                <a href="/cart" class="me-3 text-dark cart-icon">
-                    <i class="bi bi-cart"></i>
-                    <!-- <span class="cart-count">2</span> -->
-                </a>
-                <a href="/wishlist" class="text-dark">
-                    <i class="bi bi-heart"></i>
-                </a>
+                            <!-- Cart and Wishlist Icons -->
+                            <a href="/cart" class="me-3 text-dark cart-icon">
+                                <i class="bi bi-cart"></i>
+                                <!-- <span class="cart-count">2</span> -->
+                            </a>
+                            <a href="/wishlist" class="text-dark cart-icon">
+                                <i class="bi bi-heart"></i>
+                            </a>
             </div>
         </div>
     </nav>
+
+    <!-- SweetAlert2 JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Simple navbar active link management
+            const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
+            const currentPath = window.location.pathname;
+
+            // Remove active class from all links
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+
+                // Add active class to current page link
+                const linkPath = new URL(link.href).pathname;
+                if (linkPath === currentPath ||
+                    (currentPath === '/dashboard' && linkPath === '/dashboard') ||
+                    (currentPath === '/shop' && linkPath === '/shop') ||
+                    (currentPath === '/' && linkPath === '/dashboard')) {
+                    link.classList.add('active');
+                }
+            });
+
+            // Simple click effect for nav links
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    // Remove active from all links
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    // Add active to clicked link
+                    this.classList.add('active');
+                });
+            });
+            // Account dropdown functionality - Enhanced version
+            const accountDropdown = document.getElementById('accountDropdown');
+            const dropdownMenu = document.querySelector('.account-dropdown');
+
+            if (accountDropdown && dropdownMenu) {
+                console.log('Account dropdown elements found');
+
+                // Ensure Bootstrap dropdown is initialized
+                let dropdown;
+                try {
+                    dropdown = new bootstrap.Dropdown(accountDropdown);
+                    console.log('Bootstrap dropdown initialized');
+                } catch (error) {
+                    console.log('Bootstrap not available, using manual dropdown');
+                }
+
+                // Manual dropdown toggle (works with or without Bootstrap)
+                accountDropdown.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    console.log('Account dropdown clicked');
+
+                    const isOpen = dropdownMenu.classList.contains('show');
+
+                    // Close all other dropdowns first
+                    document.querySelectorAll('.dropdown-menu.show').forEach(menu => {
+                        menu.classList.remove('show');
+                    });
+
+                    // Toggle current dropdown
+                    if (!isOpen) {
+                        dropdownMenu.classList.add('show');
+                        accountDropdown.setAttribute('aria-expanded', 'true');
+                        console.log('Dropdown opened');
+                    } else {
+                        dropdownMenu.classList.remove('show');
+                        accountDropdown.setAttribute('aria-expanded', 'false');
+                        console.log('Dropdown closed');
+                    }
+                });
+
+                // Close dropdown when clicking outside
+                document.addEventListener('click', function (e) {
+                    if (!accountDropdown.contains(e.target) && !dropdownMenu.contains(e.target)) {
+                        dropdownMenu.classList.remove('show');
+                        accountDropdown.setAttribute('aria-expanded', 'false');
+                    }
+                });
+
+                // Close dropdown when pressing Escape
+                document.addEventListener('keydown', function (e) {
+                    if (e.key === 'Escape') {
+                        dropdownMenu.classList.remove('show');
+                        accountDropdown.setAttribute('aria-expanded', 'false');
+                    }
+                });
+            } else {
+                console.log('Account dropdown elements not found');
+            }
+
+            // Logout functionality with SweetAlert2
+            const logoutBtn = document.querySelector('.logout-btn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', function (e) {
+                    e.preventDefault();
+
+                    // Show SweetAlert2 confirmation dialog
+                    Swal.fire({
+                        title: 'Are you sure?',
+                        text: 'You will be logged out of your account.',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#dc3545',
+                        cancelButtonColor: '#6c757d',
+                        confirmButtonText: 'Yes, logout!',
+                        cancelButtonText: 'Cancel',
+                        reverseButtons: true,
+                        customClass: {
+                            popup: 'logout-swal-popup',
+                            title: 'logout-swal-title',
+                            content: 'logout-swal-content',
+                            confirmButton: 'logout-swal-confirm',
+                            cancelButton: 'logout-swal-cancel'
+                        }
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Show loading state
+                            Swal.fire({
+                                title: 'Logging out...',
+                                text: 'Please wait while we log you out.',
+                                icon: 'info',
+                                allowOutsideClick: false,
+                                allowEscapeKey: false,
+                                showConfirmButton: false,
+                                didOpen: () => {
+                                    Swal.showLoading();
+                                }
+                            });
+
+                            // Redirect to logout route
+                            window.location.href = '/logout';
+                        }
+                    });
+                });
+            }
+        });
+    </script>

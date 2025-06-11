@@ -548,6 +548,46 @@ const resetPassword = async (req, res) => {
 };
 
 
+// Load profile page
+const loadProfile = async (req, res) => {
+  try {
+    const userId = req.session.userId;
+    if (!userId) {
+      return res.redirect('/login');
+    }
+
+    // For now, just render a simple profile page
+    // You can expand this later with user data
+    res.render('user/profile', {
+      title: 'My Profile',
+      user: req.user || null
+    });
+  } catch (error) {
+    console.error('Error loading profile:', error);
+    res.status(500).send('Server Error');
+  }
+};
+
+// Load settings page
+const loadSettings = async (req, res) => {
+  try {
+    const userId = req.session.userId;
+    if (!userId) {
+      return res.redirect('/login');
+    }
+
+    // For now, just render a simple settings page
+    // You can expand this later with user settings
+    res.render('user/settings', {
+      title: 'Settings',
+      user: req.user || null
+    });
+  } catch (error) {
+    console.error('Error loading settings:', error);
+    res.status(500).send('Server Error');
+  }
+};
+
 const logout = async (req,res) => {
 
   try {
@@ -1049,6 +1089,8 @@ module.exports = {
   loadNewPassword,
   resetPassword,
 
+  loadProfile,
+  loadSettings,
   logout,
   loadShop,
   loadProductDetails,

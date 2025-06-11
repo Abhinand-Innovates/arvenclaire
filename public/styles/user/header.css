@@ -1,0 +1,323 @@
+
+        /* Navbar container */
+        .navbar {
+            z-index: 1000 !important;
+        }
+
+        /* Custom button styles */
+        .navbar .btn-custom {
+            background-color: #000000;
+            border: 2px solid #000000;
+            color: #ffffff;
+            border-radius: 25px;
+            padding: 10px 20px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: inline-block;
+            text-align: center;
+            font-size: 14px;
+            letter-spacing: 0.5px;
+        }
+
+        .navbar .btn-custom:hover {
+            background-color: #ffffff;
+            color: #000000;
+            border-color: #000000;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            text-decoration: none;
+        }
+
+        .navbar .btn-custom:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar .btn-custom:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Account icon */
+        .navbar .account-icon {
+            color: #000000;
+            font-size: 2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.05);
+            border: 2px solid transparent;
+        }
+
+        .navbar .account-icon:hover {
+            background: rgba(0, 0, 0, 0.1);
+            border-color: rgba(0, 0, 0, 0.1);
+        }
+
+        /* Account dropdown */
+        .navbar .account-dropdown {
+            border: none !important;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15) !important;
+            border-radius: 12px !important;
+            padding: 0.5rem 0 !important;
+            min-width: 200px !important;
+            margin-top: 10px !important;
+            background: #ffffff !important;
+            z-index: 10002 !important;
+            position: absolute !important;
+            top: 100% !important;
+            right: 0 !important;
+        }
+
+        .navbar .account-dropdown .dropdown-item {
+            padding: 0.75rem 1.25rem;
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+            border: none;
+            background: transparent;
+        }
+
+        .navbar .account-dropdown .dropdown-item:hover {
+            background: rgba(0, 0, 0, 0.05);
+            color: #000000;
+        }
+
+        .navbar .account-dropdown .dropdown-item i {
+            font-size: 16px;
+            width: 20px;
+        }
+
+        .navbar .account-dropdown .logout-btn {
+            color: #dc3545;
+        }
+
+        .navbar .account-dropdown .logout-btn:hover {
+            background: rgba(220, 53, 69, 0.1);
+            color: #dc3545;
+        }
+
+        .navbar .account-dropdown .dropdown-divider {
+            margin: 0.5rem 0;
+            border-color: rgba(0, 0, 0, 0.1);
+        }
+
+        /* Dropdown positioning */
+        .navbar .dropdown {
+            position: relative;
+            z-index: 10001 !important;
+        }
+
+        .navbar .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            z-index: 10002 !important;
+            display: none;
+        }
+
+        .navbar .dropdown-menu.show {
+            display: block !important;
+        }
+
+        /* Search box */
+        .navbar .search-box {
+            border-radius: 25px 0 0 25px;
+            border: 2px solid #e9ecef;
+            border-right: none;
+        }
+
+        .navbar .search-btn {
+            background: #000000;
+            border: 2px solid #000000;
+            border-left: none;
+            border-radius: 0 25px 25px 0;
+            padding: 0.375rem 0.75rem;
+            color: #ffffff;
+            transition: all 0.3s;
+        }
+
+        .navbar .search-btn:hover {
+            background: #333333;
+            border-color: #333333;
+            color: #ffffff;
+        }
+
+        .navbar .search-btn:focus {
+            background: #000000;
+            border-color: #000000;
+            color: #ffffff;
+            box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Cart icon */
+        .navbar .cart-icon {
+            position: relative;
+            font-size: 1.2rem;
+        }
+
+        .navbar .cart-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #dc3545;
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Footer Styles */
+        footer {
+            background: linear-gradient(135deg, #111827 0%, #1f2937 100%);
+            color: #ffffff;
+            padding: 3rem 0 1rem 0;
+            margin-top: 5rem;
+        }
+
+        .footer-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: #ffffff;
+        }
+
+        .footer-links {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .footer-links li {
+            margin-bottom: 0.75rem;
+        }
+
+        .footer-links a {
+            color: #d1d5db;
+            text-decoration: none;
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: #ffffff;
+            transform: translateX(5px);
+        }
+
+        .qr-code {
+            width: 60px;
+            height: 60px;
+            background: #ffffff;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            color: #111827;
+            font-weight: 600;
+        }
+
+        .qr-code::after {
+            content: 'QR';
+        }
+
+        .social-icons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .social-icons a {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #d1d5db;
+            font-size: 1.125rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .social-icons a:hover {
+            background: #ffffff;
+            color: #111827;
+            transform: translateY(-2px);
+        }
+
+        .sub-footer {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 2rem;
+            margin-top: 2rem;
+        }
+
+        .sub-footer p {
+            margin: 0;
+            color: #9ca3af;
+            font-size: 0.875rem;
+        }
+
+        footer .form-control {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            border-radius: 8px;
+        }
+
+        footer .form-control::placeholder {
+            color: #9ca3af;
+        }
+
+        footer .form-control:focus {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: #ffffff;
+            box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.25);
+            color: #ffffff;
+        }
+
+        footer .btn-light {
+            background: #ffffff;
+            border-color: #ffffff;
+            color: #111827;
+            font-weight: 600;
+            border-radius: 8px;
+        }
+
+        footer .btn-light:hover {
+            background: #f8f9fa;
+            border-color: #f8f9fa;
+            color: #111827;
+        }
+
+        /* Responsive Footer */
+        @media (max-width: 768px) {
+            footer {
+                padding: 2rem 0 1rem 0;
+                margin-top: 3rem;
+            }
+
+            .footer-title {
+                font-size: 1.125rem;
+                margin-bottom: 1rem;
+            }
+
+            .social-icons {
+                justify-content: center;
+                margin-top: 1rem;
+            }
+
+            .qr-code {
+                width: 50px;
+                height: 50px;
+            }
+        }
