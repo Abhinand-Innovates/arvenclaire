@@ -57,35 +57,216 @@
         border-radius: 12px;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         cursor: zoom-in;
+        transition: transform 0.3s ease;
     }
 
-    /* Zoom Lens */
-    .zoom-lens {
-        position: absolute;
-        width: 100px;
-        height: 100px;
-        background: rgba(255, 255, 255, 0.5);
-        border: 2px solid #111827;
-        border-radius: 50%;
-        pointer-events: none;
-        display: none;
-        z-index: 100;
-    }
-
-    .zoom-result {
-        position: absolute;
-        width: 300px;
-        height: 300px;
-        background: #fff;
-        border: 2px solid #e5e7eb;
-        border-radius: 12px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        display: none;
+    /* Image Zoom Styles */
+    .image-zoom-container {
+        position: relative;
         overflow: hidden;
-        z-index: 100;
-        top: 0;
-        left: calc(100% + 1rem);
     }
+
+    .zoom-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        backdrop-filter: blur(5px);
+    }
+
+    .zoom-overlay.active {
+        display: flex;
+    }
+
+    .zoomed-image {
+        max-width: 90%;
+        max-height: 90%;
+        object-fit: contain;
+        border-radius: 12px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        cursor: zoom-out;
+        transform: scale(1);
+        transition: transform 0.3s ease;
+    }
+
+    .zoomed-image.scaled {
+        transform: scale(2);
+        cursor: move;
+    }
+
+    .zoom-controls {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        display: flex;
+        gap: 0.5rem;
+        z-index: 1001;
+    }
+
+    .zoom-btn {
+        width: 40px;
+        height: 40px;
+        background: rgba(255, 255, 255, 0.9);
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        color: #111827;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+    }
+
+    .zoom-btn:hover {
+        background: white;
+        transform: scale(1.1);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .zoom-close {
+        background: rgba(239, 68, 68, 0.9);
+        color: white;
+    }
+
+    .zoom-close:hover {
+        background: rgba(239, 68, 68, 1);
+    }
+
+    /* Magnifier Glass Effect */
+    .magnifier {
+        position: absolute;
+        width: 150px;
+        height: 150px;
+        border: 3px solid #111827;
+        border-radius: 50%;
+        background: white;
+        display: none;
+        pointer-events: none;
+        z-index: 100;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        overflow: hidden;
+    }
+
+    .magnifier-image {
+        position: absolute;
+        pointer-events: none;
+    }
+
+    /* Fullscreen Modal */
+    .fullscreen-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.95);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        backdrop-filter: blur(10px);
+    }
+
+    .fullscreen-modal.active {
+        display: flex;
+    }
+
+    .fullscreen-content {
+        position: relative;
+        max-width: 95vw;
+        max-height: 95vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .fullscreen-image {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+        border-radius: 12px;
+        cursor: zoom-in;
+        transition: transform 0.3s ease;
+    }
+
+    .fullscreen-image.zoomed {
+        cursor: move;
+        transform: scale(2);
+    }
+
+    .fullscreen-controls {
+        position: absolute;
+        top: 2rem;
+        right: 2rem;
+        display: flex;
+        gap: 1rem;
+        z-index: 10;
+    }
+
+    .fullscreen-nav {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 50px;
+        height: 50px;
+        background: rgba(255, 255, 255, 0.9);
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: #111827;
+        transition: all 0.3s ease;
+        z-index: 10;
+    }
+
+    .fullscreen-nav:hover {
+        background: white;
+        transform: translateY(-50%) scale(1.1);
+    }
+
+    .fullscreen-nav.prev {
+        left: 2rem;
+    }
+
+    .fullscreen-nav.next {
+        right: 2rem;
+    }
+
+    .fullscreen-info {
+        position: absolute;
+        bottom: 2rem;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 1rem 2rem;
+        border-radius: 25px;
+        text-align: center;
+        backdrop-filter: blur(10px);
+    }
+
+    .image-counter {
+        font-size: 0.9rem;
+        opacity: 0.8;
+        margin-bottom: 0.5rem;
+    }
+
+    .image-title {
+        font-weight: 600;
+    }
+
+
 
     .image-thumbnails {
         display: grid;
@@ -1067,18 +1248,7 @@
             font-size: 0.8rem;
         }
 
-        /* Zoom Adjustments */
-        .zoom-result {
-            display: none !important; /* Hide zoom result on smaller screens */
-        }
 
-        .zoom-lens {
-            display: none !important; /* Hide zoom lens on smaller screens */
-        }
-
-        .main-image {
-            cursor: default; /* Remove zoom cursor on mobile */
-        }
     }
 
     @media (max-width: 480px) {
@@ -1121,6 +1291,66 @@
             height: 45px;
             font-size: 1.125rem;
         }
+
+        /* Mobile Zoom Adjustments */
+        .magnifier {
+            display: none !important; /* Hide magnifier on mobile */
+        }
+
+        .main-image {
+            cursor: pointer; /* Change cursor for touch interaction */
+        }
+
+        .fullscreen-controls {
+            top: 1rem;
+            right: 1rem;
+            gap: 0.5rem;
+        }
+
+        .zoom-btn {
+            width: 35px;
+            height: 35px;
+            font-size: 1rem;
+        }
+
+        .fullscreen-nav {
+            width: 40px;
+            height: 40px;
+            font-size: 1.25rem;
+        }
+
+        .fullscreen-nav.prev {
+            left: 1rem;
+        }
+
+        .fullscreen-nav.next {
+            right: 1rem;
+        }
+
+        .fullscreen-info {
+            bottom: 1rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: 20px;
+        }
+
+        .image-counter {
+            font-size: 0.8rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .image-title {
+            font-size: 0.9rem;
+        }
+
+        .fullscreen-content {
+            max-width: 100vw;
+            max-height: 100vh;
+            padding: 1rem;
+        }
+
+        .fullscreen-image {
+            border-radius: 8px;
+        }
     }
 </style>
 
@@ -1131,14 +1361,21 @@
             <div class="product-grid">
                 <!-- Product Images -->
                 <div class="product-images">
-                    <div class="main-image-container" id="mainImageContainer">
+                    <div class="main-image-container image-zoom-container" id="mainImageContainer">
                         <img src="/Uploads/products/<%= product.mainImage %>"
                              alt="<%= product.productName %>"
                              class="main-image"
                              id="mainImage"
+                             onclick="openFullscreenZoom()"
                              onerror="this.src='https://images.unsplash.com/photo-1523275335684-37898b6baf30?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80'">
-                        <div class="zoom-lens" id="zoomLens"></div>
-                        <div class="zoom-result" id="zoomResult"></div>
+
+                        <!-- Magnifier Glass -->
+                        <div class="magnifier" id="magnifier">
+                            <img src="/Uploads/products/<%= product.mainImage %>"
+                                 alt="<%= product.productName %>"
+                                 class="magnifier-image"
+                                 id="magnifierImage">
+                        </div>
                     </div>
 
                     <div class="image-thumbnails">
@@ -1474,6 +1711,37 @@
     <i class="bi bi-arrow-up"></i>
 </button>
 
+<!-- Fullscreen Image Modal -->
+<div class="fullscreen-modal" id="fullscreenModal">
+    <div class="fullscreen-content">
+        <div class="fullscreen-controls">
+            <button class="zoom-btn" onclick="toggleFullscreenZoom()" id="fullscreenZoomBtn" title="Zoom In/Out">
+                <i class="bi bi-zoom-in"></i>
+            </button>
+            <button class="zoom-btn zoom-close" onclick="closeFullscreenZoom()" title="Close">
+                <i class="bi bi-x"></i>
+            </button>
+        </div>
+
+        <button class="fullscreen-nav prev" onclick="previousImage()" id="prevBtn" title="Previous Image">
+            <i class="bi bi-chevron-left"></i>
+        </button>
+
+        <button class="fullscreen-nav next" onclick="nextImage()" id="nextBtn" title="Next Image">
+            <i class="bi bi-chevron-right"></i>
+        </button>
+
+        <img src="" alt="" class="fullscreen-image" id="fullscreenImage">
+
+        <div class="fullscreen-info">
+            <div class="image-counter" id="imageCounter">1 / 4</div>
+            <div class="image-title"><%= product.productName %></div>
+        </div>
+    </div>
+</div>
+
+
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
@@ -1753,98 +2021,358 @@
         }
     });
 
-    // Zoom Functionality
-    function initializeZoom() {
-        const img = document.getElementById('mainImage');
-        const lens = document.getElementById('zoomLens');
-        const result = document.getElementById('zoomResult');
+
+
+    // Image Zoom Functionality
+    let currentImageIndex = 0;
+    let productImages = [];
+    let isFullscreenZoomed = false;
+    let isDragging = false;
+    let dragStart = { x: 0, y: 0 };
+    let imagePosition = { x: 0, y: 0 };
+
+    // Initialize zoom functionality
+    function initializeImageZoom() {
+        collectProductImages();
+        setupMagnifier();
+        setupKeyboardNavigation();
+    }
+
+    // Collect all product images
+    function collectProductImages() {
+        productImages = [];
+
+        // Add main image
+        const mainImage = '<%= product.mainImage %>';
+        productImages.push({
+            src: `/Uploads/products/${mainImage}`,
+            alt: '<%= product.productName %>'
+        });
+
+        // Add sub images
+        <% if (product.subImages && product.subImages.length > 0) { %>
+            <% product.subImages.forEach(image => { %>
+                productImages.push({
+                    src: '/Uploads/products/<%= image %>',
+                    alt: '<%= product.productName %>'
+                });
+            <% }) %>
+        <% } %>
+
+        // Find current image index
+        const currentSrc = document.getElementById('mainImage').src;
+        currentImageIndex = productImages.findIndex(img => currentSrc.includes(img.src.split('/').pop()));
+        if (currentImageIndex === -1) currentImageIndex = 0;
+    }
+
+    // Setup magnifier glass effect
+    function setupMagnifier() {
         const container = document.getElementById('mainImageContainer');
+        const mainImage = document.getElementById('mainImage');
+        const magnifier = document.getElementById('magnifier');
+        const magnifierImage = document.getElementById('magnifierImage');
 
-        // Set initial background image for zoom result
-        result.style.backgroundImage = `url(${img.src})`;
+        // Only enable magnifier on desktop
+        if (window.innerWidth <= 768) return;
 
-        // Zoom factor (2x zoom)
-        const zoomFactor = 2;
-
-        // Calculate the background size for the zoom result
-        function updateBackgroundSize() {
-            const imgWidth = img.naturalWidth;
-            const imgHeight = img.naturalHeight;
-            result.style.backgroundSize = `${imgWidth * zoomFactor}px ${imgHeight * zoomFactor}px`;
-        }
-
-        // Load image and update background size
-        img.addEventListener('load', updateBackgroundSize);
-        if (img.complete) {
-            updateBackgroundSize();
-        }
-
-        // Mouse move handler
-        function moveLens(e) {
-            e.preventDefault();
-
-            // Get container and image bounding rectangles
-            const containerRect = container.getBoundingClientRect();
-            const imgRect = img.getBoundingClientRect();
-
-            // Calculate cursor position relative to the image
-            let x = e.clientX - imgRect.left;
-            let y = e.clientY - imgRect.top;
-
-            // Lens size
-            const lensWidth = lens.offsetWidth;
-            const lensHeight = lens.offsetHeight;
-
-            // Keep lens within image bounds
-            x = Math.max(lensWidth / 2, Math.min(x, imgRect.width - lensWidth / 2));
-            y = Math.max(lensHeight / 2, Math.min(y, imgRect.height - lensHeight / 2));
-
-            // Position the lens
-            lens.style.left = `${x - lensWidth / 2}px`;
-            lens.style.top = `${y - lensHeight / 2}px`;
-
-            // Calculate the background position for the zoomed image
-            const bgX = (x / imgRect.width) * (img.naturalWidth * zoomFactor) - (result.offsetWidth / 2);
-            const bgY = (y / imgRect.height) * (img.naturalHeight * zoomFactor) - (result.offsetHeight / 2);
-            result.style.backgroundPosition = `-${bgX}px -${bgY}px`;
-        }
-
-        // Show lens and result on hover
         container.addEventListener('mouseenter', () => {
-            if (window.innerWidth > 768) { // Only enable zoom on larger screens
-                lens.style.display = 'block';
-                result.style.display = 'block';
-            }
+            magnifier.style.display = 'block';
         });
 
         container.addEventListener('mouseleave', () => {
-            lens.style.display = 'none';
-            result.style.display = 'none';
+            magnifier.style.display = 'none';
         });
 
-        container.addEventListener('mousemove', moveLens);
+        container.addEventListener('mousemove', (e) => {
+            const rect = container.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
 
-        // Ensure zoom result stays within viewport
-        function adjustZoomResultPosition() {
-            const containerRect = container.getBoundingClientRect();
-            const resultWidth = result.offsetWidth;
-            const viewportWidth = window.innerWidth;
+            // Position magnifier
+            const magnifierSize = 150;
+            const magnifierX = Math.min(Math.max(x - magnifierSize / 2, 0), rect.width - magnifierSize);
+            const magnifierY = Math.min(Math.max(y - magnifierSize / 2, 0), rect.height - magnifierSize);
 
-            if (containerRect.right + resultWidth + 20 > viewportWidth) {
-                result.style.left = 'auto';
-                result.style.right = 'calc(100% + 1rem)';
-            } else {
-                result.style.left = 'calc(100% + 1rem)';
-                result.style.right = 'auto';
-            }
-        }
+            magnifier.style.left = magnifierX + 'px';
+            magnifier.style.top = magnifierY + 'px';
 
-        window.addEventListener('resize', adjustZoomResultPosition);
-        adjustZoomResultPosition();
+            // Calculate magnified image position
+            const zoomFactor = 3;
+            const imgRect = mainImage.getBoundingClientRect();
+            const imgX = (x / rect.width) * mainImage.naturalWidth * zoomFactor;
+            const imgY = (y / rect.height) * mainImage.naturalHeight * zoomFactor;
+
+            magnifierImage.style.width = mainImage.naturalWidth * zoomFactor + 'px';
+            magnifierImage.style.height = mainImage.naturalHeight * zoomFactor + 'px';
+            magnifierImage.style.left = -imgX + magnifierSize / 2 + 'px';
+            magnifierImage.style.top = -imgY + magnifierSize / 2 + 'px';
+        });
     }
 
-    // Initialize zoom when the page loads
-    document.addEventListener('DOMContentLoaded', initializeZoom);
+    // Open fullscreen zoom
+    function openFullscreenZoom() {
+        const modal = document.getElementById('fullscreenModal');
+        const fullscreenImage = document.getElementById('fullscreenImage');
+
+        modal.classList.add('active');
+        fullscreenImage.src = productImages[currentImageIndex].src;
+        fullscreenImage.alt = productImages[currentImageIndex].alt;
+
+        updateImageCounter();
+        updateNavigationButtons();
+
+        // Prevent body scroll
+        document.body.style.overflow = 'hidden';
+
+        // Reset zoom state
+        isFullscreenZoomed = false;
+        imagePosition = { x: 0, y: 0 };
+        updateZoomButton();
+        resetImageTransform();
+    }
+
+    // Close fullscreen zoom
+    function closeFullscreenZoom() {
+        const modal = document.getElementById('fullscreenModal');
+        const fullscreenImage = document.getElementById('fullscreenImage');
+
+        modal.classList.remove('active');
+        fullscreenImage.classList.remove('zoomed');
+
+        // Restore body scroll
+        document.body.style.overflow = '';
+
+        // Reset zoom state
+        isFullscreenZoomed = false;
+        imagePosition = { x: 0, y: 0 };
+        resetImageTransform();
+    }
+
+    // Toggle fullscreen zoom
+    function toggleFullscreenZoom() {
+        const fullscreenImage = document.getElementById('fullscreenImage');
+        isFullscreenZoomed = !isFullscreenZoomed;
+
+        if (isFullscreenZoomed) {
+            fullscreenImage.classList.add('zoomed');
+            setupImageDragging();
+        } else {
+            fullscreenImage.classList.remove('zoomed');
+            imagePosition = { x: 0, y: 0 };
+            resetImageTransform();
+        }
+
+        updateZoomButton();
+    }
+
+    // Update zoom button icon
+    function updateZoomButton() {
+        const zoomBtn = document.getElementById('fullscreenZoomBtn');
+        const icon = zoomBtn.querySelector('i');
+
+        if (isFullscreenZoomed) {
+            icon.className = 'bi bi-zoom-out';
+            zoomBtn.title = 'Zoom Out';
+        } else {
+            icon.className = 'bi bi-zoom-in';
+            zoomBtn.title = 'Zoom In';
+        }
+    }
+
+    // Setup image dragging for zoomed state
+    function setupImageDragging() {
+        const fullscreenImage = document.getElementById('fullscreenImage');
+
+        fullscreenImage.addEventListener('mousedown', startDrag);
+        fullscreenImage.addEventListener('touchstart', startDrag);
+    }
+
+    function startDrag(e) {
+        if (!isFullscreenZoomed) return;
+
+        isDragging = true;
+        const clientX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
+        const clientY = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY;
+
+        dragStart.x = clientX - imagePosition.x;
+        dragStart.y = clientY - imagePosition.y;
+
+        document.addEventListener('mousemove', drag);
+        document.addEventListener('touchmove', drag);
+        document.addEventListener('mouseup', stopDrag);
+        document.addEventListener('touchend', stopDrag);
+
+        e.preventDefault();
+    }
+
+    function drag(e) {
+        if (!isDragging || !isFullscreenZoomed) return;
+
+        const clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
+        const clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
+
+        imagePosition.x = clientX - dragStart.x;
+        imagePosition.y = clientY - dragStart.y;
+
+        // Limit dragging bounds
+        const maxOffset = 200;
+        imagePosition.x = Math.max(-maxOffset, Math.min(maxOffset, imagePosition.x));
+        imagePosition.y = Math.max(-maxOffset, Math.min(maxOffset, imagePosition.y));
+
+        updateImageTransform();
+        e.preventDefault();
+    }
+
+    function stopDrag() {
+        isDragging = false;
+        document.removeEventListener('mousemove', drag);
+        document.removeEventListener('touchmove', drag);
+        document.removeEventListener('mouseup', stopDrag);
+        document.removeEventListener('touchend', stopDrag);
+    }
+
+    function updateImageTransform() {
+        const fullscreenImage = document.getElementById('fullscreenImage');
+        const scale = isFullscreenZoomed ? 2 : 1;
+        fullscreenImage.style.transform = `scale(${scale}) translate(${imagePosition.x}px, ${imagePosition.y}px)`;
+    }
+
+    function resetImageTransform() {
+        const fullscreenImage = document.getElementById('fullscreenImage');
+        fullscreenImage.style.transform = 'scale(1) translate(0px, 0px)';
+    }
+
+    // Navigation functions
+    function previousImage() {
+        if (currentImageIndex > 0) {
+            currentImageIndex--;
+            updateCurrentImage();
+        }
+    }
+
+    function nextImage() {
+        if (currentImageIndex < productImages.length - 1) {
+            currentImageIndex++;
+            updateCurrentImage();
+        }
+    }
+
+    function updateCurrentImage() {
+        const fullscreenImage = document.getElementById('fullscreenImage');
+        const mainImage = document.getElementById('mainImage');
+        const magnifierImage = document.getElementById('magnifierImage');
+
+        // Update fullscreen image
+        fullscreenImage.src = productImages[currentImageIndex].src;
+        fullscreenImage.alt = productImages[currentImageIndex].alt;
+
+        // Update main image
+        mainImage.src = productImages[currentImageIndex].src;
+
+        // Update magnifier image
+        magnifierImage.src = productImages[currentImageIndex].src;
+
+        // Reset zoom state
+        isFullscreenZoomed = false;
+        imagePosition = { x: 0, y: 0 };
+        fullscreenImage.classList.remove('zoomed');
+        updateZoomButton();
+        resetImageTransform();
+
+        // Update counter and navigation
+        updateImageCounter();
+        updateNavigationButtons();
+        updateActiveThumbnail();
+    }
+
+    function updateImageCounter() {
+        const counter = document.getElementById('imageCounter');
+        counter.textContent = `${currentImageIndex + 1} / ${productImages.length}`;
+    }
+
+    function updateNavigationButtons() {
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+
+        prevBtn.style.display = currentImageIndex > 0 ? 'flex' : 'none';
+        nextBtn.style.display = currentImageIndex < productImages.length - 1 ? 'flex' : 'none';
+    }
+
+    function updateActiveThumbnail() {
+        const thumbnails = document.querySelectorAll('.thumbnail');
+        thumbnails.forEach((thumb, index) => {
+            thumb.classList.remove('active');
+            if (index === currentImageIndex) {
+                thumb.classList.add('active');
+            }
+        });
+    }
+
+    // Setup keyboard navigation
+    function setupKeyboardNavigation() {
+        document.addEventListener('keydown', (e) => {
+            const modal = document.getElementById('fullscreenModal');
+            if (!modal.classList.contains('active')) return;
+
+            switch(e.key) {
+                case 'Escape':
+                    closeFullscreenZoom();
+                    break;
+                case 'ArrowLeft':
+                    previousImage();
+                    break;
+                case 'ArrowRight':
+                    nextImage();
+                    break;
+                case ' ':
+                case 'Enter':
+                    e.preventDefault();
+                    toggleFullscreenZoom();
+                    break;
+            }
+        });
+    }
+
+    // Enhanced change main image function
+    function changeMainImage(imageSrc, thumbnail) {
+        const mainImage = document.getElementById('mainImage');
+        const magnifierImage = document.getElementById('magnifierImage');
+
+        mainImage.src = imageSrc;
+        magnifierImage.src = imageSrc;
+
+        // Update active thumbnail
+        document.querySelectorAll('.thumbnail').forEach(thumb => {
+            thumb.classList.remove('active');
+        });
+        thumbnail.classList.add('active');
+
+        // Update current image index
+        currentImageIndex = productImages.findIndex(img => imageSrc.includes(img.src.split('/').pop()));
+        if (currentImageIndex === -1) currentImageIndex = 0;
+    }
+
+    // Close modal when clicking outside
+    document.addEventListener('click', function(e) {
+        const modal = document.getElementById('fullscreenModal');
+        const content = modal.querySelector('.fullscreen-content');
+
+        if (e.target === modal && !content.contains(e.target)) {
+            closeFullscreenZoom();
+        }
+    });
+
+    // Initialize zoom functionality when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        initializeImageZoom();
+
+        // Re-setup magnifier on window resize
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768) {
+                setupMagnifier();
+            }
+        });
+    });
 </script>
 
 <%- include('../partials/user/footer') %>
