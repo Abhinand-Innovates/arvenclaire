@@ -13,6 +13,7 @@ const getAdminLogin = async (req, res) => {
   }
 };
 
+
 const postAdminLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -62,6 +63,7 @@ const postAdminLogin = async (req, res) => {
   }
 };
 
+
 const getAdminDashboard = async (req, res) => {
   try {
     // Admin data is already available in res.locals.admin from middleware
@@ -76,6 +78,7 @@ const getAdminDashboard = async (req, res) => {
     });
   }
 };
+
 
 const logoutAdminDashboard = async (req, res) => {
   try {
@@ -93,6 +96,7 @@ const logoutAdminDashboard = async (req, res) => {
     res.status(500).json({ message: 'Internal Server Error' });
   }
 };
+
 
 module.exports = { 
   getAdminLogin, 

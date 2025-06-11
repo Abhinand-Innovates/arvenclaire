@@ -574,13 +574,6 @@ const loadProfile = async (req, res) => {
 
 
 
-
-
-
-
-
-
-
 // Load settings page
 const loadSettings = async (req, res) => {
   try {
@@ -1052,13 +1045,6 @@ const markHelpful = async (req, res) => {
 
 
 
-
-
-
-
-
-
-
 // Upload profile photo
 const uploadProfilePhoto = async (req, res) => {
   try {
@@ -1121,6 +1107,13 @@ const uploadProfilePhoto = async (req, res) => {
     });
   }
 };
+
+
+
+
+
+
+
 // API endpoint to check product availability status
 const checkProductStatus = async (req, res) => {
   try {
@@ -1158,6 +1151,11 @@ const checkProductStatus = async (req, res) => {
     });
   }
 };
+
+
+
+
+
 module.exports = {
   loadLanding,
   loadSignup,
