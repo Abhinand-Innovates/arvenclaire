@@ -7,6 +7,7 @@ const getCategoryController = require("../controllers/admin/get-categoryControll
 const productController = require("../controllers/admin/product-controller");
 const { productUpload, handleMulterError } = require("../config/multer-config");
 
+const isAdminAuthenticated = require('../middleware/auth-middleware');
 
 //Admin Login
 adminRoute.get("/admin-login",adminController.getAdminLogin);
@@ -14,7 +15,7 @@ adminRoute.post("/admin-login",adminController.postAdminLogin);
 
 
 //Admin Dashboard
-adminRoute.get("/admin-dashboard", adminController.getAdminDashboard);
+adminRoute.get("/admin-dashboard",isAdminAuthenticated,adminController.getAdminDashboard);
 adminRoute.get("/admin-logout", adminController.logoutAdminDashboard);
 
 
@@ -37,6 +38,7 @@ adminRoute.patch('/get-categories/:id/status', getCategoryController.toggleCateg
 adminRoute.get('/get-product', productController.getProducts);
 adminRoute.get('/add-product', productController.getAddProduct);
 adminRoute.get('/edit-product/:id', productController.getEditProduct);
+
 
 // Product API Routes
 adminRoute.post('/api/products', productUpload.array('productImages', 10), handleMulterError, productController.addProduct);
