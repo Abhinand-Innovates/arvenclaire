@@ -8,8 +8,6 @@ const Review = require("../../models/review-schema");
 
 
 
-
-
 const loadLanding = async (req, res) => {
   try {
     // Only show available, non-blocked, listed products
@@ -53,7 +51,6 @@ const loadLanding = async (req, res) => {
 
 
 
-
 const loadSignup = async (req, res) => {
   try {
     return res.render("signup");
@@ -62,8 +59,6 @@ const loadSignup = async (req, res) => {
     res.status(500).send("Server Error");
   }
 };
-
-
 
 
 
@@ -78,8 +73,6 @@ const loadLogin = async (req, res) => {
 
 
 
-
-
 const loadOtpPage = async (req, res) => {
   try {
     return res.render("verify-otp");
@@ -88,7 +81,6 @@ const loadOtpPage = async (req, res) => {
     res.status(500).send("Internal server error");
   }
 };
-
 
 
 
@@ -127,7 +119,6 @@ const verifyOtp = async (req, res) => {
 
 
 
-
 const resendOtp = async (req, res) => {
   try {
     const { email } = req.session.userData;
@@ -158,7 +149,6 @@ const resendOtp = async (req, res) => {
     res.status(500).send("Internal server error");
   }
 };
-
 
 
 
@@ -214,6 +204,8 @@ const signup = async (req, res) => {
     res.status(500).send("Internal server error");
   }
 };
+
+
 
 const loadDashboard = async (req, res) => {
   try {
@@ -351,6 +343,7 @@ const loadForgotVerifyOtp = async (req, res) => {
 };
 
 
+
 // Send OTP for Forgot Password
 const verifyForgotPasswordEmail = async (req, res) => {
   try {
@@ -398,6 +391,7 @@ const verifyForgotPasswordEmail = async (req, res) => {
 };
 
 
+
 const resendForgotPasswordOtp = async (req, res) => {
   try {
 
@@ -433,8 +427,6 @@ const resendForgotPasswordOtp = async (req, res) => {
     res.status(500).send("Internal server error");
   }
 };
-
-
 
 
 
@@ -486,6 +478,7 @@ const verifyForgotPasswordOtp = (req, res) => {
 };
 
 
+
 const loadNewPassword = async (req, res) => {
   try {
     return res.render("new-password");
@@ -494,6 +487,7 @@ const loadNewPassword = async (req, res) => {
     res.status(500).send("Internal server error");
   }
 };
+
 
 
 
@@ -568,6 +562,17 @@ const loadProfile = async (req, res) => {
   }
 };
 
+
+
+
+
+
+
+
+
+
+
+
 // Load settings page
 const loadSettings = async (req, res) => {
   try {
@@ -587,6 +592,9 @@ const loadSettings = async (req, res) => {
     res.status(500).send('Server Error');
   }
 };
+
+
+
 
 const logout = async (req,res) => {
 
@@ -626,6 +634,9 @@ const logout = async (req,res) => {
     })
   }
 }
+
+
+
 // Load shop page with filtering
 const loadShop = async (req, res) => {
   try {
@@ -797,6 +808,9 @@ const loadShop = async (req, res) => {
   }
 };
 
+
+
+
 // Load product details page
 const loadProductDetails = async (req, res) => {
   try {
@@ -897,6 +911,8 @@ const loadProductDetails = async (req, res) => {
   }
 };
 
+
+
 // Submit Review
 const submitReview = async (req, res) => {
   try {
@@ -973,6 +989,8 @@ const submitReview = async (req, res) => {
   }
 };
 
+
+
 // Mark Review as Helpful
 const markHelpful = async (req, res) => {
   try {
@@ -1022,6 +1040,17 @@ const markHelpful = async (req, res) => {
     });
   }
 };
+
+
+
+
+
+
+
+
+
+
+
 // API endpoint to check product availability status
 const checkProductStatus = async (req, res) => {
   try {
@@ -1059,16 +1088,6 @@ const checkProductStatus = async (req, res) => {
     });
   }
 };
-
-
-
-
-
-
-
-
-
-
 module.exports = {
   loadLanding,
   loadSignup,

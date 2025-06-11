@@ -1979,29 +1979,106 @@
         }
     }
 
-    // Check product availability periodically (every 30 seconds)
-    setInterval(async function() {
+    // Enhanced product availability checking
+    let availabilityCheckInterval;
+    let lastAvailabilityCheck = Date.now();
+
+    // Check product availability with smart intervals
+    function startAvailabilityMonitoring() {
+        // Initial check
+        checkProductAvailability();
+
+        // Set up periodic checking (every 2 minutes for better performance)
+        availabilityCheckInterval = setInterval(checkProductAvailability, 120000);
+
+        // Also check when user becomes active after being away
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden && Date.now() - lastAvailabilityCheck > 60000) {
+                checkProductAvailability();
+            }
+        });
+    }
+
+    async function checkProductAvailability() {
         try {
+            lastAvailabilityCheck = Date.now();
             const response = await fetch(`/api/product-status/<%= product._id %>`);
             const result = await response.json();
 
             if (!result.success || !result.available) {
+                // Clear the interval to stop further checks
+                if (availabilityCheckInterval) {
+                    clearInterval(availabilityCheckInterval);
+                }
+
+                // Show user-friendly message based on the specific reason
+                let title = 'Product No Longer Available';
+                let text = 'This product is no longer available. You will be redirected to the shop page.';
+
+                if (result.code === 'PRODUCT_DELETED') {
+                    title = 'Product Removed';
+                    text = 'This product has been removed from our catalog.';
+                } else if (result.code === 'PRODUCT_BLOCKED') {
+                    title = 'Product Unavailable';
+                    text = 'This product is currently unavailable.';
+                } else if (result.code === 'CATEGORY_UNAVAILABLE') {
+                    title = 'Category Unavailable';
+                    text = 'This product category is currently unavailable.';
+                }
+
                 Swal.fire({
                     icon: 'warning',
-                    title: 'Product No Longer Available',
-                    text: 'This product has been removed or is no longer available. You will be redirected to the shop page.',
+                    title: title,
+                    text: text,
                     confirmButtonColor: '#111827',
                     allowOutsideClick: false,
                     allowEscapeKey: false
                 }).then(() => {
                     window.location.href = '/shop';
                 });
+            } else {
+                // Update stock information if available
+                if (result.status && result.status.stock !== undefined) {
+                    updateStockDisplay(result.status.stock, result.status.isInStock);
+                }
             }
         } catch (error) {
             // Silently handle errors - don't disturb user experience
             console.log('Product availability check failed:', error);
         }
-    }, 30000); // Check every 30 seconds
+    }
+
+    // Update stock display dynamically
+    function updateStockDisplay(stock, isInStock) {
+        const stockElements = document.querySelectorAll('.stock-quantity');
+        const addToCartBtn = document.querySelector('.btn-primary');
+
+        stockElements.forEach(element => {
+            if (stock === 0) {
+                element.textContent = 'Currently unavailable';
+            } else if (stock <= 5) {
+                element.textContent = `Only ${stock} left in stock`;
+            } else {
+                element.textContent = `${stock} units available`;
+            }
+        });
+
+        // Update add to cart button
+        if (addToCartBtn && !isInStock) {
+            addToCartBtn.disabled = true;
+            addToCartBtn.innerHTML = '<i class="bi bi-cart-x"></i> Out of Stock';
+        }
+    }
+
+    // Start monitoring when page loads
+    startAvailabilityMonitoring();
+
+    // Clean up interval when page unloads
+    window.addEventListener('beforeunload', function() {
+        if (availabilityCheckInterval) {
+            clearInterval(availabilityCheckInterval);
+        }
+    });
 
     // Scroll to Top Functionality
     function scrollToTop() {
