@@ -1,30 +1,31 @@
 const User = require("../models/user-schema");
 
 
-//Checks user status
+
+//Handle google user and normal user 
 const checkUserBlocked = async (req, res, next) => {
   try {
-    // Skip check if user is not logged in
-    if (!req.session.userId) {
-      return next();
-    }
+ 
+    const userId = req.session.userId || req.session.googleUserId;
 
-    // Get user from database
-    const user = await User.findById(req.session.userId);
+    // If no session found, move to next
+    if (!userId) 
+      return next();
+
+    // Fetch user from DB
+    const user = await User.findById(userId);
 
     // If user doesn't exist or is blocked
     if (!user || user.isBlocked) {
-      // Clear the session
+      // Destroy session
       req.session.destroy((err) => {
-        if (err) {
-          console.error('Error destroying session:', err);
-        }
+        if (err) console.error('Error destroying session:', err);
       });
 
-      // Clear any cookies
+      // Clear session cookie
       res.clearCookie('connect.sid');
 
-      // If it's an AJAX request, return JSON response
+      // AJAX request handling
       if (req.xhr || req.headers.accept.indexOf('json') > -1) {
         return res.status(401).json({
           success: false,
@@ -34,25 +35,22 @@ const checkUserBlocked = async (req, res, next) => {
         });
       }
 
-      // For regular requests, redirect to login with message
-      req.flash = req.flash || function() {}; // Fallback if flash is not available
+      // Regular redirect
+      req.flash = req.flash || function() {}; // fallback
       return res.redirect('/login?blocked=true');
     }
 
-    // User is valid, continue
-    next();
+    // User valid
+    return next();
 
   } catch (error) {
     console.error('Error checking user blocked status:', error);
-    
-    // Clear session on error
+
+    // Destroy session on error
     req.session.destroy((err) => {
-      if (err) {
-        console.error('Error destroying session:', err);
-      }
+      if (err) console.error('Error destroying session:', err);
     });
 
-    // If it's an AJAX request
     if (req.xhr || req.headers.accept.indexOf('json') > -1) {
       return res.status(500).json({
         success: false,
@@ -61,10 +59,10 @@ const checkUserBlocked = async (req, res, next) => {
       });
     }
 
-    // Redirect to login
-    res.redirect('/login');
+    return res.redirect('/login');
   }
 };
+
 
 
 //Makes that user data available in all views (EJS pages)
@@ -95,5 +93,5 @@ const addUserContext = async (req, res, next) => {
 
 module.exports = { 
   checkUserBlocked, 
-  addUserContext 
+  addUserContext,
 };
