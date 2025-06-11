@@ -1,5 +1,7 @@
 
-const User = require('../models/user-schema'); // Adjust path based on your project
+const User = require('../models/user-schema');
+
+
 
 const isAdminAuthenticated = async (req, res, next) => {
   try {
