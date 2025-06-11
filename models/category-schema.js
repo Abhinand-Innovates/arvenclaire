@@ -16,12 +16,22 @@ const categorySchema = new Schema({
   isListed: {
     type: Boolean,
     default: true
+  },
+  isDeleted: {
+    type: Boolean,
+    default: false
   }
 }, { timestamps: true });
 
 categorySchema.pre('save', async function(next) {
   if (this.isModified('name')) {
-    const exists = await this.constructor.findOne({ name: new RegExp(`^${this.name}$`, 'i') });
+    const exists = await this.constructor.findOne({
+      name: new RegExp(`^${this.name}$`, 'i'),
+      $or: [
+        { isDeleted: false },
+        { isDeleted: { $exists: false } }
+      ]
+    });
     if (exists && exists._id.toString() !== this._id.toString()) {
       const err = new Error('A category with this name already exists.');
       err.statusCode = 409;

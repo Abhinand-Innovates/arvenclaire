@@ -14,10 +14,16 @@ const renderCategoryManagementPage = async (req, res) => {
 };
 
 
-// API: Get all categories
+// API: Get all categories (excluding soft deleted)
 const getAllCategoriesAPI = async (req, res) => {
     try {
-        const categories = await Category.find().sort({ createdAt: -1 }); // Sort by newest
+        // Use $ne: true to handle both false and undefined/null values (for existing categories)
+        const categories = await Category.find({
+            $or: [
+                { isDeleted: false },
+                { isDeleted: { $exists: false } }
+            ]
+        }).sort({ createdAt: -1 }); // Sort by newest, exclude deleted
         // Map to match frontend expected structure if needed, especially for 'date'
         const formattedCategories = categories.map(cat => ({
             _id: cat._id,
@@ -82,9 +88,16 @@ const updateCategoryAPI = async (req, res) => {
             return res.status(400).json({ message: 'Category name is required.' });
         }
         
-        // Check for name uniqueness if name is being changed
+        // Check for name uniqueness if name is being changed (only among non-deleted categories)
         if (name) {
-            const existingCategory = await Category.findOne({ name: new RegExp(`^${name}$`, 'i'), _id: { $ne: id } });
+            const existingCategory = await Category.findOne({
+                name: new RegExp(`^${name}$`, 'i'),
+                _id: { $ne: id },
+                $or: [
+                    { isDeleted: false },
+                    { isDeleted: { $exists: false } }
+                ]
+            });
             if (existingCategory) {
                 return res.status(409).json({ message: 'Another category with this name already exists.' });
             }
@@ -154,37 +167,51 @@ const toggleCategoryStatusAPI = async (req, res) => {
 };
 
 
+// API: Soft delete a category
+const deleteCategoryAPI = async (req, res) => {
+    try {
+        const { id } = req.params;
 
-// API: Delete a category
-// const deleteCategoryAPI = async (req, res) => {
-//     try {
-//         const { id } = req.params;
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ message: 'Invalid category ID.' });
+        }
 
-//         if (!mongoose.Types.ObjectId.isValid(id)) {
-//             return res.status(400).json({ message: 'Invalid category ID.' });
-//         }
+        const category = await Category.findById(id);
+        if (!category) {
+            return res.status(404).json({ message: 'Category not found.' });
+        }
 
-//         const deletedCategory = await Category.findByIdAndDelete(id);
+        if (category.isDeleted) {
+            return res.status(400).json({ message: 'Category is already deleted.' });
+        }
 
-//         if (!deletedCategory) {
-//             return res.status(404).json({ message: 'Category not found.' });
-//         }
-//         res.status(200).json({ message: `Category "${deletedCategory.name}" deleted successfully.` });
-//     } catch (error) {
-//         console.error("Error deleting category:", error);
-//         res.status(500).json({ message: 'Error deleting category', error: error.message });
-//     }
-// };
+        // Soft delete the category
+        category.isDeleted = true;
+        category.isListed = false; // Also unlist when deleting
+        await category.save();
+
+        res.status(200).json({
+            message: `Category "${category.name}" has been deleted successfully.`,
+            category: {
+                _id: category._id,
+                name: category.name,
+                isDeleted: category.isDeleted
+            }
+        });
+    } catch (error) {
+        console.error("Error deleting category:", error);
+        res.status(500).json({ message: 'Error deleting category', error: error.message });
+    }
+};
+
 
 
 
 module.exports = {
-
     renderCategoryManagementPage,
     getAllCategoriesAPI,
     addCategoryAPI,
     updateCategoryAPI,
     toggleCategoryStatusAPI,
-    // deleteCategoryAPI,
-
+    deleteCategoryAPI
 };

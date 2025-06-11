@@ -33,6 +33,7 @@ adminRoute.get('/get-categories', isAdminAuthenticated, noCache, getCategoryCont
 adminRoute.post('/get-categories', isAdminAuthenticated, noCache, getCategoryController.addCategoryAPI);
 adminRoute.put('/get-categories/:id', isAdminAuthenticated, noCache, getCategoryController.updateCategoryAPI);
 adminRoute.patch('/get-categories/:id/status', isAdminAuthenticated, noCache, getCategoryController.toggleCategoryStatusAPI);
+adminRoute.delete('/get-categories/:id', isAdminAuthenticated, noCache, getCategoryController.deleteCategoryAPI);
 
 // Product Management Routes
 adminRoute.get('/get-product', isAdminAuthenticated, noCache, productController.getProducts);

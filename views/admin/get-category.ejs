@@ -157,8 +157,8 @@
             if (searchTerm === '') {
                 filteredCategories = [...categories];
             } else {
-                filteredCategories = categories.filter(category => 
-                    category.name.toLowerCase().includes(searchTerm) || 
+                filteredCategories = categories.filter(category =>
+                    category.name.toLowerCase().includes(searchTerm) ||
                     (category.description && category.description.toLowerCase().includes(searchTerm))
                 );
             }
@@ -186,7 +186,7 @@
         function renderTable() {
             const tbody = document.getElementById('categoryTableBody');
             const paginationInfo = document.getElementById('paginationInfo');
-            
+
             if (!tbody || !paginationInfo) {
                 console.error('Table body or pagination info element not found.');
                 return;
@@ -206,7 +206,7 @@
                 paginationInfo.textContent = 'Showing 0 to 0 of 0 entries';
                 return;
             }
-            
+
             tbody.innerHTML = filteredCategories.map((category, index) => `
                 <tr>
                     <td>${index + 1}</td>
@@ -414,37 +414,92 @@
             }
         }
 
-        // Delete category function
+        // Delete category function (Soft Delete)
         async function deleteCategory(categoryId) {
             const category = categories.find(c => c._id === categoryId);
-            if (!category) return;
+            if (!category) {
+                Swal.fire('Error!', 'Category not found.', 'error');
+                return;
+            }
 
             Swal.fire({
-                title: 'Are you sure?',
-                text: `You are about to delete the category "${category.name}". This action cannot be undone!`,
+                title: 'Delete Category?',
+                html: `
+                    <div class="text-start">
+                        <p>You are about to delete the category <strong>"${category.name}"</strong>.</p>
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Note:</strong> This is a soft delete. The category will be hidden but can be restored later if needed.
+                        </div>
+                        <p class="text-muted">Products in this category will become inaccessible to users until the category is restored.</p>
+                    </div>
+                `,
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#ef4444',
                 cancelButtonColor: '#6b7280',
                 confirmButtonText: '<i class="fas fa-trash me-2"></i>Yes, delete it!',
-                cancelButtonText: '<i class="fas fa-times me-2"></i>Cancel'
+                cancelButtonText: '<i class="fas fa-times me-2"></i>Cancel',
+                width: '500px'
             }).then(async (result) => {
                 if (result.isConfirmed) {
                     try {
+                        // Show loading state
+                        Swal.fire({
+                            title: 'Deleting Category...',
+                            text: 'Please wait while we process your request.',
+                            icon: 'info',
+                            allowOutsideClick: false,
+                            allowEscapeKey: false,
+                            showConfirmButton: false,
+                            didOpen: () => {
+                                Swal.showLoading();
+                            }
+                        });
+
                         const response = await fetch(`/get-categories/${categoryId}`, {
                             method: 'DELETE',
                             headers: { 'Content-Type': 'application/json' }
                         });
+
                         if (!response.ok) {
                             const errorData = await response.json();
                             throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
                         }
+
+                        const result = await response.json();
+
+                        // Remove the category from local arrays (since it's soft deleted, it won't appear in future fetches)
                         categories = categories.filter(c => c._id !== categoryId);
                         applySearchFilter();
-                        Swal.fire('Deleted!', `Category "${category.name}" has been deleted.`, 'success');
+
+                        // Show success message
+                        Swal.fire({
+                            title: 'Deleted Successfully!',
+                            html: `
+                                <div class="text-start">
+                                    <p>${result.message}</p>
+                                    <div class="alert alert-success">
+                                        <i class="fas fa-check-circle me-2"></i>
+                                        The category has been soft deleted and is no longer visible to users.
+                                    </div>
+                                    <p class="text-muted">You can restore this category later if needed.</p>
+                                </div>
+                            `,
+                            icon: 'success',
+                            confirmButtonText: 'OK',
+                            confirmButtonColor: '#10b981'
+                        });
+
                     } catch (error) {
                         console.error('Error deleting category:', error);
-                        Swal.fire('Error!', `Could not delete category: ${error.message}`, 'error');
+                        Swal.fire({
+                            title: 'Delete Failed!',
+                            text: `Could not delete category: ${error.message}`,
+                            icon: 'error',
+                            confirmButtonText: 'OK',
+                            confirmButtonColor: '#ef4444'
+                        });
                     }
                 }
             });
