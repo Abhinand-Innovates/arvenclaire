@@ -2,10 +2,16 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
-// Ensure upload directory exists
+// Ensure upload directories exist
 const uploadDir = path.join(__dirname, '../public/uploads/products');
+const profileUploadDir = path.join(__dirname, '../public/uploads/profiles');
+
 if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+if (!fs.existsSync(profileUploadDir)) {
+    fs.mkdirSync(profileUploadDir, { recursive: true });
 }
 
 // Configure memory storage for cropped images
@@ -30,6 +36,16 @@ const productUpload = multer({
     limits: {
         fileSize: 10 * 1024 * 1024, // 10MB limit per file
         files: 10 // Maximum 10 files
+    },
+    fileFilter: fileFilter
+});
+
+// Configure multer for profile photos
+const profileUpload = multer({
+    storage: storage,
+    limits: {
+        fileSize: 5 * 1024 * 1024, // 5MB limit for profile photos
+        files: 1 // Only one profile photo
     },
     fileFilter: fileFilter
 });
@@ -69,6 +85,8 @@ const handleMulterError = (error, req, res, next) => {
 
 module.exports = {
     productUpload,
+    profileUpload,
     handleMulterError,
-    uploadDir
+    uploadDir,
+    profileUploadDir
 };

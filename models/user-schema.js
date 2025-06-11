@@ -28,6 +28,10 @@ const userSchema = new Schema({
   password: {
     type: String,
   },
+  profilePhoto: {
+    type: String,
+    default: null,
+  },
   isBlocked: {
     type: Boolean,
     default: false,

@@ -4,6 +4,7 @@ const passport = require("passport");
 const userController = require("../controllers/user/user-controller");
 const addUserContext = require("../middleware/user-context");
 const { checkProductAvailabilityForPage } = require("../middleware/product-availability");
+const { profileUpload, handleMulterError } = require("../config/multer-config");
 
 
 
@@ -55,6 +56,10 @@ router.get("/logout", userController.logout);
 // Review routes
 router.post("/submit-review", userController.submitReview);
 router.post("/mark-helpful", userController.markHelpful);
+
+// Profile photo upload route
+router.post("/upload-profile-photo", profileUpload.single('profilePhoto'), handleMulterError, userController.uploadProfilePhoto);
+
 // API routes
 router.get("/api/product-status/:id", userController.checkProductStatus);
 

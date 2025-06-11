@@ -5,6 +5,9 @@ const bcrypt = require("bcrypt");
 const Product = require("../../models/product-schema");
 const Category = require("../../models/category-schema");
 const Review = require("../../models/review-schema");
+const sharp = require("sharp");
+const path = require("path");
+const fs = require("fs");
 
 
 
@@ -550,11 +553,16 @@ const loadProfile = async (req, res) => {
       return res.redirect('/login');
     }
 
-    // For now, just render a simple profile page
-    // You can expand this later with user data
-    res.render('user/profile', {
+    // Get user data
+    const user = await User.findById(userId).select('-password').lean();
+
+    if (!user) {
+      return res.redirect('/login');
+    }
+
+    res.render('profile', {
       title: 'My Profile',
-      user: req.user || null
+      user: user
     });
   } catch (error) {
     console.error('Error loading profile:', error);
@@ -1051,6 +1059,68 @@ const markHelpful = async (req, res) => {
 
 
 
+// Upload profile photo
+const uploadProfilePhoto = async (req, res) => {
+  try {
+    const userId = req.session.userId;
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: 'Please login to upload profile photo'
+      });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: 'No image file provided'
+      });
+    }
+
+    // Generate unique filename
+    const timestamp = Date.now();
+    const filename = `profile_${userId}_${timestamp}.jpg`;
+    const filepath = path.join(__dirname, '../../public/uploads/profiles', filename);
+
+    // Process and save the image using Sharp
+    await sharp(req.file.buffer)
+      .resize(200, 200, {
+        fit: 'cover',
+        position: 'center'
+      })
+      .jpeg({ quality: 90 })
+      .toFile(filepath);
+
+    // Get current user to check for existing profile photo
+    const currentUser = await User.findById(userId);
+
+    // Delete old profile photo if it exists
+    if (currentUser.profilePhoto) {
+      const oldPhotoPath = path.join(__dirname, '../../public/uploads/profiles', currentUser.profilePhoto);
+      if (fs.existsSync(oldPhotoPath)) {
+        fs.unlinkSync(oldPhotoPath);
+      }
+    }
+
+    // Update user with new profile photo
+    await User.findByIdAndUpdate(userId, {
+      profilePhoto: filename
+    });
+
+    res.json({
+      success: true,
+      message: 'Profile photo updated successfully',
+      filename: filename
+    });
+
+  } catch (error) {
+    console.error('Error uploading profile photo:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to upload profile photo'
+    });
+  }
+};
 // API endpoint to check product availability status
 const checkProductStatus = async (req, res) => {
   try {
@@ -1109,6 +1179,7 @@ module.exports = {
   resetPassword,
 
   loadProfile,
+  uploadProfilePhoto,
   loadSettings,
   logout,
   loadShop,
