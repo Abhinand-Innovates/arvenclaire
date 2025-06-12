@@ -603,7 +603,9 @@
                                     <div class="product-brand"><%= product.brand %></div>
                                 </td>
                                 <td>
-                                    <span class="product-category"><%= product.category.name %></span>
+                                    <span class="product-category">
+                                        <%= product.category ? product.category.name : 'Category Deleted' %>
+                                    </span>
                                 </td>
                                 <td>
                                     <div class="price-info">

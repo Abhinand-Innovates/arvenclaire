@@ -72,15 +72,33 @@ const getProducts = async (req, res) => {
         }
 
         // Fetch products and categories in parallel
-        const [products, totalProducts, categories] = await Promise.all([
+        const [allProducts, totalProducts, categories] = await Promise.all([
             Product.find(searchQuery)
-                .populate('category', 'name')
+                .populate({
+                    path: 'category',
+                    match: {
+                        $or: [
+                            { isDeleted: false },
+                            { isDeleted: { $exists: false } }
+                        ]
+                    },
+                    select: 'name'
+                })
                 .sort({ createdAt: -1 })
                 .skip(skip)
                 .limit(limit),
             Product.countDocuments(searchQuery),
-            Category.find({ isListed: true }).sort({ name: 1 })
+            Category.find({
+                isListed: true,
+                $or: [
+                    { isDeleted: false },
+                    { isDeleted: { $exists: false } }
+                ]
+            }).sort({ name: 1 })
         ]);
+
+        // Filter out products with null categories (deleted categories)
+        const products = allProducts.filter(product => product.category !== null);
 
         // Calculate pagination data
         const totalPages = Math.ceil(totalProducts / limit);
@@ -155,7 +173,13 @@ const getProducts = async (req, res) => {
 // Render add product page
 const getAddProduct = async (req, res) => {
     try {
-        const categories = await Category.find({ isListed: true });
+        const categories = await Category.find({
+            isListed: true,
+            $or: [
+                { isDeleted: false },
+                { isDeleted: { $exists: false } }
+            ]
+        });
         res.render('new-product', { categories, product: null });
     } catch (error) {
         console.error('Error loading add product page:', error);
@@ -168,7 +192,13 @@ const getEditProduct = async (req, res) => {
     try {
         const productId = req.params.id;
         const product = await Product.findById(productId).populate('category');
-        const categories = await Category.find({ isListed: true });
+        const categories = await Category.find({
+            isListed: true,
+            $or: [
+                { isDeleted: false },
+                { isDeleted: { $exists: false } }
+            ]
+        });
         
         if (!product || product.isDeleted) {
             return res.status(404).send('Product not found');

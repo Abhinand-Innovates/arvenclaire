@@ -5,7 +5,7 @@ const userController = require("../controllers/user/user-auth-controller");
 const { checkProductAvailabilityForPage } = require("../middleware/product-availability-middleware");
 const { profileUpload, handleMulterError } = require("../config/multer-config");
 
-const { isUserAuthenticated, noCache } = require("../middleware/auth-middleware");
+const { isUserAuthenticated, preventCache } = require("../middleware/auth-middleware");
 const { addUserContext, checkUserBlocked } = require("../middleware/user-middleware");
 
 
@@ -45,23 +45,23 @@ router.post("/reset-password", userController.resetPassword);
 
 // Routes that need user context for dropdown (apply middleware)
 router.get("/", addUserContext, checkUserBlocked, userController.loadLanding);
-router.get("/dashboard", isUserAuthenticated, noCache, addUserContext, checkUserBlocked, userController.loadDashboard);
+router.get("/dashboard", isUserAuthenticated, preventCache, addUserContext, checkUserBlocked, userController.loadDashboard);
 router.get("/shop", addUserContext, checkUserBlocked, userController.loadShop);
 router.get("/products", addUserContext, checkUserBlocked, userController.loadShop);
 router.get("/product/:id", addUserContext, checkUserBlocked, checkProductAvailabilityForPage, userController.loadProductDetails);
-router.get("/profile", isUserAuthenticated, noCache, addUserContext, checkUserBlocked, userController.loadProfile); 
-router.get("/settings", isUserAuthenticated, noCache, addUserContext, checkUserBlocked, userController.loadSettings);
-router.get("/logout", isUserAuthenticated, noCache, checkUserBlocked, userController.logout);
+router.get("/profile", isUserAuthenticated, preventCache, addUserContext, checkUserBlocked, userController.loadProfile); 
+router.get("/settings", isUserAuthenticated, preventCache, addUserContext, checkUserBlocked, userController.loadSettings);
+router.get("/logout", isUserAuthenticated, preventCache, checkUserBlocked, userController.logout);
 
 // Review routes
-router.post("/submit-review", isUserAuthenticated, noCache, checkUserBlocked, userController.submitReview);
-router.post("/mark-helpful", isUserAuthenticated, noCache, checkUserBlocked, userController.markHelpful);
+router.post("/submit-review", isUserAuthenticated, preventCache, checkUserBlocked, userController.submitReview);
+router.post("/mark-helpful", isUserAuthenticated, preventCache, checkUserBlocked, userController.markHelpful);
 
 // Profile photo upload route
-router.post("/upload-profile-photo", isUserAuthenticated, noCache, checkUserBlocked, profileUpload.single('profilePhoto'), handleMulterError, userController.uploadProfilePhoto);
+router.post("/upload-profile-photo", isUserAuthenticated, preventCache, checkUserBlocked, profileUpload.single('profilePhoto'), handleMulterError, userController.uploadProfilePhoto);
 
 // API routes
-router.get("/api/product-status/:id", isUserAuthenticated, noCache, checkUserBlocked, userController.checkProductStatus);
+router.get("/api/product-status/:id", isUserAuthenticated, preventCache, checkUserBlocked, userController.checkProductStatus);
 
 
 

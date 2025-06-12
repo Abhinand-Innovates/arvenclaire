@@ -482,7 +482,6 @@
                 <!-- Conditional User Section -->
                 <% if (typeof user !=='undefined' && user) { %>
                     <%
-                        // Handle user name and email for different authentication methods
                         let userName = user.fullname || user.name || user.displayName || user.googleName || 'User';
                         let userEmail = user.email || 'No email provided';
                         let avatarLetter = userName.charAt(0).toUpperCase();

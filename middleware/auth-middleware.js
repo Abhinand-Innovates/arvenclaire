@@ -2,8 +2,10 @@
 const User = require('../models/user-schema');
 
 
-//For admin
-const isAdminAuthenticated = async (req, res, next) => {
+const authMiddleware = {
+
+  //For admin
+  isAdminAuthenticated : async (req, res, next) => {
   try {
     // Check if admin session exists
     if (req.session && req.session.admin_id) {
@@ -22,11 +24,11 @@ const isAdminAuthenticated = async (req, res, next) => {
     console.error('Admin Auth Middleware Error:', error);
     return res.status(500).render('error', { message: 'Authentication error' });
   }
-};
+},
 
 
-
-const isUserAuthenticated = async (req, res, next) => {
+//For user
+isUserAuthenticated : async (req, res, next) => {
   try {
     // Support both normal and Google login
     const userId = req.session.userId || req.session.googleUserId;
@@ -53,20 +55,18 @@ const isUserAuthenticated = async (req, res, next) => {
     console.error('User Auth Middleware Error:', error);
     return res.status(500).render('error', { message: 'Authentication error' });
   }
+},
+
+
+
+preventCache : (req, res, next) => {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    next();
+  }
 };
 
 
 
-const noCache = (req, res, next) => {
-  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
-  res.set('Pragma', 'no-cache');
-  res.set('Expires', '0');
-  next();
-};
-
-
-module.exports = {
-  isAdminAuthenticated,
-  isUserAuthenticated,
-  noCache,
-}
+module.exports = authMiddleware;
