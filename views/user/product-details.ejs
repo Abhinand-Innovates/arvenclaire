@@ -2013,26 +2013,45 @@
 
                 // Show user-friendly message based on the specific reason
                 let title = 'Product No Longer Available';
-                let text = 'This product is no longer available. You will be redirected to the shop page.';
+                let text = 'This product is no longer available. You will be redirected to our product listing.';
+                let icon = 'warning';
 
                 if (result.code === 'PRODUCT_DELETED') {
                     title = 'Product Removed';
-                    text = 'This product has been removed from our catalog.';
+                    text = 'This product has been removed from our catalog. Discover other great products in our collection.';
+                    icon = 'info';
                 } else if (result.code === 'PRODUCT_BLOCKED') {
                     title = 'Product Unavailable';
-                    text = 'This product is currently unavailable.';
-                } else if (result.code === 'CATEGORY_UNAVAILABLE') {
+                    text = 'This product is currently unavailable. Please browse our other available products.';
+                    icon = 'warning';
+                } else if (result.code === 'PRODUCT_UNLISTED') {
+                    title = 'Product Unlisted';
+                    text = 'This product is currently not available for purchase. Check out our other available products.';
+                    icon = 'info';
+                } else if (result.code === 'CATEGORY_DELETED') {
+                    title = 'Category Removed';
+                    text = 'This product category has been removed from our catalog. Browse other available products.';
+                    icon = 'info';
+                } else if (result.code === 'CATEGORY_UNLISTED') {
                     title = 'Category Unavailable';
-                    text = 'This product category is currently unavailable.';
+                    text = 'This product category is currently unavailable. Please check out our other products.';
+                    icon = 'warning';
                 }
 
                 Swal.fire({
-                    icon: 'warning',
+                    icon: icon,
                     title: title,
                     text: text,
+                    confirmButtonText: 'Browse Products',
                     confirmButtonColor: '#111827',
                     allowOutsideClick: false,
-                    allowEscapeKey: false
+                    allowEscapeKey: false,
+                    showClass: {
+                        popup: 'animate__animated animate__fadeInDown'
+                    },
+                    hideClass: {
+                        popup: 'animate__animated animate__fadeOutUp'
+                    }
                 }).then(() => {
                     window.location.href = '/shop';
                 });
@@ -2069,6 +2088,31 @@
             addToCartBtn.innerHTML = '<i class="bi bi-cart-x"></i> Out of Stock';
         }
     }
+
+    // Show redirect message if product was blocked/unavailable
+    <% if (typeof redirectMessage !== 'undefined' && redirectMessage) { %>
+        document.addEventListener('DOMContentLoaded', function() {
+            Swal.fire({
+                icon: '<%= redirectMessage.type %>',
+                title: '<%= redirectMessage.title %>',
+                text: '<%= redirectMessage.text %>',
+                confirmButtonText: 'Browse Products',
+                confirmButtonColor: '#111827',
+                background: '#f8fafc',
+                color: '#111827',
+                showConfirmButton: true,
+                timer: 6000,
+                timerProgressBar: true,
+                showClass: {
+                    popup: 'animate__animated animate__fadeInDown'
+                },
+                hideClass: {
+                    popup: 'animate__animated animate__fadeOutUp'
+                }
+            });
+        });
+        <% delete session.redirectMessage; %>
+    <% } %>
 
     // Start monitoring when page loads
     startAvailabilityMonitoring();

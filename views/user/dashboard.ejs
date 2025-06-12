@@ -1354,6 +1354,29 @@
 
         // Initialize everything when DOM is loaded
         document.addEventListener('DOMContentLoaded', function() {
+            // Show redirect message if product was blocked/unavailable
+            <% if (typeof redirectMessage !== 'undefined' && redirectMessage) { %>
+                Swal.fire({
+                    icon: '<%= redirectMessage.type %>',
+                    title: '<%= redirectMessage.title %>',
+                    text: '<%= redirectMessage.text %>',
+                    confirmButtonText: 'Continue Shopping',
+                    confirmButtonColor: '#111827',
+                    background: '#f8fafc',
+                    color: '#111827',
+                    showConfirmButton: true,
+                    timer: 6000,
+                    timerProgressBar: true,
+                    showClass: {
+                        popup: 'animate__animated animate__fadeInDown'
+                    },
+                    hideClass: {
+                        popup: 'animate__animated animate__fadeOutUp'
+                    }
+                });
+                <% delete session.redirectMessage; %>
+            <% } %>
+
             // Initialize page loader
             new PageLoader();
 

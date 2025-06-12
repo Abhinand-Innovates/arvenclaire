@@ -1153,28 +1153,60 @@ const checkProductStatus = async (req, res) => {
   try {
     const productId = req.params.id;
 
-    const product = await Product.findById(productId).populate('category', 'isListed');
+    const product = await Product.findById(productId).populate('category', 'isListed isDeleted');
 
     if (!product) {
       return res.json({
         success: false,
         available: false,
-        message: 'Product not found'
+        message: 'Product not found',
+        code: 'PRODUCT_NOT_FOUND'
       });
     }
 
-    // Check if product is available to users (including category status)
-    const isCategoryAvailable = product.category ? product.category.isListed : false;
-    const isAvailable = !product.isBlocked && !product.isDeleted && product.isListed && isCategoryAvailable;
+    // Check if product's category is available
+    let isCategoryAvailable = true;
+    let categoryUnavailableReason = null;
+
+    if (product.category) {
+      if (product.category.isDeleted) {
+        isCategoryAvailable = false;
+        categoryUnavailableReason = 'CATEGORY_DELETED';
+      } else if (!product.category.isListed) {
+        isCategoryAvailable = false;
+        categoryUnavailableReason = 'CATEGORY_UNLISTED';
+      }
+    }
+
+    // Determine availability and specific reason
+    let isAvailable = true;
+    let unavailableReason = null;
+
+    if (product.isDeleted) {
+      isAvailable = false;
+      unavailableReason = 'PRODUCT_DELETED';
+    } else if (product.isBlocked) {
+      isAvailable = false;
+      unavailableReason = 'PRODUCT_BLOCKED';
+    } else if (!product.isListed) {
+      isAvailable = false;
+      unavailableReason = 'PRODUCT_UNLISTED';
+    } else if (!isCategoryAvailable) {
+      isAvailable = false;
+      unavailableReason = categoryUnavailableReason;
+    }
 
     res.json({
       success: true,
       available: isAvailable,
+      code: unavailableReason,
       status: {
         isBlocked: product.isBlocked,
         isDeleted: product.isDeleted,
         isListed: product.isListed,
-        categoryListed: isCategoryAvailable
+        categoryListed: isCategoryAvailable,
+        stock: product.quantity,
+        isInStock: product.quantity > 0
       }
     });
 
@@ -1183,7 +1215,8 @@ const checkProductStatus = async (req, res) => {
     res.status(500).json({
       success: false,
       available: false,
-      message: 'Internal server error'
+      message: 'Internal server error',
+      code: 'SERVER_ERROR'
     });
   }
 };

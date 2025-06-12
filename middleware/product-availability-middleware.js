@@ -27,7 +27,7 @@ const checkProductAvailability = async (req, res, next) => {
     }
 
     // Check if product exists and is available
-    const product = await Product.findById(productId).populate('category', 'name isListed');
+    const product = await Product.findById(productId).populate('category', 'name isListed isDeleted');
 
     if (!product) {
       return res.status(404).json({
@@ -39,13 +39,22 @@ const checkProductAvailability = async (req, res, next) => {
     }
 
     // Check if product's category is available
-    if (product.category && !product.category.isListed) {
-      return res.status(403).json({
-        success: false,
-        message: 'This product category is currently unavailable',
-        code: 'CATEGORY_UNAVAILABLE',
-        redirect: '/shop'
-      });
+    if (product.category) {
+      if (product.category.isDeleted) {
+        return res.status(403).json({
+          success: false,
+          message: 'This product category has been removed',
+          code: 'CATEGORY_DELETED',
+          redirect: '/shop'
+        });
+      } else if (!product.category.isListed) {
+        return res.status(403).json({
+          success: false,
+          message: 'This product category is currently unavailable',
+          code: 'CATEGORY_UNLISTED',
+          redirect: '/shop'
+        });
+      }
     }
 
     // Check if product is blocked, deleted, or unlisted
@@ -135,25 +144,34 @@ const checkProductAvailabilityForPage = async (req, res, next) => {
     }
 
     // Check if product exists and is available
-    const product = await Product.findById(productId).populate('category', 'name isListed');
+    const product = await Product.findById(productId).populate('category', 'name isListed isDeleted');
 
     if (!product) {
       req.session.redirectMessage = {
         type: 'error',
         title: 'Product Not Found',
-        text: 'The requested product could not be found'
+        text: 'The requested product could not be found. You have been redirected to our product listing.'
       };
       return res.redirect('/shop');
     }
 
     // Check if product's category is available
-    if (product.category && !product.category.isListed) {
-      req.session.redirectMessage = {
-        type: 'warning',
-        title: 'Category Unavailable',
-        text: 'This product category is currently unavailable'
-      };
-      return res.redirect('/shop');
+    if (product.category) {
+      if (product.category.isDeleted) {
+        req.session.redirectMessage = {
+          type: 'info',
+          title: 'Category Removed',
+          text: 'This product category has been removed from our catalog. Browse other available products.'
+        };
+        return res.redirect('/shop');
+      } else if (!product.category.isListed) {
+        req.session.redirectMessage = {
+          type: 'warning',
+          title: 'Category Unavailable',
+          text: 'This product category is currently unavailable. Please check out our other products.'
+        };
+        return res.redirect('/shop');
+      }
     }
 
     // Check if product is blocked, deleted, or unlisted
@@ -161,7 +179,7 @@ const checkProductAvailabilityForPage = async (req, res, next) => {
       req.session.redirectMessage = {
         type: 'warning',
         title: 'Product Unavailable',
-        text: 'This product is currently unavailable'
+        text: 'This product is currently unavailable. Please browse our other available products.'
       };
       return res.redirect('/shop');
     }
@@ -170,7 +188,7 @@ const checkProductAvailabilityForPage = async (req, res, next) => {
       req.session.redirectMessage = {
         type: 'info',
         title: 'Product Removed',
-        text: 'This product has been removed from our catalog'
+        text: 'This product has been removed from our catalog. Discover other great products in our collection.'
       };
       return res.redirect('/shop');
     }
@@ -179,7 +197,7 @@ const checkProductAvailabilityForPage = async (req, res, next) => {
       req.session.redirectMessage = {
         type: 'info',
         title: 'Product Unlisted',
-        text: 'This product is currently not available for purchase'
+        text: 'This product is currently not available for purchase. Check out our other available products.'
       };
       return res.redirect('/shop');
     }
