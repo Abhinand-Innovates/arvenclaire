@@ -10,8 +10,6 @@
   <!-- Bootstrap Icons -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
   <link rel="stylesheet" href="../../styles/user/user-register.css">
-  <!-- SweetAlert2 + Animate.css -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
   <style>
     .error-message {
       color: #dc3545;
@@ -143,49 +141,194 @@
   </div>
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script>
     const form = document.getElementById("signupForm");
     const signupButton = document.getElementById("signupButton");
     const fields = [
       {
         id: "fullname",
-        validate: (value) => value.trim().length >= 4,
-        errorElement: "fullname-error"
+        validate: (value) => {
+          const trimmed = value.trim();
+          return trimmed.length >= 4 && !/\d/.test(trimmed);
+        },
+        errorElement: "fullname-error",
+        getErrorMessage: (value) => {
+          const trimmed = value.trim();
+          if (trimmed.length === 0) return "Full name is required";
+          if (trimmed.length < 4) return "Full name must be at least 4 characters";
+          if (/\d/.test(trimmed)) return "Full name should not contain numbers";
+          return "";
+        }
       },
       {
         id: "phone",
-        validate: (value) => /^\+?[\d\s-]{10,}$/.test(value.trim()),
-        errorElement: "phone-error"
+        validate: (value) => /^[6-9]\d{9}$/.test(value.trim()),
+        errorElement: "phone-error",
+        getErrorMessage: (value) => {
+          const trimmed = value.trim();
+          if (trimmed.length === 0) return "Phone number is required";
+          return "Phone number must be 10 digits and start with 6, 7, 8, or 9";
+        }
       },
       {
         id: "email",
         validate: (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim()),
-        errorElement: "email-error"
+        errorElement: "email-error",
+        getErrorMessage: (value) => {
+          const trimmed = value.trim();
+          if (trimmed.length === 0) return "Email is required";
+          return "Please enter a valid email";
+        }
       },
       {
         id: "password",
         validate: (value) => /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(value),
-        errorElement: "password-error"
+        errorElement: "password-error",
+        getErrorMessage: (value) => {
+          if (value.length === 0) return "Password is required";
+          return "Password must be at least 8 characters with uppercase, lowercase, number and special character";
+        }
       },
       {
         id: "confirmpassword",
         validate: (value) => value === document.getElementById("password").value,
-        errorElement: "confirmpassword-error"
+        errorElement: "confirmpassword-error",
+        getErrorMessage: (value) => {
+          if (value.length === 0) return "Please confirm your password";
+          return "Passwords do not match";
+        }
       }
     ];
 
     function validateField(field) {
       const input = document.getElementById(field.id);
+      const errorElement = document.getElementById(field.errorElement);
       const isValid = field.validate(input.value);
-      input.classList.toggle("is-invalid", !isValid);
+
+      if (isValid) {
+        input.classList.remove("is-invalid");
+        errorElement.style.display = "none";
+      } else {
+        input.classList.add("is-invalid");
+        // Use custom error message if available
+        if (field.getErrorMessage) {
+          errorElement.textContent = field.getErrorMessage(input.value);
+        }
+        errorElement.style.display = "block";
+      }
+
       return isValid;
+    }
+
+    // Function to clear all server error messages
+    function clearServerErrors() {
+      fields.forEach(field => {
+        const input = document.getElementById(field.id);
+        const errorElement = document.getElementById(field.errorElement);
+        input.classList.remove("is-invalid");
+        errorElement.style.display = "none";
+      });
+    }
+
+    // Function to display server-side validation errors
+    function displayServerError(message, fieldId = null) {
+      // Clear any existing errors first
+      clearServerErrors();
+
+      // If server provided a specific field, use it directly
+      if (fieldId && document.getElementById(fieldId)) {
+        const input = document.getElementById(fieldId);
+        const errorElement = document.getElementById(fieldId + "-error");
+
+        if (input && errorElement) {
+          input.classList.add("is-invalid");
+          errorElement.textContent = message;
+          errorElement.style.display = "block";
+          input.focus();
+          return;
+        }
+      }
+
+      // Fallback: Map server messages to specific fields with exact matching
+      const errorMappings = [
+        {
+          keywords: ["Full name", "fullname", "name"],
+          messages: ["Full name must be at least 4 characters", "Full name should not contain numbers"],
+          fieldId: "fullname"
+        },
+        {
+          keywords: ["email", "Email"],
+          messages: ["Please enter a valid email", "User already exists"],
+          fieldId: "email"
+        },
+        {
+          keywords: ["password", "Password"],
+          messages: ["Password must be at least 8 characters"],
+          fieldId: "password"
+        },
+        {
+          keywords: ["phone", "Phone"],
+          messages: ["Phone number must be 10 digits", "Phone must be 10 digits"],
+          fieldId: "phone"
+        }
+      ];
+
+      // Check if the error message matches a specific field
+      let fieldFound = false;
+
+      for (const mapping of errorMappings) {
+        // Check if message contains any of the keywords or exact messages
+        const matchesKeyword = mapping.keywords.some(keyword =>
+          message.toLowerCase().includes(keyword.toLowerCase())
+        );
+        const matchesMessage = mapping.messages.some(msg =>
+          message.includes(msg)
+        );
+
+        if (matchesKeyword || matchesMessage) {
+          const input = document.getElementById(mapping.fieldId);
+          const errorElement = document.getElementById(mapping.fieldId + "-error");
+
+          if (input && errorElement) {
+            input.classList.add("is-invalid");
+            errorElement.textContent = message;
+            errorElement.style.display = "block";
+            fieldFound = true;
+
+            // Focus on the field with error
+            input.focus();
+            break;
+          }
+        }
+      }
+
+      // If no specific field mapping found, show error on the first field (general error)
+      if (!fieldFound) {
+        const firstInput = document.getElementById("fullname");
+        const firstErrorElement = document.getElementById("fullname-error");
+
+        if (firstInput && firstErrorElement) {
+          firstInput.classList.add("is-invalid");
+          firstErrorElement.textContent = message;
+          firstErrorElement.style.display = "block";
+          firstInput.focus();
+        }
+      }
     }
 
     // Real-time validation on input
     fields.forEach(field => {
       const input = document.getElementById(field.id);
-      input.addEventListener("input", () => validateField(field));
+      input.addEventListener("input", () => {
+        // Clear server error when user starts typing
+        const errorElement = document.getElementById(field.errorElement);
+        if (errorElement.style.display === "block") {
+          input.classList.remove("is-invalid");
+          errorElement.style.display = "none";
+        }
+        // Then run client-side validation
+        validateField(field);
+      });
     });
 
     // Password toggle functionality
@@ -206,19 +349,32 @@
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
 
+      // Clear any previous server errors
+      clearServerErrors();
+
       // Show loader and disable button
       signupButton.classList.add("btn-loading");
       signupButton.querySelector(".spinner-border").classList.remove("d-none");
       signupButton.querySelector(".btn-text").classList.add("d-none");
 
       let isValid = true;
+      let firstInvalidField = null;
+
       fields.forEach(field => {
         if (!validateField(field)) {
           isValid = false;
+          if (!firstInvalidField) {
+            firstInvalidField = field;
+          }
         }
       });
 
       if (!isValid) {
+        // Focus on the first invalid field
+        if (firstInvalidField) {
+          document.getElementById(firstInvalidField.id).focus();
+        }
+
         // Hide loader and enable button if validation fails
         signupButton.classList.remove("btn-loading");
         signupButton.querySelector(".spinner-border").classList.add("d-none");
@@ -250,34 +406,12 @@
         if (response.ok && data.success) {
           window.location.href = "/verify-otp";
         } else {
-          Swal.fire({
-            toast: true,
-            position: 'top-end',
-            icon: 'error',
-            title: 'Signup Failed',
-            text: data.message || 'Signup failed.',
-            showConfirmButton: false,
-            timer: 3000,
-            timerProgressBar: true,
-            customClass: {
-              popup: 'small-toast'
-            },
-            showClass: {
-              popup: 'animate__animated animate__fadeInDown'
-            },
-            hideClass: {
-              popup: 'animate__animated animate__fadeOutUp'
-            }
-          });
+          // Display server-side validation errors below fields
+          displayServerError(data.message || 'Signup failed.', data.field);
         }
       } catch (error) {
         console.error("Signup error:", error);
-        Swal.fire({
-          position: 'top-end',
-          icon: 'error',
-          title: 'Error',
-          text: 'An error occurred during signup.',
-        });
+        displayServerError('An error occurred during signup. Please try again.', null);
       } finally {
         // Hide loader and enable button after request completes
         signupButton.classList.remove("btn-loading");

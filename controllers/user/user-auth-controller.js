@@ -72,12 +72,60 @@ const loadSignup = async (req, res) => {
 
 
 
-const loadLogin = async (req, res) => {
+const signup = async (req, res) => {
   try {
-    return res.render("login");
+    const { fullname, phone, email, password } = req.body;
+
+    if (!fullname || fullname.length < 4) {
+      return res.status(400).json({ success: false, message: "Full name must be at least 4 characters" });
+    }
+
+    if (/\d/.test(fullname)) {
+      return res.status(400).json({ success: false, message: "Full name should not contain numbers" });
+    }
+
+    const emailRegex = /^\S+@\S+\.\S+$/;
+    if (!email || !emailRegex.test(email)) {
+      return res.status(400).json({ success: false, message: "Please enter a valid email" });
+    }
+
+    if (!password || password.length < 8) {
+      return res.status(400).json({ success: false, message: "Password must be at least 8 characters" });
+    }
+
+    if (phone && !/^[6-9]\d{9}$/.test(phone)) {
+      return res.status(400).json({ success: false, message: "Phone number must be 10 digits and start with 6, 7, 8, or 9" });
+    }
+
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(403).json({
+        success: false,
+        message: "User already exists",
+      });
+    }
+
+    const otp = generateOtp();
+    const isSendMail = await sendEmail(email, otp);
+
+    if (!isSendMail) {
+      return res.json({
+        success: false,
+        message: "Failed to send OTP",
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    req.session.userData = { fullname, phone, email, password: hashedPassword };
+    req.session.userOtp = otp;
+
+    res.json({
+      success: true,
+      message: "otp sent successfully",
+    });
   } catch (error) {
-    console.log("Login page not loading", error);
-    res.status(500).send("Server error");
+    console.error("Error in loading signup page", error);
+    res.status(500).send("Internal server error");
   }
 };
 
@@ -162,61 +210,6 @@ const resendOtp = async (req, res) => {
 
 
 
-const signup = async (req, res) => {
-  try {
-    const { fullname, phone, email, password } = req.body;
-
-    if (!fullname || fullname.length < 4) {
-      return res.status(400).json({ success: false, message: "Full name must be at least 4 characters" });
-    }
-
-    const emailRegex = /^\S+@\S+\.\S+$/;
-    if (!email || !emailRegex.test(email)) {
-      return res.status(400).json({ success: false, message: "Please enter a valid email" });
-    }
-
-    if (!password || password.length < 8) {
-      return res.status(400).json({ success: false, message: "Password must be at least 8 characters" });
-    }
-
-    if (phone && !/^\d{10}$/.test(phone)) {
-      return res.status(400).json({ success: false, message: "Phone must be 10 digits" });
-    }
-
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(403).json({
-        success: false,
-        message: "User already exists",
-      });
-    }
-
-    // otp Generation
-    const otp = generateOtp();
-    const isSendMail = await sendEmail(email, otp);
-
-    if (!isSendMail) {
-      return res.json({
-        success: false,
-        message: "Failed to send OTP",
-      });
-    }
-    const hashedPassword = await bcrypt.hash(password,10)
-    req.session.userData = { fullname, phone, email, password: hashedPassword};
-    req.session.userOtp = otp;
-
-    res.json({
-      success: true,
-      message: "otp sent successfully",
-    });
-  } catch (error) {
-    console.error("Error in loading signup page", error);
-    res.status(500).send("Internal server error");
-  }
-};
-
-
-
 const loadDashboard = async (req, res) => {
   try {
     const userId = req.session.userId;
@@ -269,16 +262,6 @@ const loadDashboard = async (req, res) => {
     res.status(500).send("Server Error");
   }
 };
-
-
-
-
-// const securePassword = async (password) => {
-//   try {
-//     const passwordHash = await bcrypt.hash(password, 10);
-//     return passwordHash;
-//   } catch (error) {}
-// };
 
 
 
@@ -336,6 +319,16 @@ const login = async (req, res) => {
   }
 };
 
+
+
+const loadLogin = async (req, res) => {
+  try {
+    return res.render("login");
+  } catch (error) {
+    console.log("Login page not loading", error);
+    res.status(500).send("Server error");
+  }
+};
 
 
 
