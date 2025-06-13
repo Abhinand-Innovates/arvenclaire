@@ -468,8 +468,8 @@
                             </div>
                             <div class="form-group">
                                 <label for="quantity" class="form-label">Stock Quantity <span class="required">*</span></label>
-                                <input type="number" id="quantity" name="quantity" class="form-control" 
-                                       placeholder="Enter stock quantity" required>
+                                <input type="number" id="quantity" name="quantity" class="form-control"
+                                       placeholder="Enter stock quantity" min="0" step="1" required>
                                 <div class="error-message">Please enter a valid stock quantity</div>
                             </div>
                         </div>
@@ -544,7 +544,7 @@
                             <div class="form-group">
                                 <label for="productImages" class="form-label">Upload Images <span class="required">*</span></label>
                                 <input type="file" id="productImages" name="productImages" class="form-control"
-                                       accept="image/*" multiple required>
+                                       accept="image/jpeg,image/jpg,image/png,image/gif,image/webp" multiple required>
                                 <div class="error-message" id="imagesError">Please upload at least 3 images</div>
                                 <small class="form-text text-muted">Select multiple images. Each image will be cropped individually.</small>
                             </div>
@@ -746,6 +746,43 @@
                     calculateSalePrice();
                 }
             }
+
+            // Add quantity validation
+            const quantityInput = document.getElementById('quantity');
+            if (quantityInput) {
+                quantityInput.addEventListener('input', function() {
+                    validateQuantity();
+                });
+
+                quantityInput.addEventListener('blur', function() {
+                    validateQuantity();
+                });
+            }
+        }
+
+        // Validate quantity field
+        function validateQuantity() {
+            const quantity = document.getElementById('quantity').value.trim();
+            const quantityValue = parseInt(quantity);
+            const quantityGroup = document.getElementById('quantity').closest('.form-group');
+            const quantityErrorMsg = quantityGroup.querySelector('.error-message');
+
+            if (!quantity || isNaN(quantityValue) || quantityValue < 0 || !Number.isInteger(parseFloat(quantity))) {
+                quantityGroup.classList.add('error');
+                if (!quantity || isNaN(quantityValue)) {
+                    quantityErrorMsg.textContent = 'Stock quantity is required';
+                } else if (quantityValue < 0) {
+                    quantityErrorMsg.textContent = 'Stock quantity cannot be negative';
+                } else if (!Number.isInteger(parseFloat(quantity))) {
+                    quantityErrorMsg.textContent = 'Stock quantity must be a whole number';
+                }
+                quantityErrorMsg.style.display = 'block';
+                return false;
+            } else {
+                quantityGroup.classList.remove('error');
+                quantityErrorMsg.style.display = 'none';
+                return true;
+            }
         }
 
         // Handle file selection
@@ -753,23 +790,55 @@
             const files = Array.from(e.target.files);
             console.log(`Selected ${files.length} files:`, files.map(f => f.name));
 
-            if (files.length < 3) {
-                Swal.fire({
-                    title: 'Insufficient Images',
-                    text: 'Please select at least 3 images',
-                    icon: 'warning',
-                    confirmButtonText: 'OK'
-                });
-                document.getElementById('imagesError').textContent = 'Please select at least 3 images';
+            // Clear previous image errors
+            document.getElementById('imagesError').style.display = 'none';
+
+            // Check if no files selected
+            if (files.length === 0) {
+                document.getElementById('imagesError').textContent = 'Please upload at least 3 images';
+                document.getElementById('imagesError').style.display = 'block';
+                return;
+            }
+
+            // Validate file types first
+            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+            const invalidFiles = [];
+            const validFiles = [];
+
+            files.forEach(file => {
+                if (allowedTypes.includes(file.type.toLowerCase())) {
+                    validFiles.push(file);
+                } else {
+                    invalidFiles.push(file.name);
+                }
+            });
+
+            // Show error for invalid file types
+            if (invalidFiles.length > 0) {
+                const errorMessage = `Invalid file type(s): ${invalidFiles.join(', ')}. Only JPEG, PNG, GIF, and WebP images are allowed.`;
+                document.getElementById('imagesError').textContent = errorMessage;
                 document.getElementById('imagesError').style.display = 'block';
                 e.target.value = ''; // Clear the input
                 return;
             }
 
+            // Check minimum number of valid files
+            if (validFiles.length < 3) {
+                const errorMessage = validFiles.length === 0 ?
+                    'Please upload at least 3 images' :
+                    `Please upload at least 3 images. Currently have: ${validFiles.length} image(s)`;
+
+                document.getElementById('imagesError').textContent = errorMessage;
+                document.getElementById('imagesError').style.display = 'block';
+                e.target.value = ''; // Clear the input
+                return;
+            }
+
+            // All validations passed
             document.getElementById('imagesError').style.display = 'none';
             document.getElementById('imagePreviews').innerHTML = '';
             croppedImages = [];
-            selectedFiles = files;
+            selectedFiles = validFiles;
             currentFileIndex = 0;
 
             console.log('Starting image processing sequence...');
@@ -777,11 +846,11 @@
             // Show info message
             Swal.fire({
                 title: 'Image Cropping',
-                text: `You selected ${files.length} images. Each image will be cropped individually.`,
+                text: `You selected ${validFiles.length} valid images. Each image will be cropped individually.`,
                 icon: 'info',
                 confirmButtonText: 'Start Cropping'
             }).then(() => {
-                processImageSequentially(files, 0);
+                processImageSequentially(validFiles, 0);
             });
         }
 
@@ -1102,24 +1171,152 @@
         // Validate form
         function validateForm() {
             let isValid = true;
-            const requiredFields = ['productName', 'brand', 'category', 'regularPrice', 'salePrice', 'quantity', 'description', 'features'];
 
             // Clear previous errors
-            document.querySelectorAll('.form-group').forEach(group => group.classList.remove('error'));
-
-            // Check required fields
-            requiredFields.forEach(fieldName => {
-                const field = document.getElementById(fieldName);
-                if (!field || !field.value.trim()) {
-                    if (field) {
-                        field.closest('.form-group').classList.add('error');
-                    }
-                    console.log(`Validation failed for field: ${fieldName}`);
-                    isValid = false;
+            document.querySelectorAll('.form-group').forEach(group => {
+                group.classList.remove('error');
+                const errorMsg = group.querySelector('.error-message');
+                if (errorMsg) {
+                    errorMsg.style.display = 'none';
                 }
             });
 
-            // Check images
+            // Validate Product Name
+            const productName = document.getElementById('productName');
+            const productNameGroup = productName.closest('.form-group');
+            const productNameError = productNameGroup.querySelector('.error-message');
+            if (!productName.value.trim()) {
+                productNameGroup.classList.add('error');
+                productNameError.textContent = 'Product name is required';
+                productNameError.style.display = 'block';
+                isValid = false;
+            }
+
+            // Validate Brand
+            const brand = document.getElementById('brand');
+            const brandGroup = brand.closest('.form-group');
+            const brandError = brandGroup.querySelector('.error-message');
+            if (!brand.value.trim()) {
+                brandGroup.classList.add('error');
+                brandError.textContent = 'Brand is required';
+                brandError.style.display = 'block';
+                isValid = false;
+            }
+
+            // Validate Category
+            const category = document.getElementById('category');
+            const categoryGroup = category.closest('.form-group');
+            const categoryError = categoryGroup.querySelector('.error-message');
+            if (!category.value.trim()) {
+                categoryGroup.classList.add('error');
+                categoryError.textContent = 'Please select a category';
+                categoryError.style.display = 'block';
+                isValid = false;
+            }
+
+            // Validate Regular Price
+            const regularPrice = document.getElementById('regularPrice');
+            const regularPriceGroup = regularPrice.closest('.form-group');
+            const regularPriceError = regularPriceGroup.querySelector('.error-message');
+            const regularPriceValue = parseFloat(regularPrice.value);
+            if (!regularPrice.value.trim()) {
+                regularPriceGroup.classList.add('error');
+                regularPriceError.textContent = 'Regular price is required';
+                regularPriceError.style.display = 'block';
+                isValid = false;
+            } else if (isNaN(regularPriceValue) || regularPriceValue <= 0) {
+                regularPriceGroup.classList.add('error');
+                regularPriceError.textContent = 'Please enter a valid price greater than 0';
+                regularPriceError.style.display = 'block';
+                isValid = false;
+            }
+
+            // Validate Sale Price
+            const salePrice = document.getElementById('salePrice');
+            const salePriceGroup = salePrice.closest('.form-group');
+            const salePriceError = salePriceGroup.querySelector('.error-message');
+            const salePriceValue = parseFloat(salePrice.value);
+            if (!salePrice.value.trim()) {
+                salePriceGroup.classList.add('error');
+                salePriceError.textContent = 'Sale price is required';
+                salePriceError.style.display = 'block';
+                isValid = false;
+            } else if (isNaN(salePriceValue) || salePriceValue <= 0) {
+                salePriceGroup.classList.add('error');
+                salePriceError.textContent = 'Please enter a valid sale price greater than 0';
+                salePriceError.style.display = 'block';
+                isValid = false;
+            } else if (salePriceValue > regularPriceValue) {
+                salePriceGroup.classList.add('error');
+                salePriceError.textContent = 'Sale price cannot be higher than regular price';
+                salePriceError.style.display = 'block';
+                isValid = false;
+            }
+
+            // Validate Quantity
+            const quantity = document.getElementById('quantity');
+            const quantityGroup = quantity.closest('.form-group');
+            const quantityError = quantityGroup.querySelector('.error-message');
+            const quantityValue = parseInt(quantity.value);
+            if (!quantity.value.trim()) {
+                quantityGroup.classList.add('error');
+                quantityError.textContent = 'Stock quantity is required';
+                quantityError.style.display = 'block';
+                isValid = false;
+            } else if (isNaN(quantityValue) || quantityValue < 0 || !Number.isInteger(parseFloat(quantity.value))) {
+                quantityGroup.classList.add('error');
+                if (isNaN(quantityValue)) {
+                    quantityError.textContent = 'Please enter a valid stock quantity';
+                } else if (quantityValue < 0) {
+                    quantityError.textContent = 'Stock quantity cannot be negative';
+                } else if (!Number.isInteger(parseFloat(quantity.value))) {
+                    quantityError.textContent = 'Stock quantity must be a whole number';
+                }
+                quantityError.style.display = 'block';
+                isValid = false;
+            }
+
+            // Validate Description
+            const description = document.getElementById('description');
+            const descriptionGroup = description.closest('.form-group');
+            const descriptionError = descriptionGroup.querySelector('.error-message');
+            if (!description.value.trim()) {
+                descriptionGroup.classList.add('error');
+                descriptionError.textContent = 'Product description is required';
+                descriptionError.style.display = 'block';
+                isValid = false;
+            }
+
+            // Validate Features
+            const features = document.getElementById('features');
+            const featuresGroup = features.closest('.form-group');
+            const featuresError = featuresGroup.querySelector('.error-message');
+            if (!features.value.trim()) {
+                featuresGroup.classList.add('error');
+                featuresError.textContent = 'Product features are required';
+                featuresError.style.display = 'block';
+                isValid = false;
+            }
+
+            // Validate Product Offer (optional field)
+            const productOffer = document.getElementById('productOffer');
+            const productOfferGroup = productOffer.closest('.form-group');
+            const productOfferError = productOfferGroup.querySelector('.error-message');
+            const productOfferValue = productOffer.value.trim() ? parseFloat(productOffer.value) : null;
+            if (productOfferValue !== null && (isNaN(productOfferValue) || productOfferValue < 0 || productOfferValue > 100)) {
+                productOfferGroup.classList.add('error');
+                if (isNaN(productOfferValue)) {
+                    productOfferError.textContent = 'Please enter a valid offer percentage';
+                } else if (productOfferValue < 0) {
+                    productOfferError.textContent = 'Offer percentage cannot be negative';
+                } else if (productOfferValue > 100) {
+                    productOfferError.textContent = 'Offer percentage cannot exceed 100%';
+                }
+                productOfferError.style.display = 'block';
+                isValid = false;
+            }
+
+            // Validate Images
             const validCroppedImages = croppedImages.filter(img => img);
             console.log(`Validation: Found ${validCroppedImages.length} cropped images`);
 
@@ -1131,22 +1328,6 @@
                 document.getElementById('imagesError').style.display = 'none';
             }
 
-            // Validate prices
-            const regularPrice = parseFloat(document.getElementById('regularPrice').value);
-            const salePrice = parseFloat(document.getElementById('salePrice').value);
-            if (salePrice > regularPrice) {
-                const salePriceGroup = document.getElementById('salePrice').closest('.form-group');
-                salePriceGroup.classList.add('error');
-                isValid = false;
-            }
-
-            // Validate offer percentage
-            const productOffer = document.getElementById('productOffer').value.trim() ? parseFloat(document.getElementById('productOffer').value) : null;
-            if (productOffer !== null && (productOffer < 0 || productOffer > 100)) {
-                document.getElementById('productOffer').closest('.form-group').classList.add('error');
-                isValid = false;
-            }
-
             console.log(`Form validation result: ${isValid}`);
             return isValid;
         }
@@ -1156,7 +1337,7 @@
             e.preventDefault();
 
             if (!validateForm()) {
-                Swal.fire('Validation Error!', 'Please fill in all required fields correctly and upload at least 3 images.', 'error');
+                Swal.fire('Validation Error!', 'Please check the form and fix all validation errors before submitting.', 'error');
                 return;
             }
 
