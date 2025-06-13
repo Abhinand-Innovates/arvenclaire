@@ -683,12 +683,13 @@ const loadShop = async (req, res) => {
       searchFilter.category = selectedCategory;
     }
 
-    // Add search filter
+    // Add comprehensive search filter
     if (searchQuery) {
       searchFilter.$or = [
         { productName: { $regex: searchQuery, $options: 'i' } },
         { brand: { $regex: searchQuery, $options: 'i' } },
-        { description: { $regex: searchQuery, $options: 'i' } }
+        { description: { $regex: searchQuery, $options: 'i' } },
+        { features: { $regex: searchQuery, $options: 'i' } }
       ];
     }
 

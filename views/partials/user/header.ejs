@@ -470,9 +470,14 @@
                         <a class="nav-link" href="#">Contact</a>
                     </li>
                 </ul>
-                <form class="d-flex me-3 mb-2 mb-lg-0">
+                <form class="d-flex me-3 mb-2 mb-lg-0" id="navbarSearchForm">
                     <div class="input-group">
-                        <input class="form-control search-box" type="search" placeholder="Search">
+                        <input class="form-control search-box"
+                               type="search"
+                               id="navbarSearchInput"
+                               name="search"
+                               placeholder="Search products or brands..."
+                               autocomplete="off">
                         <button class="search-btn" type="submit">
                             <i class="bi bi-search"></i>
                         </button>
@@ -733,5 +738,36 @@
                 });
                 return originalOpen.apply(this, args);
             };
+
+            // Navbar Search Functionality
+            initializeNavbarSearch();
         });
+
+        // Navbar Search Implementation
+        function initializeNavbarSearch() {
+            const searchForm = document.getElementById('navbarSearchForm');
+            const searchInput = document.getElementById('navbarSearchInput');
+
+            if (!searchForm || !searchInput) return;
+
+            // Form submission handler
+            searchForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                performSearch();
+            });
+
+            // Perform search using existing shop route
+            function performSearch() {
+                const query = searchInput.value.trim();
+
+                if (!query) {
+                    // If no search query, just go to shop page
+                    window.location.href = '/shop';
+                    return;
+                }
+
+                // Send the query to existing shop route
+                window.location.href = `/shop?search=${encodeURIComponent(query)}`;
+            }
+        }
     </script>
