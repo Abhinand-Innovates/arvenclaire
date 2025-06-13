@@ -106,6 +106,8 @@ const signup = async (req, res) => {
     }
 
     const otp = generateOtp();
+    console.log(`otp is: ${otp}`);
+
     const isSendMail = await sendEmail(email, otp);
 
     if (!isSendMail) {
@@ -146,7 +148,6 @@ const verifyOtp = async (req, res) => {
   try {
     const { otp } = req.body;
 
-    console.log(otp);
     console.log(req.session.userOtp);
 
     if (otp === req.session.userOtp) {
@@ -187,6 +188,7 @@ const resendOtp = async (req, res) => {
 
     // otp Generation
     const otp = generateOtp();
+    console.log(`otp is: ${otp}`);
     req.session.userOtp = otp;
 
     const isSendMail = await sendEmail(email, otp);
@@ -265,6 +267,17 @@ const loadDashboard = async (req, res) => {
 
 
 
+const loadLogin = async (req, res) => {
+  try {
+    return res.render("login");
+  } catch (error) {
+    console.log("Login page not loading", error);
+    res.status(500).send("Server error");
+  }
+};
+
+
+
 
 const login = async (req, res) => {
   try {
@@ -321,16 +334,6 @@ const login = async (req, res) => {
 
 
 
-const loadLogin = async (req, res) => {
-  try {
-    return res.render("login");
-  } catch (error) {
-    console.log("Login page not loading", error);
-    res.status(500).send("Server error");
-  }
-};
-
-
 
 const loadForgotPassword = async (req, res) => {
   try {
@@ -370,6 +373,7 @@ const verifyForgotPasswordEmail = async (req, res) => {
 
     // Generate OTP
     const otp = generateOtp();
+    console.log(`otp is: ${otp}`);
 
     // Store OTP in session
     req.session.userOtp = {
@@ -413,6 +417,8 @@ const resendForgotPasswordOtp = async (req, res) => {
 
     // otp Generation
     const otp = generateOtp();
+    console.log(`otp is: ${otp}`);
+
     req.session.userOtp = {
       otp,
       expiresAt: Date.now() + 5 * 60 * 1000,
