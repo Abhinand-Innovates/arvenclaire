@@ -60,6 +60,9 @@ router.post("/mark-helpful", isUserAuthenticated, preventCache, checkUserBlocked
 // Profile photo upload route
 router.post("/upload-profile-photo", isUserAuthenticated, preventCache, checkUserBlocked, profileUpload.single('profilePhoto'), handleMulterError, userController.uploadProfilePhoto);
 
+// Profile photo delete route
+router.delete("/delete-profile-photo", isUserAuthenticated, preventCache, checkUserBlocked, userController.deleteProfilePhoto);
+
 // API routes
 router.get("/api/product-status/:id", isUserAuthenticated, preventCache, checkUserBlocked, userController.checkProductStatus);
 

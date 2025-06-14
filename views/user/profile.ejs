@@ -1,372 +1,426 @@
 <%- include('../partials/user/header') %>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background-color: #f5f5f5;
-            color: #333;
-        }
+<style>
+    :root {
+        --primary-black: #000000;
+        --secondary-black: #1a1a1a;
+        --light-gray: #f8f9fa;
+        --medium-gray: #6c757d;
+        --border-gray: #dee2e6;
+        --white: #ffffff;
+    }
 
-        .profile-container {
-            display: flex;
-            min-height: 100vh;
-            padding-top: 100px; /* Account for navbar */
-        }
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
 
-        /* Sidebar Styles */
-        .sidebar {
-            width: 280px;
-            background-color: #fff;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-            padding: 20px 0;
-            position: fixed;
-            height: calc(100vh - 100px);
-            top: 100px;
-            left: 0;
-            overflow-y: auto;
-            z-index: 1000;
-        }
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background-color: #f5f5f5;
+        color: #333;
+    }
 
-        .profile-section {
-            text-align: center;
-            padding: 20px;
-            border-bottom: 1px solid #eee;
-            margin-bottom: 20px;
-        }
+    .profile-container {
+        display: flex;
+        min-height: 100vh;
+        padding-top: 100px; /* Account for navbar */
+    }
 
-        .profile-avatar-container {
-            position: relative;
-            width: 60px;
-            height: 60px;
-            margin: 0 auto 10px;
-            cursor: pointer;
-        }
+    /* Sidebar Styles */
+    .sidebar {
+        width: 280px;
+        background-color: #fff;
+        box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        padding: 20px 0;
+        position: fixed;
+        height: calc(100vh - 100px);
+        top: 100px;
+        left: 0;
+        overflow-y: auto;
+        z-index: 1000;
+    }
 
-        .profile-avatar {
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, #111827 0%, #374151 100%);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            color: white;
-            font-weight: 700;
-            box-shadow: 0 4px 15px rgba(17, 24, 39, 0.3);
-        }
+    .profile-section {
+        text-align: center;
+        padding: 20px;
+        border-bottom: 1px solid #eee;
+        margin-bottom: 20px;
+    }
 
-        .profile-avatar-img {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            object-fit: cover;
-            box-shadow: 0 4px 15px rgba(17, 24, 39, 0.3);
-        }
+    .profile-avatar-container {
+        position: relative;
+        display: inline-block;
+        margin-bottom: 15px;
+    }
 
-        .profile-avatar-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            color: white;
-            font-size: 18px;
-        }
+    .profile-avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #111827 0%, #374151 100%);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        font-weight: 600;
+    }
 
-        .profile-avatar-container:hover .profile-avatar-overlay {
-            opacity: 1;
-        }
+    .profile-avatar-img {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid #fff;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
 
-        .profile-photo-upload {
-            display: none;
-        }
+    .profile-avatar-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        color: white;
+        font-size: 18px;
+    }
 
-        /* Main Profile Photo Styles */
-        .main-profile-photo-container {
-            position: relative;
-            width: 120px;
-            height: 120px;
-            margin: 0 auto;
-            cursor: pointer;
-        }
+    .profile-avatar-container:hover .profile-avatar-overlay {
+        opacity: 1;
+    }
 
-        .main-profile-photo {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            object-fit: cover;
-            box-shadow: 0 8px 25px rgba(17, 24, 39, 0.3);
-        }
+    .profile-photo-upload {
+        display: none;
+    }
 
-        .main-profile-avatar {
-            width: 120px;
-            height: 120px;
-            background: linear-gradient(135deg, #111827 0%, #374151 100%);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 48px;
-            color: white;
-            font-weight: 700;
-            box-shadow: 0 8px 25px rgba(17, 24, 39, 0.3);
-        }
+    /* Main Profile Image Styles */
+    .main-profile-avatar-container {
+        position: relative;
+        width: 120px;
+        height: 120px;
+        margin: 0 auto;
+        cursor: pointer;
+    }
 
-        .main-profile-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.6);
-            border-radius: 50%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            color: white;
-            font-size: 14px;
-            font-weight: 600;
-        }
+    .main-profile-avatar {
+        width: 120px;
+        height: 120px;
+        background: linear-gradient(135deg, #111827 0%, #374151 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 48px;
+        color: white;
+        font-weight: 700;
+        box-shadow: 0 8px 25px rgba(17, 24, 39, 0.3);
+        border: 4px solid #fff;
+    }
 
-        .main-profile-overlay i {
-            font-size: 24px;
-            margin-bottom: 5px;
-        }
+    .main-profile-avatar-img {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        object-fit: cover;
+        box-shadow: 0 8px 25px rgba(17, 24, 39, 0.3);
+        border: 4px solid #fff;
+    }
 
-        .main-profile-photo-container:hover .main-profile-overlay {
-            opacity: 1;
-        }
+    .main-profile-avatar-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        color: white;
+        font-size: 24px;
+        cursor: pointer;
+    }
 
-        .profile-name {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 5px;
-        }
+    .main-profile-avatar-container:hover .main-profile-avatar-overlay {
+        opacity: 1;
+    }
 
-        .profile-email {
-            font-size: 14px;
-            color: #666;
-        }
+    .profile-photo-actions h6 {
+        color: #333;
+        font-weight: 600;
+    }
 
-        .menu-section h3 {
-            padding: 0 20px 10px;
-            font-size: 16px;
-            font-weight: 600;
-            color: #333;
-        }
+    .profile-photo-actions .btn {
+        border-radius: 6px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
 
-        .menu-item {
-            display: flex;
-            align-items: center;
-            padding: 12px 20px;
-            color: #666;
-            text-decoration: none;
-            transition: background-color 0.2s;
-            cursor: pointer;
-        }
+    .profile-photo-actions .btn-primary {
+        background: linear-gradient(135deg, #111827 0%, #374151 100%);
+        border: none;
+    }
 
-        .menu-item:hover {
-            background-color: #f8f9fa;
-            color: #333;
-        }
+    .profile-photo-actions .btn-primary:hover {
+        background: linear-gradient(135deg, #374151 0%, #111827 100%);
+        transform: translateY(-1px);
+    }
 
-        .menu-item.active {
-            background: linear-gradient(135deg, #111827 0%, #374151 100%);
-            color: white;
-            border-radius: 8px;
-            margin: 0 10px;
-        }
+    .profile-photo-actions .btn-outline-danger:hover {
+        transform: translateY(-1px);
+    }
 
-        .menu-item::before {
-            content: '';
-            width: 20px;
-            height: 20px;
-            margin-right: 12px;
-            background-size: contain;
-            opacity: 0.7;
-        }
+    .profile-name {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
 
-        /* Main Content Styles */
-        .main-content {
-            flex: 1;
-            margin-left: 280px;
-            padding: 30px;
-            min-height: calc(100vh - 100px);
-        }
+    .profile-email {
+        font-size: 14px;
+        color: #666;
+    }
 
-        .page-header {
-            margin-bottom: 30px;
-            padding-top: 10px; /* Extra spacing from top */
-        }
+    .menu-section h3 {
+        padding: 0 20px 10px;
+        font-size: 16px;
+        font-weight: 600;
+        color: #333;
+    }
 
-        .page-title {
-            font-size: 28px;
-            font-weight: 700;
-            color: #333;
-            margin-bottom: 8px;
-        }
+    .menu-item {
+        display: flex;
+        align-items: center;
+        padding: 12px 20px;
+        color: #666;
+        text-decoration: none;
+        transition: background-color 0.2s;
+        cursor: pointer;
+    }
 
-        .page-subtitle {
-            color: #666;
-            font-size: 16px;
-        }
+    .menu-item:hover {
+        background-color: #f8f9fa;
+        color: #333;
+    }
 
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
+    .menu-item.active {
+        background: linear-gradient(135deg, #111827 0%, #374151 100%);
+        color: white;
+        border-radius: 8px;
+        margin: 0 10px;
+    }
 
-        .card {
-            background: white;
-            border-radius: 12px;
-            padding: 24px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
+    .menu-item::before {
+        content: '';
+        width: 20px;
+        height: 20px;
+        margin-right: 12px;
+        background-size: contain;
+        opacity: 0.7;
+    }
 
-        .card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.12);
-        }
+    /* Main Content Area */
+    .main-content {
+        margin-left: 280px;
+        padding: 20px;
+        flex: 1;
+        background-color: #f5f5f5;
+    }
 
-        .card-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 16px;
-        }
+    .profile-content {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        width: 100%;
+    }
 
-        .card-icon {
-            width: 40px;
-            height: 40px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    .profile-header {
+        background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+        color: white;
+        padding: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .profile-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 100%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        transform: rotate(45deg);
+    }
+
+    .profile-body {
+        padding: 2rem;
+    }
+
+        .info-card {
+            background: var(--white);
+            border: 2px solid var(--border-gray);
             border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 12px;
-            color: white;
-            font-size: 18px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
         }
 
-        .card-title {
-            font-size: 18px;
+        .info-card:hover {
+            border-color: var(--primary-black);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .info-card h5 {
+            color: var(--primary-black);
             font-weight: 600;
-            color: #333;
-        }
-
-        .card-content {
-            color: #666;
-            line-height: 1.5;
-        }
-
-        .stats-number {
-            font-size: 32px;
-            font-weight: 700;
-            color: #007bff;
-            margin-bottom: 8px;
-        }
-
-        .recent-activity {
-            background: white;
-            border-radius: 12px;
-            padding: 24px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-        }
-
-        .activity-header {
-            font-size: 20px;
-            font-weight: 600;
-            margin-bottom: 20px;
-            color: #333;
-        }
-
-        .activity-item {
+            margin-bottom: 1rem;
             display: flex;
             align-items: center;
-            padding: 12px 0;
-            border-bottom: 1px solid #f0f0f0;
+            gap: 0.5rem;
         }
 
-        .activity-item:last-child {
-            border-bottom: none;
+        .info-card h5 i {
+            width: 20px;
+            text-align: center;
         }
 
-        .activity-icon {
-            width: 36px;
-            height: 36px;
-            background-color: #f8f9fa;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 12px;
-            font-size: 14px;
-        }
-
-        .activity-details {
-            flex: 1;
-        }
-
-        .activity-title {
+        .form-label {
+            color: var(--primary-black);
             font-weight: 500;
-            margin-bottom: 4px;
+            margin-bottom: 0.5rem;
         }
 
-        .activity-time {
-            font-size: 12px;
-            color: #999;
-        }
-
-        .btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 12px 24px;
+        .form-control {
+            border: 2px solid var(--border-gray);
             border-radius: 8px;
+            padding: 0.75rem 1rem;
+            background: var(--white);
+            color: var(--primary-black);
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-black);
+            box-shadow: 0 0 0 0.2rem rgba(0, 0, 0, 0.1);
+            background: var(--white);
+            color: var(--primary-black);
+        }
+
+        .btn-primary {
+            background: var(--primary-black);
+            border: 2px solid var(--primary-black);
+            color: var(--white);
             font-weight: 500;
-            cursor: pointer;
-            transition: opacity 0.2s;
+            padding: 0.75rem 2rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
         }
 
-        .btn:hover {
-            opacity: 0.9;
+        .btn-primary:hover {
+            background: var(--white);
+            border-color: var(--primary-black);
+            color: var(--primary-black);
+            transform: translateY(-2px);
         }
 
-        .btn-outline {
-            background: transparent;
-            color: #667eea;
-            border: 2px solid #667eea;
+        .btn-outline-primary {
+            border: 2px solid var(--primary-black);
+            color: var(--primary-black);
+            background: var(--white);
+            font-weight: 500;
+            padding: 0.75rem 2rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
         }
 
-        .btn-outline:hover {
-            background: #667eea;
-            color: white;
+        .btn-outline-primary:hover {
+            background: var(--primary-black);
+            border-color: var(--primary-black);
+            color: var(--white);
+            transform: translateY(-2px);
         }
 
-        .content-section {
-            display: block;
+        .status-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
-        .content-section.hidden {
-            display: none;
+        .status-active {
+            background: rgba(40, 167, 69, 0.1);
+            color: #28a745;
+            border: 2px solid rgba(40, 167, 69, 0.3);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            flex: 1;
+            min-width: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 1rem;
+            border-radius: 10px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .manage-address {
+            background: var(--white);
+            border: 2px solid var(--primary-black);
+            color: var(--primary-black);
+        }
+
+        .manage-address:hover {
+            background: var(--primary-black);
+            color: var(--white);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .change-password {
+            background: var(--primary-black);
+            border: 2px solid var(--primary-black);
+            color: var(--white);
+        }
+
+        .change-password:hover {
+            background: var(--white);
+            color: var(--primary-black);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
 
         @media (max-width: 768px) {
@@ -383,11 +437,48 @@
 
             .main-content {
                 margin-left: 0;
-                padding: 20px;
+                padding: 15px;
             }
 
-            .dashboard-grid {
-                grid-template-columns: 1fr;
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .action-btn {
+                min-width: 100%;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .profile-header {
+                padding: 1rem;
+            }
+
+            .profile-body {
+                padding: 1rem;
+            }
+
+            .info-card {
+                padding: 1rem;
+            }
+
+            .action-buttons {
+                gap: 0.5rem;
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.8s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
             }
         }
     </style>
@@ -399,7 +490,7 @@
             <div class="profile-section">
                 <div class="profile-avatar-container">
                     <% if (user.profilePhoto) { %>
-                        <img src="/uploads/profiles/<%= user.profilePhoto %>" alt="Profile Photo" class="profile-avatar-img" id="sidebarProfileImg">
+                        <img src="/Uploads/profiles/<%= user.profilePhoto %>" alt="Profile Photo" class="profile-avatar-img" id="sidebarProfileImg">
                     <% } else { %>
                         <div class="profile-avatar" id="sidebarProfileAvatar"><%= user.fullname ? user.fullname.charAt(0).toUpperCase() : '👤' %></div>
                     <% } %>
@@ -410,7 +501,7 @@
                 <div class="profile-name"><%= user.fullname || 'User' %></div>
                 <div class="profile-email"><%= user.email || 'No email' %></div>
             </div>
-            
+
             <div class="menu-section">
                 <h3>Manage My Account</h3>
                 <a href="#" class="menu-item active" onclick="showSection('profile')">My Profile</a>
@@ -426,153 +517,132 @@
 
         <!-- Main Content -->
         <div class="main-content">
-            <div class="page-header">
-                <h1 class="page-title">My Profile</h1>
-                <p class="page-subtitle">Manage your personal information and preferences.</p>
-            </div>
-
-            <!-- Dashboard Content -->
-            <div id="dashboard-content" class="content-section" style="display: none;">
-                <div class="dashboard-grid">
-                    <div class="card">
-                        <div class="card-header">
-                            <div class="card-title">Total Orders</div>
-                        </div>
-                        <div class="card-content">
-                            <div class="stats-number">0</div>
-                            <p>Orders placed this year</p>
-                        </div>
-                    </div>
-
-                    <div class="card">
-                        <div class="card-header">
-                            <div class="card-title">Wishlist Items</div>
-                        </div>
-                        <div class="card-content">
-                            <div class="stats-number">0</div>
-                            <p>Items saved for later</p>
-                        </div>
-                    </div>
-
-                    <div class="card">
-                        <div class="card-header">
-                            <div class="card-title">Wallet Balance</div>
-                        </div>
-                        <div class="card-content">
-                            <div class="stats-number">₹0</div>
-                            <p>Available balance</p>
-                        </div>
-                    </div>
-
-                    <div class="card">
-                        <div class="card-header">
-                            <div class="card-title">Active Coupons</div>
-                        </div>
-                        <div class="card-content">
-                            <div class="stats-number">0</div>
-                            <p>Coupons ready to use</p>
-                        </div>
-                    </div>
+            <div class="profile-content fade-in">
+                <!-- Profile Header -->
+                <div class="profile-header text-center">
+                    <h2 class="profile-name"><%= user.fullname || 'User' %></h2>
+                    <p class="profile-email"><%= user.email || 'No email' %></p>
                 </div>
-            </div>
 
-            <!-- Profile Content -->
-            <div id="profile-content" class="content-section">
-                <!-- Profile Photo Section -->
-                <div class="card" style="margin-bottom: 20px;">
-                    <div class="card-header">
-                        <div class="card-icon">📷</div>
-                        <div class="card-title">Profile Photo</div>
-                    </div>
-                    <div class="card-content" style="text-align: center;">
-                        <div class="main-profile-photo-container">
-                            <% if (user.profilePhoto) { %>
-                                <img src="/uploads/profiles/<%= user.profilePhoto %>" alt="Profile Photo" class="main-profile-photo" id="mainProfileImg">
-                            <% } else { %>
-                                <div class="main-profile-avatar" id="mainProfileAvatar"><%= user.fullname ? user.fullname.charAt(0).toUpperCase() : '👤' %></div>
-                            <% } %>
-                            <div class="main-profile-overlay" onclick="triggerPhotoUpload()">
-                                <i class="bi bi-camera"></i>
-                                <span>Change Photo</span>
+                <!-- Profile Body -->
+                <div class="profile-body">
+                    <!-- Profile Picture Card -->
+                    <div class="info-card">
+                        <h5><i class="fas fa-camera"></i> Profile Picture</h5>
+                        <div class="row align-items-center">
+                            <div class="col-md-4 text-center">
+                                <div class="main-profile-avatar-container">
+                                    <% if (user.profilePhoto) { %>
+                                        <img src="/Uploads/profiles/<%= user.profilePhoto %>" alt="Profile Photo" class="main-profile-avatar-img" id="mainProfileImg">
+                                    <% } else { %>
+                                        <div class="main-profile-avatar" id="mainProfileAvatar">
+                                            <%= user.fullname ? user.fullname.charAt(0).toUpperCase() : '👤' %>
+                                        </div>
+                                    <% } %>
+                                    <div class="main-profile-avatar-overlay" onclick="triggerMainPhotoUpload()">
+                                        <i class="bi bi-camera"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-8">
+                                <div class="profile-photo-actions">
+                                    <h6 class="mb-2">Manage Your Profile Picture</h6>
+                                    <p class="text-muted mb-3">Upload a new profile picture or remove the current one. Recommended size: 200x200 pixels.</p>
+                                    <div class="d-flex gap-2 flex-wrap">
+                                        <button type="button" class="btn btn-primary btn-sm" onclick="triggerMainPhotoUpload()">
+                                            <i class="fas fa-upload"></i> Upload New Photo
+                                        </button>
+                                        <% if (user.profilePhoto) { %>
+                                            <button type="button" class="btn btn-outline-danger btn-sm" onclick="deleteProfilePhoto()">
+                                                <i class="fas fa-trash"></i> Remove Photo
+                                            </button>
+                                        <% } %>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <p style="margin-top: 15px; color: #666; font-size: 14px;">Click on the photo to upload a new profile picture</p>
                     </div>
-                </div>
 
-                <!-- Personal Information Section -->
-                <div class="card">
-                    <div class="card-header">
-                        <div class="card-icon">👤</div>
-                        <div class="card-title">Personal Information</div>
-                    </div>
-                    <div class="card-content">
-                        <form id="profileForm">
-                            <div style="margin-bottom: 20px;">
-                                <label style="display: block; margin-bottom: 5px; font-weight: 600;">Full Name</label>
-                                <input type="text" value="<%= user.fullname || '' %>" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px;">
+                    <!-- Personal Information Card -->
+                    <div class="info-card">
+                        <h5><i class="fas fa-user-circle"></i> Personal Information</h5>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="fullName" class="form-label">Full Name</label>
+                                <input type="text" class="form-control" id="fullName" value="<%= user.fullname || '' %>" readonly>
                             </div>
-                            <div style="margin-bottom: 20px;">
-                                <label style="display: block; margin-bottom: 5px; font-weight: 600;">Email Address</label>
-                                <input type="email" value="<%= user.email || '' %>" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px;">
+                            <div class="col-md-6 mb-3">
+                                <label for="email" class="form-label">Email Address</label>
+                                <input type="email" class="form-control" id="email" value="<%= user.email || '' %>" readonly>
                             </div>
-                            <div style="margin-bottom: 20px;">
-                                <label style="display: block; margin-bottom: 5px; font-weight: 600;">Phone Number</label>
-                                <input type="tel" value="<%= user.phone || '' %>" placeholder="Enter your phone number" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px;">
+                            <div class="col-md-6 mb-3">
+                                <label for="phone" class="form-label">Phone Number</label>
+                                <input type="tel" class="form-control" id="phone" value="<%= user.phone || '' %>" readonly>
                             </div>
-                            <div style="margin-bottom: 20px;">
-                                <label style="display: block; margin-bottom: 5px; font-weight: 600;">Account Type</label>
-                                <input type="text" value="<%= user.googleId ? 'Google Account' : 'Regular Account' %>" disabled style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; background: #f8f9fa; color: #666;">
+                            <div class="col-md-6 mb-3">
+                                <label for="joinDate" class="form-label">Member Since</label>
+                                <input type="text" class="form-control" id="joinDate" value="<%= user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A' %>" readonly>
                             </div>
-                            <button type="submit" class="btn">Update Profile</button>
-                        </form>
+                        </div>
+                        <div class="text-end">
+                            <button type="button" class="btn btn-outline-primary" onclick="toggleEdit()">
+                                <i class="fas fa-edit"></i> Edit Information
+                            </button>
+                        </div>
                     </div>
-                </div>
-            </div>
 
-            <!-- Hidden file input for photo upload -->
-            <input type="file" id="profilePhotoInput" class="profile-photo-upload" accept="image/*" onchange="uploadProfilePhoto()">
-
-            <div class="recent-activity">
-                <h2 class="activity-header">Recent Activity</h2>
-                
-                <div class="activity-item">
-                    <div class="activity-details">
-                        <div class="activity-title">Order #12345 has been delivered</div>
-                        <div class="activity-time">2 hours ago</div>
+                    <!-- Account Status Card -->
+                    <div class="info-card">
+                        <h5><i class="fas fa-shield-alt"></i> Account Status</h5>
+                        <div class="row align-items-center">
+                            <div class="col-md-6">
+                                <p class="mb-2"><strong>Current Status:</strong></p>
+                                <span class="status-badge status-active">
+                                    <i class="fas fa-check-circle"></i>
+                                    <%= user.isBlocked ? 'Blocked' : 'Active Account' %>
+                                </span>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="mb-2"><strong>Account Type:</strong></p>
+                                <p class="mb-0 text-muted">Standard Member</p>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <p class="mb-1"><strong>Email Verified:</strong> <i class="fas fa-check text-success"></i></p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="mb-1"><strong>Phone Verified:</strong> <i class="fas fa-times text-danger"></i></p>
+                            </div>
+                        </div>
                     </div>
-                </div>
 
-                <div class="activity-item">
-                    <div class="activity-details">
-                        <div class="activity-title">Added "Wireless Headphones" to wishlist</div>
-                        <div class="activity-time">1 day ago</div>
+                    <!-- Quick Actions Card -->
+                    <div class="info-card">
+                        <h5><i class="fas fa-cogs"></i> Account Management</h5>
+                        <div class="action-buttons">
+                            <a href="#" class="action-btn manage-address" onclick="handleAddressClick()">
+                                <i class="fas fa-map-marker-alt"></i>
+                                Manage Addresses
+                            </a>
+                            <a href="#" class="action-btn change-password" onclick="handlePasswordClick()">
+                                <i class="fas fa-key"></i>
+                                Change Password
+                            </a>
+                        </div>
                     </div>
-                </div>
-
-                <div class="activity-item">
-                    <div class="activity-details">
-                        <div class="activity-title">New coupon "SAVE20" added to your account</div>
-                        <div class="activity-time">3 days ago</div>
-                    </div>
-                </div>
-
-                <div class="activity-item">
-                    <div class="activity-details">
-                        <div class="activity-title">₹500 added to wallet balance</div>
-                        <div class="activity-time">1 week ago</div>
-                    </div>
-                </div>
-
-                <div style="margin-top: 20px; text-align: center;">
-                    <button class="btn btn-outline">View All Activity</button>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Hidden file input for photo upload -->
+    <input type="file" id="profilePhotoInput" class="profile-photo-upload" accept="image/*" onchange="uploadProfilePhoto()">
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO" crossorigin="anonymous"></script>
     <script>
+        let editMode = false;
+
         function showSection(section) {
             // Remove active class from all menu items
             document.querySelectorAll('.menu-item').forEach(item => {
@@ -581,62 +651,6 @@
 
             // Add active class to clicked item
             event.target.classList.add('active');
-
-            // Hide all content sections
-            document.querySelectorAll('.content-section').forEach(content => {
-                content.style.display = 'none';
-            });
-
-            // Update page content based on section
-            const pageTitle = document.querySelector('.page-title');
-            const pageSubtitle = document.querySelector('.page-subtitle');
-
-            switch(section) {
-                case 'profile':
-                    pageTitle.textContent = 'My Profile';
-                    pageSubtitle.textContent = 'Manage your personal information and preferences.';
-                    document.getElementById('profile-content').style.display = 'block';
-                    break;
-                case 'address':
-                    pageTitle.textContent = 'Address Book';
-                    pageSubtitle.textContent = 'Manage your saved addresses for faster checkout.';
-                    // Show address content when implemented
-                    break;
-                case 'orders':
-                    pageTitle.textContent = 'My Orders';
-                    pageSubtitle.textContent = 'Track your orders and view order history.';
-                    // Show orders content when implemented
-                    break;
-                case 'wishlist':
-                    pageTitle.textContent = 'My Wishlist';
-                    pageSubtitle.textContent = 'Items you\'ve saved for later purchase.';
-                    // Show wishlist content when implemented
-                    break;
-                case 'wallet':
-                    pageTitle.textContent = 'Wallet';
-                    pageSubtitle.textContent = 'Manage your wallet balance and transactions.';
-                    // Show wallet content when implemented
-                    break;
-                case 'coupons':
-                    pageTitle.textContent = 'Coupons';
-                    pageSubtitle.textContent = 'Your available coupons and discount codes.';
-                    // Show coupons content when implemented
-                    break;
-                case 'referrals':
-                    pageTitle.textContent = 'Referrals';
-                    pageSubtitle.textContent = 'Invite friends and earn rewards.';
-                    // Show referrals content when implemented
-                    break;
-                case 'password':
-                    pageTitle.textContent = 'Change Password';
-                    pageSubtitle.textContent = 'Update your account password for security.';
-                    // Show password change content when implemented
-                    break;
-                default:
-                    pageTitle.textContent = 'Dashboard';
-                    pageSubtitle.textContent = 'Welcome back, <%= user.fullname || "User" %>! Here\'s what\'s happening with your account.';
-                    document.getElementById('dashboard-content').style.display = 'block';
-            }
         }
 
         // Profile photo upload functions
@@ -644,52 +658,43 @@
             document.getElementById('profilePhotoInput').click();
         }
 
+        function triggerMainPhotoUpload() {
+            document.getElementById('profilePhotoInput').click();
+        }
+
         async function uploadProfilePhoto() {
             const fileInput = document.getElementById('profilePhotoInput');
             const file = fileInput.files[0];
 
-            if (!file) {
-                return;
-            }
+            if (!file) return;
 
             // Validate file type
-            if (!file.type.startsWith('image/')) {
+            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+            if (!allowedTypes.includes(file.type)) {
                 Swal.fire({
                     icon: 'error',
-                    title: 'Invalid File',
-                    text: 'Please select an image file.',
+                    title: 'Invalid File Type',
+                    text: 'Please select a valid image file (JPEG, JPG, PNG, or GIF)',
                     confirmButtonColor: '#111827'
                 });
                 return;
             }
 
-            // Validate file size (5MB)
+            // Validate file size (5MB limit)
             if (file.size > 5 * 1024 * 1024) {
                 Swal.fire({
                     icon: 'error',
                     title: 'File Too Large',
-                    text: 'Please select an image smaller than 5MB.',
+                    text: 'Please select an image smaller than 5MB',
                     confirmButtonColor: '#111827'
                 });
                 return;
             }
 
-            // Show loading
-            Swal.fire({
-                title: 'Uploading Photo...',
-                text: 'Please wait while we upload your profile photo.',
-                allowOutsideClick: false,
-                allowEscapeKey: false,
-                showConfirmButton: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                }
-            });
+            const formData = new FormData();
+            formData.append('profilePhoto', file);
 
             try {
-                const formData = new FormData();
-                formData.append('profilePhoto', file);
-
                 const response = await fetch('/upload-profile-photo', {
                     method: 'POST',
                     body: formData
@@ -698,27 +703,28 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    // Update both sidebar and main profile images
-                    const newImageUrl = `/uploads/profiles/${result.filename}`;
-
                     // Update sidebar
                     const sidebarContainer = document.querySelector('.profile-avatar-container');
                     sidebarContainer.innerHTML = `
-                        <img src="${newImageUrl}" alt="Profile Photo" class="profile-avatar-img" id="sidebarProfileImg">
+                        <img src="/Uploads/profiles/${result.filename}" alt="Profile Photo" class="profile-avatar-img" id="sidebarProfileImg">
                         <div class="profile-avatar-overlay" onclick="triggerPhotoUpload()">
                             <i class="bi bi-camera"></i>
                         </div>
                     `;
 
-                    // Update main profile section
-                    const mainContainer = document.querySelector('.main-profile-photo-container');
-                    mainContainer.innerHTML = `
-                        <img src="${newImageUrl}" alt="Profile Photo" class="main-profile-photo" id="mainProfileImg">
-                        <div class="main-profile-overlay" onclick="triggerPhotoUpload()">
-                            <i class="bi bi-camera"></i>
-                            <span>Change Photo</span>
-                        </div>
-                    `;
+                    // Update main profile image
+                    const mainContainer = document.querySelector('.main-profile-avatar-container');
+                    if (mainContainer) {
+                        mainContainer.innerHTML = `
+                            <img src="/Uploads/profiles/${result.filename}" alt="Profile Photo" class="main-profile-avatar-img" id="mainProfileImg">
+                            <div class="main-profile-avatar-overlay" onclick="triggerMainPhotoUpload()">
+                                <i class="bi bi-camera"></i>
+                            </div>
+                        `;
+                    }
+
+                    // Update delete button visibility
+                    updateDeleteButtonVisibility(true);
 
                     Swal.fire({
                         icon: 'success',
@@ -735,11 +741,11 @@
                     });
                 }
             } catch (error) {
-                console.error('Error uploading photo:', error);
+                console.error('Upload error:', error);
                 Swal.fire({
                     icon: 'error',
-                    title: 'Upload Error',
-                    text: 'Something went wrong. Please try again.',
+                    title: 'Upload Failed',
+                    text: 'An error occurred while uploading the photo',
                     confirmButtonColor: '#111827'
                 });
             }
@@ -747,6 +753,169 @@
             // Clear the file input
             fileInput.value = '';
         }
-    </script>
 
-<%- include('../partials/user/footer') %>
+        // Delete profile photo function
+        async function deleteProfilePhoto() {
+            const result = await Swal.fire({
+                title: 'Delete Profile Photo?',
+                text: 'Are you sure you want to remove your profile photo? This action cannot be undone.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, Delete',
+                cancelButtonText: 'Cancel'
+            });
+
+            if (!result.isConfirmed) {
+                return;
+            }
+
+            try {
+                // Show loading
+                Swal.fire({
+                    title: 'Deleting Photo...',
+                    text: 'Please wait while we remove your profile photo.',
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    showConfirmButton: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                const response = await fetch('/delete-profile-photo', {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const deleteResult = await response.json();
+
+                if (deleteResult.success) {
+                    // Update sidebar to show default avatar
+                    const sidebarContainer = document.querySelector('.profile-avatar-container');
+                    const userName = '<%= user.fullname ? user.fullname.charAt(0).toUpperCase() : "👤" %>';
+                    sidebarContainer.innerHTML = `
+                        <div class="profile-avatar" id="sidebarProfileAvatar">${userName}</div>
+                        <div class="profile-avatar-overlay" onclick="triggerPhotoUpload()">
+                            <i class="bi bi-camera"></i>
+                        </div>
+                    `;
+
+                    // Update main profile image to show default avatar
+                    const mainContainer = document.querySelector('.main-profile-avatar-container');
+                    if (mainContainer) {
+                        mainContainer.innerHTML = `
+                            <div class="main-profile-avatar" id="mainProfileAvatar">${userName}</div>
+                            <div class="main-profile-avatar-overlay" onclick="triggerMainPhotoUpload()">
+                                <i class="bi bi-camera"></i>
+                            </div>
+                        `;
+                    }
+
+                    // Update delete button visibility
+                    updateDeleteButtonVisibility(false);
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Photo Deleted!',
+                        text: deleteResult.message,
+                        confirmButtonColor: '#111827'
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Delete Failed',
+                        text: deleteResult.message,
+                        confirmButtonColor: '#111827'
+                    });
+                }
+            } catch (error) {
+                console.error('Delete error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Delete Failed',
+                    text: 'An error occurred while deleting the photo',
+                    confirmButtonColor: '#111827'
+                });
+            }
+        }
+
+        // Helper function to update delete button visibility
+        function updateDeleteButtonVisibility(hasPhoto) {
+            const deleteButton = document.querySelector('.btn-outline-danger');
+            if (deleteButton) {
+                if (hasPhoto) {
+                    deleteButton.style.display = 'inline-block';
+                } else {
+                    deleteButton.style.display = 'none';
+                }
+            }
+        }
+
+        function toggleEdit() {
+            const inputs = document.querySelectorAll('#fullName, #email, #phone');
+            const button = document.querySelector('.btn-outline-primary');
+
+            if (!editMode) {
+                inputs.forEach(input => {
+                    input.removeAttribute('readonly');
+                    input.style.background = '#f8f9fa';
+                });
+                button.innerHTML = '<i class="fas fa-save"></i> Save Changes';
+                button.classList.remove('btn-outline-primary');
+                button.classList.add('btn-primary');
+                editMode = true;
+            } else {
+                inputs.forEach(input => {
+                    input.setAttribute('readonly', 'readonly');
+                    input.style.background = '#ffffff';
+                });
+                button.innerHTML = '<i class="fas fa-edit"></i> Edit Information';
+                button.classList.remove('btn-primary');
+                button.classList.add('btn-outline-primary');
+                editMode = false;
+
+                // Show success message
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Profile Updated!',
+                    text: 'Your profile information has been updated successfully.',
+                    confirmButtonColor: '#111827'
+                });
+            }
+        }
+
+        function handleAddressClick() {
+            Swal.fire({
+                icon: 'info',
+                title: 'Address Management',
+                text: 'Redirecting to address management...',
+                confirmButtonColor: '#111827'
+            });
+            // Here you would typically redirect to an address management page
+        }
+
+        function handlePasswordClick() {
+            Swal.fire({
+                icon: 'info',
+                title: 'Password Change',
+                text: 'Redirecting to password change...',
+                confirmButtonColor: '#111827'
+            });
+            // Here you would typically redirect to a password change page
+        }
+
+        // Add smooth scrolling and animations
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.info-card');
+            cards.forEach((card, index) => {
+                card.style.animationDelay = `${index * 0.1}s`;
+                card.classList.add('fade-in');
+            });
+        });
+    </script>
+</body>
+</html>

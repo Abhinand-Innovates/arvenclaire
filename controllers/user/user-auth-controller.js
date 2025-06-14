@@ -1142,6 +1142,59 @@ const uploadProfilePhoto = async (req, res) => {
   }
 };
 
+// Delete profile photo
+const deleteProfilePhoto = async (req, res) => {
+  try {
+    const userId = req.session.userId;
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: 'Please login to delete profile photo'
+      });
+    }
+
+    // Get current user to check for existing profile photo
+    const currentUser = await User.findById(userId);
+
+    if (!currentUser) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    if (!currentUser.profilePhoto) {
+      return res.status(400).json({
+        success: false,
+        message: 'No profile photo to delete'
+      });
+    }
+
+    // Delete the physical file
+    const photoPath = path.join(__dirname, '../../public/uploads/profiles', currentUser.profilePhoto);
+    if (fs.existsSync(photoPath)) {
+      fs.unlinkSync(photoPath);
+    }
+
+    // Update user to remove profile photo
+    await User.findByIdAndUpdate(userId, {
+      $unset: { profilePhoto: 1 }
+    });
+
+    res.json({
+      success: true,
+      message: 'Profile photo deleted successfully'
+    });
+
+  } catch (error) {
+    console.error('Error deleting profile photo:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to delete profile photo'
+    });
+  }
+};
+
 
 
 
@@ -1247,6 +1300,7 @@ module.exports = {
 
   loadProfile,
   uploadProfilePhoto,
+  deleteProfilePhoto,
   loadSettings,
   logout,
   loadShop,
