@@ -587,25 +587,7 @@ const loadProfile = async (req, res) => {
 
 
 
-// Load settings page
-const loadSettings = async (req, res) => {
-  try {
-    const userId = req.session.userId;
-    if (!userId) {
-      return res.redirect('/login');
-    }
 
-    // For now, just render a simple settings page
-    // You can expand this later with user settings
-    res.render('user/settings', {
-      title: 'Settings',
-      user: req.user || null
-    });
-  } catch (error) {
-    console.error('Error loading settings:', error);
-    res.status(500).send('Server Error');
-  }
-};
 
 
 
@@ -960,10 +942,12 @@ const submitReview = async (req, res) => {
       });
     }
 
-    const { productId, rating, title, comment } = req.body;
+    // Get productId from route params
+    const productId = req.params.id;
+    const { rating, title, comment } = req.body;
 
     // Validate input
-    if (!productId || !rating || !title || !comment) {
+    if (!rating || !title || !comment) {
       return res.status(400).json({
         success: false,
         message: 'All fields are required'
@@ -1038,7 +1022,8 @@ const markHelpful = async (req, res) => {
       });
     }
 
-    const { reviewId } = req.body;
+    // Get reviewId from route params
+    const reviewId = req.params.reviewId;
 
     if (!reviewId) {
       return res.status(400).json({
@@ -1197,10 +1182,6 @@ const deleteProfilePhoto = async (req, res) => {
 
 
 
-
-
-
-
 // API endpoint to check product availability status
 const checkProductStatus = async (req, res) => {
   try {
@@ -1301,7 +1282,6 @@ module.exports = {
   loadProfile,
   uploadProfilePhoto,
   deleteProfilePhoto,
-  loadSettings,
   logout,
   loadShop,
   loadProductDetails,

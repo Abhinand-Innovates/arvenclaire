@@ -695,7 +695,7 @@
             formData.append('profilePhoto', file);
 
             try {
-                const response = await fetch('/upload-profile-photo', {
+                const response = await fetch('/profile/photo', {
                     method: 'POST',
                     body: formData
                 });
@@ -784,7 +784,7 @@
                     }
                 });
 
-                const response = await fetch('/delete-profile-photo', {
+                const response = await fetch('/profile/photo', {
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json'

@@ -1887,14 +1887,13 @@
         }
 
         const formData = {
-            productId: '<%= product._id %>',
             rating: selectedRating,
             title: document.getElementById('reviewTitle').value,
             comment: document.getElementById('reviewComment').value
         };
 
         try {
-            const response = await fetch('/submit-review', {
+            const response = await fetch('/product/<%= product._id %>/review', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1934,12 +1933,11 @@
     // Mark review as helpful
     async function markHelpful(reviewId) {
         try {
-            const response = await fetch('/mark-helpful', {
+            const response = await fetch(`/product/<%= product._id %>/review/${reviewId}/helpful`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ reviewId })
+                }
             });
 
             const result = await response.json();
@@ -2087,7 +2085,7 @@
     async function checkProductAvailability() {
         try {
             lastAvailabilityCheck = Date.now();
-            const response = await fetch(`/api/product-status/<%= product._id %>`);
+            const response = await fetch(`/product/<%= product._id %>/status`);
             const result = await response.json();
 
             if (!result.success || !result.available) {

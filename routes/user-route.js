@@ -49,22 +49,16 @@ router.get("/dashboard", isUserAuthenticated, preventCache, addUserContext, chec
 router.get("/shop", addUserContext, checkUserBlocked, userController.loadShop);
 router.get("/products", addUserContext, checkUserBlocked, userController.loadShop);
 router.get("/product/:id", addUserContext, checkUserBlocked, checkProductAvailabilityForPage, userController.loadProductDetails);
-router.get("/profile", isUserAuthenticated, preventCache, addUserContext, checkUserBlocked, userController.loadProfile); 
-router.get("/settings", isUserAuthenticated, preventCache, addUserContext, checkUserBlocked, userController.loadSettings);
+router.get("/profile", isUserAuthenticated, preventCache, addUserContext, checkUserBlocked, userController.loadProfile);
 router.get("/logout", isUserAuthenticated, preventCache, checkUserBlocked, userController.logout);
 
-// Review routes
-router.post("/submit-review", isUserAuthenticated, preventCache, checkUserBlocked, userController.submitReview);
-router.post("/mark-helpful", isUserAuthenticated, preventCache, checkUserBlocked, userController.markHelpful);
-
-// Profile photo upload route
-router.post("/upload-profile-photo", isUserAuthenticated, preventCache, checkUserBlocked, profileUpload.single('profilePhoto'), handleMulterError, userController.uploadProfilePhoto);
-
-// Profile photo delete route
-router.delete("/delete-profile-photo", isUserAuthenticated, preventCache, checkUserBlocked, userController.deleteProfilePhoto);
-
-// API routes
-router.get("/api/product-status/:id", isUserAuthenticated, preventCache, checkUserBlocked, userController.checkProductStatus);
+// Product-related routes
+router.post("/product/:id/review", isUserAuthenticated, preventCache, checkUserBlocked, userController.submitReview);
+router.post("/product/:id/review/:reviewId/helpful", isUserAuthenticated, preventCache, checkUserBlocked, userController.markHelpful);
+router.get("/product/:id/status", isUserAuthenticated, preventCache, checkUserBlocked, userController.checkProductStatus);
+// Profile-related routes
+router.post("/profile/photo", isUserAuthenticated, preventCache, checkUserBlocked, profileUpload.single('profilePhoto'), handleMulterError, userController.uploadProfilePhoto);
+router.delete("/profile/photo", isUserAuthenticated, preventCache, checkUserBlocked, userController.deleteProfilePhoto);
 
 
 
