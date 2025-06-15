@@ -965,6 +965,7 @@
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         border: 2px solid transparent;
         position: relative;
+        cursor: pointer;
     }
 
     .related-product-card:hover {
@@ -981,6 +982,157 @@
         display: flex;
         align-items: center;
         justify-content: center;
+    }
+
+    /* Hover Action Icons Overlay for Related Products */
+    .related-product-hover-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.4), transparent);
+        padding: 20px 15px 15px;
+        transform: translateY(100%);
+        opacity: 0;
+        transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        z-index: 10;
+        pointer-events: none;
+    }
+
+    .related-product-card:hover .related-product-hover-overlay {
+        transform: translateY(0);
+        opacity: 1;
+        pointer-events: all;
+    }
+
+    .related-product-action-row {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+
+    .related-product-view-details-btn {
+        background: rgba(255, 255, 255, 0.95);
+        color: #000000;
+        border: 2px solid #ffffff;
+        border-radius: 20px;
+        padding: 8px 16px;
+        font-size: 12px;
+        font-weight: 600;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        backdrop-filter: blur(10px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        transform: translateY(12px);
+        opacity: 0;
+        white-space: nowrap;
+    }
+
+    .related-product-card:hover .related-product-view-details-btn {
+        transform: translateY(0);
+        opacity: 1;
+        transition-delay: 0.1s;
+    }
+
+    .related-product-view-details-btn:hover {
+        transform: scale(1.05);
+        background: #000000;
+        color: #ffffff;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        text-decoration: none;
+    }
+
+    .related-product-action-icons {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        align-items: center;
+    }
+
+    .related-product-action-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        border: 2px solid #ffffff;
+        background: rgba(255, 255, 255, 0.95);
+        color: #000000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        backdrop-filter: blur(10px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        transform: translateY(12px);
+        opacity: 0;
+    }
+
+    .related-product-card:hover .related-product-action-btn {
+        transform: translateY(0);
+        opacity: 1;
+    }
+
+    .related-product-card:hover .related-product-action-btn:nth-child(1) {
+        transition-delay: 0.2s;
+    }
+
+    .related-product-card:hover .related-product-action-btn:nth-child(2) {
+        transition-delay: 0.3s;
+    }
+
+    .related-product-action-btn:hover {
+        transform: scale(1.15);
+        background: #000000;
+        color: #ffffff;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .related-product-action-btn.cart-btn:hover {
+        background: #000000;
+        border-color: #000000;
+    }
+
+    .related-product-action-btn.wishlist-btn:hover {
+        background: #e74c3c;
+        border-color: #e74c3c;
+        color: #ffffff;
+    }
+
+    .related-product-action-btn.wishlist-btn.in-wishlist {
+        background: #e74c3c;
+        border-color: #e74c3c;
+        color: #ffffff;
+    }
+
+    /* Disabled button styles for related products */
+    .related-product-action-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: translateY(0) !important;
+    }
+
+    .related-product-action-btn:disabled:hover {
+        transform: scale(1) !important;
+        background: rgba(255, 255, 255, 0.95) !important;
+        color: #000000 !important;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important;
+    }
+
+    /* Prevent link click when clicking action buttons */
+    .related-product-card .related-product-hover-overlay {
+        pointer-events: none;
+    }
+
+    .related-product-card .related-product-action-btn,
+    .related-product-card .related-product-view-details-btn {
+        pointer-events: all;
     }
 
     .related-product-image {
@@ -1305,6 +1457,25 @@
             font-size: 0.8rem;
         }
 
+        /* Mobile responsive adjustments for related product hover actions */
+        .related-product-action-btn {
+            width: 32px;
+            height: 32px;
+            font-size: 12px;
+        }
+
+        .related-product-action-icons {
+            gap: 10px;
+        }
+
+        .related-product-view-details-btn {
+            padding: 6px 12px;
+            font-size: 11px;
+        }
+
+        .related-product-hover-overlay {
+            padding: 15px 10px 10px;
+        }
 
     }
 
@@ -1738,7 +1909,7 @@
 
                 <div class="related-products-grid">
                     <% relatedProducts.forEach(relatedProduct => { %>
-                        <div class="related-product-card">
+                        <div class="related-product-card" onclick="window.location.href='/product/<%= relatedProduct._id %>'">
                             <div class="related-product-image-container">
                                 <% if (relatedProduct.regularPrice > relatedProduct.salePrice) { %>
                                     <div class="related-product-discount">
@@ -1749,6 +1920,32 @@
                                      alt="<%= relatedProduct.productName %>"
                                      class="related-product-image"
                                      onerror="this.src='https://images.unsplash.com/photo-1523275335684-37898b6baf30?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80'">
+
+                                <!-- Hover Action Overlay -->
+                                <div class="related-product-hover-overlay">
+                                    <!-- View Details Button Row -->
+                                    <div class="related-product-action-row">
+                                        <a href="/product/<%= relatedProduct._id %>" class="related-product-view-details-btn">
+                                            <i class="bi bi-eye"></i>
+                                            View Details
+                                        </a>
+                                    </div>
+
+                                    <!-- Cart and Wishlist Icons Row -->
+                                    <div class="related-product-action-icons">
+                                        <button class="related-product-action-btn cart-btn"
+                                                onclick="event.stopPropagation(); addToCartFromRelated('<%= relatedProduct._id %>')"
+                                                title="Add to Cart"
+                                                <%= (relatedProduct.quantity === 0 || relatedProduct.status === 'Out of Stock') ? 'disabled' : '' %>>
+                                            <i class="bi bi-cart-plus"></i>
+                                        </button>
+                                        <button class="related-product-action-btn wishlist-btn"
+                                                onclick="event.stopPropagation(); addToWishlistFromRelated('<%= relatedProduct._id %>', this)"
+                                                title="Add to Wishlist">
+                                            <i class="bi bi-heart"></i>
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
 
                             <div class="related-product-info">
@@ -1772,16 +1969,6 @@
                                         <span class="related-rating-count">(<%= relatedProduct.averageRating.toFixed(1) %>) - <%= relatedProduct.totalReviews %> <%= relatedProduct.totalReviews === 1 ? 'review' : 'reviews' %></span>
                                     </div>
                                 <% } %>
-
-                                <div class="related-product-actions">
-                                    <a href="/product/<%= relatedProduct._id %>" class="btn-related btn-related-primary">
-                                        <i class="bi bi-eye"></i>
-                                        View Details
-                                    </a>
-                                    <button class="btn-related btn-related-secondary" onclick="addToWishlist('<%= relatedProduct._id %>', this)">
-                                        <i class="bi bi-heart"></i>
-                                    </button>
-                                </div>
                             </div>
                         </div>
                     <% }) %>
@@ -2528,6 +2715,133 @@
         }
     });
 
+    // Related products cart and wishlist functions
+    async function addToCartFromRelated(productId) {
+        try {
+            const response = await fetch('/add-to-cart', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ productId, quantity: 1 })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                // Update cart counter if it exists
+                updateCartCounter(result.cartCount);
+
+                // Update wishlist counter if product was removed from wishlist
+                if (result.wishlistCount !== undefined) {
+                    updateWishlistCounter(result.wishlistCount);
+                }
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Added to Cart!',
+                    text: 'Product has been added to your cart.',
+                    confirmButtonColor: '#111827',
+                    timer: 2000,
+                    timerProgressBar: true
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: result.message || 'Failed to add to cart.',
+                    confirmButtonColor: '#111827'
+                });
+            }
+        } catch (error) {
+            console.error('Cart error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Please login to add items to cart.',
+                confirmButtonColor: '#111827'
+            });
+        }
+    }
+
+    async function addToWishlistFromRelated(productId, buttonElement) {
+        try {
+            const response = await fetch('/wishlist/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ productId })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                // Update wishlist counter if it exists
+                updateWishlistCounter(result.wishlistCount);
+
+                // Change button appearance to indicate it's in wishlist
+                const heartIcon = buttonElement.querySelector('i');
+                if (heartIcon) {
+                    heartIcon.classList.remove('bi-heart');
+                    heartIcon.classList.add('bi-heart-fill');
+                    buttonElement.classList.add('in-wishlist');
+                    buttonElement.disabled = true;
+                    buttonElement.title = 'Already in wishlist';
+                }
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Added to Wishlist!',
+                    text: result.message,
+                    confirmButtonColor: '#111827',
+                    timer: 2000,
+                    timerProgressBar: true
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: result.message || 'Failed to add to wishlist.',
+                    confirmButtonColor: '#111827'
+                });
+            }
+        } catch (error) {
+            console.error('Wishlist error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Please login to add items to wishlist.',
+                confirmButtonColor: '#111827'
+            });
+        }
+    }
+
+    // Helper functions to update counters (if they exist in header)
+    function updateCartCounter(count) {
+        const cartCounter = document.querySelector('#cartCount');
+        if (cartCounter) {
+            if (count > 0) {
+                cartCounter.textContent = count;
+                cartCounter.style.display = 'flex';
+            } else {
+                cartCounter.style.display = 'none';
+            }
+        }
+    }
+
+    function updateWishlistCounter(count) {
+        const wishlistCounter = document.querySelector('#wishlistCount');
+        if (wishlistCounter) {
+            if (count > 0) {
+                wishlistCounter.textContent = count;
+                wishlistCounter.style.display = 'flex';
+            } else {
+                wishlistCounter.style.display = 'none';
+            }
+        }
+    }
+
     // Initialize zoom functionality when page loads
     document.addEventListener('DOMContentLoaded', function() {
         initializeImageZoom();
@@ -2537,6 +2851,19 @@
             if (window.innerWidth > 768) {
                 setupMagnifier();
             }
+        });
+
+        // Add entrance animations for related products
+        const relatedCards = document.querySelectorAll('.related-product-card');
+        relatedCards.forEach((card, index) => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            card.style.transition = 'all 0.6s ease';
+
+            setTimeout(() => {
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, index * 100);
         });
     });
 </script>
