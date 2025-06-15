@@ -371,9 +371,119 @@ const checkCartProductsAvailability = async (req, res, next) => {
   }
 };
 
+/**
+ * Middleware specifically for wishlist operations
+ * Similar to checkProductAvailability but doesn't check stock
+ * Users should be able to add out-of-stock products to wishlist
+ */
+const checkProductAvailabilityForWishlist = async (req, res, next) => {
+  try {
+    const productId = req.body.productId || req.params.productId || req.params.id;
+
+    if (!productId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Product ID is required',
+        code: 'MISSING_PRODUCT_ID'
+      });
+    }
+
+    // Validate ObjectId format
+    if (!productId.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid product ID format',
+        code: 'INVALID_PRODUCT_ID'
+      });
+    }
+
+    // Check if product exists and is available
+    const product = await Product.findById(productId).populate('category', 'name isListed isDeleted');
+
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: 'Product not found',
+        code: 'PRODUCT_NOT_FOUND',
+        redirect: '/shop'
+      });
+    }
+
+    // Check if product's category is available
+    if (product.category) {
+      if (product.category.isDeleted) {
+        return res.status(403).json({
+          success: false,
+          message: 'This product category has been removed',
+          code: 'CATEGORY_DELETED',
+          redirect: '/shop'
+        });
+      } else if (!product.category.isListed) {
+        return res.status(403).json({
+          success: false,
+          message: 'This product category is currently unavailable',
+          code: 'CATEGORY_UNLISTED',
+          redirect: '/shop'
+        });
+      }
+    }
+
+    // Check if product is blocked, deleted, or unlisted
+    if (product.isBlocked) {
+      return res.status(403).json({
+        success: false,
+        message: 'This product is currently blocked',
+        code: 'PRODUCT_BLOCKED',
+        redirect: '/shop'
+      });
+    }
+
+    if (product.isDeleted) {
+      return res.status(403).json({
+        success: false,
+        message: 'This product has been removed',
+        code: 'PRODUCT_DELETED',
+        redirect: '/shop'
+      });
+    }
+
+    if (!product.isListed) {
+      return res.status(403).json({
+        success: false,
+        message: 'This product is currently unlisted',
+        code: 'PRODUCT_UNLISTED',
+        redirect: '/shop'
+      });
+    }
+
+    // Note: We don't check stock for wishlist operations
+    // Users should be able to add out-of-stock products to wishlist
+
+    // Add product to request object for use in next middleware/controller
+    req.product = product;
+    req.productAvailability = {
+      isAvailable: true,
+      stock: product.quantity,
+      category: product.category,
+      isInStock: product.quantity > 0
+    };
+
+    next();
+
+  } catch (error) {
+    console.error('Error in checkProductAvailabilityForWishlist middleware:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+      code: 'SERVER_ERROR'
+    });
+  }
+};
+
 module.exports = {
   checkProductAvailability,
   checkProductAvailabilityForPage,
+  checkProductAvailabilityForWishlist,
   checkMultipleProductsAvailability,
   filterAvailableProducts,
   checkCartProductsAvailability

@@ -422,6 +422,37 @@
             color: #dc3545;
         }
 
+        /* Cart and Wishlist Icons */
+        .cart-icon {
+            position: relative;
+            font-size: 1.5rem;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .cart-icon:hover {
+            color: #000000 !important;
+            text-decoration: none;
+        }
+
+        .wishlist-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #e74c3c;
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 11px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+            min-width: 18px;
+        }
+
         /* Responsive adjustments */
         @media (max-width: 768px) {
             .account-dropdown {
@@ -440,6 +471,18 @@
                 width: 40px;
                 height: 40px;
                 font-size: 16px;
+            }
+
+            .cart-icon {
+                font-size: 1.3rem;
+            }
+
+            .wishlist-count {
+                width: 16px;
+                height: 16px;
+                font-size: 10px;
+                top: -6px;
+                right: -6px;
             }
         }
     </style>
@@ -535,8 +578,9 @@
                                 <i class="bi bi-cart"></i>
                                 <!-- <span class="cart-count">2</span> -->
                             </a>
-                            <a href="/wishlist" class="text-dark cart-icon">
+                            <a href="/wishlist" class="text-dark cart-icon" id="wishlistIcon">
                                 <i class="bi bi-heart"></i>
+                                <span class="wishlist-count" id="wishlistCount" style="display: none;">0</span>
                             </a>
             </div>
         </div>
@@ -740,6 +784,9 @@
 
             // Navbar Search Functionality
             initializeNavbarSearch();
+
+            // Load wishlist count for logged-in users
+            loadWishlistCount();
         });
 
         // Navbar Search Implementation
@@ -767,6 +814,178 @@
 
                 // Send the query to existing shop route
                 window.location.href = `/shop?search=${encodeURIComponent(query)}`;
+            }
+        }
+
+        // Wishlist functionality
+        async function loadWishlistCount() {
+            try {
+                const response = await fetch('/wishlist/count');
+                if (response.ok) {
+                    const data = await response.json();
+                    updateWishlistCounter(data.count);
+                }
+            } catch (error) {
+                console.log('Error loading wishlist count:', error);
+            }
+        }
+
+        function updateWishlistCounter(count) {
+            const wishlistCountElement = document.getElementById('wishlistCount');
+            if (wishlistCountElement) {
+                if (count > 0) {
+                    wishlistCountElement.textContent = count;
+                    wishlistCountElement.style.display = 'flex';
+                } else {
+                    wishlistCountElement.style.display = 'none';
+                }
+            }
+        }
+
+        // Global function to add to wishlist (called from product pages)
+        async function addToWishlist(productId, buttonElement) {
+            try {
+                console.log('Adding to wishlist:', productId);
+
+                const response = await fetch('/wishlist/add', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ productId })
+                });
+
+                const result = await response.json();
+                console.log('Wishlist add response:', result);
+
+                if (result.success) {
+                    // Update wishlist counter
+                    updateWishlistCounter(result.wishlistCount);
+
+                    // Change button color to red if button element is provided
+                    if (buttonElement) {
+                        const heartIcon = buttonElement.querySelector('i');
+                        if (heartIcon) {
+                            heartIcon.style.color = '#e74c3c';
+                            heartIcon.classList.remove('bi-heart');
+                            heartIcon.classList.add('bi-heart-fill');
+                        }
+                        buttonElement.disabled = true;
+                        buttonElement.title = 'Already in wishlist';
+                    }
+
+                    // Update all wishlist buttons for this product
+                    updateWishlistButtonState(productId, true);
+
+                    // Show success message
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Added to Wishlist!',
+                        text: result.message,
+                        confirmButtonColor: '#111827',
+                        timer: 2000,
+                        timerProgressBar: true
+                    });
+                } else {
+                    // Show error message
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: result.message,
+                        confirmButtonColor: '#111827'
+                    });
+                }
+            } catch (error) {
+                console.error('Error adding to wishlist:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Please login to add items to wishlist.',
+                    confirmButtonColor: '#111827'
+                });
+            }
+        }
+
+        // Function to update wishlist button state across the page
+        function updateWishlistButtonState(productId, isInWishlist) {
+            // Find all wishlist buttons for this product
+            const wishlistButtons = document.querySelectorAll(`[onclick*="${productId}"]`);
+
+            wishlistButtons.forEach(button => {
+                const heartIcon = button.querySelector('i');
+                if (heartIcon && heartIcon.classList.contains('bi-heart')) {
+                    if (isInWishlist) {
+                        heartIcon.style.color = '#e74c3c';
+                        heartIcon.classList.remove('bi-heart');
+                        heartIcon.classList.add('bi-heart-fill');
+                        button.disabled = true;
+                        button.title = 'Already in wishlist';
+                    } else {
+                        heartIcon.style.color = '';
+                        heartIcon.classList.remove('bi-heart-fill');
+                        heartIcon.classList.add('bi-heart');
+                        button.disabled = false;
+                        button.title = 'Add to wishlist';
+                    }
+                }
+            });
+        }
+
+        // Global function to remove from wishlist
+        async function removeFromWishlist(productId) {
+            try {
+                console.log('Removing from wishlist:', productId);
+
+                const response = await fetch('/wishlist/remove', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ productId })
+                });
+
+                const result = await response.json();
+                console.log('Wishlist remove response:', result);
+
+                if (result.success) {
+                    // Update wishlist counter
+                    updateWishlistCounter(result.wishlistCount);
+
+                    // Update button states
+                    updateWishlistButtonState(productId, false);
+
+                    // Show success message
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Removed from Wishlist!',
+                        text: result.message,
+                        confirmButtonColor: '#111827',
+                        timer: 2000,
+                        timerProgressBar: true
+                    });
+
+                    // Reload page if on wishlist page
+                    if (window.location.pathname === '/wishlist') {
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1000);
+                    }
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: result.message,
+                        confirmButtonColor: '#111827'
+                    });
+                }
+            } catch (error) {
+                console.error('Error removing from wishlist:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Failed to remove item from wishlist.',
+                    confirmButtonColor: '#111827'
+                });
             }
         }
     </script>

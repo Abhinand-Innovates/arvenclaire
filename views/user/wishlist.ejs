@@ -336,6 +336,215 @@
                 transform: translateY(0);
             }
         }
+
+        /* Wishlist Products Styles */
+        .wishlist-products {
+            padding: 0;
+        }
+
+        .wishlist-item {
+            display: flex;
+            align-items: center;
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--border-color);
+            transition: background-color 0.3s ease;
+        }
+
+        .wishlist-item:hover {
+            background-color: var(--hover-color);
+        }
+
+        .wishlist-item:last-child {
+            border-bottom: none;
+        }
+
+        .product-image {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            margin-right: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .product-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .discount-badge {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background: #e74c3c;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .product-details {
+            flex: 1;
+            margin-right: 1.5rem;
+        }
+
+        .product-brand {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            margin-bottom: 0.25rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .product-name {
+            color: var(--text-primary);
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 0 0 0.75rem 0;
+            line-height: 1.4;
+        }
+
+        .product-price {
+            margin-bottom: 0.75rem;
+        }
+
+        .current-price {
+            color: var(--text-primary);
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-right: 0.75rem;
+        }
+
+        .original-price {
+            color: var(--text-muted);
+            font-size: 1rem;
+            text-decoration: line-through;
+        }
+
+        .product-stock {
+            margin-bottom: 0.5rem;
+        }
+
+        .in-stock {
+            color: #059669;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .out-of-stock {
+            color: #dc2626;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .added-date {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        .product-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            flex-shrink: 0;
+        }
+
+        .btn-action {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            border: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            min-width: 120px;
+        }
+
+        .btn-view {
+            background: var(--text-primary);
+            color: white;
+        }
+
+        .btn-view:hover {
+            background: var(--text-secondary);
+            color: white;
+            text-decoration: none;
+        }
+
+        .btn-cart {
+            background: #059669;
+            color: white;
+        }
+
+        .btn-cart:hover:not(:disabled) {
+            background: #047857;
+        }
+
+        .btn-cart:disabled {
+            background: var(--text-muted);
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .btn-remove {
+            background: #dc2626;
+            color: white;
+        }
+
+        .btn-remove:hover {
+            background: #b91c1c;
+        }
+
+        /* Responsive Design for Wishlist Items */
+        @media (max-width: 768px) {
+            .wishlist-item {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 1rem;
+            }
+
+            .product-image {
+                width: 100%;
+                height: 200px;
+                margin-right: 0;
+                margin-bottom: 1rem;
+            }
+
+            .product-details {
+                margin-right: 0;
+                margin-bottom: 1rem;
+                width: 100%;
+            }
+
+            .product-actions {
+                flex-direction: row;
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .btn-action {
+                flex: 1;
+                min-width: auto;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .product-actions {
+                flex-direction: column;
+            }
+
+            .btn-action {
+                width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
@@ -355,21 +564,126 @@
         <div class="wishlist-container fade-in">
             <div class="wishlist-header">
                 <h2><i class="fas fa-heart"></i> My Wishlist</h2>
-                <span class="items-count">0 items</span>
+                <span class="items-count"><%= wishlist.products.length %> items</span>
             </div>
 
-            <!-- Empty State (for now) -->
-            <div class="empty-state">
-                <i class="fas fa-heart"></i>
-                <h3>Your Wishlist is Empty</h3>
-                <p>You haven't added any items to your wishlist yet. Start browsing to find products you love!</p>
-                <a href="/shop" class="browse-btn">
-                    <i class="fas fa-shopping-cart"></i> Browse Products
-                </a>
-            </div>
+            <% if (wishlist.products.length > 0) { %>
+                <!-- Wishlist Products -->
+                <div class="wishlist-products">
+                    <% wishlist.products.forEach(item => { %>
+                        <div class="wishlist-item" data-product-id="<%= item.productId._id %>">
+                            <div class="product-image">
+                                <img src="/uploads/products/<%= item.productId.mainImage %>"
+                                     alt="<%= item.productId.productName %>"
+                                     onerror="this.src='https://images.unsplash.com/photo-1523275335684-37898b6baf30?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80'">
+                                <% if (item.productId.regularPrice > item.productId.salePrice) { %>
+                                    <div class="discount-badge">
+                                        <%= Math.round(((item.productId.regularPrice - item.productId.salePrice) / item.productId.regularPrice) * 100) %>% OFF
+                                    </div>
+                                <% } %>
+                            </div>
+
+                            <div class="product-details">
+                                <div class="product-brand"><%= item.productId.brand %></div>
+                                <h3 class="product-name"><%= item.productId.productName %></h3>
+
+                                <div class="product-price">
+                                    <span class="current-price">₹<%= item.productId.salePrice.toLocaleString() %></span>
+                                    <% if (item.productId.regularPrice > item.productId.salePrice) { %>
+                                        <span class="original-price">₹<%= item.productId.regularPrice.toLocaleString() %></span>
+                                    <% } %>
+                                </div>
+
+                                <div class="product-stock">
+                                    <% if (item.productId.quantity > 0) { %>
+                                        <span class="in-stock">
+                                            <i class="fas fa-check-circle"></i>
+                                            In Stock (<%= item.productId.quantity %> available)
+                                        </span>
+                                    <% } else { %>
+                                        <span class="out-of-stock">
+                                            <i class="fas fa-times-circle"></i>
+                                            Out of Stock
+                                        </span>
+                                    <% } %>
+                                </div>
+
+                                <div class="added-date">
+                                    Added on <%= new Date(item.addedOn).toLocaleDateString('en-IN', {
+                                        year: 'numeric',
+                                        month: 'long',
+                                        day: 'numeric'
+                                    }) %>
+                                </div>
+                            </div>
+
+                            <div class="product-actions">
+                                <a href="/product/<%= item.productId._id %>" class="btn-action btn-view">
+                                    <i class="fas fa-eye"></i>
+                                    View Details
+                                </a>
+                                <% if (item.productId.quantity > 0) { %>
+                                    <button class="btn-action btn-cart" onclick="addToCart('<%= item.productId._id %>')">
+                                        <i class="fas fa-shopping-cart"></i>
+                                        Add to Cart
+                                    </button>
+                                <% } else { %>
+                                    <button class="btn-action btn-cart" disabled>
+                                        <i class="fas fa-times"></i>
+                                        Out of Stock
+                                    </button>
+                                <% } %>
+                                <button class="btn-action btn-remove" onclick="removeFromWishlist('<%= item.productId._id %>')">
+                                    <i class="fas fa-trash"></i>
+                                    Remove
+                                </button>
+                            </div>
+                        </div>
+                    <% }) %>
+                </div>
+            <% } else { %>
+                <!-- Empty State -->
+                <div class="empty-state">
+                    <i class="fas fa-heart"></i>
+                    <h3>Your Wishlist is Empty</h3>
+                    <p>You haven't added any items to your wishlist yet. Start browsing to find products you love!</p>
+                    <a href="/shop" class="browse-btn">
+                        <i class="fas fa-shopping-cart"></i> Browse Products
+                    </a>
+                </div>
+            <% } %>
         </div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        // Placeholder function for add to cart (to be implemented when cart functionality is added)
+        function addToCart(productId) {
+            Swal.fire({
+                icon: 'info',
+                title: 'Coming Soon',
+                text: 'Cart functionality will be available soon.',
+                confirmButtonColor: '#111827'
+            });
+        }
+
+        // Page load animation
+        document.addEventListener('DOMContentLoaded', function() {
+            const wishlistItems = document.querySelectorAll('.wishlist-item');
+
+            wishlistItems.forEach((item, index) => {
+                item.style.opacity = '0';
+                item.style.transform = 'translateY(20px)';
+                item.style.transition = 'all 0.6s ease';
+
+                setTimeout(() => {
+                    item.style.opacity = '1';
+                    item.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+        });
+    </script>
 </body>
 </html>

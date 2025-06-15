@@ -1163,7 +1163,7 @@
                                             <i class="bi bi-eye"></i>
                                             View Details
                                         </a>
-                                        <button class="btn-product btn-wishlist" onclick="addToWishlist('<%= product._id %>')">
+                                        <button class="btn-product btn-wishlist" onclick="addToWishlist('<%= product._id %>', this)">
                                             <i class="bi bi-heart"></i>
                                         </button>
                                     </div>
@@ -1262,61 +1262,7 @@
         });
     <% } %>
 
-    // Add to Wishlist Function
-    async function addToWishlist(productId) {
-        const loadingOverlay = document.getElementById('loadingOverlay');
-
-        try {
-            loadingOverlay.classList.add('active');
-
-            const response = await fetch('/wishlist/add', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    productId: productId
-                })
-            });
-
-            const result = await response.json();
-
-            if (result.success) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Added to Wishlist!',
-                    text: 'Product has been added to your wishlist successfully.',
-                    showConfirmButton: false,
-                    timer: 2000,
-                    toast: true,
-                    position: 'top-end',
-                    background: '#f8fafc',
-                    color: '#111827'
-                });
-            } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error!',
-                    text: result.message || 'Failed to add product to wishlist.',
-                    confirmButtonColor: '#111827',
-                    background: '#f8fafc',
-                    color: '#111827'
-                });
-            }
-        } catch (error) {
-            console.error('Error adding to wishlist:', error);
-            Swal.fire({
-                icon: 'error',
-                title: 'Error!',
-                text: 'Something went wrong. Please try again.',
-                confirmButtonColor: '#111827',
-                background: '#f8fafc',
-                color: '#111827'
-            });
-        } finally {
-            loadingOverlay.classList.remove('active');
-        }
-    }
+    // Note: addToWishlist function is now available globally from header.ejs
 
     // Form Enhancement - Manual Submit Only
     document.addEventListener('DOMContentLoaded', function() {

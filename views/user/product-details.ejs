@@ -1564,7 +1564,7 @@
                                 Add to Cart
                             <% } %>
                         </button>
-                        <button class="btn-action btn-secondary" onclick="addToWishlist('<%= product._id %>')">
+                        <button class="btn-action btn-secondary" onclick="addToWishlist('<%= product._id %>', this)">
                             <i class="bi bi-heart"></i>
                             Add to Wishlist
                         </button>
@@ -1778,7 +1778,7 @@
                                         <i class="bi bi-eye"></i>
                                         View Details
                                     </a>
-                                    <button class="btn-related btn-related-secondary" onclick="addToWishlist('<%= relatedProduct._id %>')">
+                                    <button class="btn-related btn-related-secondary" onclick="addToWishlist('<%= relatedProduct._id %>', this)">
                                         <i class="bi bi-heart"></i>
                                     </button>
                                 </div>
@@ -2022,43 +2022,7 @@
         }
     }
 
-    // Add to wishlist
-    async function addToWishlist(productId) {
-        try {
-            const response = await fetch('/add-to-wishlist', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ productId })
-            });
-
-            const result = await response.json();
-
-            if (result.success) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Added to Wishlist!',
-                    text: 'Product has been added to your wishlist.',
-                    confirmButtonColor: '#111827'
-                });
-            } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: result.message || 'Failed to add to wishlist.',
-                    confirmButtonColor: '#111827'
-                });
-            }
-        } catch (error) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Please login to add items to wishlist.',
-                confirmButtonColor: '#111827'
-            });
-        }
-    }
+    // Note: addToWishlist function is now available globally from header.ejs
 
     // Enhanced product availability checking
     let availabilityCheckInterval;
