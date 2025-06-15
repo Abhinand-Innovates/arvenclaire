@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const passport = require("passport");
 const userController = require("../controllers/user/user-auth-controller");
+const addressController = require("../controllers/user/address-controller");
 const { checkProductAvailabilityForPage } = require("../middleware/product-availability-middleware");
 const { profileUpload, handleMulterError } = require("../config/multer-config");
 
@@ -60,6 +61,14 @@ router.get("/product/:id/status", isUserAuthenticated, preventCache, checkUserBl
 router.post("/profile/update", isUserAuthenticated, preventCache, checkUserBlocked, userController.updateProfile);
 router.post("/profile/photo", isUserAuthenticated, preventCache, checkUserBlocked, profileUpload.single('profilePhoto'), handleMulterError, userController.uploadProfilePhoto);
 router.delete("/profile/photo", isUserAuthenticated, preventCache, checkUserBlocked, userController.deleteProfilePhoto);
+
+// Address-related routes
+router.get("/address", isUserAuthenticated, preventCache, addUserContext, checkUserBlocked, addressController.loadAddressList);
+router.get("/address/add", isUserAuthenticated, preventCache, addUserContext, checkUserBlocked, addressController.loadAddressForm);
+router.get("/address/edit/:id", isUserAuthenticated, preventCache, addUserContext, checkUserBlocked, addressController.loadAddressForm);
+router.post("/address", isUserAuthenticated, preventCache, checkUserBlocked, addressController.saveAddress);
+router.put("/address/:id", isUserAuthenticated, preventCache, checkUserBlocked, addressController.updateAddress);
+router.delete("/address/:id", isUserAuthenticated, preventCache, checkUserBlocked, addressController.deleteAddress);
 
 
 

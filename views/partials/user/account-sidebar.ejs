@@ -187,8 +187,8 @@
                 
                 <div class="menu-section">
                     <h3>Manage My Account</h3>
-                    <a href="#" class="menu-item active" onclick="showSection('profile')">My Profile</a>
-                    <a href="#" class="menu-item" onclick="showSection('address')">Address Book</a>
+                    <a href="/profile" class="menu-item" onclick="showSection('profile')">My Profile</a>
+                    <a href="/address" class="menu-item" onclick="showSection('address')">Address Book</a>
                     <a href="#" class="menu-item" onclick="showSection('orders')">My Orders</a>
                     <a href="#" class="menu-item" onclick="showSection('wishlist')">My Wishlist</a>
                     <a href="#" class="menu-item" onclick="showSection('wallet')">Wallet</a>
@@ -211,8 +211,27 @@
                 });
 
                 // Add active class to clicked item
-                event.target.classList.add('active');
+                if (event && event.target) {
+                    event.target.classList.add('active');
+                }
             }
+
+            // Set active state based on current page
+            document.addEventListener('DOMContentLoaded', function() {
+                const currentPath = window.location.pathname;
+                const menuItems = document.querySelectorAll('.menu-item');
+
+                menuItems.forEach(item => {
+                    item.classList.remove('active');
+                    const href = item.getAttribute('href');
+
+                    if (currentPath === href ||
+                        (currentPath.startsWith('/address') && href === '/address') ||
+                        (currentPath === '/profile' && href === '/profile')) {
+                        item.classList.add('active');
+                    }
+                });
+            });
 
             // Profile photo upload functions
             function triggerPhotoUpload() {
