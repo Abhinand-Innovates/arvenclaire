@@ -3,6 +3,7 @@ const router = express.Router();
 const passport = require("passport");
 const userController = require("../controllers/user/user-auth-controller");
 const addressController = require("../controllers/user/address-controller");
+const orderController = require("../controllers/user/order-controller");
 const { checkProductAvailabilityForPage } = require("../middleware/product-availability-middleware");
 const { profileUpload, handleMulterError } = require("../config/multer-config");
 
@@ -69,6 +70,9 @@ router.get("/address/edit/:id", isUserAuthenticated, preventCache, addUserContex
 router.post("/address", isUserAuthenticated, preventCache, checkUserBlocked, addressController.saveAddress);
 router.put("/address/:id", isUserAuthenticated, preventCache, checkUserBlocked, addressController.updateAddress);
 router.delete("/address/:id", isUserAuthenticated, preventCache, checkUserBlocked, addressController.deleteAddress);
+
+// Order-related routes
+router.get("/orders", isUserAuthenticated, preventCache, addUserContext, checkUserBlocked, orderController.loadOrderList);
 
 
 
