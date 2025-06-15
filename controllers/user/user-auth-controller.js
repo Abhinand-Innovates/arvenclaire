@@ -868,7 +868,6 @@ const loadShop = async (req, res) => {
 
 
 
-
 // Load product details page
 const loadProductDetails = async (req, res) => {
   try {
@@ -1115,7 +1114,6 @@ const markHelpful = async (req, res) => {
 
 
 
-
 // Upload profile photo
 const uploadProfilePhoto = async (req, res) => {
   try {
@@ -1179,6 +1177,8 @@ const uploadProfilePhoto = async (req, res) => {
   }
 };
 
+
+
 // Delete profile photo
 const deleteProfilePhoto = async (req, res) => {
   try {
@@ -1231,6 +1231,129 @@ const deleteProfilePhoto = async (req, res) => {
     });
   }
 };
+
+
+
+// Load edit profile page
+const loadEditProfile = async (req, res) => {
+  try {
+    const userId = req.session.userId;
+    if (!userId) {
+      return res.redirect('/login');
+    }
+
+    // Get user data
+    const user = await User.findById(userId).select('-password').lean();
+
+    if (!user) {
+      return res.redirect('/login');
+    }
+
+    res.render('edit-profile', {
+      title: 'Edit Profile',
+      user: user
+    });
+  } catch (error) {
+    console.error('Error loading edit profile:', error);
+    res.status(500).send('Server Error');
+  }
+};
+
+
+
+// Update profile data (excluding email)
+const updateProfileData = async (req, res) => {
+  try {
+    const userId = req.session.userId;
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: 'Please login to update profile'
+      });
+    }
+
+    const { fullname, phone } = req.body;
+    const errors = {};
+
+    // Validate fullname
+    if (!fullname || fullname.trim().length < 4) {
+      errors.fullname = 'Full name must be at least 4 characters long';
+    } else if (/\d/.test(fullname.trim())) {
+      errors.fullname = 'Full name should not contain numbers';
+    }
+
+    // Validate phone (optional)
+    if (phone && phone.trim() && !/^[6-9]\d{9}$/.test(phone.trim())) {
+      errors.phone = 'Phone number must be 10 digits and start with 6, 7, 8, or 9';
+    }
+
+    // If there are validation errors, return them
+    if (Object.keys(errors).length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: errors
+      });
+    }
+
+    // Check if user exists
+    const currentUser = await User.findById(userId);
+    if (!currentUser) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Update user profile
+    const updateData = {
+      fullname: fullname.trim()
+    };
+
+    // Only update phone if provided
+    if (phone && phone.trim()) {
+      updateData.phone = phone.trim();
+    } else if (phone === '') {
+      // If empty string is sent, remove phone number
+      updateData.phone = null;
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      updateData,
+      { new: true, runValidators: true }
+    ).select('-password');
+
+    res.json({
+      success: true,
+      message: 'Profile updated successfully',
+      user: updatedUser
+    });
+
+  } catch (error) {
+    console.error('Error updating profile:', error);
+
+    // Handle mongoose validation errors
+    if (error.name === 'ValidationError') {
+      const errors = {};
+      Object.keys(error.errors).forEach(key => {
+        errors[key] = error.errors[key].message;
+      });
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: errors
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update profile'
+    });
+  }
+};
+
+
 
 // Update profile
 const updateProfile = async (req, res) => {
@@ -1401,6 +1524,231 @@ const checkProductStatus = async (req, res) => {
 
 
 
+// Verify current email for email change
+const verifyCurrentEmail = async (req, res) => {
+  try {
+    const userId = req.session.userId;
+    const { currentEmail } = req.body;
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: 'Please login to verify email'
+      });
+    }
+
+    // Get user
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Verify current email
+    if (user.email !== currentEmail.toLowerCase().trim()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Current email is incorrect'
+      });
+    }
+
+    // Generate OTP for email change
+    const otp = generateOtp();
+    console.log(`Email change OTP: ${otp}`);
+
+    // Store OTP in session for email change
+    req.session.emailChangeOtp = {
+      otp,
+      email: user.email,
+      userId: userId,
+      expiresAt: Date.now() + 45 * 1000 // 45 seconds
+    };
+
+    // Send OTP to current email
+    const isSendMail = await sendEmail(user.email, otp);
+    if (!isSendMail) {
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to send OTP'
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'OTP sent to your current email address'
+    });
+
+  } catch (error) {
+    console.error('Error verifying current email:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to verify email'
+    });
+  }
+};
+
+
+
+// Load email change OTP page
+const loadEmailChangeOtp = async (req, res) => {
+  try {
+    const userId = req.session.userId;
+    if (!userId) {
+      return res.redirect('/login');
+    }
+
+    // Check if email change session exists
+    if (!req.session.emailChangeOtp) {
+      return res.redirect('/profile/edit');
+    }
+
+    // Get user data
+    const user = await User.findById(userId).select('-password').lean();
+    if (!user) {
+      return res.redirect('/login');
+    }
+
+    res.render('email-change-otp', {
+      title: 'Verify Email Change',
+      user: user,
+      email: req.session.emailChangeOtp.email
+    });
+  } catch (error) {
+    console.error('Error loading email change OTP page:', error);
+    res.status(500).send('Server Error');
+  }
+};
+
+
+
+// Verify OTP for email change
+const verifyEmailChangeOtp = async (req, res) => {
+  try {
+    const { otp } = req.body;
+    const sessionOtp = req.session.emailChangeOtp;
+
+    if (!sessionOtp) {
+      return res.status(400).json({
+        success: false,
+        message: 'No OTP session found. Please start the email change process again.'
+      });
+    }
+
+    // Check if OTP expired
+    if (Date.now() > sessionOtp.expiresAt) {
+      req.session.emailChangeOtp = null;
+      return res.status(400).json({
+        success: false,
+        message: 'OTP expired. Please start the email change process again.'
+      });
+    }
+
+    // Verify OTP
+    if (String(otp) !== String(sessionOtp.otp)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid OTP. Please try again.'
+      });
+    }
+
+    // Mark OTP as verified
+    req.session.emailChangeOtp.verified = true;
+
+    res.json({
+      success: true,
+      message: 'OTP verified successfully'
+    });
+
+  } catch (error) {
+    console.error('Error verifying email change OTP:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to verify OTP'
+    });
+  }
+};
+
+
+
+// Change email address
+const changeEmail = async (req, res) => {
+  try {
+    const { newEmail } = req.body;
+    const sessionOtp = req.session.emailChangeOtp;
+
+    if (!sessionOtp || !sessionOtp.verified) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email change not authorized. Please verify OTP first.'
+      });
+    }
+
+    // Validate new email
+    if (!newEmail || !newEmail.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: 'New email is required'
+      });
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(newEmail.trim())) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please enter a valid email address'
+      });
+    }
+
+    // Check if new email already exists
+    const existingUser = await User.findOne({
+      email: newEmail.toLowerCase().trim(),
+      _id: { $ne: sessionOtp.userId }
+    });
+
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        message: 'This email address is already registered'
+      });
+    }
+
+    // Update user email
+    const updatedUser = await User.findByIdAndUpdate(
+      sessionOtp.userId,
+      { email: newEmail.toLowerCase().trim() },
+      { new: true, runValidators: true }
+    ).select('-password');
+
+    if (!updatedUser) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Update session email
+    req.session.email = newEmail.toLowerCase().trim();
+
+    // Clear email change session
+    req.session.emailChangeOtp = null;
+
+    res.json({
+      success: true,
+      message: 'Email address updated successfully',
+      user: updatedUser
+    });
+
+  } catch (error) {
+    console.error('Error changing email:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update email address'
+    });
+  }
+};
+
 
 
 // Update password function
@@ -1514,9 +1862,15 @@ module.exports = {
   resetPassword,
 
   loadProfile,
+  loadEditProfile,
   loadChangePassword,
   loadWallet,
   updateProfile,
+  updateProfileData,
+  verifyCurrentEmail,
+  loadEmailChangeOtp,
+  verifyEmailChangeOtp,
+  changeEmail,
   updatePassword,
   uploadProfilePhoto,
   deleteProfilePhoto,

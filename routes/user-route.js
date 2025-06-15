@@ -60,6 +60,12 @@ router.post("/product/:id/review", isUserAuthenticated, preventCache, checkUserB
 router.post("/product/:id/review/:reviewId/helpful", isUserAuthenticated, preventCache, checkUserBlocked, userController.markHelpful);
 router.get("/product/:id/status", isUserAuthenticated, preventCache, checkUserBlocked, userController.checkProductStatus);
 // Profile-related routes
+router.get("/profile/edit", isUserAuthenticated, preventCache, addUserContext, checkUserBlocked, userController.loadEditProfile);
+router.post("/profile/edit", isUserAuthenticated, preventCache, checkUserBlocked, userController.updateProfileData);
+router.post("/profile/verify-current-email", isUserAuthenticated, preventCache, checkUserBlocked, userController.verifyCurrentEmail);
+router.get("/profile/email-change-otp", isUserAuthenticated, preventCache, addUserContext, checkUserBlocked, userController.loadEmailChangeOtp);
+router.post("/profile/email-change-otp", isUserAuthenticated, preventCache, checkUserBlocked, userController.verifyEmailChangeOtp);
+router.post("/profile/change-email", isUserAuthenticated, preventCache, checkUserBlocked, userController.changeEmail);
 router.post("/profile/update", isUserAuthenticated, preventCache, checkUserBlocked, userController.updateProfile);
 router.post("/profile/photo", isUserAuthenticated, preventCache, checkUserBlocked, profileUpload.single('profilePhoto'), handleMulterError, userController.uploadProfilePhoto);
 router.delete("/profile/photo", isUserAuthenticated, preventCache, checkUserBlocked, userController.deleteProfilePhoto);

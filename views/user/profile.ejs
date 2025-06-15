@@ -298,10 +298,6 @@
                             <i class="fas fa-user"></i>
                             Profile Details
                         </h2>
-                        <button class="btn btn-primary-custom" id="editProfileBtn" onclick="toggleEditMode()">
-                            <i class="fas fa-edit me-2"></i>
-                            Edit Profile
-                        </button>
                     </div>
 
                     <!-- Profile Photo Section -->
@@ -337,7 +333,7 @@
                     </div>
 
                     <!-- Profile Form -->
-                    <form id="profileForm" onsubmit="updateProfile(event)">
+                    <form id="profileForm">
                         <div class="row g-4">
                             <div class="col-12">
                                 <label class="label-text">Full Name</label>
@@ -384,26 +380,18 @@
 
                         <!-- Action Buttons -->
                         <div class="d-flex gap-3 mt-4 flex-wrap">
-                            <div id="editModeButtons" style="display: none;">
-                                <button type="submit" class="btn btn-primary-custom me-2">
-                                    <i class="fas fa-save me-2"></i>
-                                    Save Changes
-                                </button>
-                                <button type="button" class="btn btn-secondary-custom" onclick="cancelEdit()">
-                                    <i class="fas fa-times me-2"></i>
-                                    Cancel
-                                </button>
-                            </div>
-                            <div id="viewModeButtons">
-                                <button type="button" class="btn btn-secondary-custom" onclick="showSection('address')">
-                                    <i class="fas fa-map-marker-alt me-2"></i>
-                                    Manage Addresses
-                                </button>
-                                <button type="button" class="btn btn-primary-custom" onclick="showSection('password')">
-                                    <i class="fas fa-lock me-2"></i>
-                                    Change Password
-                                </button>
-                            </div>
+                            <a href="/profile/edit" class="btn btn-primary-custom">
+                                <i class="fas fa-edit me-2"></i>
+                                Edit Profile
+                            </a>
+                            <button type="button" class="btn btn-secondary-custom" onclick="showSection('address')">
+                                <i class="fas fa-map-marker-alt me-2"></i>
+                                Manage Addresses
+                            </button>
+                            <button type="button" class="btn btn-secondary-custom" onclick="showSection('password')">
+                                <i class="fas fa-lock me-2"></i>
+                                Change Password
+                            </button>
                         </div>
                     </form>
                 </div>
@@ -490,9 +478,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script>
     <script>
-        let isEditMode = false;
-        let originalValues = {};
-
         function refreshActivity() {
             const refreshBtn = document.querySelector('.refresh-btn i');
             refreshBtn.style.transform = 'rotate(360deg)';
@@ -500,155 +485,6 @@
             setTimeout(() => {
                 refreshBtn.style.transform = 'rotate(0deg)';
             }, 500);
-        }
-
-        // Profile editing functionality
-        function toggleEditMode() {
-            isEditMode = !isEditMode;
-            const editBtn = document.getElementById('editProfileBtn');
-            const editModeButtons = document.getElementById('editModeButtons');
-            const viewModeButtons = document.getElementById('viewModeButtons');
-            const inputs = document.querySelectorAll('#profileForm input[type="text"], #profileForm input[type="email"]');
-
-            if (isEditMode) {
-                // Store original values
-                inputs.forEach(input => {
-                    if (input.name) {
-                        originalValues[input.name] = input.value;
-                    }
-                });
-
-                // Enable editing
-                inputs.forEach(input => {
-                    if (input.name && input.name !== 'email') { // Email should remain readonly
-                        input.removeAttribute('readonly');
-                        input.classList.add('editable');
-                    }
-                });
-
-                editBtn.style.display = 'none';
-                editModeButtons.style.display = 'block';
-                viewModeButtons.style.display = 'none';
-            } else {
-                cancelEdit();
-            }
-        }
-
-        function cancelEdit() {
-            isEditMode = false;
-            const editBtn = document.getElementById('editProfileBtn');
-            const editModeButtons = document.getElementById('editModeButtons');
-            const viewModeButtons = document.getElementById('viewModeButtons');
-            const inputs = document.querySelectorAll('#profileForm input[type="text"], #profileForm input[type="email"]');
-
-            // Restore original values
-            inputs.forEach(input => {
-                if (input.name && originalValues[input.name] !== undefined) {
-                    input.value = originalValues[input.name];
-                }
-                input.setAttribute('readonly', 'readonly');
-                input.classList.remove('editable');
-            });
-
-            // Clear error messages
-            document.querySelectorAll('.error-message').forEach(error => {
-                error.textContent = '';
-            });
-
-            editBtn.style.display = 'inline-block';
-            editModeButtons.style.display = 'none';
-            viewModeButtons.style.display = 'block';
-        }
-
-        async function updateProfile(event) {
-            event.preventDefault();
-
-            const formData = new FormData(event.target);
-            const profileData = {
-                fullname: formData.get('fullname'),
-                phone: formData.get('phone')
-            };
-
-            // Clear previous errors
-            document.querySelectorAll('.error-message').forEach(error => {
-                error.textContent = '';
-            });
-
-            // Client-side validation
-            if (!profileData.fullname || profileData.fullname.trim().length < 4) {
-                document.getElementById('fullname-error').textContent = 'Full name must be at least 4 characters long';
-                return;
-            }
-
-            if (profileData.phone && !/^[6-9]\d{9}$/.test(profileData.phone)) {
-                document.getElementById('phone-error').textContent = 'Phone number must be 10 digits and start with 6, 7, 8, or 9';
-                return;
-            }
-
-            try {
-                // Show loading
-                Swal.fire({
-                    title: 'Updating Profile...',
-                    text: 'Please wait while we update your profile.',
-                    allowOutsideClick: false,
-                    allowEscapeKey: false,
-                    showConfirmButton: false,
-                    didOpen: () => {
-                        Swal.showLoading();
-                    }
-                });
-
-                const response = await fetch('/profile/update', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(profileData)
-                });
-
-                const result = await response.json();
-
-                if (result.success) {
-                    // Update original values
-                    originalValues.fullname = profileData.fullname;
-                    originalValues.phone = profileData.phone;
-
-                    // Exit edit mode
-                    cancelEdit();
-
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Profile Updated!',
-                        text: result.message,
-                        confirmButtonColor: '#111827'
-                    });
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Update Failed',
-                        text: result.message,
-                        confirmButtonColor: '#111827'
-                    });
-
-                    // Show field-specific errors
-                    if (result.errors) {
-                        Object.keys(result.errors).forEach(field => {
-                            const errorElement = document.getElementById(`${field}-error`);
-                            if (errorElement) {
-                                errorElement.textContent = result.errors[field];
-                            }
-                        });
-                    }
-                }
-            } catch (error) {
-                console.error('Error updating profile:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Update Error',
-                    text: 'Something went wrong. Please try again.',
-                    confirmButtonColor: '#111827'
-                });
-            }
         }
 
         // Sidebar navigation functionality
