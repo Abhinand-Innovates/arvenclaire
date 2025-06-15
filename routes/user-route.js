@@ -57,6 +57,7 @@ router.post("/product/:id/review", isUserAuthenticated, preventCache, checkUserB
 router.post("/product/:id/review/:reviewId/helpful", isUserAuthenticated, preventCache, checkUserBlocked, userController.markHelpful);
 router.get("/product/:id/status", isUserAuthenticated, preventCache, checkUserBlocked, userController.checkProductStatus);
 // Profile-related routes
+router.post("/profile/update", isUserAuthenticated, preventCache, checkUserBlocked, userController.updateProfile);
 router.post("/profile/photo", isUserAuthenticated, preventCache, checkUserBlocked, profileUpload.single('profilePhoto'), handleMulterError, userController.uploadProfilePhoto);
 router.delete("/profile/photo", isUserAuthenticated, preventCache, checkUserBlocked, userController.deleteProfilePhoto);
 

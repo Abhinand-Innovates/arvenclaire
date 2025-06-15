@@ -1,157 +1,485 @@
+<%- include("../partials/user/account-sidebar") %>
+<style>
+    :root {
+        --bg-primary: #ffffff;
+        --bg-secondary: #f8f9fa;
+        --bg-tertiary: #e9ecef;
+        --border-color: #dee2e6;
+        --text-primary: #000000;
+        --text-secondary: #495057;
+        --text-muted: #6c757d;
+        --hover-color: #f5f5f5;
+    }
 
-<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<link rel="stylesheet" href="../../styles/user/profile.css">
-<%- include('../partials/user/header') %>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        background-color: #f5f5f5;
+        color: var(--text-primary);
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        min-height: 100vh;
+    }
+
+    .main-content {
+        margin-left: 280px;
+        padding: 1rem 2rem; /* Reduced top/bottom padding */
+        /* padding-top: 110px; - Removed to eliminate padding-top */
+        min-height: 100vh;
+    }
+
+        .card-light {
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-control-light {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            border-radius: 0.5rem;
+            padding: 0.75rem 1rem;
+        }
+
+        .form-control-light:focus {
+            background-color: var(--bg-secondary);
+            border-color: var(--text-secondary);
+            color: var(--text-primary);
+            box-shadow: 0 0 0 0.2rem rgba(0, 0, 0, 0.1);
+        }
+
+        .form-control-light.editable {
+            background-color: #fff;
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+
+        .error-message {
+            color: #dc3545;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+            display: block;
+            min-height: 1.2rem;
+        }
+
+        /* Main Profile Photo Styles */
+        .profile-photo-container {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            cursor: pointer;
+        }
+
+        .main-profile-img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            box-shadow: 0 4px 15px rgba(17, 24, 39, 0.3);
+            border: 3px solid #fff;
+        }
+
+        .main-profile-avatar {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, #111827 0%, #374151 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            color: white;
+            font-weight: 700;
+            box-shadow: 0 4px 15px rgba(17, 24, 39, 0.3);
+            border: 3px solid #fff;
+        }
+
+        .profile-photo-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            color: white;
+            font-size: 24px;
+        }
+
+        .profile-photo-container:hover .profile-photo-overlay {
+            opacity: 1;
+        }
+
+        .profile-photo-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .btn-primary-custom {
+            background-color: var(--text-primary);
+            border-color: var(--text-primary);
+            color: var(--bg-primary);
+            font-weight: 500;
+            border-radius: 0.5rem;
+            padding: 0.5rem 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary-custom:hover {
+            background-color: var(--text-secondary);
+            border-color: var(--text-secondary);
+            color: var(--bg-primary);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary-custom {
+            background-color: var(--bg-secondary);
+            border-color: var(--border-color);
+            color: var(--text-primary);
+            font-weight: 500;
+            border-radius: 0.5rem;
+            padding: 0.5rem 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .btn-secondary-custom:hover {
+            background-color: var(--bg-tertiary);
+            border-color: var(--border-color);
+            color: var(--text-primary);
+        }
+
+        .stat-card {
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            color: var(--text-primary);
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card:hover {
+            background-color: var(--hover-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-icon {
+            width: 3rem;
+            height: 3rem;
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            color: var(--text-primary);
+        }
+
+        .activity-item {
+            background-color: var(--bg-secondary);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            border-left: 4px solid var(--text-primary);
+            transition: background-color 0.2s ease;
+            margin-bottom: 1rem;
+        }
+
+        .activity-item:hover {
+            background-color: var(--bg-tertiary);
+        }
+
+        .activity-icon {
+            width: 2.5rem;
+            height: 2.5rem;
+            background-color: var(--text-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--bg-primary);
+        }
+
+        .section-title {
+            color: var(--text-primary);
+            font-weight: 600;
+            margin-bottom: 1rem; /* Reduced from 1.5rem to tighten spacing */
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .section-title i {
+            color: var(--text-primary);
+        }
+
+        .label-text {
+            color: var(--text-secondary);
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .refresh-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 0.5rem;
+            transition: all 0.2s ease;
+        }
+
+        .refresh-btn:hover {
+            color: var(--text-primary);
+            background-color: var(--bg-tertiary);
+            transform: rotate(90deg);
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .sidebar-space {
+                display: none;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 0.5rem 1rem; /* Reduced padding for mobile */
+                padding-top: 90px; /* Minimal top padding for mobile */
+            }
+
+            .stat-card {
+                padding: 1rem;
+                text-align: center;
+            }
+            
+            .stat-icon {
+                margin: 0 auto 0.75rem auto;
+            }
+
+            .d-flex.gap-3 {
+                flex-direction: column;
+            }
+
+            .btn-primary-custom,
+            .btn-secondary-custom {
+                width: 100%;
+                margin-bottom: 0.5rem;
+            }
+        }
+    </style>
 </head>
 <body>
-    <div class="profile-container">
-        <!-- Sidebar -->
-        <div class="sidebar">
-            <div class="profile-section">
-                <div class="profile-avatar-container">
-                    <% if (user.profilePhoto) { %>
-                        <img src="/Uploads/profiles/<%= user.profilePhoto %>" alt="Profile Photo" class="profile-avatar-img" id="sidebarProfileImg">
-                    <% } else { %>
-                        <div class="profile-avatar" id="sidebarProfileAvatar"><%= user.fullname ? user.fullname.charAt(0).toUpperCase() : '👤' %></div>
-                    <% } %>
-                    <div class="profile-avatar-overlay" onclick="triggerPhotoUpload()">
-                        <i class="bi bi-camera"></i>
+    <!-- Sidebar Space (Empty space reserved for your sidebar) -->
+    <div class="sidebar-space"></div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="row g-3"> <!-- Reduced gap from g-4 to g-3 for tighter spacing -->
+            <!-- Profile Details Section -->
+            <div class="col-lg-8">
+                <div class="card-light p-3"> <!-- Reduced padding from p-4 to p-3 -->
+                    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
+                        <h2 class="section-title mb-0">
+                            <i class="fas fa-user"></i>
+                            Profile Details
+                        </h2>
+                        <button class="btn btn-primary-custom" id="editProfileBtn" onclick="toggleEditMode()">
+                            <i class="fas fa-edit me-2"></i>
+                            Edit Profile
+                        </button>
                     </div>
-                </div>
-                <div class="profile-name"><%= user.fullname || 'User' %></div>
-                <div class="profile-email"><%= user.email || 'No email' %></div>
-            </div>
 
-            <div class="menu-section">
-                <h3>Manage My Account</h3>
-                <a href="#" class="menu-item active" onclick="showSection('profile')">My Profile</a>
-                <a href="#" class="menu-item" onclick="showSection('address')">Address Book</a>
-                <a href="#" class="menu-item" onclick="showSection('orders')">My Orders</a>
-                <a href="#" class="menu-item" onclick="showSection('wishlist')">My Wishlist</a>
-                <a href="#" class="menu-item" onclick="showSection('wallet')">Wallet</a>
-                <a href="#" class="menu-item" onclick="showSection('coupons')">Coupons</a>
-                <a href="#" class="menu-item" onclick="showSection('referrals')">Referrals</a>
-                <a href="#" class="menu-item" onclick="showSection('password')">Change Password</a>
-            </div>
-        </div>
-
-        <!-- Main Content -->
-        <div class="main-content">
-            <div class="profile-content fade-in">
-                <!-- Profile Header -->
-                <div class="profile-header text-center">
-                    <h2 class="profile-name"><%= user.fullname || 'User' %></h2>
-                    <p class="profile-email"><%= user.email || 'No email' %></p>
-                </div>
-
-                <!-- Profile Body -->
-                <div class="profile-body">
-                    <!-- Profile Picture Card -->
-                    <div class="info-card">
-                        <h5><i class="fas fa-camera"></i> Profile Picture</h5>
-                        <div class="row align-items-center">
-                            <div class="col-md-4 text-center">
-                                <div class="main-profile-avatar-container">
+                    <!-- Profile Photo Section -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="d-flex align-items-center">
+                                <div class="profile-photo-container me-4">
                                     <% if (user.profilePhoto) { %>
-                                        <img src="/Uploads/profiles/<%= user.profilePhoto %>" alt="Profile Photo" class="main-profile-avatar-img" id="mainProfileImg">
+                                        <img src="/uploads/profiles/<%= user.profilePhoto %>" alt="Profile Photo" class="main-profile-img" id="mainProfileImg">
                                     <% } else { %>
                                         <div class="main-profile-avatar" id="mainProfileAvatar">
                                             <%= user.fullname ? user.fullname.charAt(0).toUpperCase() : '👤' %>
                                         </div>
                                     <% } %>
-                                    <div class="main-profile-avatar-overlay" onclick="triggerMainPhotoUpload()">
-                                        <i class="bi bi-camera"></i>
+                                    <div class="profile-photo-overlay" onclick="triggerMainPhotoUpload()">
+                                        <i class="fas fa-camera"></i>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="col-md-8">
                                 <div class="profile-photo-actions">
-                                    <h6 class="mb-2">Manage Your Profile Picture</h6>
-                                    <p class="text-muted mb-3">Upload a new profile picture or remove the current one. Recommended size: 200x200 pixels.</p>
-                                    <div class="d-flex gap-2 flex-wrap">
-                                        <button type="button" class="btn btn-primary btn-sm" onclick="triggerMainPhotoUpload()">
-                                            <i class="fas fa-upload"></i> Upload New Photo
+                                    <button type="button" class="btn btn-sm btn-primary-custom me-2" onclick="triggerMainPhotoUpload()">
+                                        <i class="fas fa-camera me-1"></i>
+                                        Change Photo
+                                    </button>
+                                    <% if (user.profilePhoto) { %>
+                                        <button type="button" class="btn btn-sm btn-secondary-custom" onclick="deleteMainProfilePhoto()">
+                                            <i class="fas fa-trash me-1"></i>
+                                            Remove
                                         </button>
-                                        <% if (user.profilePhoto) { %>
-                                            <button type="button" class="btn btn-outline-danger btn-sm" onclick="deleteProfilePhoto()">
-                                                <i class="fas fa-trash"></i> Remove Photo
-                                            </button>
-                                        <% } %>
-                                    </div>
+                                    <% } %>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Personal Information Card -->
-                    <div class="info-card">
-                        <h5><i class="fas fa-user-circle"></i> Personal Information</h5>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="fullName" class="form-label">Full Name</label>
-                                <input type="text" class="form-control" id="fullName" value="<%= user.fullname || '' %>" readonly>
+                    <!-- Profile Form -->
+                    <form id="profileForm" onsubmit="updateProfile(event)">
+                        <div class="row g-4">
+                            <div class="col-12">
+                                <label class="label-text">Full Name</label>
+                                <input type="text"
+                                       id="fullname"
+                                       name="fullname"
+                                       class="form-control form-control-light"
+                                       value="<%= user.fullname || '' %>"
+                                       readonly>
+                                <div class="error-message" id="fullname-error"></div>
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="email" class="form-label">Email Address</label>
-                                <input type="email" class="form-control" id="email" value="<%= user.email || '' %>" readonly>
+
+                            <div class="col-12">
+                                <label class="label-text">Email Address</label>
+                                <input type="email"
+                                       id="email"
+                                       name="email"
+                                       class="form-control form-control-light"
+                                       value="<%= user.email || '' %>"
+                                       readonly>
+                                <div class="error-message" id="email-error"></div>
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="phone" class="form-label">Phone Number</label>
-                                <input type="tel" class="form-control" id="phone" value="<%= user.phone || '' %>" readonly>
+
+                            <div class="col-12">
+                                <label class="label-text">Phone Number</label>
+                                <input type="text"
+                                       id="phone"
+                                       name="phone"
+                                       class="form-control form-control-light"
+                                       value="<%= user.phone || '' %>"
+                                       placeholder="Enter your phone number"
+                                       readonly>
+                                <div class="error-message" id="phone-error"></div>
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="joinDate" class="form-label">Member Since</label>
-                                <input type="text" class="form-control" id="joinDate" value="<%= user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A' %>" readonly>
+
+                            <div class="col-12">
+                                <label class="label-text">Member Since</label>
+                                <input type="text"
+                                       class="form-control form-control-light"
+                                       value="<%= new Date(user.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) %>"
+                                       readonly>
                             </div>
                         </div>
-                        <div class="text-end">
-                            <button type="button" class="btn btn-outline-primary" onclick="toggleEdit()">
-                                <i class="fas fa-edit"></i> Edit Information
-                            </button>
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex gap-3 mt-4 flex-wrap">
+                            <div id="editModeButtons" style="display: none;">
+                                <button type="submit" class="btn btn-primary-custom me-2">
+                                    <i class="fas fa-save me-2"></i>
+                                    Save Changes
+                                </button>
+                                <button type="button" class="btn btn-secondary-custom" onclick="cancelEdit()">
+                                    <i class="fas fa-times me-2"></i>
+                                    Cancel
+                                </button>
+                            </div>
+                            <div id="viewModeButtons">
+                                <button type="button" class="btn btn-secondary-custom" onclick="showSection('address')">
+                                    <i class="fas fa-map-marker-alt me-2"></i>
+                                    Manage Addresses
+                                </button>
+                                <button type="button" class="btn btn-primary-custom" onclick="showSection('password')">
+                                    <i class="fas fa-lock me-2"></i>
+                                    Change Password
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Account Stats Section -->
+            <div class="col-lg-4">
+                <div class="card-light p-4 mb-4">
+                    <h3 class="section-title">
+                        <i class="fas fa-chart-line"></i>
+                        Account Stats
+                    </h3>
+                    
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <div class="stat-card text-center">
+                                <div class="stat-icon mx-auto mb-2">
+                                    <i class="fas fa-shopping-bag"></i>
+                                </div>
+                                <div class="fw-bold fs-4">0</div>
+                                <div class="small text-muted">Total Orders</div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-6">
+                            <div class="stat-card text-center">
+                                <div class="stat-icon mx-auto mb-2">
+                                    <i class="fas fa-heart"></i>
+                                </div>
+                                <div class="fw-bold fs-4">0</div>
+                                <div class="small text-muted">Wishlist Items</div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-6">
+                            <div class="stat-card text-center">
+                                <div class="stat-icon mx-auto mb-2">
+                                    <i class="fas fa-wallet"></i>
+                                </div>
+                                <div class="fw-bold fs-4">₹0.00</div>
+                                <div class="small text-muted">Wallet Balance</div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-6">
+                            <div class="stat-card text-center">
+                                <div class="stat-icon mx-auto mb-2">
+                                    <i class="fas fa-tag"></i>
+                                </div>
+                                <div class="fw-bold fs-4">0</div>
+                                <div class="small text-muted">Available Coupons</div>
+                            </div>
                         </div>
                     </div>
-
-                    <!-- Account Status Card -->
-                    <div class="info-card">
-                        <h5><i class="fas fa-shield-alt"></i> Account Status</h5>
-                        <div class="row align-items-center">
-                            <div class="col-md-6">
-                                <p class="mb-2"><strong>Current Status:</strong></p>
-                                <span class="status-badge status-active">
-                                    <i class="fas fa-check-circle"></i>
-                                    <%= user.isBlocked ? 'Blocked' : 'Active Account' %>
-                                </span>
+                </div>
+                
+                <!-- Recent Activity Section -->
+                <div class="card-light p-4 position-relative">
+                    <h3 class="section-title">
+                        <i class="fas fa-clock"></i>
+                        Recent Activity
+                    </h3>
+                    
+                    <button class="refresh-btn" onclick="refreshActivity()">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                    
+                    <div class="activity-item">
+                        <div class="d-flex align-items-center">
+                            <div class="activity-icon me-3">
+                                <i class="fas fa-tag"></i>
                             </div>
-                            <div class="col-md-6">
-                                <p class="mb-2"><strong>Account Type:</strong></p>
-                                <p class="mb-0 text-muted">Standard Member</p>
+                            <div class="flex-grow-1">
+                                <div class="fw-semibold">Applied a coupon code</div>
+                                <div class="small text-muted">1 day ago</div>
                             </div>
-                        </div>
-                        <div class="row mt-3">
-                            <div class="col-md-6">
-                                <p class="mb-1"><strong>Email Verified:</strong> <i class="fas fa-check text-success"></i></p>
-                            </div>
-                            <div class="col-md-6">
-                                <p class="mb-1"><strong>Phone Verified:</strong> <i class="fas fa-times text-danger"></i></p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Quick Actions Card -->
-                    <div class="info-card">
-                        <h5><i class="fas fa-cogs"></i> Account Management</h5>
-                        <div class="action-buttons">
-                            <a href="#" class="action-btn manage-address" onclick="handleAddressClick()">
-                                <i class="fas fa-map-marker-alt"></i>
-                                Manage Addresses
-                            </a>
-                            <a href="#" class="action-btn change-password" onclick="handlePasswordClick()">
-                                <i class="fas fa-key"></i>
-                                Change Password
-                            </a>
                         </div>
                     </div>
                 </div>
@@ -159,146 +487,109 @@
         </div>
     </div>
 
-    <!-- Hidden file input for photo upload -->
-    <input type="file" id="profilePhotoInput" class="profile-photo-upload" accept="image/*" onchange="uploadProfilePhoto()">
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script>
     <script>
-        let editMode = false;
+        let isEditMode = false;
+        let originalValues = {};
 
-        function showSection(section) {
-            // Remove active class from all menu items
-            document.querySelectorAll('.menu-item').forEach(item => {
-                item.classList.remove('active');
-            });
+        function refreshActivity() {
+            const refreshBtn = document.querySelector('.refresh-btn i');
+            refreshBtn.style.transform = 'rotate(360deg)';
 
-            // Add active class to clicked item
-            event.target.classList.add('active');
+            setTimeout(() => {
+                refreshBtn.style.transform = 'rotate(0deg)';
+            }, 500);
         }
 
-        // Profile photo upload functions
-        function triggerPhotoUpload() {
-            document.getElementById('profilePhotoInput').click();
-        }
+        // Profile editing functionality
+        function toggleEditMode() {
+            isEditMode = !isEditMode;
+            const editBtn = document.getElementById('editProfileBtn');
+            const editModeButtons = document.getElementById('editModeButtons');
+            const viewModeButtons = document.getElementById('viewModeButtons');
+            const inputs = document.querySelectorAll('#profileForm input[type="text"], #profileForm input[type="email"]');
 
-        function triggerMainPhotoUpload() {
-            document.getElementById('profilePhotoInput').click();
-        }
-
-        async function uploadProfilePhoto() {
-            const fileInput = document.getElementById('profilePhotoInput');
-            const file = fileInput.files[0];
-
-            if (!file) return;
-
-            // Validate file type
-            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
-            if (!allowedTypes.includes(file.type)) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Invalid File Type',
-                    text: 'Please select a valid image file (JPEG, JPG, PNG, or GIF)',
-                    confirmButtonColor: '#111827'
-                });
-                return;
-            }
-
-            // Validate file size (5MB limit)
-            if (file.size > 5 * 1024 * 1024) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'File Too Large',
-                    text: 'Please select an image smaller than 5MB',
-                    confirmButtonColor: '#111827'
-                });
-                return;
-            }
-
-            const formData = new FormData();
-            formData.append('profilePhoto', file);
-
-            try {
-                const response = await fetch('/profile/photo', {
-                    method: 'POST',
-                    body: formData
-                });
-
-                const result = await response.json();
-
-                if (result.success) {
-                    // Update sidebar
-                    const sidebarContainer = document.querySelector('.profile-avatar-container');
-                    sidebarContainer.innerHTML = `
-                        <img src="/Uploads/profiles/${result.filename}" alt="Profile Photo" class="profile-avatar-img" id="sidebarProfileImg">
-                        <div class="profile-avatar-overlay" onclick="triggerPhotoUpload()">
-                            <i class="bi bi-camera"></i>
-                        </div>
-                    `;
-
-                    // Update main profile image
-                    const mainContainer = document.querySelector('.main-profile-avatar-container');
-                    if (mainContainer) {
-                        mainContainer.innerHTML = `
-                            <img src="/Uploads/profiles/${result.filename}" alt="Profile Photo" class="main-profile-avatar-img" id="mainProfileImg">
-                            <div class="main-profile-avatar-overlay" onclick="triggerMainPhotoUpload()">
-                                <i class="bi bi-camera"></i>
-                            </div>
-                        `;
+            if (isEditMode) {
+                // Store original values
+                inputs.forEach(input => {
+                    if (input.name) {
+                        originalValues[input.name] = input.value;
                     }
-
-                    // Update delete button visibility
-                    updateDeleteButtonVisibility(true);
-
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Photo Updated!',
-                        text: result.message,
-                        confirmButtonColor: '#111827'
-                    });
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Upload Failed',
-                        text: result.message,
-                        confirmButtonColor: '#111827'
-                    });
-                }
-            } catch (error) {
-                console.error('Upload error:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Upload Failed',
-                    text: 'An error occurred while uploading the photo',
-                    confirmButtonColor: '#111827'
                 });
-            }
 
-            // Clear the file input
-            fileInput.value = '';
+                // Enable editing
+                inputs.forEach(input => {
+                    if (input.name && input.name !== 'email') { // Email should remain readonly
+                        input.removeAttribute('readonly');
+                        input.classList.add('editable');
+                    }
+                });
+
+                editBtn.style.display = 'none';
+                editModeButtons.style.display = 'block';
+                viewModeButtons.style.display = 'none';
+            } else {
+                cancelEdit();
+            }
         }
 
-        // Delete profile photo function
-        async function deleteProfilePhoto() {
-            const result = await Swal.fire({
-                title: 'Delete Profile Photo?',
-                text: 'Are you sure you want to remove your profile photo? This action cannot be undone.',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#dc3545',
-                cancelButtonColor: '#6c757d',
-                confirmButtonText: 'Yes, Delete',
-                cancelButtonText: 'Cancel'
+        function cancelEdit() {
+            isEditMode = false;
+            const editBtn = document.getElementById('editProfileBtn');
+            const editModeButtons = document.getElementById('editModeButtons');
+            const viewModeButtons = document.getElementById('viewModeButtons');
+            const inputs = document.querySelectorAll('#profileForm input[type="text"], #profileForm input[type="email"]');
+
+            // Restore original values
+            inputs.forEach(input => {
+                if (input.name && originalValues[input.name] !== undefined) {
+                    input.value = originalValues[input.name];
+                }
+                input.setAttribute('readonly', 'readonly');
+                input.classList.remove('editable');
             });
 
-            if (!result.isConfirmed) {
+            // Clear error messages
+            document.querySelectorAll('.error-message').forEach(error => {
+                error.textContent = '';
+            });
+
+            editBtn.style.display = 'inline-block';
+            editModeButtons.style.display = 'none';
+            viewModeButtons.style.display = 'block';
+        }
+
+        async function updateProfile(event) {
+            event.preventDefault();
+
+            const formData = new FormData(event.target);
+            const profileData = {
+                fullname: formData.get('fullname'),
+                phone: formData.get('phone')
+            };
+
+            // Clear previous errors
+            document.querySelectorAll('.error-message').forEach(error => {
+                error.textContent = '';
+            });
+
+            // Client-side validation
+            if (!profileData.fullname || profileData.fullname.trim().length < 4) {
+                document.getElementById('fullname-error').textContent = 'Full name must be at least 4 characters long';
+                return;
+            }
+
+            if (profileData.phone && !/^[6-9]\d{9}$/.test(profileData.phone)) {
+                document.getElementById('phone-error').textContent = 'Phone number must be 10 digits and start with 6, 7, 8, or 9';
                 return;
             }
 
             try {
                 // Show loading
                 Swal.fire({
-                    title: 'Deleting Photo...',
-                    text: 'Please wait while we remove your profile photo.',
+                    title: 'Updating Profile...',
+                    text: 'Please wait while we update your profile.',
                     allowOutsideClick: false,
                     allowEscapeKey: false,
                     showConfirmButton: false,
@@ -307,137 +598,246 @@
                     }
                 });
 
-                const response = await fetch('/profile/photo', {
-                    method: 'DELETE',
+                const response = await fetch('/profile/update', {
+                    method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
-                    }
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(profileData)
                 });
 
-                const deleteResult = await response.json();
+                const result = await response.json();
 
-                if (deleteResult.success) {
-                    // Update sidebar to show default avatar
-                    const sidebarContainer = document.querySelector('.profile-avatar-container');
-                    const userName = '<%= user.fullname ? user.fullname.charAt(0).toUpperCase() : "👤" %>';
-                    sidebarContainer.innerHTML = `
-                        <div class="profile-avatar" id="sidebarProfileAvatar">${userName}</div>
-                        <div class="profile-avatar-overlay" onclick="triggerPhotoUpload()">
-                            <i class="bi bi-camera"></i>
-                        </div>
-                    `;
+                if (result.success) {
+                    // Update original values
+                    originalValues.fullname = profileData.fullname;
+                    originalValues.phone = profileData.phone;
 
-                    // Update main profile image to show default avatar
-                    const mainContainer = document.querySelector('.main-profile-avatar-container');
-                    if (mainContainer) {
-                        mainContainer.innerHTML = `
-                            <div class="main-profile-avatar" id="mainProfileAvatar">${userName}</div>
-                            <div class="main-profile-avatar-overlay" onclick="triggerMainPhotoUpload()">
-                                <i class="bi bi-camera"></i>
-                            </div>
-                        `;
-                    }
-
-                    // Update delete button visibility
-                    updateDeleteButtonVisibility(false);
+                    // Exit edit mode
+                    cancelEdit();
 
                     Swal.fire({
                         icon: 'success',
-                        title: 'Photo Deleted!',
-                        text: deleteResult.message,
+                        title: 'Profile Updated!',
+                        text: result.message,
                         confirmButtonColor: '#111827'
                     });
                 } else {
                     Swal.fire({
                         icon: 'error',
-                        title: 'Delete Failed',
-                        text: deleteResult.message,
+                        title: 'Update Failed',
+                        text: result.message,
+                        confirmButtonColor: '#111827'
+                    });
+
+                    // Show field-specific errors
+                    if (result.errors) {
+                        Object.keys(result.errors).forEach(field => {
+                            const errorElement = document.getElementById(`${field}-error`);
+                            if (errorElement) {
+                                errorElement.textContent = result.errors[field];
+                            }
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('Error updating profile:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Update Error',
+                    text: 'Something went wrong. Please try again.',
+                    confirmButtonColor: '#111827'
+                });
+            }
+        }
+
+        // Sidebar navigation functionality
+        function showSection(section) {
+            // Remove active class from all menu items
+            document.querySelectorAll('.menu-item').forEach(item => {
+                item.classList.remove('active');
+            });
+
+            // Add active class to clicked item
+            const menuItems = document.querySelectorAll('.menu-item');
+            menuItems.forEach(item => {
+                if (item.onclick && item.onclick.toString().includes(`'${section}'`)) {
+                    item.classList.add('active');
+                }
+            });
+
+            // Handle section navigation
+            switch(section) {
+                case 'profile':
+                    // Already on profile page, just ensure it's active
+                    break;
+                case 'address':
+                    // Navigate to address management (to be implemented)
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Coming Soon',
+                        text: 'Address management feature will be available soon.',
+                        confirmButtonColor: '#111827'
+                    });
+                    break;
+                case 'orders':
+                    // Navigate to orders (to be implemented)
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Coming Soon',
+                        text: 'Order management feature will be available soon.',
+                        confirmButtonColor: '#111827'
+                    });
+                    break;
+                case 'wishlist':
+                    // Navigate to wishlist (to be implemented)
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Coming Soon',
+                        text: 'Wishlist feature will be available soon.',
+                        confirmButtonColor: '#111827'
+                    });
+                    break;
+                case 'wallet':
+                    // Navigate to wallet (to be implemented)
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Coming Soon',
+                        text: 'Wallet feature will be available soon.',
+                        confirmButtonColor: '#111827'
+                    });
+                    break;
+                case 'coupons':
+                    // Navigate to coupons (to be implemented)
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Coming Soon',
+                        text: 'Coupons feature will be available soon.',
+                        confirmButtonColor: '#111827'
+                    });
+                    break;
+                case 'referrals':
+                    // Navigate to referrals (to be implemented)
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Coming Soon',
+                        text: 'Referrals feature will be available soon.',
+                        confirmButtonColor: '#111827'
+                    });
+                    break;
+                case 'password':
+                    // Navigate to change password (to be implemented)
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Coming Soon',
+                        text: 'Change password feature will be available soon.',
+                        confirmButtonColor: '#111827'
+                    });
+                    break;
+                default:
+                    console.log('Unknown section:', section);
+            }
+        }
+
+        // Add smooth hover effects
+        document.querySelectorAll('.stat-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-4px)';
+                this.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.15)';
+            });
+
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+                this.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.1)';
+            });
+        });
+
+        // Main profile photo functions
+        function triggerMainPhotoUpload() {
+            document.getElementById('profilePhotoInput').click();
+        }
+
+        async function deleteMainProfilePhoto() {
+            const result = await Swal.fire({
+                title: 'Delete Profile Photo?',
+                text: 'Are you sure you want to remove your profile photo?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, delete it!',
+                cancelButtonText: 'Cancel'
+            });
+
+            if (result.isConfirmed) {
+                try {
+                    const response = await fetch('/profile/photo', {
+                        method: 'DELETE'
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        // Update main profile photo
+                        const photoContainer = document.querySelector('.profile-photo-container');
+                        const userName = '<%= user.fullname ? user.fullname.charAt(0).toUpperCase() : "👤" %>';
+                        photoContainer.innerHTML = `
+                            <div class="main-profile-avatar" id="mainProfileAvatar">
+                                ${userName}
+                            </div>
+                            <div class="profile-photo-overlay" onclick="triggerMainPhotoUpload()">
+                                <i class="fas fa-camera"></i>
+                            </div>
+                        `;
+
+                        // Update sidebar photo
+                        const sidebarContainer = document.querySelector('.profile-avatar-container');
+                        if (sidebarContainer) {
+                            sidebarContainer.innerHTML = `
+                                <div class="profile-avatar" id="sidebarProfileAvatar">${userName}</div>
+                                <div class="profile-avatar-overlay" onclick="triggerPhotoUpload()">
+                                    <i class="bi bi-camera"></i>
+                                </div>
+                            `;
+                        }
+
+                        // Remove the delete button
+                        const deleteBtn = document.querySelector('.profile-photo-actions .btn-secondary-custom');
+                        if (deleteBtn) {
+                            deleteBtn.remove();
+                        }
+
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Photo Deleted!',
+                            text: data.message,
+                            confirmButtonColor: '#111827'
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Delete Failed',
+                            text: data.message,
+                            confirmButtonColor: '#111827'
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error deleting photo:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Delete Error',
+                        text: 'Something went wrong. Please try again.',
                         confirmButtonColor: '#111827'
                     });
                 }
-            } catch (error) {
-                console.error('Delete error:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Delete Failed',
-                    text: 'An error occurred while deleting the photo',
-                    confirmButtonColor: '#111827'
-                });
             }
         }
 
-        // Helper function to update delete button visibility
-        function updateDeleteButtonVisibility(hasPhoto) {
-            const deleteButton = document.querySelector('.btn-outline-danger');
-            if (deleteButton) {
-                if (hasPhoto) {
-                    deleteButton.style.display = 'inline-block';
-                } else {
-                    deleteButton.style.display = 'none';
-                }
-            }
-        }
-
-        function toggleEdit() {
-            const inputs = document.querySelectorAll('#fullName, #email, #phone');
-            const button = document.querySelector('.btn-outline-primary');
-
-            if (!editMode) {
-                inputs.forEach(input => {
-                    input.removeAttribute('readonly');
-                    input.style.background = '#f8f9fa';
-                });
-                button.innerHTML = '<i class="fas fa-save"></i> Save Changes';
-                button.classList.remove('btn-outline-primary');
-                button.classList.add('btn-primary');
-                editMode = true;
-            } else {
-                inputs.forEach(input => {
-                    input.setAttribute('readonly', 'readonly');
-                    input.style.background = '#ffffff';
-                });
-                button.innerHTML = '<i class="fas fa-edit"></i> Edit Information';
-                button.classList.remove('btn-primary');
-                button.classList.add('btn-outline-primary');
-                editMode = false;
-
-                // Show success message
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Profile Updated!',
-                    text: 'Your profile information has been updated successfully.',
-                    confirmButtonColor: '#111827'
-                });
-            }
-        }
-
-        function handleAddressClick() {
-            Swal.fire({
-                icon: 'info',
-                title: 'Address Management',
-                text: 'Redirecting to address management...',
-                confirmButtonColor: '#111827'
-            });
-            // Here you would typically redirect to an address management page
-        }
-
-        function handlePasswordClick() {
-            Swal.fire({
-                icon: 'info',
-                title: 'Password Change',
-                text: 'Redirecting to password change...',
-                confirmButtonColor: '#111827'
-            });
-            // Here you would typically redirect to a password change page
-        }
-
-        // Add smooth scrolling and animations
+        // Initialize page
         document.addEventListener('DOMContentLoaded', function() {
-            const cards = document.querySelectorAll('.info-card');
-            cards.forEach((card, index) => {
-                card.style.animationDelay = `${index * 0.1}s`;
-                card.classList.add('fade-in');
-            });
+            // Ensure profile section is active on page load
+            showSection('profile');
         });
     </script>
-\<%- include('../partials/user/footer') %>
+</body>
+</html>

@@ -1180,6 +1180,98 @@ const deleteProfilePhoto = async (req, res) => {
   }
 };
 
+// Update profile
+const updateProfile = async (req, res) => {
+  try {
+    const userId = req.session.userId;
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: 'Please login to update profile'
+      });
+    }
+
+    const { fullname, phone } = req.body;
+    const errors = {};
+
+    // Validate fullname
+    if (!fullname || fullname.trim().length < 4) {
+      errors.fullname = 'Full name must be at least 4 characters long';
+    } else if (/\d/.test(fullname.trim())) {
+      errors.fullname = 'Full name should not contain numbers';
+    }
+
+    // Validate phone (optional)
+    if (phone && phone.trim() && !/^[6-9]\d{9}$/.test(phone.trim())) {
+      errors.phone = 'Phone number must be 10 digits and start with 6, 7, 8, or 9';
+    }
+
+    // If there are validation errors, return them
+    if (Object.keys(errors).length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: errors
+      });
+    }
+
+    // Check if user exists
+    const currentUser = await User.findById(userId);
+    if (!currentUser) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Update user profile
+    const updateData = {
+      fullname: fullname.trim()
+    };
+
+    // Only update phone if provided
+    if (phone && phone.trim()) {
+      updateData.phone = phone.trim();
+    } else if (phone === '') {
+      // If empty string is sent, remove phone number
+      updateData.phone = null;
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      updateData,
+      { new: true, runValidators: true }
+    ).select('-password');
+
+    res.json({
+      success: true,
+      message: 'Profile updated successfully',
+      user: updatedUser
+    });
+
+  } catch (error) {
+    console.error('Error updating profile:', error);
+
+    // Handle mongoose validation errors
+    if (error.name === 'ValidationError') {
+      const errors = {};
+      Object.keys(error.errors).forEach(key => {
+        errors[key] = error.errors[key].message;
+      });
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: errors
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update profile'
+    });
+  }
+};
+
 
 
 // API endpoint to check product availability status
@@ -1280,6 +1372,7 @@ module.exports = {
   resetPassword,
 
   loadProfile,
+  updateProfile,
   uploadProfilePhoto,
   deleteProfilePhoto,
   logout,

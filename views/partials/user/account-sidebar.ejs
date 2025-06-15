@@ -7,6 +7,7 @@
         <title>User Profile</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
         <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+        <%- include("../partials/user/header") %>
         <style>
             * {
                 margin: 0;
@@ -22,8 +23,8 @@
 
             .profile-container {
                 display: flex;
-                min-height: 100vh;
-                padding-top: 100px; /* Account for navbar */
+                /* min-height: 100vh; - Removed to eliminate excessive dead space */
+                /* padding-top: 100px; - Removed to eliminate padding */
             }
 
             /* Sidebar Styles */
@@ -201,7 +202,6 @@
         <!-- Hidden file input for photo upload -->
         <input type="file" id="profilePhotoInput" class="profile-photo-upload" accept="image/*" onchange="uploadProfilePhoto()">
 
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO" crossorigin="anonymous"></script>
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script>
         <script>
             function showSection(section) {
@@ -276,11 +276,33 @@
                         // Update sidebar
                         const sidebarContainer = document.querySelector('.profile-avatar-container');
                         sidebarContainer.innerHTML = `
-                            <img src="/Uploads/profiles/${result.filename}" alt="Profile Photo" class="profile-avatar-img" id="sidebarProfileImg">
+                            <img src="/uploads/profiles/${result.filename}" alt="Profile Photo" class="profile-avatar-img" id="sidebarProfileImg">
                             <div class="profile-avatar-overlay" onclick="triggerPhotoUpload()">
                                 <i class="bi bi-camera"></i>
                             </div>
                         `;
+
+                        // Update main profile photo if on profile page
+                        const mainPhotoContainer = document.querySelector('.profile-photo-container');
+                        if (mainPhotoContainer) {
+                            mainPhotoContainer.innerHTML = `
+                                <img src="/uploads/profiles/${result.filename}" alt="Profile Photo" class="main-profile-img" id="mainProfileImg">
+                                <div class="profile-photo-overlay" onclick="triggerMainPhotoUpload()">
+                                    <i class="fas fa-camera"></i>
+                                </div>
+                            `;
+
+                            // Add delete button if not present
+                            const actionsContainer = document.querySelector('.profile-photo-actions');
+                            if (actionsContainer && !actionsContainer.querySelector('.btn-secondary-custom')) {
+                                const deleteBtn = document.createElement('button');
+                                deleteBtn.type = 'button';
+                                deleteBtn.className = 'btn btn-sm btn-secondary-custom';
+                                deleteBtn.onclick = deleteMainProfilePhoto;
+                                deleteBtn.innerHTML = '<i class="fas fa-trash me-1"></i>Remove';
+                                actionsContainer.appendChild(deleteBtn);
+                            }
+                        }
 
                         Swal.fire({
                             icon: 'success',
