@@ -711,13 +711,8 @@
                     });
                     break;
                 case 'password':
-                    // Navigate to change password (to be implemented)
-                    Swal.fire({
-                        icon: 'info',
-                        title: 'Coming Soon',
-                        text: 'Change password feature will be available soon.',
-                        confirmButtonColor: '#111827'
-                    });
+                    // Navigate to change password
+                    window.location.href = '/change-password';
                     break;
                 default:
                     console.log('Unknown section:', section);

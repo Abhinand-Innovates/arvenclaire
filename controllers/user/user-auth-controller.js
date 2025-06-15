@@ -583,6 +583,30 @@ const loadProfile = async (req, res) => {
   }
 };
 
+// Load change password page
+const loadChangePassword = async (req, res) => {
+  try {
+    const userId = req.session.userId;
+    if (!userId) {
+      return res.redirect('/login');
+    }
+
+    // Get user data for sidebar
+    const user = await User.findById(userId).select('fullname email profilePhoto');
+    if (!user) {
+      return res.redirect('/login');
+    }
+
+    res.render('change-password', {
+      user,
+      title: 'Change Password'
+    });
+  } catch (error) {
+    console.error('Error loading change password page:', error);
+    res.status(500).render('error', { message: 'Error loading change password page' });
+  }
+};
+
 
 
 
@@ -1351,6 +1375,89 @@ const checkProductStatus = async (req, res) => {
 
 
 
+// Update password function
+const updatePassword = async (req, res) => {
+  try {
+    const userId = req.session.userId;
+    const { currentPassword, newPassword, confirmPassword } = req.body;
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: 'Please login to change password'
+      });
+    }
+
+    // Validate input
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      return res.status(400).json({
+        success: false,
+        message: 'All fields are required'
+      });
+    }
+
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({
+        success: false,
+        message: 'New passwords do not match'
+      });
+    }
+
+    // Password requirements validation
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (!passwordRegex.test(newPassword)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character'
+      });
+    }
+
+    if (newPassword.includes(' ')) {
+      return res.status(400).json({
+        success: false,
+        message: 'Password cannot contain spaces'
+      });
+    }
+
+    // Get current user
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Verify current password
+    const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
+    if (!isCurrentPasswordValid) {
+      return res.status(400).json({
+        success: false,
+        message: 'Current password is incorrect'
+      });
+    }
+
+    // Hash new password
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update password
+    await User.findByIdAndUpdate(userId, {
+      password: hashedNewPassword
+    });
+
+    res.json({
+      success: true,
+      message: 'Password updated successfully'
+    });
+
+  } catch (error) {
+    console.error('Error updating password:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update password'
+    });
+  }
+};
 module.exports = {
   loadLanding,
   loadSignup,
@@ -1372,7 +1479,9 @@ module.exports = {
   resetPassword,
 
   loadProfile,
+  loadChangePassword,
   updateProfile,
+  updatePassword,
   uploadProfilePhoto,
   deleteProfilePhoto,
   logout,

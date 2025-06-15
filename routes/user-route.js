@@ -81,6 +81,10 @@ router.post("/wishlist/add", isUserAuthenticated, preventCache, checkUserBlocked
 router.post("/wishlist/remove", isUserAuthenticated, preventCache, checkUserBlocked, wishlistController.removeFromWishlist);
 router.get("/wishlist/count", isUserAuthenticated, preventCache, checkUserBlocked, wishlistController.getWishlistCount);
 
+// Change password route
+router.get("/change-password", isUserAuthenticated, preventCache, addUserContext, checkUserBlocked, userController.loadChangePassword);
+router.post("/change-password", isUserAuthenticated, preventCache, checkUserBlocked, userController.updatePassword);
+
 
 
 module.exports = router;

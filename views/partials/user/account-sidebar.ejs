@@ -194,7 +194,7 @@
                     <a href="#" class="menu-item" onclick="showSection('wallet')">Wallet</a>
                     <a href="#" class="menu-item" onclick="showSection('coupons')">Coupons</a>
                     <a href="#" class="menu-item" onclick="showSection('referrals')">Referrals</a>
-                    <a href="#" class="menu-item" onclick="showSection('password')">Change Password</a>
+                    <a href="/change-password" class="menu-item" onclick="showSection('password')">Change Password</a>
                 </div>
             </div>
         </div>
@@ -229,7 +229,8 @@
                         (currentPath.startsWith('/address') && href === '/address') ||
                         (currentPath === '/profile' && href === '/profile') ||
                         (currentPath.startsWith('/orders') && href === '/orders') ||
-                        (currentPath.startsWith('/wishlist') && href === '/wishlist')) {
+                        (currentPath.startsWith('/wishlist') && href === '/wishlist') ||
+                        (currentPath.startsWith('/change-password') && href === '/change-password')) {
                         item.classList.add('active');
                     }
                 });
