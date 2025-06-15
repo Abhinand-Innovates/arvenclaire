@@ -583,6 +583,9 @@ const loadProfile = async (req, res) => {
   }
 };
 
+
+
+
 // Load change password page
 const loadChangePassword = async (req, res) => {
   try {
@@ -604,6 +607,31 @@ const loadChangePassword = async (req, res) => {
   } catch (error) {
     console.error('Error loading change password page:', error);
     res.status(500).render('error', { message: 'Error loading change password page' });
+  }
+};
+
+
+// Load wallet page
+const loadWallet = async (req, res) => {
+  try {
+    const userId = req.session.userId;
+    if (!userId) {
+      return res.redirect('/login');
+    }
+
+    // Get user data for sidebar
+    const user = await User.findById(userId).select('fullname email profilePhoto');
+    if (!user) {
+      return res.redirect('/login');
+    }
+
+    res.render('wallet', {
+      user,
+      title: 'My Wallet'
+    });
+  } catch (error) {
+    console.error('Error loading wallet page:', error);
+    res.status(500).render('error', { message: 'Error loading wallet page' });
   }
 };
 
@@ -1458,6 +1486,13 @@ const updatePassword = async (req, res) => {
     });
   }
 };
+
+
+
+
+
+
+
 module.exports = {
   loadLanding,
   loadSignup,
@@ -1480,6 +1515,7 @@ module.exports = {
 
   loadProfile,
   loadChangePassword,
+  loadWallet,
   updateProfile,
   updatePassword,
   uploadProfilePhoto,

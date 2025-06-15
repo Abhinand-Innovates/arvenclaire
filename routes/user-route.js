@@ -85,6 +85,9 @@ router.get("/wishlist/count", isUserAuthenticated, preventCache, checkUserBlocke
 router.get("/change-password", isUserAuthenticated, preventCache, addUserContext, checkUserBlocked, userController.loadChangePassword);
 router.post("/change-password", isUserAuthenticated, preventCache, checkUserBlocked, userController.updatePassword);
 
+// Wallet route
+router.get("/wallet", isUserAuthenticated, preventCache, addUserContext, checkUserBlocked, userController.loadWallet);
+
 
 
 module.exports = router;
