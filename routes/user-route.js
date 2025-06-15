@@ -4,6 +4,7 @@ const passport = require("passport");
 const userController = require("../controllers/user/user-auth-controller");
 const addressController = require("../controllers/user/address-controller");
 const orderController = require("../controllers/user/order-controller");
+const wishlistController = require("../controllers/user/wishlist-controller");
 const { checkProductAvailabilityForPage } = require("../middleware/product-availability-middleware");
 const { profileUpload, handleMulterError } = require("../config/multer-config");
 
@@ -73,6 +74,9 @@ router.delete("/address/:id", isUserAuthenticated, preventCache, checkUserBlocke
 
 // Order-related routes
 router.get("/orders", isUserAuthenticated, preventCache, addUserContext, checkUserBlocked, orderController.loadOrderList);
+
+// Wishlist-related routes
+router.get("/wishlist", isUserAuthenticated, preventCache, addUserContext, checkUserBlocked, wishlistController.loadWishlist);
 
 
 

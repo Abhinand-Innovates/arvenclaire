@@ -190,7 +190,7 @@
                     <a href="/profile" class="menu-item" onclick="showSection('profile')">My Profile</a>
                     <a href="/address" class="menu-item" onclick="showSection('address')">Address Book</a>
                     <a href="/orders" class="menu-item" onclick="showSection('orders')">My Orders</a>
-                    <a href="#" class="menu-item" onclick="showSection('wishlist')">My Wishlist</a>
+                    <a href="/wishlist" class="menu-item" onclick="showSection('wishlist')">My Wishlist</a>
                     <a href="#" class="menu-item" onclick="showSection('wallet')">Wallet</a>
                     <a href="#" class="menu-item" onclick="showSection('coupons')">Coupons</a>
                     <a href="#" class="menu-item" onclick="showSection('referrals')">Referrals</a>
@@ -228,7 +228,8 @@
                     if (currentPath === href ||
                         (currentPath.startsWith('/address') && href === '/address') ||
                         (currentPath === '/profile' && href === '/profile') ||
-                        (currentPath.startsWith('/orders') && href === '/orders')) {
+                        (currentPath.startsWith('/orders') && href === '/orders') ||
+                        (currentPath.startsWith('/wishlist') && href === '/wishlist')) {
                         item.classList.add('active');
                     }
                 });
