@@ -1658,18 +1658,26 @@
 
         // Helper functions to update counters (if they exist in header)
         function updateCartCounter(count) {
-            const cartCounter = document.querySelector('.cart-count');
+            const cartCounter = document.querySelector('#cartCount');
             if (cartCounter) {
-                cartCounter.textContent = count;
-                cartCounter.style.display = count > 0 ? 'inline' : 'none';
+                if (count > 0) {
+                    cartCounter.textContent = count;
+                    cartCounter.style.display = 'flex';
+                } else {
+                    cartCounter.style.display = 'none';
+                }
             }
         }
 
         function updateWishlistCounter(count) {
-            const wishlistCounter = document.querySelector('.wishlist-count');
+            const wishlistCounter = document.querySelector('#wishlistCount');
             if (wishlistCounter) {
-                wishlistCounter.textContent = count;
-                wishlistCounter.style.display = count > 0 ? 'inline' : 'none';
+                if (count > 0) {
+                    wishlistCounter.textContent = count;
+                    wishlistCounter.style.display = 'flex';
+                } else {
+                    wishlistCounter.style.display = 'none';
+                }
             }
         }
     </script>

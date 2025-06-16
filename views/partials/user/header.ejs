@@ -442,15 +442,18 @@
             background: #e74c3c;
             color: white;
             border-radius: 50%;
-            width: 18px;
-            height: 18px;
-            font-size: 11px;
-            font-weight: 600;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            font-weight: 700;
             display: flex;
             align-items: center;
             justify-content: center;
             line-height: 1;
-            min-width: 18px;
+            min-width: 20px;
+            z-index: 1000;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
 
         .cart-count {
@@ -482,11 +485,12 @@
             }
 
             .wishlist-count, .cart-count {
-                width: 16px;
-                height: 16px;
-                font-size: 10px;
+                width: 18px;
+                height: 18px;
+                font-size: 11px;
                 top: -6px;
                 right: -6px;
+                border: 1px solid white;
             }
         }
     </style>
@@ -789,9 +793,11 @@
             // Navbar Search Functionality
             initializeNavbarSearch();
 
-            // Load wishlist and cart counts for logged-in users
-            loadWishlistCount();
-            loadCartCount();
+            // Load wishlist and cart counts for logged-in users only
+            <% if (typeof user !== 'undefined' && user) { %>
+                loadWishlistCount();
+                loadCartCount();
+            <% } %>
         });
 
         // Navbar Search Implementation
@@ -829,9 +835,13 @@
                 if (response.ok) {
                     const data = await response.json();
                     updateWishlistCounter(data.count);
+                } else if (response.status === 401) {
+                    // User not authenticated, hide counter
+                    updateWishlistCounter(0);
                 }
             } catch (error) {
-                // Silently handle error
+                // Silently handle error for guests
+                updateWishlistCounter(0);
             }
         }
 
@@ -854,9 +864,13 @@
                 if (response.ok) {
                     const data = await response.json();
                     updateCartCounter(data.count);
+                } else if (response.status === 401) {
+                    // User not authenticated, hide counter
+                    updateCartCounter(0);
                 }
             } catch (error) {
-                console.log('Error loading cart count:', error);
+                // Silently handle error for guests
+                updateCartCounter(0);
             }
         }
 
