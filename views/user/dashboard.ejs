@@ -1576,13 +1576,13 @@
                         updateWishlistCounter(result.wishlistCount);
                     }
 
-                    showToast('Added to cart!', 'success');
+                    showSweetAlert('Added to cart!', 'success');
                 } else {
-                    showToast(result.message || 'Failed to add to cart.', 'error');
+                    showSweetAlert(result.message || 'Failed to add to cart.', 'error');
                 }
             } catch (error) {
                 console.error('Cart error:', error);
-                showToast('Please login to add items to cart.', 'error');
+                showSweetAlert('Please login to add items to cart.', 'error');
             }
         }
 
@@ -1612,13 +1612,13 @@
                         buttonElement.title = 'Already in wishlist';
                     }
 
-                    showToast('Added to wishlist!', 'success');
+                    showSweetAlert('Added to wishlist!', 'success');
                 } else {
-                    showToast(result.message || 'Failed to add to wishlist.', 'error');
+                    showSweetAlert(result.message || 'Failed to add to wishlist.', 'error');
                 }
             } catch (error) {
                 console.error('Wishlist error:', error);
-                showToast('Please login to add items to wishlist.', 'error');
+                showSweetAlert('Please login to add items to wishlist.', 'error');
             }
         }
 

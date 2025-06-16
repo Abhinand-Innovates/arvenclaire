@@ -374,7 +374,7 @@ const updateProduct = async (req, res) => {
             regularPrice: parseFloat(regularPrice),
             salePrice: parseFloat(salePrice),
             productOffer: parseFloat(productOffer) || 0,
-            quantity: parseInt(quantity) || 1,
+            quantity: parseInt(quantity) || 0,
             features
         };
 

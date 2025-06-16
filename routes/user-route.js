@@ -89,6 +89,8 @@ router.post("/add-to-cart", isUserAuthenticated, preventCache, checkUserBlocked,
 router.post("/cart/update", isUserAuthenticated, preventCache, checkUserBlocked, cartController.updateCartQuantity);
 router.post("/cart/remove", isUserAuthenticated, preventCache, checkUserBlocked, cartController.removeFromCart);
 router.post("/cart/clear", isUserAuthenticated, preventCache, checkUserBlocked, cartController.clearCart);
+router.post("/cart/remove-out-of-stock", isUserAuthenticated, preventCache, checkUserBlocked, cartController.removeOutOfStockItems);
+router.get("/cart/validate", isUserAuthenticated, preventCache, checkUserBlocked, cartController.validateCartItems);
 router.get("/cart/count", isUserAuthenticated, preventCache, checkUserBlocked, cartController.getCartCount);
 
 // Wishlist-related routes

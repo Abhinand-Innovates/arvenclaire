@@ -712,8 +712,8 @@
                         }
                     }, 300);
 
-                    // Show success toast
-                    showToast('Added to cart and removed from wishlist!', 'success');
+                    // Show success message
+                    showSweetAlert('Added to cart and removed from wishlist!', 'success');
                 } else {
                     // Handle different error types
                     let errorMessage = result.message || 'Failed to add product to cart';
@@ -724,7 +724,7 @@
                         errorMessage = result.message;
                     }
 
-                    showToast(errorMessage, 'error');
+                    showSweetAlert(errorMessage, 'error');
 
                     // Restore button
                     addToCartBtn.disabled = false;
@@ -732,7 +732,7 @@
                 }
             } catch (error) {
                 console.error('Error adding to cart:', error);
-                showToast('Please login to add items to cart.', 'error');
+                showSweetAlert('Please login to add items to cart.', 'error');
 
                 // Restore button
                 const wishlistItem = document.querySelector(`[data-product-id="${productId}"]`);
@@ -781,13 +781,13 @@
                     // Update wishlist counter
                     updateWishlistCounter(data.wishlistCount);
 
-                    showToast('Removed from wishlist!', 'success');
+                    showSweetAlert('Removed from wishlist!', 'success');
                 } else {
-                    showToast(data.message || 'Failed to remove item', 'error');
+                    showSweetAlert(data.message || 'Failed to remove item', 'error');
                 }
             } catch (error) {
                 console.error('Error removing from wishlist:', error);
-                showToast('Failed to remove item. Please try again.', 'error');
+                showSweetAlert('Failed to remove item. Please try again.', 'error');
             }
         }
 
