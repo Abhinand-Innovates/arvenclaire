@@ -77,7 +77,8 @@ const saveAddress = async (req, res) => {
       pincode,
       landmark,
       addressType,
-      altPhone
+      altPhone,
+      makeDefault
     } = req.body;
 
     // Validate required fields
@@ -106,6 +107,18 @@ const saveAddress = async (req, res) => {
       });
     }
 
+    // Find existing address document or create new one
+    let addressDoc = await Address.findOne({ userId });
+
+    // If this is set as default, remove default from other addresses
+    if (makeDefault === 'true' || makeDefault === true) {
+      if (addressDoc) {
+        addressDoc.address.forEach(addr => {
+          addr.isDefault = false;
+        });
+      }
+    }
+
     const newAddress = {
       addressType,
       name: fullName,
@@ -114,12 +127,15 @@ const saveAddress = async (req, res) => {
       state,
       pincode: parseInt(pincode),
       phone: mobileNumber,
-      altPhone: altPhone || null
+      altPhone: altPhone || null,
+      isDefault: makeDefault === 'true' || makeDefault === true || false
     };
 
-    // Find existing address document or create new one
-    let addressDoc = await Address.findOne({ userId });
-    
+    // If this is the first address, make it default automatically
+    if (!addressDoc || addressDoc.address.length === 0) {
+      newAddress.isDefault = true;
+    }
+
     if (addressDoc) {
       addressDoc.address.push(newAddress);
     } else {
@@ -160,7 +176,8 @@ const updateAddress = async (req, res) => {
       pincode,
       landmark,
       addressType,
-      altPhone
+      altPhone,
+      makeDefault
     } = req.body;
 
     // Validate required fields
@@ -205,6 +222,15 @@ const updateAddress = async (req, res) => {
       });
     }
 
+    // If this is set as default, remove default from other addresses
+    if (makeDefault === 'true' || makeDefault === true) {
+      addressDoc.address.forEach(addr => {
+        if (addr._id.toString() !== addressId) {
+          addr.isDefault = false;
+        }
+      });
+    }
+
     // Update address fields
     address.addressType = addressType;
     address.name = fullName;
@@ -214,6 +240,7 @@ const updateAddress = async (req, res) => {
     address.pincode = parseInt(pincode);
     address.phone = mobileNumber;
     address.altPhone = altPhone || null;
+    address.isDefault = makeDefault === 'true' || makeDefault === true || false;
 
     await addressDoc.save();
 
@@ -245,8 +272,25 @@ const deleteAddress = async (req, res) => {
       });
     }
 
+    // Find the address to be deleted
+    const addressToDelete = addressDoc.address.id(addressId);
+    if (!addressToDelete) {
+      return res.status(404).json({
+        success: false,
+        message: 'Address not found'
+      });
+    }
+
+    const wasDefault = addressToDelete.isDefault;
+
     // Remove the address from the array
     addressDoc.address.pull(addressId);
+
+    // If the deleted address was default and there are other addresses, make the first one default
+    if (wasDefault && addressDoc.address.length > 0) {
+      addressDoc.address[0].isDefault = true;
+    }
+
     await addressDoc.save();
 
     res.json({
@@ -263,10 +307,57 @@ const deleteAddress = async (req, res) => {
   }
 };
 
+// Set address as default
+const setAsDefault = async (req, res) => {
+  try {
+    const userId = req.session.userId;
+    const addressId = req.params.id;
+
+    const addressDoc = await Address.findOne({ userId });
+    if (!addressDoc) {
+      return res.status(404).json({
+        success: false,
+        message: 'Address not found'
+      });
+    }
+
+    const address = addressDoc.address.id(addressId);
+    if (!address) {
+      return res.status(404).json({
+        success: false,
+        message: 'Address not found'
+      });
+    }
+
+    // Remove default from all addresses
+    addressDoc.address.forEach(addr => {
+      addr.isDefault = false;
+    });
+
+    // Set this address as default
+    address.isDefault = true;
+
+    await addressDoc.save();
+
+    res.json({
+      success: true,
+      message: 'Address set as default successfully'
+    });
+
+  } catch (error) {
+    console.error('Error setting default address:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error setting default address'
+    });
+  }
+};
+
 module.exports = {
   loadAddressList,
   loadAddressForm,
   saveAddress,
   updateAddress,
-  deleteAddress
+  deleteAddress,
+  setAsDefault
 };

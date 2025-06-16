@@ -77,6 +77,7 @@ router.get("/address/add", isUserAuthenticated, preventCache, addUserContext, ch
 router.get("/address/edit/:id", isUserAuthenticated, preventCache, addUserContext, checkUserBlocked, addressController.loadAddressForm);
 router.post("/address", isUserAuthenticated, preventCache, checkUserBlocked, addressController.saveAddress);
 router.put("/address/:id", isUserAuthenticated, preventCache, checkUserBlocked, addressController.updateAddress);
+router.put("/address/set-default/:id", isUserAuthenticated, preventCache, checkUserBlocked, addressController.setAsDefault);
 router.delete("/address/:id", isUserAuthenticated, preventCache, checkUserBlocked, addressController.deleteAddress);
 
 // Order-related routes
