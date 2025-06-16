@@ -63,10 +63,10 @@ const addToCart = async (req, res) => {
     }
 
     const parsedQuantity = parseInt(quantity);
-    if (isNaN(parsedQuantity) || parsedQuantity < 1 || parsedQuantity > 10) {
+    if (isNaN(parsedQuantity) || parsedQuantity < 1 || parsedQuantity > 5) {
       return res.status(400).json({
         success: false,
-        message: 'Quantity must be between 1 and 10'
+        message: 'Invalid quantity! Please select between 1 and 5 items per product.'
       });
     }
 
@@ -142,10 +142,10 @@ const addToCart = async (req, res) => {
         });
       }
 
-      if (newQuantity > 10) {
+      if (newQuantity > 5) {
         return res.status(403).json({
           success: false,
-          message: 'Maximum 10 items allowed per product in cart',
+          message: `Maximum limit reached! You can only add up to 5 items per product. You currently have ${existingItem.quantity} in your cart.`,
           code: 'CART_QUANTITY_LIMIT'
         });
       }
@@ -234,10 +234,10 @@ const updateCartQuantity = async (req, res) => {
     }
 
     const parsedQuantity = parseInt(quantity);
-    if (isNaN(parsedQuantity) || parsedQuantity < 1 || parsedQuantity > 10) {
+    if (isNaN(parsedQuantity) || parsedQuantity < 1 || parsedQuantity > 5) {
       return res.status(400).json({
         success: false,
-        message: 'Quantity must be between 1 and 10'
+        message: 'Invalid quantity! Please select between 1 and 5 items per product.'
       });
     }
 

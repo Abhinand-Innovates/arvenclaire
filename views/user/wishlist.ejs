@@ -712,14 +712,8 @@
                         }
                     }, 300);
 
-                    // Show success message
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Added to Cart!',
-                        text: 'Product has been added to your cart and removed from wishlist',
-                        timer: 2000,
-                        showConfirmButton: false
-                    });
+                    // Show success toast
+                    showToast('Added to cart and removed from wishlist!', 'success');
                 } else {
                     // Handle different error types
                     let errorMessage = result.message || 'Failed to add product to cart';
@@ -730,12 +724,7 @@
                         errorMessage = result.message;
                     }
 
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Cannot Add to Cart',
-                        text: errorMessage,
-                        confirmButtonColor: '#111827'
-                    });
+                    showToast(errorMessage, 'error');
 
                     // Restore button
                     addToCartBtn.disabled = false;
@@ -743,12 +732,7 @@
                 }
             } catch (error) {
                 console.error('Error adding to cart:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Please login to add items to cart.',
-                    confirmButtonColor: '#111827'
-                });
+                showToast('Please login to add items to cart.', 'error');
 
                 // Restore button
                 const wishlistItem = document.querySelector(`[data-product-id="${productId}"]`);
@@ -760,80 +744,51 @@
 
         // Remove product from wishlist
         async function removeFromWishlist(productId) {
-            Swal.fire({
-                title: 'Remove from Wishlist?',
-                text: 'Are you sure you want to remove this item from your wishlist?',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#dc2626',
-                cancelButtonColor: '#6b7280',
-                confirmButtonText: 'Yes, remove it',
-                cancelButtonText: 'Cancel'
-            }).then(async (result) => {
-                if (result.isConfirmed) {
-                    try {
-                        const response = await fetch('/wishlist/remove', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({ productId })
-                        });
+            try {
+                const response = await fetch('/wishlist/remove', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ productId })
+                });
 
-                        const data = await response.json();
+                const data = await response.json();
 
-                        if (data.success) {
-                            // Remove item from UI with animation
-                            const wishlistItem = document.querySelector(`[data-product-id="${productId}"]`);
-                            wishlistItem.style.transition = 'all 0.3s ease';
-                            wishlistItem.style.opacity = '0';
-                            wishlistItem.style.transform = 'translateX(-100%)';
+                if (data.success) {
+                    // Remove item from UI with animation
+                    const wishlistItem = document.querySelector(`[data-product-id="${productId}"]`);
+                    wishlistItem.style.transition = 'all 0.3s ease';
+                    wishlistItem.style.opacity = '0';
+                    wishlistItem.style.transform = 'translateX(-100%)';
 
-                            setTimeout(() => {
-                                wishlistItem.remove();
+                    setTimeout(() => {
+                        wishlistItem.remove();
 
-                                // Check if wishlist is empty
-                                const remainingItems = document.querySelectorAll('.wishlist-item');
-                                if (remainingItems.length === 0) {
-                                    location.reload(); // Reload to show empty state
-                                } else {
-                                    // Update items count
-                                    const itemsCount = document.querySelector('.items-count');
-                                    if (itemsCount) {
-                                        itemsCount.textContent = `${remainingItems.length} items`;
-                                    }
-                                }
-                            }, 300);
-
-                            // Update wishlist counter
-                            updateWishlistCounter(data.wishlistCount);
-
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Removed!',
-                                text: 'Item has been removed from your wishlist',
-                                timer: 1500,
-                                showConfirmButton: false
-                            });
+                        // Check if wishlist is empty
+                        const remainingItems = document.querySelectorAll('.wishlist-item');
+                        if (remainingItems.length === 0) {
+                            location.reload(); // Reload to show empty state
                         } else {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Error',
-                                text: data.message || 'Failed to remove item',
-                                confirmButtonColor: '#111827'
-                            });
+                            // Update items count
+                            const itemsCount = document.querySelector('.items-count');
+                            if (itemsCount) {
+                                itemsCount.textContent = `${remainingItems.length} items`;
+                            }
                         }
-                    } catch (error) {
-                        console.error('Error removing from wishlist:', error);
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: 'Failed to remove item. Please try again.',
-                            confirmButtonColor: '#111827'
-                        });
-                    }
+                    }, 300);
+
+                    // Update wishlist counter
+                    updateWishlistCounter(data.wishlistCount);
+
+                    showToast('Removed from wishlist!', 'success');
+                } else {
+                    showToast(data.message || 'Failed to remove item', 'error');
                 }
-            });
+            } catch (error) {
+                console.error('Error removing from wishlist:', error);
+                showToast('Failed to remove item. Please try again.', 'error');
+            }
         }
 
         // Add to cart from hover button (same functionality as main button)

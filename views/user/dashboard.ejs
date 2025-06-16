@@ -1576,30 +1576,13 @@
                         updateWishlistCounter(result.wishlistCount);
                     }
 
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Added to Cart!',
-                        text: 'Product has been added to your cart.',
-                        confirmButtonColor: '#111827',
-                        timer: 2000,
-                        timerProgressBar: true
-                    });
+                    showToast('Added to cart!', 'success');
                 } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: result.message || 'Failed to add to cart.',
-                        confirmButtonColor: '#111827'
-                    });
+                    showToast(result.message || 'Failed to add to cart.', 'error');
                 }
             } catch (error) {
                 console.error('Cart error:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Please login to add items to cart.',
-                    confirmButtonColor: '#111827'
-                });
+                showToast('Please login to add items to cart.', 'error');
             }
         }
 
@@ -1629,30 +1612,13 @@
                         buttonElement.title = 'Already in wishlist';
                     }
 
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Added to Wishlist!',
-                        text: result.message,
-                        confirmButtonColor: '#111827',
-                        timer: 2000,
-                        timerProgressBar: true
-                    });
+                    showToast('Added to wishlist!', 'success');
                 } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: result.message || 'Failed to add to wishlist.',
-                        confirmButtonColor: '#111827'
-                    });
+                    showToast(result.message || 'Failed to add to wishlist.', 'error');
                 }
             } catch (error) {
                 console.error('Wishlist error:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Please login to add items to wishlist.',
-                    confirmButtonColor: '#111827'
-                });
+                showToast('Please login to add items to wishlist.', 'error');
             }
         }
 

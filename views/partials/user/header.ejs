@@ -13,6 +13,76 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <link rel="stylesheet" href="../../../styles/user/header.css">
 
+    <!-- Toast Notification Styles -->
+    <style>
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            pointer-events: none;
+        }
+
+        .toast {
+            background: #111827;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transform: translateX(100%);
+            opacity: 0;
+            transition: all 0.3s ease;
+            pointer-events: auto;
+            max-width: 350px;
+            word-wrap: break-word;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        .toast.success {
+            background: #059669;
+        }
+
+        .toast.error {
+            background: #dc2626;
+        }
+
+        .toast.info {
+            background: #2563eb;
+        }
+
+        .toast-icon {
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .toast-message {
+            flex: 1;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        @media (max-width: 768px) {
+            .toast-container {
+                top: 10px;
+                right: 10px;
+                left: 10px;
+            }
+
+            .toast {
+                max-width: none;
+                margin-bottom: 8px;
+            }
+        }
+    </style>
+
     <style>
         /* Navbar Link Styling with Shaking Hover Effect */
         .navbar-nav {
@@ -594,11 +664,63 @@
         </div>
     </nav>
 
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
     <!-- SweetAlert2 JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO" crossorigin="anonymous"></script>
 
     <script>
+        // Toast Notification System
+        function showToast(message, type = 'success', duration = 3000) {
+            const toastContainer = document.getElementById('toastContainer');
+            if (!toastContainer) return;
+
+            // Create toast element
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+
+            // Set icon based on type
+            let icon = '';
+            switch(type) {
+                case 'success':
+                    icon = '<i class="bi bi-check-circle-fill toast-icon"></i>';
+                    break;
+                case 'error':
+                    icon = '<i class="bi bi-x-circle-fill toast-icon"></i>';
+                    break;
+                case 'info':
+                    icon = '<i class="bi bi-info-circle-fill toast-icon"></i>';
+                    break;
+                default:
+                    icon = '<i class="bi bi-check-circle-fill toast-icon"></i>';
+            }
+
+            toast.innerHTML = `
+                ${icon}
+                <div class="toast-message">${message}</div>
+            `;
+
+            // Add to container
+            toastContainer.appendChild(toast);
+
+            // Trigger animation
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 100);
+
+            // Auto remove
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.parentNode.removeChild(toast);
+                    }
+                }, 300);
+            }, duration);
+        }
+
         document.addEventListener('DOMContentLoaded', function () {
             // Simple navbar active link management
             const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
@@ -918,32 +1040,15 @@
                     // Update all wishlist buttons for this product
                     updateWishlistButtonState(productId, true);
 
-                    // Show success message
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Added to Wishlist!',
-                        text: result.message,
-                        confirmButtonColor: '#111827',
-                        timer: 2000,
-                        timerProgressBar: true
-                    });
+                    // Show success toast
+                    showToast('Added to wishlist!', 'success');
                 } else {
                     // Show error message
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: result.message,
-                        confirmButtonColor: '#111827'
-                    });
+                    showToast(result.message, 'error');
                 }
             } catch (error) {
                 console.error('Error adding to wishlist:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Please login to add items to wishlist.',
-                    confirmButtonColor: '#111827'
-                });
+                showToast('Please login to add items to wishlist.', 'error');
             }
         }
 
@@ -992,15 +1097,8 @@
                     // Update button states
                     updateWishlistButtonState(productId, false);
 
-                    // Show success message
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Removed from Wishlist!',
-                        text: result.message,
-                        confirmButtonColor: '#111827',
-                        timer: 2000,
-                        timerProgressBar: true
-                    });
+                    // Show success toast
+                    showToast('Removed from wishlist!', 'success');
 
                     // Reload page if on wishlist page
                     if (window.location.pathname === '/wishlist') {
@@ -1009,21 +1107,11 @@
                         }, 1000);
                     }
                 } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: result.message,
-                        confirmButtonColor: '#111827'
-                    });
+                    showToast(result.message, 'error');
                 }
             } catch (error) {
                 console.error('Error removing from wishlist:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Failed to remove item from wishlist.',
-                    confirmButtonColor: '#111827'
-                });
+                showToast('Failed to remove item from wishlist.', 'error');
             }
         }
     </script>
