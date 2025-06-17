@@ -1,60 +1,853 @@
-<!-- Footer -->
-    <footer>
+<!-- Modern Footer -->
+    <footer class="modern-footer">
+        <div class="footer-background">
+            <div class="footer-pattern"></div>
+        </div>
+
         <div class="container">
-            <div class="row">
-                <div class="col-md-3 mb-4">
-                    <h5 class="footer-title">Exclusive</h5>
-                    <p>Subscribe to our newsletter for exclusive offers and updates</p>
-                    <div class="input-group mb-3">
-                        <input type="email" class="form-control" placeholder="Your Email">
-                        <button class="btn btn-light" type="button">Subscribe</button>
-                    </div>
-                </div>
-                <div class="col-md-3 mb-4">
-                    <h5 class="footer-title">Support</h5>
-                    <ul class="footer-links">
-                        <li><a href="#">Help Center</a></li>
-                        <li><a href="#">Shipping Policy</a></li>
-                        <li><a href="#">Returns & Exchanges</a></li>
-                        <li><a href="#">Payment Options</a></li>
-                        <li><a href="#">Contact Us</a></li>
-                    </ul>
-                </div>
-                <div class="col-md-3 mb-4">
-                    <h5 class="footer-title">Account</h5>
-                    <ul class="footer-links">
-                        <li><a href="#">My Account</a></li>
-                        <li><a href="#">Order History</a></li>
-                        <li><a href="#">Wishlist</a></li>
-                        <li><a href="#">Terms of Use</a></li>
-                        <li><a href="#">Privacy Policy</a></li>
-                    </ul>
-                </div>
-                <div class="col-md-3 mb-4">
-                    <h5 class="footer-title">ArvanClaire App</h5>
-                    <div class="d-flex mb-3">
-                        <div class="qr-code me-3"></div>
-                        <div>
-                            <a href="#"><img src="/api/placeholder/120/40" alt="App Store" class="mb-2"></a>
-                            <a href="#"><img src="/api/placeholder/120/40" alt="Google Play"></a>
+            <!-- Main Footer Content -->
+            <div class="footer-main">
+                <div class="row g-4">
+                    <!-- Brand & Newsletter Section -->
+                    <div class="col-lg-4 col-md-6">
+                        <div class="footer-section brand-section">
+                            <div class="brand-logo">
+                                <h2 class="brand-name">ARVENCLAIRE</h2>
+                                <p class="brand-tagline">Premium Fashion & Lifestyle</p>
+                            </div>
+                            <p class="brand-description">
+                                Discover the latest trends in fashion with our curated collection of premium clothing and accessories.
+                            </p>
+
+                            <!-- Newsletter Subscription -->
+                            <div class="newsletter-section">
+                                <h6 class="newsletter-title">
+                                    <i class="fas fa-envelope"></i>
+                                    Stay Updated
+                                </h6>
+                                <p class="newsletter-desc">Get exclusive offers and updates</p>
+                                <div class="newsletter-form">
+                                    <div class="input-wrapper">
+                                        <input type="email" class="newsletter-input" placeholder="Enter your email">
+                                        <button class="newsletter-btn" type="button">
+                                            <i class="fas fa-paper-plane"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="social-icons">
-                        <a href="#"><i class="bi bi-facebook"></i></a>
-                        <a href="#"><i class="bi bi-twitter"></i></a>
-                        <a href="#"><i class="bi bi-instagram"></i></a>
-                        <a href="#"><i class="bi bi-linkedin"></i></a>
+
+                    <!-- Quick Links -->
+                    <div class="col-lg-2 col-md-6">
+                        <div class="footer-section">
+                            <h5 class="footer-title">
+                                <i class="fas fa-headset"></i>
+                                Support
+                            </h5>
+                            <ul class="footer-links">
+                                <li><a href="#"><span>Help Center</span></a></li>
+                                <li><a href="#"><span>Shipping Policy</span></a></li>
+                                <li><a href="#"><span>Returns & Exchanges</span></a></li>
+                                <li><a href="#"><span>Payment Options</span></a></li>
+                                <li><a href="#"><span>Contact Us</span></a></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Account Links -->
+                    <div class="col-lg-2 col-md-6">
+                        <div class="footer-section">
+                            <h5 class="footer-title">
+                                <i class="fas fa-user-circle"></i>
+                                Account
+                            </h5>
+                            <ul class="footer-links">
+                                <li><a href="/profile"><span>My Account</span></a></li>
+                                <li><a href="/orders"><span>Order History</span></a></li>
+                                <li><a href="/wishlist"><span>Wishlist</span></a></li>
+                                <li><a href="#"><span>Terms of Use</span></a></li>
+                                <li><a href="#"><span>Privacy Policy</span></a></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Connect & Download -->
+                    <div class="col-lg-4 col-md-6">
+                        <div class="footer-section connect-section">
+                            <h5 class="footer-title">
+                                <i class="fas fa-mobile-alt"></i>
+                                Connect With Us
+                            </h5>
+
+                            <!-- Social Media -->
+                            <div class="social-section">
+                                <p class="social-desc">Follow us on social media</p>
+                                <div class="social-icons">
+                                    <a href="https://facebook.com/arvenclaire" target="_blank" class="social-link facebook" data-tooltip="Facebook">
+                                        <i class="fab fa-facebook-f"></i>
+                                    </a>
+                                    <a href="https://twitter.com/arvenclaire" target="_blank" class="social-link twitter" data-tooltip="Twitter">
+                                        <i class="fab fa-twitter"></i>
+                                    </a>
+                                    <a href="https://instagram.com/arvenclaire" target="_blank" class="social-link instagram" data-tooltip="Instagram">
+                                        <i class="fab fa-instagram"></i>
+                                    </a>
+                                    <a href="https://linkedin.com/company/arvenclaire" target="_blank" class="social-link linkedin" data-tooltip="LinkedIn">
+                                        <i class="fab fa-linkedin-in"></i>
+                                    </a>
+                                    <a href="https://youtube.com/@arvenclaire" target="_blank" class="social-link youtube" data-tooltip="YouTube">
+                                        <i class="fab fa-youtube"></i>
+                                    </a>
+                                </div>
+                            </div>
+
+                            <!-- App Download -->
+                            <div class="app-section">
+                                <p class="app-desc">Download our mobile app</p>
+                                <div class="app-buttons">
+                                    <a href="https://apps.apple.com/app/arvenclaire" target="_blank" class="app-btn">
+                                        <div class="app-icon">
+                                            <i class="fab fa-apple"></i>
+                                        </div>
+                                        <div class="app-text">
+                                            <span class="app-label">Download on the</span>
+                                            <span class="app-name">App Store</span>
+                                        </div>
+                                    </a>
+                                    <a href="https://play.google.com/store/apps/details?id=com.arvenclaire" target="_blank" class="app-btn">
+                                        <div class="app-icon">
+                                            <i class="fab fa-google-play"></i>
+                                        </div>
+                                        <div class="app-text">
+                                            <span class="app-label">Get it on</span>
+                                            <span class="app-name">Google Play</span>
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="sub-footer text-center">
-                <p>&copy; 2025 ArvanClaire. All Rights Reserved.</p>
+
+            <!-- Footer Bottom -->
+            <div class="footer-bottom">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <div class="copyright">
+                            <p>&copy; 2025 <strong>ARVENCLAIRE</strong>. All Rights Reserved.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="footer-badges">
+                            <div class="payment-methods">
+                                <span class="payment-label">We Accept:</span>
+                                <div class="payment-icons">
+                                    <i class="fab fa-cc-visa" data-tooltip="Visa"></i>
+                                    <i class="fab fa-cc-mastercard" data-tooltip="Mastercard"></i>
+                                    <i class="fab fa-cc-paypal" data-tooltip="PayPal"></i>
+                                    <i class="fas fa-university" data-tooltip="Net Banking"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
+        </div>
+
+        <!-- Scroll to Top Button -->
+        <div class="scroll-to-top" id="scrollToTop">
+            <i class="fas fa-chevron-up"></i>
         </div>
     </footer>
 
+    <!-- Modern Footer Styles -->
+    <style>
+        /* Modern Footer Styles */
+        .modern-footer {
+            background: #000000;
+            color: #ffffff;
+            position: relative;
+            overflow: hidden;
+            margin-top: 4rem;
+        }
+
+        .footer-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            opacity: 0.1;
+        }
+
+        .footer-pattern {
+            background-image:
+                radial-gradient(circle at 25% 25%, rgba(255,255,255,0.03) 2px, transparent 2px),
+                radial-gradient(circle at 75% 75%, rgba(255,255,255,0.03) 2px, transparent 2px);
+            background-size: 50px 50px;
+            background-position: 0 0, 25px 25px;
+            height: 100%;
+            animation: patternMove 20s linear infinite;
+        }
+
+        @keyframes patternMove {
+            0% { transform: translateX(0) translateY(0); }
+            100% { transform: translateX(50px) translateY(50px); }
+        }
+
+        .footer-main {
+            position: relative;
+            z-index: 2;
+            padding: 4rem 0 2rem;
+        }
+
+        .footer-section {
+            height: 100%;
+        }
+
+        /* Brand Section */
+        .brand-section .brand-logo {
+            margin-bottom: 1.5rem;
+        }
+
+        .brand-name {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #ffffff;
+            margin-bottom: 0.5rem;
+            letter-spacing: 2px;
+        }
+
+        .brand-tagline {
+            color: #ffffff;
+            font-size: 0.9rem;
+            font-weight: 300;
+            margin-bottom: 0;
+            letter-spacing: 1px;
+            opacity: 0.8;
+        }
+
+        .brand-description {
+            color: #ffffff;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+            font-size: 0.95rem;
+            opacity: 0.7;
+        }
+
+        /* Newsletter Section */
+        .newsletter-section {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1.5rem;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .newsletter-section:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(255, 255, 255, 0.1);
+        }
+
+        .newsletter-title {
+            color: #ffffff;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .newsletter-title i {
+            color: #ffffff;
+        }
+
+        .newsletter-desc {
+            color: #ffffff;
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+            opacity: 0.8;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            border-radius: 25px;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .input-wrapper:focus-within {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: #ffffff;
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.2);
+        }
+
+        .newsletter-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            padding: 0.75rem 1rem;
+            color: #ffffff;
+            font-size: 0.9rem;
+            outline: none;
+        }
+
+        .newsletter-input::placeholder {
+            color: #cccccc;
+        }
+
+        .newsletter-btn {
+            background: #ffffff;
+            border: none;
+            padding: 0.75rem 1rem;
+            color: #000000;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        .newsletter-btn:hover {
+            background: #f0f0f0;
+            transform: scale(1.05);
+        }
+
+        /* Footer Titles */
+        .footer-title {
+            color: #ffffff;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            position: relative;
+        }
+
+        .footer-title::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 0;
+            width: 30px;
+            height: 2px;
+            background: #ffffff;
+            border-radius: 2px;
+        }
+
+        .footer-title i {
+            color: #ffffff;
+            font-size: 1rem;
+        }
+
+        /* Footer Links */
+        .footer-links {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .footer-links li {
+            margin-bottom: 0.75rem;
+        }
+
+        .footer-links a {
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            display: inline-block;
+            position: relative;
+            padding-left: 1rem;
+            opacity: 0.7;
+        }
+
+        .footer-links a::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 4px;
+            background: #ffffff;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: #ffffff;
+            transform: translateX(5px);
+            opacity: 1;
+        }
+
+        .footer-links a:hover::before {
+            width: 6px;
+            height: 6px;
+            background: #ffffff;
+        }
+
+        /* Social Icons */
+        .social-section {
+            margin-bottom: 2rem;
+        }
+
+        .social-desc {
+            color: #ffffff;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            opacity: 0.8;
+        }
+
+        .social-icons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .social-link {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: #000000;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            background: #ffffff;
+            border: 2px solid #ffffff;
+        }
+
+        .social-link:hover {
+            transform: translateY(-3px) scale(1.1);
+            box-shadow: 0 10px 25px rgba(255, 255, 255, 0.2);
+            background: #f0f0f0;
+        }
+
+        .social-link i {
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+
+        .social-link:hover i {
+            transform: scale(1.1);
+        }
+
+        /* App Download Section */
+        .app-section {
+            margin-top: 1.5rem;
+        }
+
+        .app-desc {
+            color: #ffffff;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            opacity: 0.8;
+        }
+
+        .app-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .app-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            text-decoration: none;
+            color: #ffffff;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .app-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+        }
+
+        .app-icon {
+            font-size: 1.5rem;
+            color: #ffffff;
+        }
+
+        .app-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .app-label {
+            font-size: 0.75rem;
+            color: #ffffff;
+            line-height: 1;
+            opacity: 0.8;
+        }
+
+        .app-name {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #ffffff;
+            line-height: 1.2;
+        }
+
+        /* Footer Bottom */
+        .footer-bottom {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 2rem 0;
+            margin-top: 2rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .copyright p {
+            margin: 0;
+            color: #ffffff;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .copyright strong {
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .footer-badges {
+            text-align: right;
+        }
+
+        .payment-methods {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .payment-label {
+            color: #ffffff;
+            font-size: 0.85rem;
+            white-space: nowrap;
+            opacity: 0.8;
+        }
+
+        .payment-icons {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .payment-icons i {
+            font-size: 1.5rem;
+            color: #ffffff;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            opacity: 0.7;
+        }
+
+        .payment-icons i:hover {
+            color: #ffffff;
+            transform: scale(1.1);
+            opacity: 1;
+        }
+
+        /* Scroll to Top Button */
+        .scroll-to-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            background: #ffffff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #000000;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(20px);
+            box-shadow: 0 4px 15px rgba(255, 255, 255, 0.3);
+            border: 2px solid #ffffff;
+        }
+
+        .scroll-to-top.visible {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .scroll-to-top:hover {
+            background: #f0f0f0;
+            transform: translateY(-3px) scale(1.1);
+            box-shadow: 0 8px 25px rgba(255, 255, 255, 0.4);
+        }
+
+        /* Tooltip Styles */
+        [data-tooltip] {
+            position: relative;
+        }
+
+        [data-tooltip]:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 120%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            white-space: nowrap;
+            z-index: 1000;
+            opacity: 1;
+            animation: tooltipFadeIn 0.3s ease;
+        }
+
+        [data-tooltip]:hover::before {
+            content: '';
+            position: absolute;
+            bottom: 110%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 5px solid transparent;
+            border-top-color: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            animation: tooltipFadeIn 0.3s ease;
+        }
+
+        @keyframes tooltipFadeIn {
+            from { opacity: 0; transform: translateX(-50%) translateY(5px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .footer-main {
+                padding: 3rem 0 1.5rem;
+            }
+
+            .brand-name {
+                font-size: 1.5rem;
+            }
+
+            .app-buttons {
+                flex-direction: row;
+                justify-content: space-between;
+            }
+
+            .app-btn {
+                flex: 1;
+                max-width: 48%;
+            }
+
+            .payment-methods {
+                justify-content: center;
+                margin-top: 1rem;
+            }
+
+            .footer-badges {
+                text-align: center;
+            }
+
+            .social-icons {
+                justify-content: center;
+            }
+
+            .scroll-to-top {
+                bottom: 20px;
+                right: 20px;
+                width: 45px;
+                height: 45px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .newsletter-section {
+                padding: 1rem;
+            }
+
+            .input-wrapper {
+                flex-direction: column;
+                border-radius: 10px;
+            }
+
+            .newsletter-btn {
+                border-radius: 0 0 10px 10px;
+                justify-content: center;
+            }
+
+            .app-buttons {
+                flex-direction: column;
+            }
+
+            .app-btn {
+                max-width: 100%;
+            }
+        }
+    </style>
+
     <!-- Bootstrap JS Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Modern Footer Scripts -->
+    <script>
+        // Newsletter Subscription
+        document.addEventListener('DOMContentLoaded', function() {
+            const newsletterBtn = document.querySelector('.newsletter-btn');
+            const newsletterInput = document.querySelector('.newsletter-input');
+
+            if (newsletterBtn && newsletterInput) {
+                newsletterBtn.addEventListener('click', function() {
+                    const email = newsletterInput.value.trim();
+
+                    if (!email) {
+                        showToast('Please enter your email address', 'error');
+                        return;
+                    }
+
+                    if (!isValidEmail(email)) {
+                        showToast('Please enter a valid email address', 'error');
+                        return;
+                    }
+
+                    // Show loading state
+                    const originalContent = newsletterBtn.innerHTML;
+                    newsletterBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                    newsletterBtn.disabled = true;
+
+                    // Simulate API call (replace with actual newsletter subscription)
+                    setTimeout(() => {
+                        showToast('Successfully subscribed to newsletter!', 'success');
+                        newsletterInput.value = '';
+                        newsletterBtn.innerHTML = originalContent;
+                        newsletterBtn.disabled = false;
+                    }, 1500);
+                });
+
+                // Enter key support
+                newsletterInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        newsletterBtn.click();
+                    }
+                });
+            }
+
+            // Scroll to Top Functionality
+            const scrollToTopBtn = document.getElementById('scrollToTop');
+
+            if (scrollToTopBtn) {
+                // Show/hide scroll to top button
+                window.addEventListener('scroll', function() {
+                    if (window.pageYOffset > 300) {
+                        scrollToTopBtn.classList.add('visible');
+                    } else {
+                        scrollToTopBtn.classList.remove('visible');
+                    }
+                });
+
+                // Scroll to top on click
+                scrollToTopBtn.addEventListener('click', function() {
+                    window.scrollTo({
+                        top: 0,
+                        behavior: 'smooth'
+                    });
+                });
+            }
+
+            // Social link tracking (optional)
+            const socialLinks = document.querySelectorAll('.social-link');
+            socialLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    const platform = this.classList[1]; // facebook, twitter, etc.
+                    console.log(`Social link clicked: ${platform}`);
+                    // Analytics tracking can be added here
+                });
+            });
+
+            // App download tracking (optional)
+            const appBtns = document.querySelectorAll('.app-btn');
+            appBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const appType = this.querySelector('.app-name').textContent;
+                    console.log(`App download clicked: ${appType}`);
+                    // Analytics tracking can be added here
+                });
+            });
+        });
+
+        // Email validation function
+        function isValidEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+
+        // Toast notification function
+        function showToast(message, type = 'info') {
+            // Create toast element
+            const toast = document.createElement('div');
+            toast.className = `footer-toast footer-toast-${type}`;
+            toast.innerHTML = `
+                <div class="toast-content">
+                    <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+
+            // Add toast styles
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6'};
+                color: white;
+                padding: 1rem 1.5rem;
+                border-radius: 10px;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+                z-index: 10000;
+                transform: translateX(100%);
+                transition: transform 0.3s ease;
+                max-width: 300px;
+            `;
+
+            // Add to body
+            document.body.appendChild(toast);
+
+            // Animate in
+            setTimeout(() => {
+                toast.style.transform = 'translateX(0)';
+            }, 100);
+
+            // Remove after 3 seconds
+            setTimeout(() => {
+                toast.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.parentNode.removeChild(toast);
+                    }
+                }, 300);
+            }, 3000);
+        }
 
     <!-- Custom Script for Dropdown -->
     <script>

@@ -1,6 +1,7 @@
 const Order = require('../../models/order-schema');
 const Product = require('../../models/product-schema');
 const User = require('../../models/user-schema');
+const InvoiceGenerator = require('../../utils/pdf-invoice-generator');
 
 // Load order listing page
 const loadOrderList = async (req, res) => {
@@ -464,11 +465,60 @@ const bulkCancelOrderItems = async (req, res) => {
   }
 };
 
+// Download PDF invoice for an order
+const downloadInvoice = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    const userId = req.session.userId;
+
+    // Get user data
+    const user = await User.findById(userId).select('fullname email profilePhoto');
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: 'User not authenticated'
+      });
+    }
+
+    // Get order with populated product data
+    const order = await Order.findOne({ orderId, userId })
+      .populate('orderedItems.product');
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: 'Order not found'
+      });
+    }
+
+    // Generate PDF invoice
+    const invoiceGenerator = new InvoiceGenerator();
+    const pdfBuffer = await invoiceGenerator.generateInvoice(order, user);
+
+    // Set response headers for PDF download
+    const filename = `Invoice-${order.orderId}.pdf`;
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.setHeader('Content-Length', pdfBuffer.length);
+
+    // Send PDF buffer
+    res.send(pdfBuffer);
+
+  } catch (error) {
+    console.error('Error generating invoice:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error generating invoice'
+    });
+  }
+};
+
 module.exports = {
   loadOrderList,
   loadOrderDetails,
   cancelOrder,
   cancelOrderItem,
   cancelPartialOrderItem,
-  bulkCancelOrderItems
+  bulkCancelOrderItems,
+  downloadInvoice
 };

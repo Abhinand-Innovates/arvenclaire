@@ -467,6 +467,34 @@
             font-weight: 600;
         }
 
+        .btn-download-invoice {
+            width: 100%;
+            background: var(--text-primary);
+            color: white;
+            border: none;
+            padding: 0.75rem;
+            border-radius: 8px;
+            font-weight: 600;
+            margin-top: 1.5rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-download-invoice:hover {
+            background: #333333;
+            transform: translateY(-1px);
+        }
+
+        .btn-download-invoice:disabled {
+            background: var(--text-muted);
+            cursor: not-allowed;
+            transform: none;
+        }
+
         .btn-cancel-order {
             width: 100%;
             background: #ef4444;
@@ -1002,6 +1030,12 @@
                     <span class="summary-label">Total</span>
                     <span class="summary-value">₹<%= order.finalAmount.toFixed(2) %></span>
                 </div>
+
+                <!-- Download Invoice Button -->
+                <button class="btn-download-invoice" onclick="downloadInvoice('<%= order.orderId %>')">
+                    <i class="fas fa-download"></i>
+                    Download Invoice
+                </button>
 
                 <% if (['Pending', 'Processing'].includes(order.status)) { %>
                     <button class="btn-cancel-order" onclick="cancelOrder('<%= order.orderId %>')">
@@ -1632,6 +1666,67 @@
                 }
             }
         });
+
+        // Download PDF invoice
+        async function downloadInvoice(orderId) {
+            // Get the button that was clicked
+            const downloadBtn = event.target.closest('.btn-download-invoice');
+            const originalText = downloadBtn.innerHTML;
+
+            try {
+                // Show loading state
+                downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+                downloadBtn.disabled = true;
+
+                // Make request to download invoice
+                const response = await fetch(`/orders/${orderId}/download-invoice`);
+
+                if (response.ok) {
+                    // Get the PDF blob
+                    const blob = await response.blob();
+
+                    // Create download link
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `Invoice-${orderId}.pdf`;
+                    document.body.appendChild(a);
+                    a.click();
+
+                    // Cleanup
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+
+                    // Show success toast
+                    const Toast = Swal.mixin({
+                        toast: true,
+                        position: 'bottom-right',
+                        showConfirmButton: false,
+                        timer: 3000,
+                        timerProgressBar: true
+                    });
+
+                    Toast.fire({
+                        icon: 'success',
+                        title: 'Invoice downloaded successfully'
+                    });
+                } else {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Failed to download invoice');
+                }
+            } catch (error) {
+                console.error('Error downloading invoice:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Download Failed',
+                    text: error.message || 'Failed to download invoice. Please try again.'
+                });
+            } finally {
+                // Reset button state
+                downloadBtn.innerHTML = originalText;
+                downloadBtn.disabled = false;
+            }
+        }
     </script>
 </body>
 </html>

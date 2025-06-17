@@ -268,6 +268,33 @@
             transform: translateY(-1px);
         }
 
+        .btn-download-invoice {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+        }
+
+        .btn-download-invoice:hover {
+            background: #059669;
+            transform: translateY(-1px);
+        }
+
+        .btn-download-invoice:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+        }
+
         .btn-cancel {
             background: #ef4444;
             color: white;
@@ -583,6 +610,9 @@
                                 <a href="/order-details/<%= order.orderId %>" class="btn-view-details">
                                     <i class="fas fa-eye"></i> View Details
                                 </a>
+                                <button class="btn-download-invoice" onclick="downloadInvoice('<%= order.orderId %>')">
+                                    <i class="fas fa-download"></i> Invoice
+                                </button>
                                 <% if (['Pending', 'Processing'].includes(order.status)) { %>
                                     <button class="btn-cancel" onclick="cancelOrder('<%= order.orderId %>')">
                                         <i class="fas fa-times"></i> Cancel Order
@@ -673,6 +703,67 @@
                         text: 'Failed to cancel order. Please try again.'
                     });
                 }
+            }
+        }
+
+        // Download PDF invoice
+        async function downloadInvoice(orderId) {
+            // Get the button that was clicked
+            const downloadBtn = event.target.closest('.btn-download-invoice');
+            const originalText = downloadBtn.innerHTML;
+
+            try {
+                // Show loading state
+                downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+                downloadBtn.disabled = true;
+
+                // Make request to download invoice
+                const response = await fetch(`/orders/${orderId}/download-invoice`);
+
+                if (response.ok) {
+                    // Get the PDF blob
+                    const blob = await response.blob();
+
+                    // Create download link
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `Invoice-${orderId}.pdf`;
+                    document.body.appendChild(a);
+                    a.click();
+
+                    // Cleanup
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+
+                    // Show success toast
+                    const Toast = Swal.mixin({
+                        toast: true,
+                        position: 'bottom-right',
+                        showConfirmButton: false,
+                        timer: 3000,
+                        timerProgressBar: true
+                    });
+
+                    Toast.fire({
+                        icon: 'success',
+                        title: 'Invoice downloaded successfully'
+                    });
+                } else {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Failed to download invoice');
+                }
+            } catch (error) {
+                console.error('Error downloading invoice:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Download Failed',
+                    text: error.message || 'Failed to download invoice. Please try again.'
+                });
+            } finally {
+                // Reset button state
+                downloadBtn.innerHTML = originalText;
+                downloadBtn.disabled = false;
             }
         }
 
