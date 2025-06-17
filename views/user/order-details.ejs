@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Details</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+    <%- include("../partials/user/account-sidebar") %>
+    <style>
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --bg-tertiary: #e9ecef;
+            --border-color: #dee2e6;
+            --text-primary: #000000;
+            --text-secondary: #495057;
+            --text-muted: #6c757d;
+            --hover-color: #f5f5f5;
+            --success-color: #10b981;
+            --error-color: #ef4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #f5f5f5;
+            color: var(--text-primary);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            min-height: 100vh;
+            padding-top: 80px;
+        }
+
+        .main-content {
+            margin-left: 280px;
+            padding: 1rem 2rem;
+            min-height: 100vh;
+        }
+
+        .page-header {
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-color);
+        }
+
+        .page-header h1 {
+            color: var(--text-primary);
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .page-header h1 i {
+            color: var(--success-color);
+        }
+
+        .page-header p {
+            color: var(--text-secondary);
+            margin-bottom: 0;
+            font-size: 1.1rem;
+        }
+
+        .order-container {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 2rem;
+        }
+
+        .order-main {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .order-info-card {
+            background: var(--bg-primary);
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-color);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .order-status {
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-processing {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .status-shipped {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-delivered {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-cancelled {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .status-partially-cancelled {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .info-label {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .info-value {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .order-id-value {
+            font-family: 'Courier New', monospace;
+            background: var(--bg-secondary);
+            padding: 0.5rem;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+        }
+
+        /* Order Timeline */
+        .timeline {
+            position: relative;
+            padding-left: 2rem;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--border-color);
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -23px;
+            top: 5px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--success-color);
+            border: 3px solid var(--bg-primary);
+            box-shadow: 0 0 0 2px var(--success-color);
+        }
+
+        .timeline-content {
+            background: var(--bg-secondary);
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .timeline-status {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .timeline-description {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .timeline-date {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+        }
+
+        /* Order Items */
+        .order-item {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border-color);
+            position: relative;
+        }
+
+        .order-item:last-child {
+            border-bottom: none;
+        }
+
+        .item-image {
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            object-fit: contain;
+            border: 1px solid var(--border-color);
+        }
+
+        .item-details {
+            flex: 1;
+        }
+
+        .item-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .item-brand {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .item-price {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .current-price {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .quantity-info {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .item-status {
+            position: absolute;
+            top: 1rem;
+            right: 0;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .item-status.active {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .item-status.cancelled {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .item-actions {
+            margin-top: 0.5rem;
+        }
+
+        .btn-cancel-item {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-cancel-item:hover {
+            background: #dc2626;
+        }
+
+        /* Order Summary Sidebar */
+        .order-summary {
+            background: var(--bg-primary);
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-color);
+            height: fit-content;
+            position: sticky;
+            top: 100px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .summary-row:last-child {
+            border-bottom: none;
+            font-weight: 600;
+            font-size: 1.125rem;
+            padding-top: 1rem;
+            margin-top: 1rem;
+            border-top: 2px solid var(--border-color);
+        }
+
+        .summary-label {
+            color: var(--text-secondary);
+        }
+
+        .summary-value {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .btn-cancel-order {
+            width: 100%;
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 0.75rem;
+            border-radius: 8px;
+            font-weight: 600;
+            margin-top: 1.5rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .btn-cancel-order:hover {
+            background: #dc2626;
+            transform: translateY(-1px);
+        }
+
+        .btn-cancel-order:disabled {
+            background: var(--text-muted);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+                padding: 0.5rem 1rem;
+                padding-top: 90px;
+            }
+
+            .order-container {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .order-summary {
+                position: static;
+            }
+
+            .page-header {
+                padding: 1.5rem;
+                margin-bottom: 1.5rem;
+            }
+
+            .page-header h1 {
+                font-size: 1.5rem;
+            }
+
+            .order-info-card {
+                padding: 1.5rem;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.6s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Breadcrumb Styles */
+        .breadcrumb-container {
+            margin-bottom: 1.5rem;
+        }
+
+        .breadcrumb {
+            background: transparent;
+            padding: 0;
+            margin: 0;
+            font-size: 0.9rem;
+        }
+
+        .breadcrumb-item {
+            color: var(--text-muted);
+        }
+
+        .breadcrumb-item a {
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .breadcrumb-item a:hover {
+            color: var(--text-secondary);
+        }
+
+        .breadcrumb-item.active {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Breadcrumb -->
+        <div class="breadcrumb-container">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/profile">My Account</a></li>
+                    <li class="breadcrumb-item"><a href="/orders">My Orders</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Order Details</li>
+                </ol>
+            </nav>
+        </div>
+
+        <!-- Page Header -->
+        <div class="page-header fade-in">
+            <h1><i class="fas fa-receipt"></i> Order Details</h1>
+            <p>View and manage your order information</p>
+        </div>
+
+        <div class="order-container">
+            <div class="order-main">
+                <!-- Order Information -->
+                <div class="order-info-card fade-in">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-info-circle"></i>
+                            Order Information
+                        </h3>
+                        <div class="order-status status-<%= order.status.toLowerCase().replace(/\s+/g, '-') %>">
+                            <%= order.status %>
+                        </div>
+                    </div>
+
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">Order ID</span>
+                            <span class="info-value order-id-value"><%= order.orderId %></span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Order Date</span>
+                            <span class="info-value">
+                                <%= new Date(order.createdAt).toLocaleDateString('en-IN', {
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: 'numeric'
+                                }) %>
+                            </span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Payment Method</span>
+                            <span class="info-value"><%= order.paymentMethod %></span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Estimated Delivery</span>
+                            <span class="info-value">
+                                <%= new Date(order.estimatedDelivery).toLocaleDateString('en-IN', {
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: 'numeric'
+                                }) %>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Order Timeline -->
+                <div class="order-info-card fade-in">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-clock"></i>
+                            Order Timeline
+                        </h3>
+                    </div>
+
+                    <div class="timeline">
+                        <% order.orderTimeline.forEach(timeline => { %>
+                            <div class="timeline-item">
+                                <div class="timeline-content">
+                                    <div class="timeline-status"><%= timeline.status %></div>
+                                    <div class="timeline-description"><%= timeline.description %></div>
+                                    <div class="timeline-date">
+                                        <%= new Date(timeline.timestamp).toLocaleString('en-IN', {
+                                            year: 'numeric',
+                                            month: 'short',
+                                            day: 'numeric',
+                                            hour: '2-digit',
+                                            minute: '2-digit'
+                                        }) %>
+                                    </div>
+                                </div>
+                            </div>
+                        <% }); %>
+                    </div>
+                </div>
+
+                <!-- Order Items -->
+                <div class="order-info-card fade-in">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-box"></i>
+                            Order Items (<%= order.orderedItems.length %>)
+                        </h3>
+                    </div>
+
+                    <% order.orderedItems.forEach(item => { %>
+                        <div class="order-item">
+                            <img src="/uploads/products/<%= item.product.mainImage %>"
+                                 alt="<%= item.product.productName %>"
+                                 class="item-image">
+                            <div class="item-details">
+                                <div class="item-name"><%= item.product.productName %></div>
+                                <div class="item-brand">Brand: <%= item.product.brand %></div>
+                                <div class="item-price">
+                                    <span class="current-price">₹<%= item.price.toFixed(2) %></span>
+                                </div>
+                                <div class="quantity-info">
+                                    Quantity: <%= item.quantity %> | Total: ₹<%= item.totalPrice.toFixed(2) %>
+                                </div>
+                                <% if (item.status === 'Active' && ['Pending', 'Processing'].includes(order.status)) { %>
+                                    <div class="item-actions">
+                                        <button class="btn-cancel-item" onclick="cancelOrderItem('<%= order.orderId %>', '<%= item._id %>')">
+                                            <i class="fas fa-times"></i> Cancel Item
+                                        </button>
+                                    </div>
+                                <% } %>
+                            </div>
+                            <div class="item-status <%= item.status.toLowerCase() %>">
+                                <%= item.status %>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+
+                <!-- Shipping Address -->
+                <div class="order-info-card fade-in">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-map-marker-alt"></i>
+                            Shipping Address
+                        </h3>
+                    </div>
+
+                    <div class="address-details">
+                        <div class="address-type" style="background: var(--text-primary); color: white; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; display: inline-block; margin-bottom: 0.75rem;">
+                            <%= order.shippingAddress.addressType %>
+                        </div>
+                        <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem; font-size: 1rem;">
+                            <%= order.shippingAddress.name %>
+                        </div>
+                        <div style="color: var(--text-secondary); line-height: 1.5; margin-bottom: 0.75rem; font-size: 0.875rem;">
+                            <%= order.shippingAddress.landMark %>, <%= order.shippingAddress.city %><br>
+                            <%= order.shippingAddress.state %> - <%= order.shippingAddress.pincode %>
+                        </div>
+                        <div style="color: var(--text-muted); font-size: 0.875rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <i class="fas fa-phone"></i> <%= order.shippingAddress.phone %>
+                            <% if (order.shippingAddress.altPhone) { %>
+                                | <%= order.shippingAddress.altPhone %>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Summary Sidebar -->
+            <div class="order-summary fade-in">
+                <h3 class="card-title mb-3">
+                    <i class="fas fa-receipt"></i>
+                    Order Summary
+                </h3>
+
+                <div class="summary-row">
+                    <span class="summary-label">Subtotal</span>
+                    <span class="summary-value">₹<%= order.totalPrice.toFixed(2) %></span>
+                </div>
+
+                <% if (order.discount > 0) { %>
+                <div class="summary-row">
+                    <span class="summary-label">Discount</span>
+                    <span class="summary-value" style="color: var(--success-color);">-₹<%= order.discount.toFixed(2) %></span>
+                </div>
+                <% } %>
+
+                <div class="summary-row">
+                    <span class="summary-label">Shipping</span>
+                    <span class="summary-value">
+                        <% if (order.shippingCharges === 0) { %>
+                            <span style="color: var(--success-color);">FREE</span>
+                        <% } else { %>
+                            ₹<%= order.shippingCharges.toFixed(2) %>
+                        <% } %>
+                    </span>
+                </div>
+
+                <div class="summary-row">
+                    <span class="summary-label">Total</span>
+                    <span class="summary-value">₹<%= order.finalAmount.toFixed(2) %></span>
+                </div>
+
+                <% if (['Pending', 'Processing'].includes(order.status)) { %>
+                    <button class="btn-cancel-order" onclick="cancelOrder('<%= order.orderId %>')">
+                        <i class="fas fa-times"></i>
+                        Cancel Order
+                    </button>
+                <% } %>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Cancel entire order
+        async function cancelOrder(orderId) {
+            const { value: reason } = await Swal.fire({
+                title: 'Cancel Order',
+                text: 'Are you sure you want to cancel this entire order?',
+                input: 'textarea',
+                inputLabel: 'Cancellation Reason (Optional)',
+                inputPlaceholder: 'Please provide a reason for cancellation...',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, Cancel Order',
+                confirmButtonColor: '#ef4444',
+                cancelButtonText: 'No, Keep Order',
+                inputValidator: (value) => {
+                    return null; // Reason is optional
+                }
+            });
+
+            if (reason !== undefined) {
+                try {
+                    const response = await fetch(`/orders/${orderId}/cancel`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ reason: reason || 'No reason provided' })
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        const Toast = Swal.mixin({
+                            toast: true,
+                            position: 'bottom-right',
+                            showConfirmButton: false,
+                            timer: 3000,
+                            timerProgressBar: true
+                        });
+
+                        Toast.fire({
+                            icon: 'success',
+                            title: 'Order cancelled successfully'
+                        });
+
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1500);
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Cancellation Failed',
+                            text: result.message || 'Failed to cancel order'
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error cancelling order:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: 'Failed to cancel order. Please try again.'
+                    });
+                }
+            }
+        }
+
+        // Cancel individual item
+        async function cancelOrderItem(orderId, itemId) {
+            const { value: reason } = await Swal.fire({
+                title: 'Cancel Item',
+                text: 'Are you sure you want to cancel this item?',
+                input: 'textarea',
+                inputLabel: 'Cancellation Reason (Optional)',
+                inputPlaceholder: 'Please provide a reason for cancellation...',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, Cancel Item',
+                confirmButtonColor: '#ef4444',
+                cancelButtonText: 'No, Keep Item',
+                inputValidator: (value) => {
+                    return null; // Reason is optional
+                }
+            });
+
+            if (reason !== undefined) {
+                try {
+                    const response = await fetch(`/orders/${orderId}/items/${itemId}/cancel`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ reason: reason || 'No reason provided' })
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        const Toast = Swal.mixin({
+                            toast: true,
+                            position: 'bottom-right',
+                            showConfirmButton: false,
+                            timer: 3000,
+                            timerProgressBar: true
+                        });
+
+                        Toast.fire({
+                            icon: 'success',
+                            title: 'Item cancelled successfully'
+                        });
+
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1500);
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Cancellation Failed',
+                            text: result.message || 'Failed to cancel item'
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error cancelling item:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: 'Failed to cancel item. Please try again.'
+                    });
+                }
+            }
+        }
+    </script>
+</body>
+</html>

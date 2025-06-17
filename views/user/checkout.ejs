@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+    <%- include("../partials/user/header") %>
+    <style>
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --bg-tertiary: #e9ecef;
+            --border-color: #dee2e6;
+            --text-primary: #000000;
+            --text-secondary: #495057;
+            --text-muted: #6c757d;
+            --hover-color: #f5f5f5;
+            --success-color: #10b981;
+            --error-color: #ef4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #f5f5f5;
+            color: var(--text-primary);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            min-height: 100vh;
+            padding-top: 80px;
+        }
+
+        .checkout-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Progress Timeline */
+        .progress-timeline {
+            background: var(--bg-primary);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-color);
+        }
+
+        .timeline-steps {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+        }
+
+        .timeline-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .step-circle {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--bg-tertiary);
+            border: 3px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .step-circle.active {
+            background: var(--text-primary);
+            border-color: var(--text-primary);
+            color: white;
+        }
+
+        .step-circle.completed {
+            background: var(--success-color);
+            border-color: var(--success-color);
+            color: white;
+        }
+
+        .step-label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        .step-label.active {
+            color: var(--text-primary);
+        }
+
+        .timeline-line {
+            position: absolute;
+            top: 25px;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--border-color);
+            z-index: 1;
+        }
+
+        .timeline-progress {
+            height: 100%;
+            background: var(--success-color);
+            width: 33.33%;
+            transition: width 0.3s ease;
+        }
+
+        /* Main Content Layout */
+        .checkout-content {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 2rem;
+        }
+
+        /* Address Section */
+        .address-section {
+            background: var(--bg-primary);
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-color);
+            margin-bottom: 2rem;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-add-address {
+            background: var(--text-primary);
+            color: white;
+            border: none;
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+
+        .btn-add-address:hover {
+            background: var(--text-secondary);
+            color: white;
+            transform: translateY(-1px);
+            text-decoration: none;
+        }
+
+        .addresses-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+        }
+
+        .address-card {
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            background: var(--bg-primary);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .address-card:hover {
+            border-color: var(--text-primary);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .address-card.selected {
+            border-color: var(--text-primary);
+            background: var(--bg-secondary);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .default-star {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 32px;
+            height: 32px;
+            background: var(--success-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.875rem;
+        }
+
+        .address-type {
+            background: var(--text-primary);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            display: inline-block;
+            margin-bottom: 0.75rem;
+        }
+
+        .address-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+
+        .address-details {
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin-bottom: 0.75rem;
+            font-size: 0.875rem;
+        }
+
+        .address-phone {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .address-actions {
+            margin-top: 1rem;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-edit {
+            background: var(--text-primary);
+            color: white;
+            border: none;
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .btn-edit:hover {
+            background: var(--text-secondary);
+            color: white;
+            text-decoration: none;
+        }
+
+        /* Products Section */
+        .products-section {
+            background: var(--bg-primary);
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-color);
+            margin-bottom: 2rem;
+        }
+
+        .product-item {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .product-item:last-child {
+            border-bottom: none;
+        }
+
+        .product-image {
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            object-fit: contain;
+            border: 1px solid var(--border-color);
+        }
+
+        .product-details {
+            flex: 1;
+        }
+
+        .product-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .product-brand {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .product-price {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .current-price {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .original-price {
+            text-decoration: line-through;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        .discount-badge {
+            background: var(--success-color);
+            color: white;
+            padding: 0.125rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .quantity-info {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        /* Order Summary Sidebar */
+        .order-summary {
+            background: var(--bg-primary);
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-color);
+            height: fit-content;
+            position: sticky;
+            top: 100px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .summary-row:last-child {
+            border-bottom: none;
+            font-weight: 600;
+            font-size: 1.125rem;
+            padding-top: 1rem;
+            margin-top: 1rem;
+            border-top: 2px solid var(--border-color);
+        }
+
+        .summary-label {
+            color: var(--text-secondary);
+        }
+
+        .summary-value {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .btn-place-order {
+            width: 100%;
+            background: var(--text-primary);
+            color: white;
+            border: none;
+            padding: 1rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            margin-top: 1.5rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-place-order:hover {
+            background: var(--text-secondary);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-place-order:disabled {
+            background: var(--text-muted);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .checkout-container {
+                padding: 1rem;
+            }
+
+            .checkout-content {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .order-summary {
+                position: static;
+            }
+
+            .timeline-steps {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .timeline-line {
+                display: none;
+            }
+
+            .addresses-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.6s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="checkout-container">
+        <!-- Progress Timeline -->
+        <div class="progress-timeline fade-in">
+            <div class="timeline-steps">
+                <div class="timeline-line">
+                    <div class="timeline-progress"></div>
+                </div>
+                <div class="timeline-step">
+                    <div class="step-circle completed">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <div class="step-label">Cart</div>
+                </div>
+                <div class="timeline-step">
+                    <div class="step-circle active">
+                        <i class="fas fa-map-marker-alt"></i>
+                    </div>
+                    <div class="step-label active">Address</div>
+                </div>
+                <div class="timeline-step">
+                    <div class="step-circle">
+                        <i class="fas fa-credit-card"></i>
+                    </div>
+                    <div class="step-label">Payment</div>
+                </div>
+                <div class="timeline-step">
+                    <div class="step-circle">
+                        <i class="fas fa-check"></i>
+                    </div>
+                    <div class="step-label">Confirmation</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="checkout-content">
+            <div class="checkout-main">
+                <!-- Address Selection -->
+                <div class="address-section fade-in">
+                    <div class="section-header">
+                        <h3 class="section-title">
+                            <i class="fas fa-map-marker-alt"></i>
+                            Delivery Address
+                        </h3>
+                        <a href="/address/add?returnTo=checkout" class="btn-add-address">
+                            <i class="fas fa-plus"></i>
+                            Add New Address
+                        </a>
+                    </div>
+
+                    <% if (addresses && addresses.length > 0) { %>
+                        <div class="addresses-grid">
+                            <% addresses.forEach((address, index) => { %>
+                                <div class="address-card <%= index === 0 ? 'selected' : '' %>" 
+                                     data-address-id="<%= address._id %>"
+                                     onclick="selectAddress(this)">
+                                    <% if (address.isDefault) { %>
+                                        <div class="default-star">
+                                            <i class="fas fa-star"></i>
+                                        </div>
+                                    <% } %>
+                                    <div class="address-type"><%= address.addressType %></div>
+                                    <div class="address-name"><%= address.name %></div>
+                                    <div class="address-details">
+                                        <%= address.landMark %>, <%= address.city %><br>
+                                        <%= address.state %> - <%= address.pincode %>
+                                    </div>
+                                    <div class="address-phone">
+                                        <i class="fas fa-phone"></i> <%= address.phone %>
+                                    </div>
+                                    <div class="address-actions">
+                                        <a href="/address/edit/<%= address._id %>?returnTo=checkout" class="btn-edit">
+                                            <i class="fas fa-edit"></i> Edit
+                                        </a>
+                                    </div>
+                                </div>
+                            <% }); %>
+                        </div>
+                    <% } else { %>
+                        <div class="text-center py-4">
+                            <i class="fas fa-map-marker-alt fa-3x text-muted mb-3"></i>
+                            <h5>No addresses found</h5>
+                            <p class="text-muted">Please add a delivery address to continue</p>
+                            <a href="/address/add?returnTo=checkout" class="btn-add-address">
+                                <i class="fas fa-plus"></i>
+                                Add Address
+                            </a>
+                        </div>
+                    <% } %>
+                </div>
+
+                <!-- Products Section -->
+                <div class="products-section fade-in">
+                    <div class="section-header">
+                        <h3 class="section-title">
+                            <i class="fas fa-shopping-bag"></i>
+                            Order Items (<%= cartItems.length %> items)
+                        </h3>
+                    </div>
+
+                    <% cartItems.forEach(item => { %>
+                        <%
+                            const regularPrice = item.productId.regularPrice;
+                            const salePrice = item.productId.salePrice;
+                            const productOffer = item.productId.productOffer || 0;
+                            const effectivePrice = salePrice - (salePrice * productOffer / 100);
+                            const itemTotal = effectivePrice * item.quantity;
+                            const discount = regularPrice - effectivePrice;
+                        %>
+                        <div class="product-item">
+                            <img src="/uploads/products/<%= item.productId.mainImage %>"
+                                 alt="<%= item.productId.productName %>"
+                                 class="product-image">
+                            <div class="product-details">
+                                <div class="product-name"><%= item.productId.productName %></div>
+                                <div class="product-brand">Brand: <%= item.productId.brand %></div>
+                                <div class="product-price">
+                                    <span class="current-price">₹<%= effectivePrice.toFixed(2) %></span>
+                                    <% if (discount > 0) { %>
+                                        <span class="original-price">₹<%= regularPrice.toFixed(2) %></span>
+                                        <span class="discount-badge"><%= productOffer %>% OFF</span>
+                                    <% } %>
+                                </div>
+                                <div class="quantity-info">
+                                    Quantity: <%= item.quantity %> | Total: ₹<%= itemTotal.toFixed(2) %>
+                                </div>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+            </div>
+
+            <!-- Order Summary Sidebar -->
+            <div class="order-summary fade-in">
+                <h3 class="section-title mb-3">
+                    <i class="fas fa-receipt"></i>
+                    Order Summary
+                </h3>
+
+                <div class="summary-row">
+                    <span class="summary-label">Subtotal</span>
+                    <span class="summary-value">₹<%= orderSummary.subtotal.toFixed(2) %></span>
+                </div>
+
+                <% if (orderSummary.totalDiscount > 0) { %>
+                <div class="summary-row">
+                    <span class="summary-label">Discount</span>
+                    <span class="summary-value" style="color: var(--success-color);">-₹<%= orderSummary.totalDiscount.toFixed(2) %></span>
+                </div>
+                <% } %>
+
+                <div class="summary-row">
+                    <span class="summary-label">Shipping</span>
+                    <span class="summary-value">
+                        <% if (orderSummary.shippingCharges === 0) { %>
+                            <span style="color: var(--success-color);">FREE</span>
+                        <% } else { %>
+                            ₹<%= orderSummary.shippingCharges.toFixed(2) %>
+                        <% } %>
+                    </span>
+                </div>
+
+                <div class="summary-row">
+                    <span class="summary-label">Total</span>
+                    <span class="summary-value">₹<%= orderSummary.finalAmount.toFixed(2) %></span>
+                </div>
+
+                <!-- Payment Method -->
+                <div class="mt-3 pt-3" style="border-top: 2px solid var(--border-color);">
+                    <h5 class="mb-3">Payment Method</h5>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="paymentMethod" id="cod" value="Cash on Delivery" checked>
+                        <label class="form-check-label" for="cod">
+                            <i class="fas fa-money-bill-wave"></i> Cash on Delivery
+                        </label>
+                    </div>
+                </div>
+
+                <button class="btn-place-order" onclick="placeOrder()"
+                        <%= addresses.length === 0 ? 'disabled' : '' %>>
+                    <i class="fas fa-check-circle"></i>
+                    Place Order
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let selectedAddressId = null;
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set first address as selected if available
+            const firstAddress = document.querySelector('.address-card');
+            if (firstAddress) {
+                selectedAddressId = firstAddress.dataset.addressId;
+            }
+
+            // Show toast notification if address operation was successful
+            <% if (addressSuccess) { %>
+                const Toast = Swal.mixin({
+                    toast: true,
+                    position: 'bottom-end',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                    background: '#ffffff',
+                    color: '#000000',
+                    iconColor: '#28a745'
+                });
+
+                Toast.fire({
+                    icon: 'success',
+                    title: '<%= addressSuccess %>'
+                });
+            <% } %>
+        });
+
+        // Address selection
+        function selectAddress(element) {
+            // Remove selected class from all cards
+            document.querySelectorAll('.address-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+
+            // Add selected class to clicked card
+            element.classList.add('selected');
+            selectedAddressId = element.dataset.addressId;
+
+            // Enable place order button
+            const placeOrderBtn = document.querySelector('.btn-place-order');
+            placeOrderBtn.disabled = false;
+        }
+
+
+
+        // Place order
+        async function placeOrder() {
+            if (!selectedAddressId) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Address Required',
+                    text: 'Please select a delivery address',
+                    position: 'bottom-end',
+                    background: '#ffffff',
+                    color: '#000000',
+                    confirmButtonColor: '#000000',
+                    iconColor: '#ffc107'
+                });
+                return;
+            }
+
+            const placeOrderBtn = document.querySelector('.btn-place-order');
+            const originalText = placeOrderBtn.innerHTML;
+
+            // Show loading state
+            placeOrderBtn.disabled = true;
+            placeOrderBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Placing Order...';
+
+            try {
+                const response = await fetch('/checkout/place-order', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        selectedAddressId: selectedAddressId,
+                        paymentMethod: 'Cash on Delivery'
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    // Redirect to order success page
+                    window.location.href = `/order-success/${result.orderId}`;
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Order Failed',
+                        text: result.message || 'Failed to place order',
+                        position: 'bottom-end',
+                        background: '#ffffff',
+                        color: '#000000',
+                        confirmButtonColor: '#000000',
+                        iconColor: '#dc3545'
+                    });
+
+                    // Reset button
+                    placeOrderBtn.disabled = false;
+                    placeOrderBtn.innerHTML = originalText;
+                }
+            } catch (error) {
+                console.error('Error placing order:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: 'Failed to place order. Please try again.',
+                    position: 'bottom-end',
+                    background: '#ffffff',
+                    color: '#000000',
+                    confirmButtonColor: '#000000',
+                    iconColor: '#dc3545'
+                });
+
+                // Reset button
+                placeOrderBtn.disabled = false;
+                placeOrderBtn.innerHTML = originalText;
+            }
+        }
+    </script>
+
+    <%- include("../partials/user/footer") %>

@@ -4,6 +4,7 @@ const passport = require("passport");
 const userController = require("../controllers/user/user-auth-controller");
 const addressController = require("../controllers/user/address-controller");
 const orderController = require("../controllers/user/order-controller");
+const checkoutController = require("../controllers/user/checkout-controller");
 const wishlistController = require("../controllers/user/wishlist-controller");
 const cartController = require("../controllers/user/cart-controller");
 const { checkProductAvailabilityForPage, checkProductAvailability, checkProductAvailabilityForWishlist } = require("../middleware/product-availability-middleware");
@@ -80,8 +81,16 @@ router.put("/address/:id", isUserAuthenticated, preventCache, checkUserBlocked, 
 router.put("/address/set-default/:id", isUserAuthenticated, preventCache, checkUserBlocked, addressController.setAsDefault);
 router.delete("/address/:id", isUserAuthenticated, preventCache, checkUserBlocked, addressController.deleteAddress);
 
+// Checkout-related routes
+router.get("/checkout", isUserAuthenticated, preventCache, addUserContext, checkUserBlocked, checkoutController.loadCheckout);
+router.post("/checkout/place-order", isUserAuthenticated, preventCache, checkUserBlocked, checkoutController.placeOrder);
+router.get("/order-success/:orderId", isUserAuthenticated, preventCache, addUserContext, checkUserBlocked, checkoutController.loadOrderSuccess);
+
 // Order-related routes
 router.get("/orders", isUserAuthenticated, preventCache, addUserContext, checkUserBlocked, orderController.loadOrderList);
+router.get("/order-details/:orderId", isUserAuthenticated, preventCache, addUserContext, checkUserBlocked, orderController.loadOrderDetails);
+router.post("/orders/:orderId/cancel", isUserAuthenticated, preventCache, checkUserBlocked, orderController.cancelOrder);
+router.post("/orders/:orderId/items/:itemId/cancel", isUserAuthenticated, preventCache, checkUserBlocked, orderController.cancelOrderItem);
 
 // Cart-related routes
 router.get("/cart", isUserAuthenticated, preventCache, addUserContext, checkUserBlocked, cartController.loadCart);

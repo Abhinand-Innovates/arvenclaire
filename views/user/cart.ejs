@@ -1257,17 +1257,8 @@
             return;
         }
 
-        // For now, show coming soon message for successful validation
-        Swal.fire({
-            icon: 'info',
-            title: 'Checkout Ready',
-            html: `
-                <p>Your cart is ready for checkout!</p>
-                <p><strong>${availableItems.length}</strong> available item${availableItems.length > 1 ? 's' : ''} will be processed.</p>
-                <p><em>Checkout functionality will be available soon.</em></p>
-            `,
-            confirmButtonColor: '#111827'
-        });
+        // Redirect to checkout page
+        window.location.href = '/checkout';
     }
 
     // Function to show message when checkout is unavailable

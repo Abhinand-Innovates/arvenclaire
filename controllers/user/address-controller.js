@@ -32,7 +32,8 @@ const loadAddressForm = async (req, res) => {
   try {
     const userId = req.session.userId;
     const addressId = req.params.id;
-    
+    const returnTo = req.query.returnTo;
+
     // Get user data for sidebar
     const user = await User.findById(userId).select('fullname email profilePhoto');
     if (!user) {
@@ -55,6 +56,7 @@ const loadAddressForm = async (req, res) => {
       user,
       address,
       isEdit,
+      returnTo,
       title: isEdit ? 'Edit Address' : 'Add New Address'
     });
   } catch (error) {
@@ -146,6 +148,14 @@ const saveAddress = async (req, res) => {
     }
 
     await addressDoc.save();
+
+    // Check if this is a redirect from checkout
+    const returnTo = req.query.returnTo;
+    if (returnTo === 'checkout') {
+      // Store success message in session for toast notification
+      req.session.addressSuccess = 'Address added successfully';
+      return res.redirect('/checkout');
+    }
 
     res.json({
       success: true,
@@ -243,6 +253,14 @@ const updateAddress = async (req, res) => {
     address.isDefault = makeDefault === 'true' || makeDefault === true || false;
 
     await addressDoc.save();
+
+    // Check if this is a redirect from checkout
+    const returnTo = req.query.returnTo;
+    if (returnTo === 'checkout') {
+      // Store success message in session for toast notification
+      req.session.addressSuccess = 'Address updated successfully';
+      return res.redirect('/checkout');
+    }
 
     res.json({
       success: true,

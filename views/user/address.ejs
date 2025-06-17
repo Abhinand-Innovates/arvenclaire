@@ -574,8 +574,12 @@
             if (validateForm(addressData)) {
                 const isEdit = <%= isEdit ? 'true' : 'false' %>;
                 const addressId = '<%= address ? address._id : '' %>';
+                const returnTo = '<%= returnTo || '' %>';
 
-                const url = isEdit ? `/address/${addressId}` : '/address';
+                let url = isEdit ? `/address/${addressId}` : '/address';
+                if (returnTo) {
+                    url += `?returnTo=${returnTo}`;
+                }
                 const method = isEdit ? 'PUT' : 'POST';
 
                 fetch(url, {
@@ -585,9 +589,16 @@
                     },
                     body: JSON.stringify(addressData)
                 })
-                .then(response => response.json())
+                .then(response => {
+                    // If redirected (status 302), follow the redirect
+                    if (response.redirected) {
+                        window.location.href = response.url;
+                        return;
+                    }
+                    return response.json();
+                })
                 .then(data => {
-                    if (data.success) {
+                    if (data && data.success) {
                         Swal.fire({
                             title: 'Success!',
                             text: data.message,
@@ -596,7 +607,7 @@
                         }).then(() => {
                             window.location.href = '/address';
                         });
-                    } else {
+                    } else if (data) {
                         Swal.fire({
                             title: 'Error!',
                             text: data.message,
