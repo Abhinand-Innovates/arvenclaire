@@ -91,6 +91,8 @@ router.get("/orders", isUserAuthenticated, preventCache, addUserContext, checkUs
 router.get("/order-details/:orderId", isUserAuthenticated, preventCache, addUserContext, checkUserBlocked, orderController.loadOrderDetails);
 router.post("/orders/:orderId/cancel", isUserAuthenticated, preventCache, checkUserBlocked, orderController.cancelOrder);
 router.post("/orders/:orderId/items/:itemId/cancel", isUserAuthenticated, preventCache, checkUserBlocked, orderController.cancelOrderItem);
+router.post("/orders/:orderId/items/:itemId/cancel-partial", isUserAuthenticated, preventCache, checkUserBlocked, orderController.cancelPartialOrderItem);
+router.post("/orders/:orderId/bulk-cancel", isUserAuthenticated, preventCache, checkUserBlocked, orderController.bulkCancelOrderItems);
 
 // Cart-related routes
 router.get("/cart", isUserAuthenticated, preventCache, addUserContext, checkUserBlocked, cartController.loadCart);
@@ -107,6 +109,7 @@ router.get("/wishlist", isUserAuthenticated, preventCache, addUserContext, check
 router.post("/wishlist/add", isUserAuthenticated, preventCache, checkUserBlocked, checkProductAvailabilityForWishlist, wishlistController.addToWishlist);
 router.post("/wishlist/remove", isUserAuthenticated, preventCache, checkUserBlocked, wishlistController.removeFromWishlist);
 router.get("/wishlist/count", isUserAuthenticated, preventCache, checkUserBlocked, wishlistController.getWishlistCount);
+router.post("/wishlist/bulk-transfer-to-cart", isUserAuthenticated, preventCache, checkUserBlocked, wishlistController.bulkTransferToCart);
 
 // Change password route
 router.get("/change-password", isUserAuthenticated, preventCache, addUserContext, checkUserBlocked, userController.loadChangePassword);

@@ -99,6 +99,12 @@
             color: #e74c3c;
         }
 
+        .wishlist-header-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
         .items-count {
             background-color: var(--text-primary);
             color: white;
@@ -106,6 +112,41 @@
             border-radius: 20px;
             font-size: 0.875rem;
             font-weight: 600;
+        }
+
+        .btn-add-all-to-cart {
+            background: linear-gradient(135deg, #059669, #047857);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 8px rgba(5, 150, 105, 0.3);
+        }
+
+        .btn-add-all-to-cart:hover:not(:disabled) {
+            background: linear-gradient(135deg, #047857, #065f46);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.4);
+        }
+
+        .btn-add-all-to-cart:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-add-all-to-cart i {
+            font-size: 1rem;
         }
 
         .empty-state {
@@ -556,7 +597,31 @@
         <div class="wishlist-container fade-in">
             <div class="wishlist-header">
                 <h2><i class="fas fa-list"></i> Saved Items</h2>
-                <span class="items-count"><%= wishlist.products.length %> items</span>
+                <div class="wishlist-header-right">
+                    <span class="items-count"><%= wishlist.products.length %> items</span>
+                    <% if (wishlist.products.length > 0) { %>
+                        <%
+                            // Check if there are any available products
+                            const availableProducts = wishlist.products.filter(item => {
+                                const product = item.productId;
+                                return product &&
+                                       !product.isDeleted &&
+                                       product.isListed &&
+                                       !product.isBlocked &&
+                                       product.category &&
+                                       !product.category.isDeleted &&
+                                       product.category.isListed &&
+                                       product.quantity > 0;
+                            });
+                        %>
+                        <% if (availableProducts.length > 0) { %>
+                            <button class="btn-add-all-to-cart" onclick="bulkAddToCart()" id="bulkAddBtn">
+                                <i class="fas fa-cart-plus"></i>
+                                Add All to Cart
+                            </button>
+                        <% } %>
+                    <% } %>
+                </div>
             </div>
 
             <% if (wishlist.products.length > 0) { %>
@@ -796,6 +861,22 @@
             await addToCart(productId);
         }
 
+        // Helper function to show SweetAlert messages
+        function showSweetAlert(message, type) {
+            Swal.fire({
+                icon: type,
+                title: type === 'success' ? 'Success!' : 'Error!',
+                text: message,
+                position: 'bottom-right',
+                toast: true,
+                showConfirmButton: false,
+                timer: type === 'success' ? 3000 : 5000,
+                timerProgressBar: true,
+                background: '#ffffff',
+                color: '#000000'
+            });
+        }
+
         // Helper functions to update counters
         function updateCartCounter(count) {
             const cartCounter = document.querySelector('#cartCount');
@@ -818,6 +899,105 @@
                 } else {
                     wishlistCounter.style.display = 'none';
                 }
+            }
+        }
+
+        // Bulk add all wishlist items to cart
+        async function bulkAddToCart() {
+            const bulkAddBtn = document.getElementById('bulkAddBtn');
+            const originalContent = bulkAddBtn.innerHTML;
+
+            try {
+                // Show loading state
+                bulkAddBtn.disabled = true;
+                bulkAddBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding to Cart...';
+
+                const response = await fetch('/wishlist/bulk-transfer-to-cart', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    // Update counters
+                    updateCartCounter(result.counts.cart);
+                    updateWishlistCounter(result.counts.wishlist);
+
+                    // Show detailed success message
+                    let message = result.message;
+                    if (result.results.skipped.length > 0 || result.results.errors.length > 0) {
+                        message += '\n\nDetails:';
+                        if (result.results.skipped.length > 0) {
+                            message += '\n\nSkipped items:';
+                            result.results.skipped.forEach(item => {
+                                message += `\n• ${item.productName}: ${item.reason}`;
+                            });
+                        }
+                        if (result.results.errors.length > 0) {
+                            message += '\n\nFailed items:';
+                            result.results.errors.forEach(item => {
+                                message += `\n• ${item.productName}: ${item.reason}`;
+                            });
+                        }
+                    }
+
+                    showSweetAlert(message, 'success');
+
+                    // Remove successfully added items from UI
+                    if (result.results.added.length > 0) {
+                        result.results.added.forEach(item => {
+                            const wishlistItem = document.querySelector(`[data-product-id="${item.productId}"]`);
+                            if (wishlistItem) {
+                                wishlistItem.style.transition = 'all 0.3s ease';
+                                wishlistItem.style.opacity = '0';
+                                wishlistItem.style.transform = 'translateX(-100%)';
+
+                                setTimeout(() => {
+                                    wishlistItem.remove();
+                                }, 300);
+                            }
+                        });
+
+                        // Check if wishlist is empty after removal
+                        setTimeout(() => {
+                            const remainingItems = document.querySelectorAll('.wishlist-item');
+                            if (remainingItems.length === 0) {
+                                setTimeout(() => {
+                                    location.reload(); // Reload to show empty state
+                                }, 500);
+                            } else {
+                                // Update items count
+                                const itemsCount = document.querySelector('.items-count');
+                                if (itemsCount) {
+                                    itemsCount.textContent = `${remainingItems.length} items`;
+                                }
+
+                                // Hide bulk add button if no available items left
+                                const availableItems = Array.from(remainingItems).filter(item => {
+                                    const cartBtn = item.querySelector('.btn-cart');
+                                    return cartBtn && !cartBtn.disabled;
+                                });
+
+                                if (availableItems.length === 0) {
+                                    bulkAddBtn.style.display = 'none';
+                                }
+                            }
+                        }, 400);
+                    }
+                } else {
+                    showSweetAlert(result.message || 'Failed to add items to cart', 'error');
+                }
+
+            } catch (error) {
+                console.error('Error in bulk add to cart:', error);
+                showSweetAlert('Failed to add items to cart. Please try again.', 'error');
+            } finally {
+                // Restore button state
+                bulkAddBtn.disabled = false;
+                bulkAddBtn.innerHTML = originalContent;
             }
         }
 

@@ -182,10 +182,179 @@ const getWishlistCount = async (req, res) => {
   }
 };
 
+// Bulk transfer all wishlist items to cart
+const bulkTransferToCart = async (req, res) => {
+  try {
+    const userId = req.session.userId;
+    const Cart = require('../../models/cart-schema');
+    const Product = require('../../models/product-schema');
+
+    // Get user's wishlist with populated product data
+    const wishlist = await Wishlist.findOne({ userId })
+      .populate({
+        path: 'products.productId',
+        populate: {
+          path: 'category',
+          select: 'name isListed isDeleted'
+        }
+      });
+
+    if (!wishlist || !wishlist.products.length) {
+      return res.status(400).json({
+        success: false,
+        message: 'Your wishlist is empty'
+      });
+    }
+
+    // Filter available products
+    const availableProducts = wishlist.products.filter(item => {
+      const product = item.productId;
+      return product &&
+             !product.isDeleted &&
+             product.isListed &&
+             !product.isBlocked &&
+             product.category &&
+             !product.category.isDeleted &&
+             product.category.isListed &&
+             product.quantity > 0;
+    });
+
+    if (availableProducts.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'No available products in your wishlist to add to cart'
+      });
+    }
+
+    // Find or create user's cart
+    let cart = await Cart.findOne({ userId });
+    if (!cart) {
+      cart = new Cart({
+        userId,
+        items: []
+      });
+    }
+
+    const results = {
+      added: [],
+      skipped: [],
+      errors: []
+    };
+
+    // Process each available product
+    for (const wishlistItem of availableProducts) {
+      const product = wishlistItem.productId;
+
+      try {
+        // Check if product already exists in cart
+        const existingItemIndex = cart.items.findIndex(
+          item => item.productId.toString() === product._id.toString()
+        );
+
+        if (existingItemIndex > -1) {
+          // Update existing item
+          const existingItem = cart.items[existingItemIndex];
+          const newQuantity = existingItem.quantity + 1;
+
+          if (newQuantity > product.quantity) {
+            results.skipped.push({
+              productName: product.productName,
+              reason: `Only ${product.quantity} available in stock. You already have ${existingItem.quantity} in your cart.`
+            });
+            continue;
+          }
+
+          if (newQuantity > 5) {
+            results.skipped.push({
+              productName: product.productName,
+              reason: `Maximum limit reached! You can only add up to 5 items per product. You currently have ${existingItem.quantity} in your cart.`
+            });
+            continue;
+          }
+
+          existingItem.quantity = newQuantity;
+          existingItem.price = product.salePrice;
+          existingItem.totalPrice = product.salePrice * newQuantity;
+        } else {
+          // Add new item
+          cart.items.push({
+            productId: product._id,
+            quantity: 1,
+            price: product.salePrice,
+            totalPrice: product.salePrice
+          });
+        }
+
+        results.added.push({
+          productName: product.productName,
+          productId: product._id
+        });
+
+      } catch (error) {
+        results.errors.push({
+          productName: product.productName,
+          reason: 'Failed to add to cart'
+        });
+      }
+    }
+
+    // Save cart if any items were added
+    if (results.added.length > 0) {
+      await cart.save();
+
+      // Remove successfully added items from wishlist
+      const addedProductIds = results.added.map(item => item.productId);
+      await Wishlist.updateOne(
+        { userId },
+        { $pull: { products: { productId: { $in: addedProductIds } } } }
+      );
+    }
+
+    // Get updated counts
+    const updatedWishlist = await Wishlist.findOne({ userId });
+    const wishlistCount = updatedWishlist ? updatedWishlist.products.length : 0;
+
+    const updatedCart = await Cart.findOne({ userId });
+    const cartCount = updatedCart ? updatedCart.items.reduce((total, item) => total + item.quantity, 0) : 0;
+
+    // Prepare response message
+    let message = '';
+    if (results.added.length > 0) {
+      message = `${results.added.length} item(s) added to cart successfully`;
+      if (results.skipped.length > 0) {
+        message += `. ${results.skipped.length} item(s) were skipped due to stock or quantity limits`;
+      }
+      if (results.errors.length > 0) {
+        message += `. ${results.errors.length} item(s) failed to add`;
+      }
+    } else {
+      message = 'No items could be added to cart';
+    }
+
+    res.status(200).json({
+      success: results.added.length > 0,
+      message,
+      results,
+      counts: {
+        wishlist: wishlistCount,
+        cart: cartCount
+      }
+    });
+
+  } catch (error) {
+    console.error('Error in bulk transfer to cart:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error transferring items to cart'
+    });
+  }
+};
+
 
 module.exports = {
   loadWishlist,
   addToWishlist,
   removeFromWishlist,
-  getWishlistCount
+  getWishlistCount,
+  bulkTransferToCart
 };

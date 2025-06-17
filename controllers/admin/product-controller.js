@@ -420,8 +420,6 @@ const updateProduct = async (req, res) => {
         let selectedMainImage;
 
         if (mainImage) {
-            console.log('Main image selection received:', mainImage);
-
             // Check if mainImage is a number (index for new images)
             if (!isNaN(mainImage)) {
                 const newImageIndex = parseInt(mainImage);
@@ -433,7 +431,6 @@ const updateProduct = async (req, res) => {
                 // It's an existing image filename
                 if (currentImages.includes(mainImage)) {
                     selectedMainImage = mainImage;
-                    console.log('Selected existing image as main:', selectedMainImage);
                 }
             }
         }
@@ -450,10 +447,6 @@ const updateProduct = async (req, res) => {
         // Update image fields
         updateData.mainImage = selectedMainImage;
         updateData.subImages = subImages;
-
-        console.log('Final image arrangement:');
-        console.log('Main image:', updateData.mainImage);
-        console.log('Sub images:', updateData.subImages);
 
         const updatedProduct = await Product.findByIdAndUpdate(
             productId,
