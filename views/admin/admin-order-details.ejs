@@ -15,7 +15,7 @@
     <!-- Main Content -->
     <div class="main-content">
         <!-- Breadcrumbs -->
-        <nav aria-label="breadcrumb" class="mb-3">
+        <nav aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/admin-dashboard">Dashboard</a></li>
                 <li class="breadcrumb-item"><a href="/get-orders">Order Management</a></li>
@@ -28,169 +28,204 @@
             <div class="header-content">
                 <div class="header-left">
                     <h1 class="page-title">Order Details</h1>
-                    <p class="page-subtitle">Order ID: <strong><%= order.orderId %></strong></p>
+                    <p class="page-subtitle">Order ID: <span class="order-id"><%= order.orderId %></span></p>
                 </div>
-                <div class="header-right">
-                    <a href="/get-orders" class="btn btn-back">
-                        <i class="fas fa-arrow-left"></i> Back to Orders
+                <div class="header-actions">
+                    <a href="/get-orders" class="btn btn-outline">
+                        <i class="fas fa-arrow-left"></i>
+                        Back to Orders
                     </a>
-                    <button class="btn btn-status" onclick="updateOrderStatus('<%= order._id %>', '<%= order.status %>')">
-                        <i class="fas fa-edit"></i> Update Status
-                    </button>
+                    <% 
+                        // Check if order has user cancellations
+                        let hasUserCancellation = false;
+                        let isUserCancelled = false;
+                        
+                        // Check order level cancellation
+                        if (order.status === 'Cancelled' || order.status === 'Partially Cancelled') {
+                            const userCancellationTimeline = order.orderTimeline.find(timeline => 
+                                (timeline.status === 'Cancelled' || timeline.status === 'Partially Cancelled') && 
+                                !timeline.description.includes('by admin')
+                            );
+                            if (userCancellationTimeline) {
+                                isUserCancelled = true;
+                            }
+                        }
+                        
+                        // Check item level cancellation
+                        const userCancelledItems = order.orderedItems.filter(item => 
+                            item.status === 'Cancelled' && 
+                            item.cancellationReason && 
+                            !item.cancellationReason.includes('by admin')
+                        );
+                        
+                        if (userCancelledItems.length > 0) {
+                            hasUserCancellation = true;
+                        }
+                        
+                        // Check if order is in final state
+                        const finalStates = ['Delivered', 'Returned'];
+                        const isFinalState = finalStates.includes(order.status);
+                        
+                        const canUpdateStatus = !isUserCancelled && !hasUserCancellation && !isFinalState;
+                    %>
+                    
+                    <% if (canUpdateStatus) { %>
+                        <button class="btn btn-primary" onclick="updateOrderStatus('<%= order._id %>', '<%= order.status %>')">
+                            <i class="fas fa-edit"></i>
+                            Update Status
+                        </button>
+                    <% } else { %>
+                        <button class="btn btn-disabled" disabled title="<%= isUserCancelled || hasUserCancellation ? 'Cannot modify order cancelled by customer' : 'Order is in final state' %>">
+                            <i class="fas fa-lock"></i>
+                            Status Locked
+                        </button>
+                    <% } %>
                 </div>
             </div>
         </div>
 
-        <!-- Order Details Content -->
-        <div class="order-details-container">
-            <!-- Order Information Row -->
-            <div class="row mb-4">
-                <!-- Order Info Card -->
-                <div class="col-lg-4 col-md-6 mb-3">
-                    <div class="info-card">
-                        <div class="card-header">
-                            <h5><i class="fas fa-receipt"></i> Order Information</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="info-item">
-                                <label>Order ID:</label>
-                                <span><%= order.orderId %></span>
-                            </div>
-                            <div class="info-item">
-                                <label>Order Date:</label>
-                                <span><%= new Date(order.createdAt).toLocaleDateString() %></span>
-                            </div>
-                            <div class="info-item">
-                                <label>Order Time:</label>
-                                <span><%= new Date(order.createdAt).toLocaleTimeString() %></span>
-                            </div>
-                            <div class="info-item">
-                                <label>Status:</label>
-                                <span class="status-badge status-<%= order.status.toLowerCase().replace(/\s+/g, '-') %>">
-                                    <%= order.status %>
-                                </span>
-                            </div>
-                            <div class="info-item">
-                                <label>Payment Method:</label>
-                                <span><%= order.paymentMethod %></span>
-                            </div>
-                            <% if (order.estimatedDelivery) { %>
-                            <div class="info-item">
-                                <label>Estimated Delivery:</label>
-                                <span><%= new Date(order.estimatedDelivery).toLocaleDateString() %></span>
-                            </div>
+        <!-- Alert for User Cancellation -->
+        <% if (isUserCancelled || hasUserCancellation) { %>
+        <div class="alert-container">
+            <div class="alert alert-warning">
+                <div class="alert-content">
+                    <i class="fas fa-exclamation-triangle alert-icon"></i>
+                    <div class="alert-text">
+                        <h6 class="alert-title">Order Status Locked</h6>
+                        <p class="alert-message">
+                            <% if (isUserCancelled) { %>
+                                This order has been cancelled by the customer and cannot be modified.
+                            <% } else if (hasUserCancellation) { %>
+                                This order contains items cancelled by the customer and cannot be modified.
                             <% } %>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <% } %>
+
+        <!-- Order Details Grid -->
+        <div class="order-details-grid">
+            <!-- Row 1: Order Summary & Customer/Shipping Info -->
+            <div class="details-row">
+                <!-- Order Summary Card -->
+                <div class="detail-card order-summary-card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-receipt"></i>
+                            Order Summary
+                        </h3>
+                    </div>
+                    <div class="card-content">
+                        <div class="detail-item">
+                            <span class="detail-label">Order ID</span>
+                            <span class="detail-value"><%= order.orderId %></span>
                         </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Order Date</span>
+                            <span class="detail-value"><%= new Date(order.createdAt).toLocaleDateString() %></span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Order Time</span>
+                            <span class="detail-value"><%= new Date(order.createdAt).toLocaleTimeString() %></span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Status</span>
+                            <span class="status-badge status-<%= order.status.toLowerCase().replace(/\s+/g, '-') %>">
+                                <%= order.status %>
+                            </span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Payment Method</span>
+                            <span class="detail-value"><%= order.paymentMethod %></span>
+                        </div>
+                        <% if (order.estimatedDelivery) { %>
+                        <div class="detail-item">
+                            <span class="detail-label">Estimated Delivery</span>
+                            <span class="detail-value"><%= new Date(order.estimatedDelivery).toLocaleDateString() %></span>
+                        </div>
+                        <% } %>
                     </div>
                 </div>
 
-                <!-- Customer Info Card -->
-                <div class="col-lg-4 col-md-6 mb-3">
-                    <div class="info-card">
-                        <div class="card-header">
-                            <h5><i class="fas fa-user"></i> Customer Information</h5>
-                        </div>
-                        <div class="card-body">
+                <!-- Customer & Shipping Combined Card -->
+                <div class="detail-card customer-shipping-card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-user"></i>
+                            Customer & Shipping Information
+                        </h3>
+                    </div>
+                    <div class="card-content">
+                        <!-- Customer Section -->
+                        <div class="section">
+                            <h4 class="section-title">Customer Details</h4>
                             <div class="customer-profile">
                                 <div class="customer-avatar">
                                     <%= (order.userId?.fullname || order.shippingAddress.name).charAt(0).toUpperCase() %>
                                 </div>
-                                <div class="customer-details">
-                                    <h6><%= order.userId?.fullname || order.shippingAddress.name %></h6>
-                                    <p><%= order.userId?.email || 'N/A' %></p>
+                                <div class="customer-info">
+                                    <h5 class="customer-name"><%= order.userId?.fullname || order.shippingAddress.name %></h5>
+                                    <p class="customer-email"><%= order.userId?.email || 'N/A' %></p>
                                 </div>
                             </div>
-                            <div class="info-item">
-                                <label>Phone:</label>
-                                <span><%= order.shippingAddress.phone %></span>
+                            <div class="detail-item">
+                                <span class="detail-label">Phone</span>
+                                <span class="detail-value"><%= order.shippingAddress.phone %></span>
                             </div>
                             <% if (order.shippingAddress.altPhone) { %>
-                            <div class="info-item">
-                                <label>Alt Phone:</label>
-                                <span><%= order.shippingAddress.altPhone %></span>
+                            <div class="detail-item">
+                                <span class="detail-label">Alt Phone</span>
+                                <span class="detail-value"><%= order.shippingAddress.altPhone %></span>
                             </div>
                             <% } %>
                         </div>
-                    </div>
-                </div>
 
-                <!-- Price Summary Card -->
-                <div class="col-lg-4 col-md-12 mb-3">
-                    <div class="info-card">
-                        <div class="card-header">
-                            <h5><i class="fas fa-calculator"></i> Price Summary</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="price-item">
-                                <label>Subtotal:</label>
-                                <span>₹<%= order.totalPrice.toLocaleString() %></span>
-                            </div>
-                            <% if (order.discount > 0) { %>
-                            <div class="price-item discount">
-                                <label>Discount:</label>
-                                <span>-₹<%= order.discount.toLocaleString() %></span>
-                            </div>
-                            <% } %>
-                            <div class="price-item">
-                                <label>Shipping:</label>
-                                <span>₹<%= order.shippingCharges.toLocaleString() %></span>
-                            </div>
-                            <div class="price-item total">
-                                <label>Final Amount:</label>
-                                <span>₹<%= order.finalAmount.toLocaleString() %></span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+                        <!-- Section Divider -->
+                        <div class="section-divider"></div>
 
-            <!-- Shipping Address Card -->
-            <div class="row mb-4">
-                <div class="col-12">
-                    <div class="info-card">
-                        <div class="card-header">
-                            <h5><i class="fas fa-map-marker-alt"></i> Shipping Address</h5>
-                        </div>
-                        <div class="card-body">
+                        <!-- Shipping Address Section -->
+                        <div class="section">
+                            <h4 class="section-title">Shipping Address</h4>
                             <div class="address-content">
-                                <p><strong><%= order.shippingAddress.name %></strong></p>
-                                <p><%= order.shippingAddress.addressType %></p>
-                                <p><%= order.shippingAddress.landMark %></p>
-                                <p><%= order.shippingAddress.city %>, <%= order.shippingAddress.state %> - <%= order.shippingAddress.pincode %></p>
-                                <p>Phone: <%= order.shippingAddress.phone %></p>
-                                <% if (order.shippingAddress.altPhone) { %>
-                                <p>Alt Phone: <%= order.shippingAddress.altPhone %></p>
-                                <% } %>
+                                <p class="address-name"><%= order.shippingAddress.name %></p>
+                                <p class="address-line"><%= order.shippingAddress.addressType %></p>
+                                <p class="address-line"><%= order.shippingAddress.landMark %></p>
+                                <p class="address-line"><%= order.shippingAddress.city %>, <%= order.shippingAddress.state %> - <%= order.shippingAddress.pincode %></p>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Order Items Card -->
-            <div class="row mb-4">
-                <div class="col-12">
-                    <div class="info-card">
-                        <div class="card-header">
-                            <h5><i class="fas fa-shopping-cart"></i> Order Items</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="table-responsive">
-                                <table class="items-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Product</th>
-                                            <th>Quantity</th>
-                                            <th>Unit Price</th>
-                                            <th>Total Price</th>
-                                            <th>Status</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <% order.orderedItems.forEach(item => { %>
-                                        <tr>
-                                            <td>
-                                                <div class="product-info">
+            <!-- Row 2: Order Items Table -->
+            <div class="details-row">
+                <div class="detail-card items-card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-shopping-cart"></i>
+                            Ordered Items
+                        </h3>
+                    </div>
+                    <div class="card-content">
+                        <div class="table-container">
+                            <table class="items-table">
+                                <thead>
+                                    <tr>
+                                        <th>Product</th>
+                                        <th>Quantity</th>
+                                        <th>Unit Price</th>
+                                        <th>Total Price</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% order.orderedItems.forEach(item => { %>
+                                    <tr>
+                                        <td>
+                                            <div class="product-info">
+                                                <div class="product-image-container">
                                                     <% if (item.product && item.product.productImages && item.product.productImages.length > 0) { %>
                                                     <img src="/uploads/products/<%= item.product.productImages[0] %>" alt="<%= item.product?.productName || 'Product' %>" class="product-image">
                                                     <% } else { %>
@@ -198,66 +233,115 @@
                                                         <i class="fas fa-image"></i>
                                                     </div>
                                                     <% } %>
-                                                    <div class="product-details">
-                                                        <h6><%= item.product?.productName || 'Product not found' %></h6>
-                                                        <% if (item.product) { %>
-                                                        <small class="text-muted">Regular Price: ₹<%= item.product.regularPrice.toLocaleString() %></small>
-                                                        <% } %>
-                                                    </div>
                                                 </div>
-                                            </td>
-                                            <td><span class="quantity-badge"><%= item.quantity %></span></td>
-                                            <td>₹<%= item.price.toLocaleString() %></td>
-                                            <td><strong>₹<%= item.totalPrice.toLocaleString() %></strong></td>
-                                            <td>
-                                                <span class="item-status status-<%= item.status.toLowerCase() %>">
-                                                    <%= item.status %>
-                                                </span>
-                                            </td>
-                                        </tr>
-                                        <% }) %>
-                                    </tbody>
-                                </table>
-                            </div>
+                                                <div class="product-details">
+                                                    <h6 class="product-name"><%= item.product?.productName || 'Product not found' %></h6>
+                                                    <% if (item.product) { %>
+                                                    <p class="product-price">Regular Price: ₹<%= item.product.regularPrice.toLocaleString() %></p>
+                                                    <% } %>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="quantity-badge"><%= item.quantity %></span>
+                                        </td>
+                                        <td class="price-cell">₹<%= item.price.toLocaleString() %></td>
+                                        <td class="price-cell total-price">₹<%= item.totalPrice.toLocaleString() %></td>
+                                        <td>
+                                            <span class="item-status status-<%= item.status.toLowerCase() %>">
+                                                <%= item.status %>
+                                            </span>
+                                            <% if (item.status === 'Cancelled' && item.cancellationReason && !item.cancellationReason.includes('by admin')) { %>
+                                                <div class="cancellation-info">
+                                                    <small class="cancellation-text">
+                                                        <i class="fas fa-user"></i> Cancelled by customer
+                                                    </small>
+                                                    <% if (item.cancelledAt) { %>
+                                                    <small class="cancellation-date">
+                                                        <i class="fas fa-clock"></i> <%= new Date(item.cancelledAt).toLocaleDateString() %>
+                                                    </small>
+                                                    <% } %>
+                                                </div>
+                                            <% } %>
+                                        </td>
+                                    </tr>
+                                    <% }) %>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Order Timeline Card -->
-            <% if (order.orderTimeline && order.orderTimeline.length > 0) { %>
-            <div class="row mb-4">
-                <div class="col-12">
-                    <div class="info-card">
-                        <div class="card-header">
-                            <h5><i class="fas fa-history"></i> Order Timeline</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="timeline">
-                                <% order.orderTimeline.reverse().forEach((timeline, index) => { %>
-                                <div class="timeline-item">
-                                    <div class="timeline-marker"></div>
-                                    <div class="timeline-content">
-                                        <div class="timeline-header">
-                                            <span class="timeline-status"><%= timeline.status %></span>
-                                            <span class="timeline-date"><%= new Date(timeline.timestamp).toLocaleString() %></span>
-                                        </div>
-                                        <p class="timeline-description"><%= timeline.description %></p>
-                                    </div>
-                                </div>
-                                <% }) %>
+            <!-- Row 3: Final Amount & Order Timeline -->
+            <div class="details-row">
+                <!-- Final Amount Card -->
+                <div class="detail-card amount-card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-calculator"></i>
+                            Final Amount
+                        </h3>
+                    </div>
+                    <div class="card-content">
+                        <div class="amount-breakdown">
+                            <div class="amount-item">
+                                <span class="amount-label">Subtotal</span>
+                                <span class="amount-value">₹<%= order.totalPrice.toLocaleString() %></span>
+                            </div>
+                            <% if (order.discount > 0) { %>
+                            <div class="amount-item discount">
+                                <span class="amount-label">Discount</span>
+                                <span class="amount-value">-₹<%= order.discount.toLocaleString() %></span>
+                            </div>
+                            <% } %>
+                            <div class="amount-item">
+                                <span class="amount-label">Shipping Charges</span>
+                                <span class="amount-value">₹<%= order.shippingCharges.toLocaleString() %></span>
+                            </div>
+                            <div class="amount-divider"></div>
+                            <div class="amount-item total">
+                                <span class="amount-label">Final Amount</span>
+                                <span class="amount-value">₹<%= order.finalAmount.toLocaleString() %></span>
                             </div>
                         </div>
                     </div>
                 </div>
+
+                <!-- Order Timeline Card -->
+                <% if (order.orderTimeline && order.orderTimeline.length > 0) { %>
+                <div class="detail-card timeline-card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-history"></i>
+                            Order Timeline
+                        </h3>
+                    </div>
+                    <div class="card-content">
+                        <div class="timeline">
+                            <% order.orderTimeline.reverse().forEach((timeline, index) => { %>
+                            <div class="timeline-item">
+                                <div class="timeline-marker"></div>
+                                <div class="timeline-content">
+                                    <div class="timeline-header">
+                                        <span class="timeline-status"><%= timeline.status %></span>
+                                        <span class="timeline-date"><%= new Date(timeline.timestamp).toLocaleString() %></span>
+                                    </div>
+                                    <p class="timeline-description"><%= timeline.description %></p>
+                                </div>
+                            </div>
+                            <% }) %>
+                        </div>
+                    </div>
+                </div>
+                <% } %>
             </div>
-            <% } %>
         </div>
     </div>
 
     <!-- Status Update Modal -->
     <div class="modal fade" id="statusUpdateModal" tabindex="-1" aria-labelledby="statusUpdateModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="statusUpdateModalLabel">Update Order Status</h5>
@@ -266,7 +350,7 @@
                 <div class="modal-body">
                     <form id="statusUpdateForm">
                         <input type="hidden" id="updateOrderId">
-                        <div class="mb-3">
+                        <div class="form-group">
                             <label for="newStatus" class="form-label">Select New Status</label>
                             <select class="form-select" id="newStatus" required>
                                 <option value="">Choose status...</option>
@@ -282,7 +366,7 @@
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-outline" data-bs-dismiss="modal">Cancel</button>
                     <button type="button" class="btn btn-primary" onclick="confirmStatusUpdate()">Update Status</button>
                 </div>
             </div>

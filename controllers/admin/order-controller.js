@@ -161,6 +161,45 @@ const updateOrderStatus = async (req, res) => {
       });
     }
 
+    // Check if order has been cancelled by user - prevent admin from changing status
+    if (order.status === 'Cancelled' || order.status === 'Partially Cancelled') {
+      // Check if cancellation was initiated by user (not admin)
+      const userCancellationTimeline = order.orderTimeline.find(timeline => 
+        (timeline.status === 'Cancelled' || timeline.status === 'Partially Cancelled') && 
+        !timeline.description.includes('by admin')
+      );
+      
+      if (userCancellationTimeline) {
+        return res.status(403).json({
+          success: false,
+          message: 'Cannot change status of an order that has been cancelled by the customer'
+        });
+      }
+    }
+
+    // Check if any items have been cancelled by user
+    const userCancelledItems = order.orderedItems.filter(item => 
+      item.status === 'Cancelled' && 
+      item.cancellationReason && 
+      !item.cancellationReason.includes('by admin')
+    );
+
+    if (userCancelledItems.length > 0) {
+      return res.status(403).json({
+        success: false,
+        message: 'Cannot change status of an order with items cancelled by the customer'
+      });
+    }
+
+    // Prevent changing from certain final states
+    const finalStates = ['Delivered', 'Returned'];
+    if (finalStates.includes(order.status) && status !== order.status) {
+      return res.status(403).json({
+        success: false,
+        message: `Cannot change status from ${order.status} to ${status}`
+      });
+    }
+
     // Update order status
     order.status = status;
     

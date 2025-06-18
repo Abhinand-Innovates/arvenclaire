@@ -31,11 +31,8 @@ async function confirmStatusUpdate() {
             body: JSON.stringify({ status: newStatus })
         });
 
-        if (!response.ok) {
-            throw new Error(`Failed to update order status: ${response.status}`);
-        }
-
         const data = await response.json();
+        
         if (data.success) {
             Swal.fire({
                 title: 'Success!',
@@ -50,7 +47,21 @@ async function confirmStatusUpdate() {
             // Close modal
             bootstrap.Modal.getInstance(document.getElementById('statusUpdateModal')).hide();
         } else {
-            throw new Error(data.message);
+            // Handle specific error cases
+            let errorTitle = 'Error';
+            let errorIcon = 'error';
+            
+            if (response.status === 403) {
+                errorTitle = 'Action Not Allowed';
+                errorIcon = 'warning';
+            }
+            
+            Swal.fire({
+                title: errorTitle,
+                text: data.message || 'Failed to update order status. Please try again.',
+                icon: errorIcon,
+                confirmButtonColor: '#000000'
+            });
         }
     } catch (error) {
         console.error('Error updating order status:', error.message);
