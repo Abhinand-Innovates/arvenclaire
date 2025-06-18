@@ -5,6 +5,7 @@ const adminController = require("../controllers/admin/admin-auth-controller");
 const getUsersController = require("../controllers/admin/get-usersController");
 const getCategoryController = require("../controllers/admin/get-categoryController");
 const productController = require("../controllers/admin/product-controller");
+const orderController = require("../controllers/admin/order-controller");
 const { productUpload, handleMulterError } = require("../config/multer-config");
 
 const { isAdminAuthenticated, preventCache } = require('../middleware/auth-middleware');
@@ -51,7 +52,10 @@ adminRoute.patch('/api/products/:id/status', isAdminAuthenticated, preventCache,
 // API for user dashboard
 adminRoute.get('/api/products-for-user', isAdminAuthenticated, preventCache, productController.getProductsForUser);
 
-
-
+// Order Management Routes
+adminRoute.get('/get-orders', isAdminAuthenticated, preventCache, orderController.getOrders);
+adminRoute.get('/get-orders/:id/details', isAdminAuthenticated, preventCache, orderController.getOrderDetailsPage);
+adminRoute.get('/get-orders/:id', isAdminAuthenticated, preventCache, orderController.getOrderById);
+adminRoute.patch('/get-orders/:id/status', isAdminAuthenticated, preventCache, orderController.updateOrderStatus);
 
 module.exports = adminRoute;
