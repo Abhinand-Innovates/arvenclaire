@@ -302,6 +302,85 @@ const cancelEntireOrder = async (req, res) => {
 };
 
 
+// Request return for an order
+const requestReturn = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    const userId = req.session.userId;
+    const { reason } = req.body;
+
+    console.log('Return request:', { orderId, userId, reason });
+
+    // Get order with populated product data
+    const order = await Order.findOne({ orderId, userId })
+      .populate('orderedItems.product');
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: 'Order not found'
+      });
+    }
+
+    // Check if order can be returned (only delivered orders can be returned)
+    if (order.status !== 'Delivered') {
+      return res.status(400).json({
+        success: false,
+        message: 'Only delivered orders can be returned'
+      });
+    }
+
+    // Check if return request already exists
+    if (order.status === 'Return Request' || order.status === 'Returned') {
+      return res.status(400).json({
+        success: false,
+        message: 'Return request already exists for this order'
+      });
+    }
+
+    // Check if order is within return window (e.g., 7 days from delivery)
+    const deliveryDate = order.orderTimeline.find(timeline => timeline.status === 'Delivered')?.timestamp;
+    if (deliveryDate) {
+      const daysSinceDelivery = Math.floor((new Date() - new Date(deliveryDate)) / (1000 * 60 * 60 * 24));
+      if (daysSinceDelivery > 7) {
+        return res.status(400).json({
+          success: false,
+          message: 'Return window has expired. Returns are only allowed within 7 days of delivery.'
+        });
+      }
+    }
+
+    // Update order status to Return Request
+    order.status = 'Return Request';
+    order.returnReason = reason || 'Return requested by customer';
+    order.returnRequestedAt = new Date();
+
+    // Add to order timeline
+    order.orderTimeline.push({
+      status: 'Return Request',
+      description: `Return requested: ${reason || 'Return requested by customer'}`,
+      timestamp: new Date()
+    });
+
+    await order.save();
+
+    console.log('Return request created successfully:', orderId);
+
+    res.status(200).json({
+      success: true,
+      message: 'Return request submitted successfully. Admin will review your request.'
+    });
+
+  } catch (error) {
+    console.error('Error requesting return:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error submitting return request'
+    });
+  }
+};
+
+
 // Download PDF invoice for an order
 const downloadInvoice = async (req, res) => {
   try {
@@ -357,5 +436,6 @@ module.exports = {
   loadOrderDetails,
   cancelOrderItem,
   cancelEntireOrder,
+  requestReturn,
   downloadInvoice
 };

@@ -58,4 +58,10 @@ adminRoute.get('/get-orders/:id/details', isAdminAuthenticated, preventCache, or
 adminRoute.get('/get-orders/:id', isAdminAuthenticated, preventCache, orderController.getOrderById);
 adminRoute.patch('/get-orders/:id/status', isAdminAuthenticated, preventCache, orderController.updateOrderStatus);
 
+// Return Request Routes
+adminRoute.get('/return-requests', isAdminAuthenticated, preventCache, orderController.getReturnRequests);
+adminRoute.get('/get-return-request-count', isAdminAuthenticated, preventCache, orderController.getReturnRequestCount);
+adminRoute.post('/return-requests/:id/approve', isAdminAuthenticated, preventCache, orderController.approveReturnRequest);
+adminRoute.post('/return-requests/:id/reject', isAdminAuthenticated, preventCache, orderController.rejectReturnRequest);
+
 module.exports = adminRoute;

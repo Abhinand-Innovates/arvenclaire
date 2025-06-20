@@ -473,10 +473,10 @@ const getReturnRequests = async (req, res) => {
     }
 
     // Get total count for pagination
-    const totalRequests = await Order.countDocuments({ $and: [ searchQuery, { status: { $ne: "Cancelled" } } ] });
+    const totalRequests = await Order.countDocuments(searchQuery);
 
     // Get return requests with user and product details
-    const returnRequests = await Order.find({ $and: [ searchQuery, { status: { $ne: "Cancelled" } } ] })
+    const returnRequests = await Order.find(searchQuery)
       .populate('userId', 'fullname email phone')
       .populate('orderedItems.product', 'productName productImages regularPrice sellingPrice')
       .sort({ returnRequestedAt: -1, createdAt: -1 }) // Sort by return request date first, then creation date

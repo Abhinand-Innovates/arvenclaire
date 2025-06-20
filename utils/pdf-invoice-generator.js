@@ -214,6 +214,7 @@ class InvoiceGenerator {
     const quantityX = 350;
     const priceX = 400;
     const totalX = 480;
+    const statusX = 520;
     
     // Table header
     this.doc
@@ -233,8 +234,12 @@ class InvoiceGenerator {
     
     this.currentY = tableTop + 25;
     
-    // Table rows
-    order.orderedItems.forEach((item, index) => {
+    // Separate active and cancelled items
+    const activeItems = order.orderedItems.filter(item => item.status === 'Active');
+    const cancelledItems = order.orderedItems.filter(item => item.status === 'Cancelled');
+    
+    // Table rows for active items
+    activeItems.forEach((item, index) => {
       const rowY = this.currentY;
       const rowHeight = 30;
       
@@ -258,6 +263,48 @@ class InvoiceGenerator {
       this.currentY += rowHeight;
     });
     
+    // Add cancelled items section if any exist
+    if (cancelledItems.length > 0) {
+      // Add separator for cancelled items
+      this.currentY += 10;
+      this.doc
+        .fontSize(10)
+        .fillColor('#ef4444')
+        .font('Helvetica-Bold')
+        .text('Cancelled Items:', itemCodeX + 5, this.currentY);
+      this.currentY += 20;
+      
+      // Cancelled items rows
+      cancelledItems.forEach((item, index) => {
+        const rowY = this.currentY;
+        const rowHeight = 30;
+        
+        // Light red background for cancelled items
+        this.doc
+          .rect(50, rowY, 495, rowHeight)
+          .fill('#fee2e2');
+        
+        this.doc
+          .fontSize(9)
+          .fillColor('#991b1b')
+          .font('Helvetica')
+          .text(item.product.productName.substring(0, 15) + '...', itemCodeX + 5, rowY + 8)
+          .text(`${item.product.brand} - ${item.product.productName.substring(0, 20)}...`, descriptionX + 5, rowY + 8)
+          .text(item.quantity.toString(), quantityX + 5, rowY + 8)
+          .text(`₹${item.price.toFixed(2)}`, priceX + 5, rowY + 8)
+          .text(`₹${item.totalPrice.toFixed(2)}`, totalX + 5, rowY + 8);
+        
+        // Add "CANCELLED" text
+        this.doc
+          .fontSize(8)
+          .fillColor('#991b1b')
+          .font('Helvetica-Bold')
+          .text('CANCELLED', statusX - 40, rowY + 10);
+        
+        this.currentY += rowHeight;
+      });
+    }
+    
     // Table border
     this.doc
       .strokeColor(companyConfig.colors.secondary)
@@ -272,44 +319,156 @@ class InvoiceGenerator {
   addSummary(order) {
     const summaryX = 350;
     
+    // Calculate current totals based on active items
+    const activeItems = order.orderedItems.filter(item => item.status === 'Active');
+    const cancelledItems = order.orderedItems.filter(item => item.status === 'Cancelled');
+    const currentSubtotal = activeItems.reduce((sum, item) => sum + item.totalPrice, 0);
+    const cancelledAmount = cancelledItems.reduce((sum, item) => sum + item.totalPrice, 0);
+    const originalOrderTotal = currentSubtotal + cancelledAmount;
+    
+    // Calculate proportional discount for active items only
+    let applicableDiscount = 0;
+    let currentTotal = 0;
+    
+    if (currentSubtotal > 0 && order.discount > 0 && originalOrderTotal > 0) {
+      // Calculate what proportion of the original order the active items represent
+      const activeItemsProportion = currentSubtotal / originalOrderTotal;
+      // Apply only the proportional discount to active items
+      applicableDiscount = Math.min(order.discount * activeItemsProportion, currentSubtotal);
+      currentTotal = Math.max(0, currentSubtotal - applicableDiscount + order.shippingCharges);
+    } else if (currentSubtotal > 0) {
+      currentTotal = currentSubtotal + order.shippingCharges;
+    }
+    
+    // Determine summary box height based on content
+    let summaryHeight = 100;
+    if (cancelledAmount > 0) {
+      summaryHeight = 160; // More space for cancelled items info
+    }
+    
     // Summary box
     this.doc
       .strokeColor(companyConfig.colors.secondary)
       .lineWidth(1)
-      .rect(summaryX, this.currentY, 195, 100)
+      .rect(summaryX, this.currentY, 195, summaryHeight)
       .stroke();
     
-    // Summary content
+    let yOffset = 15;
+    
+    // Summary content for active items
     this.doc
       .fontSize(10)
       .fillColor(companyConfig.colors.secondary)
       .font('Helvetica')
-      .text('Subtotal:', summaryX + 10, this.currentY + 15)
-      .text('Discount:', summaryX + 10, this.currentY + 30)
-      .text('Shipping:', summaryX + 10, this.currentY + 45);
+      .text('Subtotal (Active):', summaryX + 10, this.currentY + yOffset);
     
-    this.doc
-      .fontSize(12)
-      .fillColor(companyConfig.colors.primary)
-      .font('Helvetica-Bold')
-      .text('Total:', summaryX + 10, this.currentY + 70);
-    
-    // Summary values
     this.doc
       .fontSize(10)
       .fillColor(companyConfig.colors.primary)
       .font('Helvetica')
-      .text(`₹${order.totalPrice.toFixed(2)}`, summaryX + 120, this.currentY + 15)
-      .text(`-₹${order.discount.toFixed(2)}`, summaryX + 120, this.currentY + 30)
-      .text(order.shippingCharges === 0 ? 'FREE' : `₹${order.shippingCharges.toFixed(2)}`, summaryX + 120, this.currentY + 45);
+      .text(`₹${currentSubtotal.toFixed(2)}`, summaryX + 120, this.currentY + yOffset);
+    
+    yOffset += 15;
+    
+    // Show cancelled amount if any
+    if (cancelledAmount > 0) {
+      this.doc
+        .fontSize(10)
+        .fillColor('#ef4444')
+        .font('Helvetica')
+        .text('Cancelled Items:', summaryX + 10, this.currentY + yOffset);
+      
+      this.doc
+        .fontSize(10)
+        .fillColor('#ef4444')
+        .font('Helvetica')
+        .text(`-₹${cancelledAmount.toFixed(2)}`, summaryX + 120, this.currentY + yOffset);
+      
+      yOffset += 15;
+    }
+    
+    // Show discount information
+    if (order.discount > 0) {
+      if (cancelledAmount > 0 && applicableDiscount < order.discount) {
+        // Show original discount
+        this.doc
+          .fontSize(9)
+          .fillColor(companyConfig.colors.secondary)
+          .font('Helvetica')
+          .text('Original Discount:', summaryX + 10, this.currentY + yOffset);
+        
+        this.doc
+          .fontSize(9)
+          .fillColor(companyConfig.colors.secondary)
+          .font('Helvetica')
+          .text(`-₹${order.discount.toFixed(2)}`, summaryX + 120, this.currentY + yOffset);
+        
+        yOffset += 12;
+        
+        // Show discount adjustment
+        this.doc
+          .fontSize(9)
+          .fillColor('#ef4444')
+          .font('Helvetica')
+          .text('Discount Adjustment:', summaryX + 10, this.currentY + yOffset);
+        
+        this.doc
+          .fontSize(9)
+          .fillColor('#ef4444')
+          .font('Helvetica')
+          .text(`+₹${(order.discount - applicableDiscount).toFixed(2)}`, summaryX + 120, this.currentY + yOffset);
+        
+        yOffset += 15;
+      }
+      
+      if (applicableDiscount > 0) {
+        this.doc
+          .fontSize(10)
+          .fillColor(companyConfig.colors.secondary)
+          .font('Helvetica')
+          .text(cancelledAmount > 0 ? 'Applicable Discount:' : 'Discount:', summaryX + 10, this.currentY + yOffset);
+        
+        this.doc
+          .fontSize(10)
+          .fillColor('#10b981')
+          .font('Helvetica')
+          .text(`-₹${applicableDiscount.toFixed(2)}`, summaryX + 120, this.currentY + yOffset);
+        
+        yOffset += 15;
+      }
+    }
+    
+    // Shipping
+    if (currentSubtotal > 0) {
+      this.doc
+        .fontSize(10)
+        .fillColor(companyConfig.colors.secondary)
+        .font('Helvetica')
+        .text('Shipping:', summaryX + 10, this.currentY + yOffset);
+      
+      this.doc
+        .fontSize(10)
+        .fillColor(companyConfig.colors.primary)
+        .font('Helvetica')
+        .text(order.shippingCharges === 0 ? 'FREE' : `₹${order.shippingCharges.toFixed(2)}`, summaryX + 120, this.currentY + yOffset);
+      
+      yOffset += 20;
+    }
+    
+    // Total
+    this.doc
+      .fontSize(12)
+      .fillColor(companyConfig.colors.primary)
+      .font('Helvetica-Bold')
+      .text(cancelledAmount > 0 ? 'Current Total:' : 'Total:', summaryX + 10, this.currentY + yOffset);
     
     this.doc
       .fontSize(12)
       .fillColor(companyConfig.colors.primary)
       .font('Helvetica-Bold')
-      .text(`₹${order.finalAmount.toFixed(2)}`, summaryX + 120, this.currentY + 70);
+      .text(`₹${currentTotal.toFixed(2)}`, summaryX + 120, this.currentY + yOffset);
     
-    this.currentY += 120;
+    this.currentY += summaryHeight + 20;
   }
 
   // Add footer

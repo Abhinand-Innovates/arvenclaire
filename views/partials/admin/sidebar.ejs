@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Arvenclaire Admin Panel</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
@@ -87,6 +88,42 @@
         .nav-item.active:hover {
             background-color: #333333;
             color: #ffffff;
+        }
+
+        /* Return Request Badge Styles */
+        .return-request-badge {
+            display: inline-flex;
+            align-items: center;
+            margin-left: 8px;
+            background-color: #dc3545;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
+            animation: pulse 2s infinite;
+        }
+
+        .return-request-badge i {
+            margin-right: 3px;
+            font-size: 8px;
+        }
+
+        .badge-count {
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(220, 53, 69, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(220, 53, 69, 0);
+            }
         }
 
         #logoutBtn {
@@ -328,7 +365,7 @@
 
         <a href="/admin-dashboard" class="nav-item" data-route="dashboard">Dashboard</a>
         <a href="/get-product" class="nav-item" data-route="products">Products</a>
-        <a href="/get-orders" class="nav-item" data-route="orders">Order Lists</a>
+        <a href="/get-orders" class="nav-item" data-route="orders">Order Lists <span class="return-request-badge" id="returnRequestBadge" style="display: none;"><i class="fas fa-bell"></i> <span class="badge-count" id="returnRequestCount">0</span></span></a>
         <a href="/get-user" class="nav-item" data-route="users">Users</a>
         <a href="#" class="nav-item" data-route="sales">Sales</a>
         <a href="#" class="nav-item" data-route="coupons">Coupons</a>

@@ -16,7 +16,7 @@ const { addUserContext, checkUserBlocked } = require("../middleware/user-middlew
 
 // Google OAuth routes
 router.get(
-  "/auth/google",
+"/auth/google",
   passport.authenticate("google", { scope: ["profile", "email"] })
 );
 router.get(
@@ -91,6 +91,7 @@ router.get("/orders", isUserAuthenticated, preventCache, addUserContext, checkUs
 router.get("/order-details/:orderId", isUserAuthenticated, preventCache, addUserContext, checkUserBlocked, orderController.loadOrderDetails);
 router.post("/orders/:orderId/items/:itemId/cancel", isUserAuthenticated, preventCache, checkUserBlocked, orderController.cancelOrderItem);
 router.post("/orders/:orderId/cancel-entire", isUserAuthenticated, preventCache, checkUserBlocked, orderController.cancelEntireOrder);
+router.post("/orders/:orderId/request-return", isUserAuthenticated, preventCache, checkUserBlocked, orderController.requestReturn);
 router.get("/orders/:orderId/download-invoice", isUserAuthenticated, preventCache, checkUserBlocked, orderController.downloadInvoice);
 
 // Cart-related routes

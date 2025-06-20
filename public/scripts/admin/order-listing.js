@@ -39,6 +39,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initial fetch to ensure correct data
     fetchOrders();
+    
+    // Initialize notification system
+    updateReturnRequestNotification();
+    
+    // Set up periodic notification updates (every 30 seconds)
+    setInterval(updateReturnRequestNotification, 30000);
 });
 
 // Debounce function
@@ -91,6 +97,82 @@ async function fetchOrders() {
             confirmButtonColor: '#000000'
         });
     }
+}
+
+// Update return request notification
+async function updateReturnRequestNotification() {
+    try {
+        const response = await fetch('/get-return-request-count', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            const count = data.count || 0;
+            
+            // Update notification bell
+            const notificationBell = document.getElementById('notificationBell');
+            const notificationCounter = document.getElementById('notificationCounter');
+            
+            if (notificationBell && notificationCounter) {
+                if (count > 0) {
+                    notificationBell.classList.add('has-notifications');
+                    notificationCounter.classList.remove('hidden');
+                    notificationCounter.textContent = count;
+                } else {
+                    notificationBell.classList.remove('has-notifications');
+                    notificationCounter.classList.add('hidden');
+                    notificationCounter.textContent = '0';
+                }
+            }
+            
+            // Update sidebar notification badge if it exists
+            const sidebarBadge = document.getElementById('returnRequestBadge');
+            const sidebarCount = document.getElementById('returnRequestCount');
+            
+            if (sidebarBadge && sidebarCount) {
+                if (count > 0) {
+                    sidebarBadge.style.display = 'inline-block';
+                    sidebarCount.textContent = count;
+                } else {
+                    sidebarBadge.style.display = 'none';
+                    sidebarCount.textContent = '0';
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Error updating return request notification:', error);
+    }
+}
+
+// Show notification when new return request is received
+function showNewReturnRequestNotification() {
+    // Show a toast notification
+    if (typeof Swal !== 'undefined') {
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 5000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+                toast.addEventListener('mouseenter', Swal.stopTimer)
+                toast.addEventListener('mouseleave', Swal.resumeTimer)
+            }
+        });
+
+        Toast.fire({
+            icon: 'info',
+            title: 'New Return Request',
+            text: 'A new return request has been submitted by a customer.'
+        });
+    }
+    
+    // Update notification immediately
+    updateReturnRequestNotification();
 }
 
 // Render orders table

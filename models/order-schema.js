@@ -119,6 +119,30 @@ const orderSchema = new Schema({
       deliveryDate.setDate(deliveryDate.getDate() + 7); // 7 days from order
       return deliveryDate;
     }
+  },
+  returnReason: {
+    type: String,
+    default: null
+  },
+  returnRequestedAt: {
+    type: Date,
+    default: null
+  },
+  returnApprovedAt: {
+    type: Date,
+    default: null
+  },
+  returnRejectedAt: {
+    type: Date,
+    default: null
+  },
+  adminNote: {
+    type: String,
+    default: null
+  },
+  rejectionReason: {
+    type: String,
+    default: null
   }
 }, { timestamps: true });
 

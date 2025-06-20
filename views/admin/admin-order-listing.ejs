@@ -37,13 +37,17 @@
                     <input type="text" class="form-control" id="orderSearch" placeholder="Search by Order ID, Customer Name, Phone..." value="<%= searchTerm %>">
                 </div>
                 <div class="filter-controls">
+                    <div class="notification-icon-container" onclick="window.location.href='/return-requests'">
+                        <i class="fas fa-bell notification-icon <%= returnRequestCount > 0 ? 'has-notifications' : '' %>" id="notificationBell"></i>
+                        <span class="notification-counter <%= returnRequestCount > 0 ? '' : 'hidden' %>" id="notificationCounter"><%= returnRequestCount || 0 %></span>
+                    </div>
                     <select class="form-select" id="statusFilter" style="width: auto;">
                         <option value="" <%= statusFilter === '' ? 'selected' : '' %>>All Status</option>
                         <option value="Pending" <%= statusFilter === 'Pending' ? 'selected' : '' %>>Pending</option>
                         <option value="Processing" <%= statusFilter === 'Processing' ? 'selected' : '' %>>Processing</option>
                         <option value="Shipped" <%= statusFilter === 'Shipped' ? 'selected' : '' %>>Shipped</option>
                         <option value="Delivered" <%= statusFilter === 'Delivered' ? 'selected' : '' %>>Delivered</option>
-                                                <option value="Returned" <%= statusFilter === 'Returned' ? 'selected' : '' %>>Returned</option>
+                        <option value="Returned" <%= statusFilter === 'Returned' ? 'selected' : '' %>>Returned</option>
                     </select>
                 </div>
             </div>
@@ -181,7 +185,7 @@
                                 <option value="Processing">Processing</option>
                                 <option value="Shipped">Shipped</option>
                                 <option value="Delivered">Delivered</option>
-                                                                <option value="Return Request">Return Request</option>
+                                <option value="Return Request">Return Request</option>
                                 <option value="Returned">Returned</option>
                             </select>
                         </div>
