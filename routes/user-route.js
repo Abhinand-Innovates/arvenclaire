@@ -89,10 +89,8 @@ router.get("/order-success/:orderId", isUserAuthenticated, preventCache, addUser
 // Order-related routes
 router.get("/orders", isUserAuthenticated, preventCache, addUserContext, checkUserBlocked, orderController.loadOrderList);
 router.get("/order-details/:orderId", isUserAuthenticated, preventCache, addUserContext, checkUserBlocked, orderController.loadOrderDetails);
-router.post("/orders/:orderId/cancel", isUserAuthenticated, preventCache, checkUserBlocked, orderController.cancelOrder);
 router.post("/orders/:orderId/items/:itemId/cancel", isUserAuthenticated, preventCache, checkUserBlocked, orderController.cancelOrderItem);
-router.post("/orders/:orderId/items/:itemId/cancel-partial", isUserAuthenticated, preventCache, checkUserBlocked, orderController.cancelPartialOrderItem);
-router.post("/orders/:orderId/bulk-cancel", isUserAuthenticated, preventCache, checkUserBlocked, orderController.bulkCancelOrderItems);
+router.post("/orders/:orderId/cancel-entire", isUserAuthenticated, preventCache, checkUserBlocked, orderController.cancelEntireOrder);
 router.get("/orders/:orderId/download-invoice", isUserAuthenticated, preventCache, checkUserBlocked, orderController.downloadInvoice);
 
 // Cart-related routes

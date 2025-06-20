@@ -36,37 +36,19 @@
                         Back to Orders
                     </a>
                     <% 
-                        // Check if order has user cancellations
-                        let hasUserCancellation = false;
-                        let isUserCancelled = false;
-                        
-                        // Check order level cancellation
-                        if (order.status === 'Cancelled' || order.status === 'Partially Cancelled') {
-                            const userCancellationTimeline = order.orderTimeline.find(timeline => 
-                                (timeline.status === 'Cancelled' || timeline.status === 'Partially Cancelled') && 
-                                !timeline.description.includes('by admin')
-                            );
-                            if (userCancellationTimeline) {
-                                isUserCancelled = true;
-                            }
-                        }
-                        
-                        // Check item level cancellation
-                        const userCancelledItems = order.orderedItems.filter(item => 
-                            item.status === 'Cancelled' && 
-                            item.cancellationReason && 
-                            !item.cancellationReason.includes('by admin')
-                        );
-                        
-                        if (userCancelledItems.length > 0) {
-                            hasUserCancellation = true;
-                        }
-                        
                         // Check if order is in final state
                         const finalStates = ['Delivered', 'Returned'];
                         const isFinalState = finalStates.includes(order.status);
                         
-                        const canUpdateStatus = !isUserCancelled && !hasUserCancellation && !isFinalState;
+                        // Check if order was entirely cancelled by user
+                        const isEntirelyUserCancelled = order.status === 'Cancelled' && 
+                            order.orderedItems.every(item => 
+                                item.status === 'Cancelled' && 
+                                item.cancellationReason && 
+                                !item.cancellationReason.includes('by admin')
+                            );
+                        
+                        const canUpdateStatus = !isFinalState && !isEntirelyUserCancelled;
                     %>
                     
                     <% if (canUpdateStatus) { %>
@@ -75,7 +57,7 @@
                             Update Status
                         </button>
                     <% } else { %>
-                        <button class="btn btn-disabled" disabled title="<%= isUserCancelled || hasUserCancellation ? 'Cannot modify order cancelled by customer' : 'Order is in final state' %>">
+                        <button class="btn btn-disabled" disabled title="<%= isEntirelyUserCancelled ? 'Order was cancelled by customer' : 'Order is in final state' %>">
                             <i class="fas fa-lock"></i>
                             Status Locked
                         </button>
@@ -358,8 +340,7 @@
                                 <option value="Processing">Processing</option>
                                 <option value="Shipped">Shipped</option>
                                 <option value="Delivered">Delivered</option>
-                                <option value="Cancelled">Cancelled</option>
-                                <option value="Return Request">Return Request</option>
+                                                                <option value="Return Request">Return Request</option>
                                 <option value="Returned">Returned</option>
                             </select>
                         </div>

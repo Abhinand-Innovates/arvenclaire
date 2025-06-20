@@ -202,15 +202,6 @@ body {
   color: #155724;
 }
 
-.status-cancelled {
-  background-color: #f8d7da;
-  color: #721c24;
-}
-
-.status-partially-cancelled {
-  background-color: #ffeaa7;
-  color: #6c5ce7;
-}
 
 .status-return-request {
   background-color: #e2e3e5;

@@ -163,6 +163,17 @@
             color: #92400e;
         }
 
+        .status-return-request {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-returned {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        
         .order-info {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -295,26 +306,7 @@
             transform: none;
         }
 
-        .btn-cancel {
-            background: #ef4444;
-            color: white;
-            border: none;
-            padding: 0.4rem 0.8rem;
-            border-radius: 6px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            cursor: pointer;
-        }
-
-        .btn-cancel:hover {
-            background: #dc2626;
-            transform: translateY(-1px);
-        }
-
+        
         .empty-state {
             text-align: center;
             padding: 3rem 2rem;
@@ -576,7 +568,26 @@
                                 </div>
                                 <div class="order-amount">
                                     <i class="fas fa-rupee-sign"></i>
-                                    ₹<%= order.finalAmount.toFixed(2) %>
+                                    <%
+                                        // Calculate current amount based on active items with proportional discount
+                                        const activeItems = order.orderedItems.filter(item => item.status === 'Active');
+                                        const cancelledItems = order.orderedItems.filter(item => item.status === 'Cancelled');
+                                        const currentSubtotal = activeItems.reduce((sum, item) => sum + item.totalPrice, 0);
+                                        const cancelledAmount = cancelledItems.reduce((sum, item) => sum + item.totalPrice, 0);
+                                        const originalOrderTotal = currentSubtotal + cancelledAmount;
+                                        
+                                        let currentAmount = 0;
+                                        if (currentSubtotal > 0) {
+                                            let applicableDiscount = 0;
+                                            if (order.discount > 0 && originalOrderTotal > 0) {
+                                                // Calculate proportional discount for active items only
+                                                const activeItemsProportion = currentSubtotal / originalOrderTotal;
+                                                applicableDiscount = Math.min(order.discount * activeItemsProportion, currentSubtotal);
+                                            }
+                                            currentAmount = Math.max(0, currentSubtotal - applicableDiscount + order.shippingCharges);
+                                        }
+                                    %>
+                                    ₹<%= currentAmount.toFixed(2) %>
                                 </div>
                                 <div class="order-payment">
                                     <i class="fas fa-credit-card"></i>
@@ -613,11 +624,6 @@
                                 <button class="btn-download-invoice" onclick="downloadInvoice('<%= order.orderId %>')">
                                     <i class="fas fa-download"></i> Invoice
                                 </button>
-                                <% if (['Pending', 'Processing'].includes(order.status)) { %>
-                                    <button class="btn-cancel" onclick="cancelOrder('<%= order.orderId %>')">
-                                        <i class="fas fa-times"></i> Cancel Order
-                                    </button>
-                                <% } %>
                             </div>
                         </div>
                     <% }); %>
@@ -639,73 +645,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Cancel order function
-        async function cancelOrder(orderId) {
-            const { value: reason } = await Swal.fire({
-                title: 'Cancel Order',
-                text: 'Are you sure you want to cancel this order?',
-                input: 'textarea',
-                inputLabel: 'Cancellation Reason (Optional)',
-                inputPlaceholder: 'Please provide a reason for cancellation...',
-                showCancelButton: true,
-                confirmButtonText: 'Yes, Cancel Order',
-                confirmButtonColor: '#ef4444',
-                cancelButtonText: 'No, Keep Order',
-                inputValidator: (value) => {
-                    // Reason is optional, so no validation needed
-                    return null;
-                }
-            });
-
-            if (reason !== undefined) {
-                try {
-                    const response = await fetch(`/orders/${orderId}/cancel`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ reason: reason || 'No reason provided' })
-                    });
-
-                    const result = await response.json();
-
-                    if (result.success) {
-                        // Show success toast
-                        const Toast = Swal.mixin({
-                            toast: true,
-                            position: 'bottom-right',
-                            showConfirmButton: false,
-                            timer: 3000,
-                            timerProgressBar: true
-                        });
-
-                        Toast.fire({
-                            icon: 'success',
-                            title: 'Order cancelled successfully'
-                        });
-
-                        // Reload page to reflect changes
-                        setTimeout(() => {
-                            window.location.reload();
-                        }, 1500);
-                    } else {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Cancellation Failed',
-                            text: result.message || 'Failed to cancel order'
-                        });
-                    }
-                } catch (error) {
-                    console.error('Error cancelling order:', error);
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error!',
-                        text: 'Failed to cancel order. Please try again.'
-                    });
-                }
-            }
-        }
-
+        
         // Download PDF invoice
         async function downloadInvoice(orderId) {
             // Get the button that was clicked

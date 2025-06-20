@@ -78,6 +78,7 @@ const getOrders = async (req, res) => {
   }
 };
 
+
 // Get single order details (API)
 const getOrderById = async (req, res) => {
   try {
@@ -108,6 +109,7 @@ const getOrderById = async (req, res) => {
   }
 };
 
+
 // Get order details page
 const getOrderDetailsPage = async (req, res) => {
   try {
@@ -124,8 +126,20 @@ const getOrderDetailsPage = async (req, res) => {
       });
     }
 
+    // Check if order is cancelled by user
+    const isUserCancelled = order.status === 'Cancelled';
+    
+    // Check if order has any items cancelled by user (not by admin)
+    const hasUserCancellation = order.orderedItems.some(item => 
+      item.status === 'Cancelled' && 
+      item.cancellationReason && 
+      !item.cancellationReason.includes('by admin')
+    );
+
     res.render('admin-order-details', {
       order,
+      isUserCancelled,
+      hasUserCancellation,
       title: `Order Details - ${order.orderId}`
     });
 
@@ -138,13 +152,14 @@ const getOrderDetailsPage = async (req, res) => {
   }
 };
 
+
 // Update order status
 const updateOrderStatus = async (req, res) => {
   try {
     const orderId = req.params.id;
     const { status } = req.body;
 
-    const validStatuses = ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled', 'Partially Cancelled', 'Return Request', 'Returned'];
+    const validStatuses = ['Pending', 'Processing', 'Shipped', 'Delivered', 'Return Request', 'Returned'];
     
     if (!validStatuses.includes(status)) {
       return res.status(400).json({
@@ -161,36 +176,21 @@ const updateOrderStatus = async (req, res) => {
       });
     }
 
-    // Check if order has been cancelled by user - prevent admin from changing status
-    if (order.status === 'Cancelled' || order.status === 'Partially Cancelled') {
-      // Check if cancellation was initiated by user (not admin)
-      const userCancellationTimeline = order.orderTimeline.find(timeline => 
-        (timeline.status === 'Cancelled' || timeline.status === 'Partially Cancelled') && 
-        !timeline.description.includes('by admin')
+    // Check if order was entirely cancelled by user
+    const isUserCancelled = order.status === 'Cancelled' && 
+      order.orderedItems.every(item => 
+        item.status === 'Cancelled' && 
+        item.cancellationReason && 
+        !item.cancellationReason.includes('by admin')
       );
-      
-      if (userCancellationTimeline) {
-        return res.status(403).json({
-          success: false,
-          message: 'Cannot change status of an order that has been cancelled by the customer'
-        });
-      }
-    }
 
-    // Check if any items have been cancelled by user
-    const userCancelledItems = order.orderedItems.filter(item => 
-      item.status === 'Cancelled' && 
-      item.cancellationReason && 
-      !item.cancellationReason.includes('by admin')
-    );
-
-    if (userCancelledItems.length > 0) {
+    if (isUserCancelled) {
       return res.status(403).json({
         success: false,
-        message: 'Cannot change status of an order with items cancelled by the customer'
+        message: 'Cannot update status of an order that was cancelled by the customer'
       });
     }
-
+    
     // Prevent changing from certain final states
     const finalStates = ['Delivered', 'Returned'];
     if (finalStates.includes(order.status) && status !== order.status) {
@@ -226,6 +226,8 @@ const updateOrderStatus = async (req, res) => {
     });
   }
 };
+
+
 
 module.exports = {
   getOrders,

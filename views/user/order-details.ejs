@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+x<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -145,6 +145,16 @@
         .status-partially-cancelled {
             background: #fef3c7;
             color: #92400e;
+        }
+
+        .status-return-request {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-returned {
+            background: #fee2e2;
+            color: #991b1b;
         }
 
         .info-grid {
@@ -325,27 +335,13 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
         }
 
         .btn-cancel-item:hover {
             background: #dc2626;
-        }
-
-        .btn-partial-cancel {
-            background: #f59e0b;
-            color: white;
-            border: none;
-            padding: 0.25rem 0.5rem;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-left: 0.5rem;
-        }
-
-        .btn-partial-cancel:hover {
-            background: #d97706;
         }
 
         .quantity-controls {
@@ -391,44 +387,7 @@
             color: var(--text-muted);
         }
 
-        .cancel-controls {
-            display: flex;
-            gap: 0.5rem;
-            margin-top: 0.5rem;
-        }
-
-        .btn-confirm-cancel {
-            background: #ef4444;
-            color: white;
-            border: none;
-            padding: 0.375rem 0.75rem;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .btn-confirm-cancel:hover {
-            background: #dc2626;
-        }
-
-        .btn-cancel-action {
-            background: #6b7280;
-            color: white;
-            border: none;
-            padding: 0.375rem 0.75rem;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .btn-cancel-action:hover {
-            background: #4b5563;
-        }
-
+        
         /* Order Summary Sidebar */
         .order-summary {
             background: var(--bg-primary);
@@ -495,33 +454,11 @@
             transform: none;
         }
 
+        
+        
         .btn-cancel-order {
             width: 100%;
             background: #ef4444;
-            color: white;
-            border: none;
-            padding: 0.75rem;
-            border-radius: 8px;
-            font-weight: 600;
-            margin-top: 1.5rem;
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-
-        .btn-cancel-order:hover {
-            background: #dc2626;
-            transform: translateY(-1px);
-        }
-
-        .btn-cancel-order:disabled {
-            background: var(--text-muted);
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .btn-bulk-cancel {
-            width: 100%;
-            background: #f59e0b;
             color: white;
             border: none;
             padding: 0.75rem;
@@ -532,32 +469,89 @@
             cursor: pointer;
         }
 
-        .btn-bulk-cancel:hover {
-            background: #d97706;
+        .btn-cancel-order:hover {
+            background: #dc2626;
             transform: translateY(-1px);
         }
 
-        /* Bulk Cancellation Modal Styles */
-        .modal-content {
-            border-radius: 15px;
-            border: none;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+        /* Cancel Item Modal Styles */
+        .cancel-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
         }
 
-        .modal-header {
+        .cancel-modal-content {
+            background-color: var(--bg-primary);
+            margin: 10% auto;
+            padding: 0;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            border: 1px solid var(--border-color);
+            animation: modalSlideIn 0.3s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .cancel-modal-header {
             background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            padding: 1.5rem 2rem;
             border-bottom: 1px solid var(--border-color);
             border-radius: 15px 15px 0 0;
-            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        .modal-title {
+        .cancel-modal-title {
             color: var(--text-primary);
-            font-weight: 600;
             font-size: 1.25rem;
+            font-weight: 600;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
-        .modal-body {
+        .cancel-modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 0.25rem;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .cancel-modal-close:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .cancel-modal-body {
             padding: 2rem;
         }
 
@@ -566,161 +560,383 @@
         }
 
         .form-label {
+            display: block;
             color: var(--text-primary);
             font-weight: 600;
             margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .form-label.required::after {
+            content: ' *';
+            color: #ef4444;
+        }
+
+        .form-select,
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.875rem;
+            color: var(--text-primary);
+            background: var(--bg-primary);
+            transition: all 0.2s ease;
+        }
+
+        .form-select:focus,
+        .form-input:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+        }
+
+        .form-input {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .custom-reason-group {
+            display: none;
+            animation: fadeInDown 0.3s ease-out;
+        }
+
+        .custom-reason-group.show {
+            display: block;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .cancel-modal-footer {
+            padding: 1.5rem 2rem;
+            border-top: 1px solid var(--border-color);
+            border-radius: 0 0 15px 15px;
+            background: var(--bg-secondary);
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+        }
+
+        .modal-btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
             display: flex;
             align-items: center;
             gap: 0.5rem;
         }
 
-        .form-label.required::after {
-            content: '*';
-            color: #ef4444;
-            margin-left: 0.25rem;
-        }
-
-        .form-select, .form-control {
+        .modal-btn-cancel {
+            background: var(--bg-primary);
+            color: var(--text-secondary);
             border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 0.75rem;
-            font-size: 0.875rem;
-            transition: all 0.3s ease;
         }
 
-        .form-select:focus, .form-control:focus {
-            outline: none;
-            border-color: #007bff;
-            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        .modal-btn-cancel:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .modal-btn-confirm {
+            background: #ef4444;
+            color: white;
+        }
+
+        .modal-btn-confirm:hover {
+            background: #dc2626;
+        }
+
+        .modal-btn-confirm:disabled {
+            background: var(--text-muted);
+            cursor: not-allowed;
         }
 
         .error-message {
             color: #ef4444;
             font-size: 0.75rem;
             margin-top: 0.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.25rem;
+            display: none;
         }
 
-        .section-title {
-            color: var(--text-primary);
-            font-weight: 600;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
+        .error-message.show {
+            display: block;
         }
 
-        .items-list {
-            max-height: 300px;
-            overflow-y: auto;
+        /* Cancel Order Modal Styles */
+        .cancel-order-modal {
+            display: none;
+            position: fixed;
+            z-index: 1001;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(6px);
+        }
+
+        .cancel-order-modal-content {
+            background: linear-gradient(135deg, var(--bg-primary) 0%, #fafafa 100%);
+            margin: 8% auto;
+            padding: 0;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 550px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
             border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 1rem;
+            animation: orderModalSlideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            overflow: hidden;
         }
 
-        .bulk-item {
+        @keyframes orderModalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-80px) scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .cancel-order-modal-header {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            padding: 2rem 2.5rem;
+            border-radius: 20px 20px 0 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cancel-order-modal-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+            opacity: 0.3;
+        }
+
+        .cancel-order-modal-title {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0;
             display: flex;
             align-items: center;
-            gap: 1rem;
-            padding: 1rem;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            margin-bottom: 1rem;
-            transition: all 0.3s ease;
+            gap: 0.75rem;
+            position: relative;
+            z-index: 1;
         }
 
-        .bulk-item:last-child {
-            margin-bottom: 0;
+        .cancel-order-modal-title i {
+            font-size: 1.75rem;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
         }
 
-        .bulk-item.selected {
-            background: #f0f9ff;
-            border-color: #0ea5e9;
-        }
-
-        .bulk-item-checkbox {
-            width: 18px;
-            height: 18px;
+        .cancel-order-modal-close {
+            position: absolute;
+            top: 1.5rem;
+            right: 2rem;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            font-size: 1.5rem;
+            color: white;
             cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            z-index: 2;
         }
 
-        .bulk-item-image {
-            width: 50px;
-            height: 50px;
-            border-radius: 6px;
-            object-fit: contain;
-            border: 1px solid var(--border-color);
+        .cancel-order-modal-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(90deg);
         }
 
-        .bulk-item-details {
-            flex: 1;
+        .cancel-order-modal-body {
+            padding: 2.5rem;
+            background: var(--bg-primary);
         }
 
-        .bulk-item-name {
-            font-weight: 600;
+        
+        .form-group-enhanced {
+            margin-bottom: 2rem;
+        }
+
+        .form-label-enhanced {
+            display: block;
             color: var(--text-primary);
-            margin-bottom: 0.25rem;
-        }
-
-        .bulk-item-price {
-            color: var(--text-secondary);
-            font-size: 0.875rem;
-        }
-
-        .bulk-quantity-controls {
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            font-size: 0.95rem;
             display: flex;
             align-items: center;
             gap: 0.5rem;
         }
 
-        .bulk-quantity-input {
-            width: 70px;
-            padding: 0.375rem 0.5rem;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            text-align: center;
-            font-size: 0.875rem;
+        .form-label-enhanced.required::after {
+            content: ' *';
+            color: #ef4444;
+            font-weight: 700;
         }
 
-        .bulk-quantity-input:disabled {
-            background: var(--bg-tertiary);
-            color: var(--text-muted);
+        .form-select-enhanced,
+        .form-input-enhanced {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 0.9rem;
+            color: var(--text-primary);
+            background: var(--bg-primary);
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
 
-        .cancel-summary {
-            margin-top: 1.5rem;
+        .form-select-enhanced:focus,
+        .form-input-enhanced:focus {
+            outline: none;
+            border-color: #ef4444;
+            box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
+            transform: translateY(-1px);
         }
 
-        .summary-card {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
+        .form-input-enhanced {
+            resize: vertical;
+            min-height: 100px;
+            font-family: inherit;
+        }
+
+        .custom-reason-group-enhanced {
+            display: none;
+            animation: enhancedFadeInDown 0.4s ease-out;
+        }
+
+        .custom-reason-group-enhanced.show {
+            display: block;
+        }
+
+        @keyframes enhancedFadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .cancel-order-modal-footer {
+            padding: 2rem 2.5rem;
+            border-top: 1px solid var(--border-color);
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+        }
+
+        .modal-btn-enhanced {
+            padding: 0.875rem 2rem;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .modal-btn-enhanced::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .modal-btn-enhanced:hover::before {
+            left: 100%;
+        }
+
+        .modal-btn-cancel-enhanced {
+            background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3);
+        }
+
+        .modal-btn-cancel-enhanced:hover {
+            background: linear-gradient(135deg, #4b5563 0%, #374151 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(107, 114, 128, 0.4);
+        }
+
+        .modal-btn-confirm-enhanced {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+
+        .modal-btn-confirm-enhanced:hover {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+        }
+
+        .modal-btn-confirm-enhanced:disabled {
+            background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: 0 2px 4px rgba(156, 163, 175, 0.2);
+        }
+
+        .error-message-enhanced {
+            color: #ef4444;
+            font-size: 0.8rem;
+            margin-top: 0.75rem;
+            display: none;
+            padding: 0.5rem;
+            background: rgba(239, 68, 68, 0.1);
             border-radius: 8px;
-            padding: 1.5rem;
+            border-left: 3px solid #ef4444;
         }
 
-        .summary-title {
-            color: var(--text-primary);
-            font-weight: 600;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
+        .error-message-enhanced.show {
+            display: block;
+            animation: errorShake 0.5s ease-in-out;
         }
 
-        .summary-details .summary-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.5rem 0;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .summary-details .summary-row:last-child {
-            border-bottom: none;
-            font-weight: 600;
-            color: var(--text-primary);
+        @keyframes errorShake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
         }
 
         /* Responsive Design */
@@ -924,38 +1140,11 @@
                                 <div class="quantity-info">
                                     Quantity: <%= item.quantity %> | Total: ₹<%= item.totalPrice.toFixed(2) %>
                                 </div>
-                                <% if (item.status === 'Active' && ['Pending', 'Processing'].includes(order.status)) { %>
+                                <% if (item.status === 'Active' && !['Shipped', 'Delivered', 'Return Request', 'Returned', 'Cancelled'].includes(order.status)) { %>
                                     <div class="item-actions">
                                         <button class="btn-cancel-item" onclick="cancelOrderItem('<%= order.orderId %>', '<%= item._id %>')">
-                                            <i class="fas fa-times"></i> Cancel All
+                                            <i class="fas fa-times"></i> Cancel
                                         </button>
-                                        <% if (item.quantity > 1) { %>
-                                            <button class="btn-partial-cancel" onclick="showPartialCancelControls('<%= item._id %>', <%= item.quantity %>)">
-                                                <i class="fas fa-edit"></i> Partial Cancel
-                                            </button>
-                                        <% } %>
-                                    </div>
-
-                                    <!-- Partial Cancellation Controls (Initially Hidden) -->
-                                    <div id="partial-controls-<%= item._id %>" class="quantity-controls" style="display: none;">
-                                        <label>Select quantity to cancel:</label>
-                                        <div class="quantity-input-group">
-                                            <input type="number"
-                                                   id="cancel-quantity-<%= item._id %>"
-                                                   class="quantity-input"
-                                                   min="1"
-                                                   max="<%= item.quantity - 1 %>"
-                                                   value="1">
-                                            <span class="quantity-info-text">out of <%= item.quantity %> items</span>
-                                        </div>
-                                        <div class="cancel-controls">
-                                            <button class="btn-confirm-cancel" onclick="confirmPartialCancel('<%= order.orderId %>', '<%= item._id %>')">
-                                                <i class="fas fa-check"></i> Confirm Cancel
-                                            </button>
-                                            <button class="btn-cancel-action" onclick="hidePartialCancelControls('<%= item._id %>')">
-                                                <i class="fas fa-times"></i> Cancel
-                                            </button>
-                                        </div>
                                     </div>
                                 <% } %>
                             </div>
@@ -1003,18 +1192,71 @@
                     Order Summary
                 </h3>
 
+                <%
+                    // Calculate current totals based on active items
+                    const activeItems = order.orderedItems.filter(item => item.status === 'Active');
+                    const cancelledItems = order.orderedItems.filter(item => item.status === 'Cancelled');
+                    const currentSubtotal = activeItems.reduce((sum, item) => sum + item.totalPrice, 0);
+                    const cancelledAmount = cancelledItems.reduce((sum, item) => sum + item.totalPrice, 0);
+                    const originalOrderTotal = currentSubtotal + cancelledAmount;
+                    
+                    // Calculate proportional discount for active items only
+                    let applicableDiscount = 0;
+                    let currentTotal = 0;
+                    
+                    if (currentSubtotal > 0 && order.discount > 0 && originalOrderTotal > 0) {
+                        // Calculate what proportion of the original order the active items represent
+                        const activeItemsProportion = currentSubtotal / originalOrderTotal;
+                        // Apply only the proportional discount to active items
+                        applicableDiscount = Math.min(order.discount * activeItemsProportion, currentSubtotal);
+                        currentTotal = Math.max(0, currentSubtotal - applicableDiscount + order.shippingCharges);
+                    } else if (currentSubtotal > 0) {
+                        currentTotal = currentSubtotal + order.shippingCharges;
+                    }
+                    
+                    // Additional variables for cancel button logic
+                    const canCancelOrder = !['Shipped', 'Delivered', 'Return Request', 'Returned', 'Cancelled'].includes(order.status);
+                    const hasActiveItems = activeItems.length > 0;
+                %>
+
                 <div class="summary-row">
-                    <span class="summary-label">Subtotal</span>
-                    <span class="summary-value">₹<%= order.totalPrice.toFixed(2) %></span>
+                    <span class="summary-label">Subtotal (Active Items)</span>
+                    <span class="summary-value">₹<%= currentSubtotal.toFixed(2) %></span>
                 </div>
 
-                <% if (order.discount > 0) { %>
-                <div class="summary-row">
-                    <span class="summary-label">Discount</span>
-                    <span class="summary-value" style="color: var(--success-color);">-₹<%= order.discount.toFixed(2) %></span>
+                <% if (cancelledAmount > 0) { %>
+                <div class="summary-row" style="color: #ef4444;">
+                    <span class="summary-label">Cancelled Items</span>
+                    <span class="summary-value">-₹<%= cancelledAmount.toFixed(2) %></span>
                 </div>
                 <% } %>
 
+                <% if (order.discount > 0) { %>
+                    <% if (cancelledAmount > 0 && applicableDiscount < order.discount) { %>
+                    <div class="summary-row" style="color: #6c757d; font-size: 0.85em;">
+                        <span class="summary-label">Original Discount</span>
+                        <span class="summary-value">-₹<%= order.discount.toFixed(2) %></span>
+                    </div>
+                    <div class="summary-row" style="color: #ef4444; font-size: 0.85em;">
+                        <span class="summary-label">Discount on Cancelled Items</span>
+                        <span class="summary-value">+₹<%= (order.discount - applicableDiscount).toFixed(2) %></span>
+                    </div>
+                    <% } %>
+                    <% if (applicableDiscount > 0) { %>
+                    <div class="summary-row">
+                        <span class="summary-label">
+                            <% if (cancelledAmount > 0) { %>
+                                Applicable Discount
+                            <% } else { %>
+                                Discount
+                            <% } %>
+                        </span>
+                        <span class="summary-value" style="color: var(--success-color);">-₹<%= applicableDiscount.toFixed(2) %></span>
+                    </div>
+                    <% } %>
+                <% } %>
+
+                <% if (currentSubtotal > 0) { %>
                 <div class="summary-row">
                     <span class="summary-label">Shipping</span>
                     <span class="summary-value">
@@ -1025,10 +1267,17 @@
                         <% } %>
                     </span>
                 </div>
+                <% } %>
 
                 <div class="summary-row">
-                    <span class="summary-label">Total</span>
-                    <span class="summary-value">₹<%= order.finalAmount.toFixed(2) %></span>
+                    <span class="summary-label">
+                        <% if (cancelledAmount > 0) { %>
+                            Current Total
+                        <% } else { %>
+                            Total
+                        <% } %>
+                    </span>
+                    <span class="summary-value">₹<%= currentTotal.toFixed(2) %></span>
                 </div>
 
                 <!-- Download Invoice Button -->
@@ -1037,118 +1286,149 @@
                     Download Invoice
                 </button>
 
-                <% if (['Pending', 'Processing'].includes(order.status)) { %>
-                    <button class="btn-cancel-order" onclick="cancelOrder('<%= order.orderId %>')">
+                <!-- Cancel Order Button -->
+                <% if (canCancelOrder && hasActiveItems) { %>
+                    <button class="btn-cancel-order" onclick="openCancelOrderModal()">
                         <i class="fas fa-times"></i>
-                        Cancel Order
+                        <% if (order.status === 'Partially Cancelled') { %>
+                            Cancel Remaining Items
+                        <% } else { %>
+                            Cancel Order
+                        <% } %>
                     </button>
-
-                    <%
-                    // Check if there are multiple active items for bulk cancellation
-                    const activeItems = order.orderedItems.filter(item => item.status === 'Active');
-                    if (activeItems.length > 1) {
-                    %>
-                        <button class="btn-bulk-cancel" onclick="showBulkCancelModal('<%= order.orderId %>')">
-                            <i class="fas fa-list-check"></i>
-                            Bulk Cancel Items
-                        </button>
-                    <% } %>
+                <% } else if (!hasActiveItems && order.status === 'Partially Cancelled') { %>
+                    <div style="margin-top: 1rem; padding: 0.75rem; background: #f8f9fa; border-radius: 8px; text-align: center; color: #6c757d; font-size: 0.875rem;">
+                        <i class="fas fa-info-circle"></i>
+                        All items have been cancelled
+                    </div>
+                <% } else { %>
+                    <div style="margin-top: 1rem; padding: 0.75rem; background: #f8f9fa; border-radius: 8px; text-align: center; color: #6c757d; font-size: 0.875rem;">
+                        <i class="fas fa-info-circle"></i>
+                        Order cannot be cancelled at this stage
+                    </div>
                 <% } %>
             </div>
         </div>
     </div>
 
-    <!-- Bulk Cancellation Modal -->
-    <div id="bulkCancelModal" class="modal fade" tabindex="-1" aria-labelledby="bulkCancelModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="bulkCancelModalLabel">
-                        <i class="fas fa-list-check"></i>
-                        Bulk Cancel Items
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <!-- Cancel Item Modal -->
+    <div id="cancelItemModal" class="cancel-modal">
+        <div class="cancel-modal-content">
+            <div class="cancel-modal-header">
+                <h3 class="cancel-modal-title">
+                    <i class="fas fa-times-circle"></i>
+                    Cancel Product
+                </h3>
+                <button class="cancel-modal-close" onclick="closeCancelModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="cancel-modal-body">
+                <div class="form-group">
+                    <label for="cancelReason" class="form-label required">Cancellation Reason</label>
+                    <select id="cancelReason" class="form-select" onchange="handleReasonChange()">
+                        <option value="">Select a reason for cancellation</option>
+                        <option value="Ordered by mistake">Ordered by mistake</option>
+                        <option value="Found cheaper elsewhere">Found cheaper elsewhere</option>
+                        <option value="Changed my mind">Changed my mind</option>
+                        <option value="Product no longer needed">Product no longer needed</option>
+                        <option value="Delivery taking too long">Delivery taking too long</option>
+                        <option value="Financial constraints">Financial constraints</option>
+                        <option value="Quality concerns">Quality concerns</option>
+                        <option value="Other">Other</option>
+                    </select>
+                    <div id="reasonError" class="error-message">Please select a cancellation reason</div>
                 </div>
-                <div class="modal-body">
-                    <div class="bulk-cancel-form">
-                        <!-- Cancellation Reason (Required) -->
-                        <div class="form-group mb-4">
-                            <label for="bulkCancelReason" class="form-label required">
-                                <i class="fas fa-comment-alt"></i>
-                                Cancellation Reason *
-                            </label>
-                            <select id="bulkCancelReason" class="form-select" required>
-                                <option value="">Select a reason for cancellation</option>
-                                <option value="Changed my mind">Changed my mind</option>
-                                <option value="Found better price elsewhere">Found better price elsewhere</option>
-                                <option value="Ordered by mistake">Ordered by mistake</option>
-                                <option value="Product no longer needed">Product no longer needed</option>
-                                <option value="Delivery taking too long">Delivery taking too long</option>
-                                <option value="Financial constraints">Financial constraints</option>
-                                <option value="Other">Other</option>
-                            </select>
-                            <div id="reasonError" class="error-message" style="display: none;">
-                                <i class="fas fa-exclamation-circle"></i>
-                                Please select a cancellation reason
-                            </div>
-                        </div>
-
-                        <!-- Custom Reason Input (shown when "Other" is selected) -->
-                        <div id="customReasonGroup" class="form-group mb-4" style="display: none;">
-                            <label for="customReason" class="form-label">
-                                <i class="fas fa-edit"></i>
-                                Please specify your reason
-                            </label>
-                            <textarea id="customReason" class="form-control" rows="3"
-                                      placeholder="Please provide your specific reason for cancellation..."></textarea>
-                        </div>
-
-                        <!-- Items Selection -->
-                        <div class="items-selection">
-                            <h6 class="section-title">
-                                <i class="fas fa-box"></i>
-                                Select Items to Cancel
-                            </h6>
-                            <div id="bulkCancelItems" class="items-list">
-                                <!-- Items will be populated by JavaScript -->
-                            </div>
-                            <div id="itemsError" class="error-message" style="display: none;">
-                                <i class="fas fa-exclamation-circle"></i>
-                                Please select at least one item to cancel
-                            </div>
-                        </div>
-
-                        <!-- Summary Section -->
-                        <div id="cancelSummary" class="cancel-summary" style="display: none;">
-                            <div class="summary-card">
-                                <h6 class="summary-title">
-                                    <i class="fas fa-calculator"></i>
-                                    Cancellation Summary
-                                </h6>
-                                <div class="summary-details">
-                                    <div class="summary-row">
-                                        <span>Total Items to Cancel:</span>
-                                        <span id="totalItemsCount">0</span>
-                                    </div>
-                                    <div class="summary-row">
-                                        <span>Estimated Refund:</span>
-                                        <span id="estimatedRefund">₹0.00</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                
+                <div id="customReasonGroup" class="form-group custom-reason-group">
+                    <label for="customReason" class="form-label required">Please specify your reason</label>
+                    <textarea id="customReason" class="form-input" placeholder="Please provide your specific reason for cancellation..." rows="3"></textarea>
+                    <div id="customReasonError" class="error-message">Please provide a custom reason</div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        <i class="fas fa-times"></i>
-                        Cancel
-                    </button>
-                    <button type="button" id="confirmBulkCancel" class="btn btn-danger" disabled>
-                        <i class="fas fa-check"></i>
-                        Confirm Cancellation
-                    </button>
+            </div>
+            <div class="cancel-modal-footer">
+                <button class="modal-btn modal-btn-cancel" onclick="closeCancelModal()">
+                    <i class="fas fa-times"></i>
+                    Cancel
+                </button>
+                <button id="confirmCancelBtn" class="modal-btn modal-btn-confirm" onclick="confirmCancellation()" disabled>
+                    <i class="fas fa-check"></i>
+                    Confirm Cancellation
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cancel Order Modal -->
+    <div id="cancelOrderModal" class="cancel-order-modal">
+        <div class="cancel-order-modal-content">
+            <div class="cancel-order-modal-header">
+                <h3 class="cancel-order-modal-title">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <% if (order.status === 'Partially Cancelled') { %>
+                        Cancel Remaining Items
+                    <% } else { %>
+                        Cancel Entire Order
+                    <% } %>
+                </h3>
+                <button class="cancel-order-modal-close" onclick="closeCancelOrderModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="cancel-order-modal-body">
+                <!-- Cancellation Form -->
+                <div class="form-group-enhanced">
+                    <label for="cancelOrderReason" class="form-label-enhanced required">
+                        <i class="fas fa-comment-alt"></i>
+                        Cancellation Reason
+                    </label>
+                    <select id="cancelOrderReason" class="form-select-enhanced" onchange="handleOrderReasonChange()">
+                        <option value="">
+                            <% if (order.status === 'Partially Cancelled') { %>
+                                Select a reason for cancelling remaining items
+                            <% } else { %>
+                                Select a reason for cancelling this order
+                            <% } %>
+                        </option>
+                        <option value="Ordered by mistake">Ordered by mistake</option>
+                        <option value="Found cheaper elsewhere">Found cheaper elsewhere</option>
+                        <option value="Changed my mind">Changed my mind</option>
+                        <option value="Products no longer needed">Products no longer needed</option>
+                        <option value="Delivery taking too long">Delivery taking too long</option>
+                        <option value="Financial constraints">Financial constraints</option>
+                        <option value="Quality concerns">Quality concerns</option>
+                        <option value="Duplicate order">Duplicate order</option>
+                        <option value="Other">Other</option>
+                    </select>
+                    <div id="orderReasonError" class="error-message-enhanced">Please select a cancellation reason</div>
                 </div>
+                
+                <div id="customOrderReasonGroup" class="form-group-enhanced custom-reason-group-enhanced">
+                    <label for="customOrderReason" class="form-label-enhanced required">
+                        <i class="fas fa-edit"></i>
+                        Please specify your reason
+                    </label>
+                    <textarea id="customOrderReason" class="form-input-enhanced" placeholder="<% if (order.status === 'Partially Cancelled') { %>Please provide your specific reason for cancelling remaining items...<% } else { %>Please provide your specific reason for cancelling this entire order...<% } %>" rows="4"></textarea>
+                    <div id="customOrderReasonError" class="error-message-enhanced">Please provide a custom reason</div>
+                </div>
+            </div>
+            <div class="cancel-order-modal-footer">
+                <button class="modal-btn-enhanced modal-btn-cancel-enhanced" onclick="closeCancelOrderModal()">
+                    <i class="fas fa-arrow-left"></i>
+                    <% if (order.status === 'Partially Cancelled') { %>
+                        Keep Items
+                    <% } else { %>
+                        Keep Order
+                    <% } %>
+                </button>
+                <button id="confirmOrderCancelBtn" class="modal-btn-enhanced modal-btn-confirm-enhanced" onclick="confirmOrderCancellation()" disabled>
+                    <i class="fas fa-times-circle"></i>
+                    <% if (order.status === 'Partially Cancelled') { %>
+                        Cancel Remaining Items
+                    <% } else { %>
+                        Cancel Order
+                    <% } %>
+                </button>
             </div>
         </div>
     </div>
@@ -1156,513 +1436,346 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Cancel entire order
-        async function cancelOrder(orderId) {
-            const { value: reason } = await Swal.fire({
-                title: 'Cancel Order',
-                text: 'Are you sure you want to cancel this entire order?',
-                input: 'textarea',
-                inputLabel: 'Cancellation Reason (Optional)',
-                inputPlaceholder: 'Please provide a reason for cancellation...',
-                showCancelButton: true,
-                confirmButtonText: 'Yes, Cancel Order',
-                confirmButtonColor: '#ef4444',
-                cancelButtonText: 'No, Keep Order',
-                inputValidator: (value) => {
-                    return null; // Reason is optional
-                }
-            });
+        // Global variables for modal
+        let currentOrderId = null;
+        let currentItemId = null;
 
-            if (reason !== undefined) {
-                try {
-                    const response = await fetch(`/orders/${orderId}/cancel`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ reason: reason || 'No reason provided' })
-                    });
-
-                    const result = await response.json();
-
-                    if (result.success) {
-                        const Toast = Swal.mixin({
-                            toast: true,
-                            position: 'bottom-right',
-                            showConfirmButton: false,
-                            timer: 3000,
-                            timerProgressBar: true
-                        });
-
-                        Toast.fire({
-                            icon: 'success',
-                            title: 'Order cancelled successfully'
-                        });
-
-                        setTimeout(() => {
-                            window.location.reload();
-                        }, 1500);
-                    } else {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Cancellation Failed',
-                            text: result.message || 'Failed to cancel order'
-                        });
-                    }
-                } catch (error) {
-                    console.error('Error cancelling order:', error);
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error!',
-                        text: 'Failed to cancel order. Please try again.'
-                    });
-                }
-            }
-        }
-
-        // Cancel individual item (full cancellation)
-        async function cancelOrderItem(orderId, itemId) {
-            const { value: reason } = await Swal.fire({
-                title: 'Cancel All Items',
-                text: 'Are you sure you want to cancel all quantities of this item?',
-                input: 'textarea',
-                inputLabel: 'Cancellation Reason (Optional)',
-                inputPlaceholder: 'Please provide a reason for cancellation...',
-                showCancelButton: true,
-                confirmButtonText: 'Yes, Cancel All',
-                confirmButtonColor: '#ef4444',
-                cancelButtonText: 'No, Keep Item',
-                inputValidator: (value) => {
-                    return null; // Reason is optional
-                }
-            });
-
-            if (reason !== undefined) {
-                try {
-                    const response = await fetch(`/orders/${orderId}/items/${itemId}/cancel`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ reason: reason || 'No reason provided' })
-                    });
-
-                    const result = await response.json();
-
-                    if (result.success) {
-                        const Toast = Swal.mixin({
-                            toast: true,
-                            position: 'bottom-right',
-                            showConfirmButton: false,
-                            timer: 3000,
-                            timerProgressBar: true
-                        });
-
-                        Toast.fire({
-                            icon: 'success',
-                            title: 'Item cancelled successfully'
-                        });
-
-                        setTimeout(() => {
-                            window.location.reload();
-                        }, 1500);
-                    } else {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Cancellation Failed',
-                            text: result.message || 'Failed to cancel item'
-                        });
-                    }
-                } catch (error) {
-                    console.error('Error cancelling item:', error);
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error!',
-                        text: 'Failed to cancel item. Please try again.'
-                    });
-                }
-            }
-        }
-
-        // Show partial cancellation controls
-        function showPartialCancelControls(itemId, maxQuantity) {
-            const controlsDiv = document.getElementById(`partial-controls-${itemId}`);
-            const quantityInput = document.getElementById(`cancel-quantity-${itemId}`);
-
-            controlsDiv.style.display = 'block';
-            quantityInput.max = maxQuantity - 1;
-            quantityInput.value = 1;
-        }
-
-        // Hide partial cancellation controls
-        function hidePartialCancelControls(itemId) {
-            const controlsDiv = document.getElementById(`partial-controls-${itemId}`);
-            controlsDiv.style.display = 'none';
-        }
-
-        // Confirm partial cancellation
-        async function confirmPartialCancel(orderId, itemId) {
-            const quantityInput = document.getElementById(`cancel-quantity-${itemId}`);
-            const cancelQuantity = parseInt(quantityInput.value);
-
-            if (!cancelQuantity || cancelQuantity < 1) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Invalid Quantity',
-                    text: 'Please enter a valid quantity to cancel.'
-                });
-                return;
-            }
-
-            const { value: reason } = await Swal.fire({
-                title: 'Partial Cancellation',
-                text: `Are you sure you want to cancel ${cancelQuantity} item(s)?`,
-                input: 'textarea',
-                inputLabel: 'Cancellation Reason (Optional)',
-                inputPlaceholder: 'Please provide a reason for cancellation...',
-                showCancelButton: true,
-                confirmButtonText: `Yes, Cancel ${cancelQuantity} Item(s)`,
-                confirmButtonColor: '#f59e0b',
-                cancelButtonText: 'No, Keep Items',
-                inputValidator: (value) => {
-                    return null; // Reason is optional
-                }
-            });
-
-            if (reason !== undefined) {
-                try {
-                    const response = await fetch(`/orders/${orderId}/items/${itemId}/cancel-partial`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            reason: reason || 'No reason provided',
-                            cancelQuantity: cancelQuantity
-                        })
-                    });
-
-                    const result = await response.json();
-
-                    if (result.success) {
-                        const Toast = Swal.mixin({
-                            toast: true,
-                            position: 'bottom-right',
-                            showConfirmButton: false,
-                            timer: 3000,
-                            timerProgressBar: true
-                        });
-
-                        Toast.fire({
-                            icon: 'success',
-                            title: result.message || 'Items cancelled successfully'
-                        });
-
-                        setTimeout(() => {
-                            window.location.reload();
-                        }, 1500);
-                    } else {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Cancellation Failed',
-                            text: result.message || 'Failed to cancel items'
-                        });
-                    }
-                } catch (error) {
-                    console.error('Error cancelling items:', error);
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error!',
-                        text: 'Failed to cancel items. Please try again.'
-                    });
-                }
-            }
-        }
-
-        // Bulk Cancellation Functions
-        let bulkCancelModal;
-        let selectedItems = new Map(); // Map to store selected items and their quantities
-
-        // Show bulk cancellation modal
-        function showBulkCancelModal(orderId) {
-            // Get active items for bulk cancellation
-            const activeItems = [
-                <% order.orderedItems.forEach(item => { %>
-                    <% if (item.status === 'Active') { %>
-                        {
-                            id: '<%= item._id %>',
-                            name: '<%= item.product.productName %>',
-                            image: '<%= item.product.mainImage %>',
-                            price: <%= item.price %>,
-                            quantity: <%= item.quantity %>,
-                            totalPrice: <%= item.totalPrice %>
-                        },
-                    <% } %>
-                <% }); %>
-            ];
-
-            // Populate items in modal
-            populateBulkCancelItems(activeItems);
-
-            // Initialize modal
-            bulkCancelModal = new bootstrap.Modal(document.getElementById('bulkCancelModal'));
-            bulkCancelModal.show();
-
+        // Open cancel modal
+        function cancelOrderItem(orderId, itemId) {
+            currentOrderId = orderId;
+            currentItemId = itemId;
+            
             // Reset form
-            resetBulkCancelForm();
+            document.getElementById('cancelReason').value = '';
+            document.getElementById('customReason').value = '';
+            document.getElementById('customReasonGroup').classList.remove('show');
+            document.getElementById('confirmCancelBtn').disabled = true;
+            hideErrors();
+            
+            // Show modal
+            document.getElementById('cancelItemModal').style.display = 'block';
+            document.body.style.overflow = 'hidden';
         }
 
-        // Populate items in the bulk cancel modal
-        function populateBulkCancelItems(items) {
-            const itemsContainer = document.getElementById('bulkCancelItems');
-            itemsContainer.innerHTML = '';
-
-            items.forEach(item => {
-                const itemDiv = document.createElement('div');
-                itemDiv.className = 'bulk-item';
-                itemDiv.innerHTML = `
-                    <input type="checkbox"
-                           class="bulk-item-checkbox"
-                           id="item-${item.id}"
-                           data-item-id="${item.id}"
-                           onchange="toggleItemSelection('${item.id}', ${item.quantity}, ${item.price})">
-                    <img src="/uploads/products/${item.image}"
-                         alt="${item.name}"
-                         class="bulk-item-image">
-                    <div class="bulk-item-details">
-                        <div class="bulk-item-name">${item.name}</div>
-                        <div class="bulk-item-price">₹${item.price.toFixed(2)} each | Available: ${item.quantity}</div>
-                    </div>
-                    <div class="bulk-quantity-controls">
-                        <label for="quantity-${item.id}" style="font-size: 0.75rem; color: var(--text-muted);">Qty:</label>
-                        <input type="number"
-                               id="quantity-${item.id}"
-                               class="bulk-quantity-input"
-                               min="1"
-                               max="${item.quantity}"
-                               value="1"
-                               disabled
-                               onchange="updateItemQuantity('${item.id}', this.value, ${item.price})">
-                    </div>
-                `;
-                itemsContainer.appendChild(itemDiv);
-            });
+        // Close cancel modal
+        function closeCancelModal() {
+            document.getElementById('cancelItemModal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+            currentOrderId = null;
+            currentItemId = null;
         }
 
-        // Toggle item selection
-        function toggleItemSelection(itemId, maxQuantity, price) {
-            const checkbox = document.getElementById(`item-${itemId}`);
-            const quantityInput = document.getElementById(`quantity-${itemId}`);
-            const itemDiv = checkbox.closest('.bulk-item');
-
-            if (checkbox.checked) {
-                // Add to selected items
-                selectedItems.set(itemId, {
-                    quantity: parseInt(quantityInput.value),
-                    price: price,
-                    maxQuantity: maxQuantity
-                });
-                quantityInput.disabled = false;
-                itemDiv.classList.add('selected');
-            } else {
-                // Remove from selected items
-                selectedItems.delete(itemId);
-                quantityInput.disabled = true;
-                itemDiv.classList.remove('selected');
-            }
-
-            updateCancelSummary();
-            validateBulkCancelForm();
-        }
-
-        // Update item quantity
-        function updateItemQuantity(itemId, quantity, price) {
-            const parsedQuantity = parseInt(quantity);
-            if (selectedItems.has(itemId) && parsedQuantity > 0) {
-                const item = selectedItems.get(itemId);
-                item.quantity = parsedQuantity;
-                selectedItems.set(itemId, item);
-                updateCancelSummary();
-            }
-        }
-
-        // Update cancellation summary
-        function updateCancelSummary() {
-            const summaryDiv = document.getElementById('cancelSummary');
-            const totalItemsSpan = document.getElementById('totalItemsCount');
-            const estimatedRefundSpan = document.getElementById('estimatedRefund');
-
-            if (selectedItems.size === 0) {
-                summaryDiv.style.display = 'none';
-                return;
-            }
-
-            let totalItems = 0;
-            let totalRefund = 0;
-
-            selectedItems.forEach(item => {
-                totalItems += item.quantity;
-                totalRefund += item.quantity * item.price;
-            });
-
-            totalItemsSpan.textContent = totalItems;
-            estimatedRefundSpan.textContent = `₹${totalRefund.toFixed(2)}`;
-            summaryDiv.style.display = 'block';
-        }
-
-        // Handle reason selection change
-        document.getElementById('bulkCancelReason').addEventListener('change', function() {
+        // Handle reason dropdown change
+        function handleReasonChange() {
+            const reasonSelect = document.getElementById('cancelReason');
             const customReasonGroup = document.getElementById('customReasonGroup');
-            if (this.value === 'Other') {
-                customReasonGroup.style.display = 'block';
+            const confirmBtn = document.getElementById('confirmCancelBtn');
+            
+            hideErrors();
+            
+            if (reasonSelect.value === 'Other') {
+                customReasonGroup.classList.add('show');
+                confirmBtn.disabled = true;
+            } else if (reasonSelect.value) {
+                customReasonGroup.classList.remove('show');
+                confirmBtn.disabled = false;
             } else {
-                customReasonGroup.style.display = 'none';
+                customReasonGroup.classList.remove('show');
+                confirmBtn.disabled = true;
             }
-            validateBulkCancelForm();
+        }
+
+        // Handle custom reason input
+        document.getElementById('customReason').addEventListener('input', function() {
+            const confirmBtn = document.getElementById('confirmCancelBtn');
+            const customReason = this.value.trim();
+            
+            hideErrors();
+            
+            if (customReason) {
+                confirmBtn.disabled = false;
+            } else {
+                confirmBtn.disabled = true;
+            }
         });
 
-        // Validate bulk cancel form
-        function validateBulkCancelForm() {
-            const reasonSelect = document.getElementById('bulkCancelReason');
+        // Hide error messages
+        function hideErrors() {
+            document.getElementById('reasonError').classList.remove('show');
+            document.getElementById('customReasonError').classList.remove('show');
+        }
+
+        // Show error message
+        function showError(elementId, message) {
+            const errorElement = document.getElementById(elementId);
+            if (message) {
+                errorElement.textContent = message;
+            }
+            errorElement.classList.add('show');
+        }
+
+        // Validate form
+        function validateForm() {
+            const reasonSelect = document.getElementById('cancelReason');
             const customReason = document.getElementById('customReason');
-            const confirmButton = document.getElementById('confirmBulkCancel');
-            const reasonError = document.getElementById('reasonError');
-            const itemsError = document.getElementById('itemsError');
-
-            let isValid = true;
-
-            // Validate reason
+            
+            hideErrors();
+            
             if (!reasonSelect.value) {
-                reasonError.style.display = 'block';
-                isValid = false;
-            } else if (reasonSelect.value === 'Other' && !customReason.value.trim()) {
-                reasonError.textContent = 'Please specify your reason for cancellation';
-                reasonError.style.display = 'block';
-                isValid = false;
-            } else {
-                reasonError.style.display = 'none';
+                showError('reasonError');
+                return false;
             }
-
-            // Validate items selection
-            if (selectedItems.size === 0) {
-                itemsError.style.display = 'block';
-                isValid = false;
-            } else {
-                itemsError.style.display = 'none';
+            
+            if (reasonSelect.value === 'Other' && !customReason.value.trim()) {
+                showError('customReasonError');
+                return false;
             }
-
-            confirmButton.disabled = !isValid;
+            
+            return true;
         }
 
-        // Reset bulk cancel form
-        function resetBulkCancelForm() {
-            selectedItems.clear();
-            document.getElementById('bulkCancelReason').value = '';
-            document.getElementById('customReason').value = '';
-            document.getElementById('customReasonGroup').style.display = 'none';
-            document.getElementById('cancelSummary').style.display = 'none';
-            document.getElementById('reasonError').style.display = 'none';
-            document.getElementById('itemsError').style.display = 'none';
-            document.getElementById('confirmBulkCancel').disabled = true;
-
-            // Reset all checkboxes and quantity inputs
-            document.querySelectorAll('.bulk-item-checkbox').forEach(checkbox => {
-                checkbox.checked = false;
-                const itemDiv = checkbox.closest('.bulk-item');
-                itemDiv.classList.remove('selected');
-            });
-
-            document.querySelectorAll('.bulk-quantity-input').forEach(input => {
-                input.disabled = true;
-                input.value = 1;
-            });
-        }
-
-        // Confirm bulk cancellation
-        document.getElementById('confirmBulkCancel').addEventListener('click', async function() {
-            const reasonSelect = document.getElementById('bulkCancelReason');
+        // Confirm cancellation
+        async function confirmCancellation() {
+            if (!validateForm()) {
+                return;
+            }
+            
+            const reasonSelect = document.getElementById('cancelReason');
             const customReason = document.getElementById('customReason');
-
+            
             let reason = reasonSelect.value;
             if (reason === 'Other') {
                 reason = customReason.value.trim();
             }
+            
+            try {
+                const response = await fetch(`/orders/${currentOrderId}/items/${currentItemId}/cancel`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ reason: reason })
+                });
 
-            // Prepare items array for submission
-            const items = Array.from(selectedItems.entries()).map(([itemId, item]) => ({
-                itemId: itemId,
-                quantity: item.quantity
-            }));
+                const result = await response.json();
 
-            // Show confirmation dialog
-            const result = await Swal.fire({
-                title: 'Confirm Bulk Cancellation',
-                html: `
-                    <div style="text-align: left;">
-                        <p><strong>Items to cancel:</strong> ${items.length}</p>
-                        <p><strong>Total quantity:</strong> ${Array.from(selectedItems.values()).reduce((sum, item) => sum + item.quantity, 0)}</p>
-                        <p><strong>Reason:</strong> ${reason}</p>
-                        <p style="color: #ef4444; font-weight: 600;">This action cannot be undone.</p>
-                    </div>
-                `,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Yes, Cancel Items',
-                confirmButtonColor: '#ef4444',
-                cancelButtonText: 'No, Keep Items'
-            });
-
-            if (result.isConfirmed) {
-                try {
-                    const response = await fetch(`/orders/<%= order.orderId %>/bulk-cancel`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            reason: reason,
-                            items: items
-                        })
+                if (result.success) {
+                    closeCancelModal();
+                    
+                    const Toast = Swal.mixin({
+                        toast: true,
+                        position: 'bottom-right',
+                        showConfirmButton: false,
+                        timer: 3000,
+                        timerProgressBar: true
                     });
 
-                    const responseData = await response.json();
+                    Toast.fire({
+                        icon: 'success',
+                        title: 'Product cancelled successfully'
+                    });
 
-                    if (responseData.success) {
-                        // Close modal
-                        bulkCancelModal.hide();
-
-                        // Show success toast
-                        const Toast = Swal.mixin({
-                            toast: true,
-                            position: 'bottom-right',
-                            showConfirmButton: false,
-                            timer: 3000,
-                            timerProgressBar: true
-                        });
-
-                        Toast.fire({
-                            icon: 'success',
-                            title: responseData.message || 'Items cancelled successfully'
-                        });
-
-                        // Reload page to reflect changes
-                        setTimeout(() => {
-                            window.location.reload();
-                        }, 1500);
-                    } else {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Cancellation Failed',
-                            text: responseData.message || 'Failed to cancel items'
-                        });
-                    }
-                } catch (error) {
-                    console.error('Error in bulk cancellation:', error);
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1500);
+                } else {
+                    closeCancelModal();
                     Swal.fire({
                         icon: 'error',
-                        title: 'Error!',
-                        text: 'Failed to cancel items. Please try again.'
+                        title: 'Cancellation Failed',
+                        text: result.message || 'Failed to cancel product'
                     });
+                }
+            } catch (error) {
+                console.error('Error cancelling product:', error);
+                closeCancelModal();
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: 'Failed to cancel product. Please try again.'
+                });
+            }
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('cancelItemModal');
+            if (event.target === modal) {
+                closeCancelModal();
+            }
+        }
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                const modal = document.getElementById('cancelItemModal');
+                if (modal.style.display === 'block') {
+                    closeCancelModal();
+                }
+            }
+        });
+
+        // Order Cancellation Modal Functions
+        function openCancelOrderModal() {
+            // Reset form
+            document.getElementById('cancelOrderReason').value = '';
+            document.getElementById('customOrderReason').value = '';
+            document.getElementById('customOrderReasonGroup').classList.remove('show');
+            document.getElementById('confirmOrderCancelBtn').disabled = true;
+            hideOrderErrors();
+            
+            // Show modal
+            document.getElementById('cancelOrderModal').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeCancelOrderModal() {
+            document.getElementById('cancelOrderModal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        function handleOrderReasonChange() {
+            const reasonSelect = document.getElementById('cancelOrderReason');
+            const customReasonGroup = document.getElementById('customOrderReasonGroup');
+            const confirmBtn = document.getElementById('confirmOrderCancelBtn');
+            
+            hideOrderErrors();
+            
+            if (reasonSelect.value === 'Other') {
+                customReasonGroup.classList.add('show');
+                confirmBtn.disabled = true;
+            } else if (reasonSelect.value) {
+                customReasonGroup.classList.remove('show');
+                confirmBtn.disabled = false;
+            } else {
+                customReasonGroup.classList.remove('show');
+                confirmBtn.disabled = true;
+            }
+        }
+
+        // Handle custom reason input for order cancellation
+        document.getElementById('customOrderReason').addEventListener('input', function() {
+            const confirmBtn = document.getElementById('confirmOrderCancelBtn');
+            const customReason = this.value.trim();
+            
+            hideOrderErrors();
+            
+            if (customReason) {
+                confirmBtn.disabled = false;
+            } else {
+                confirmBtn.disabled = true;
+            }
+        });
+
+        function hideOrderErrors() {
+            document.getElementById('orderReasonError').classList.remove('show');
+            document.getElementById('customOrderReasonError').classList.remove('show');
+        }
+
+        function showOrderError(elementId, message) {
+            const errorElement = document.getElementById(elementId);
+            if (message) {
+                errorElement.textContent = message;
+            }
+            errorElement.classList.add('show');
+        }
+
+        function validateOrderForm() {
+            const reasonSelect = document.getElementById('cancelOrderReason');
+            const customReason = document.getElementById('customOrderReason');
+            
+            hideOrderErrors();
+            
+            if (!reasonSelect.value) {
+                showOrderError('orderReasonError');
+                return false;
+            }
+            
+            if (reasonSelect.value === 'Other' && !customReason.value.trim()) {
+                showOrderError('customOrderReasonError');
+                return false;
+            }
+            
+            return true;
+        }
+
+        async function confirmOrderCancellation() {
+            if (!validateOrderForm()) {
+                return;
+            }
+            
+            const reasonSelect = document.getElementById('cancelOrderReason');
+            const customReason = document.getElementById('customOrderReason');
+            
+            let reason = reasonSelect.value;
+            if (reason === 'Other') {
+                reason = customReason.value.trim();
+            }
+            
+            try {
+                const orderId = '<%= order.orderId %>';
+                const response = await fetch(`/orders/${orderId}/cancel-entire`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ reason: reason })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    closeCancelOrderModal();
+                    
+                    const Toast = Swal.mixin({
+                        toast: true,
+                        position: 'bottom-right',
+                        showConfirmButton: false,
+                        timer: 3000,
+                        timerProgressBar: true
+                    });
+
+                    Toast.fire({
+                        icon: 'success',
+                        title: 'Order cancelled successfully'
+                    });
+
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1500);
+                } else {
+                    closeCancelOrderModal();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Cancellation Failed',
+                        text: result.message || 'Failed to cancel order'
+                    });
+                }
+            } catch (error) {
+                console.error('Error cancelling order:', error);
+                closeCancelOrderModal();
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: 'Failed to cancel order. Please try again.'
+                });
+            }
+        }
+
+        // Close order modal when clicking outside
+        window.addEventListener('click', function(event) {
+            const orderModal = document.getElementById('cancelOrderModal');
+            if (event.target === orderModal) {
+                closeCancelOrderModal();
+            }
+        });
+
+        // Close order modal with Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                const orderModal = document.getElementById('cancelOrderModal');
+                if (orderModal.style.display === 'block') {
+                    closeCancelOrderModal();
                 }
             }
         });

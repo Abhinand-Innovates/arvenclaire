@@ -63,70 +63,8 @@ const loadOrderDetails = async (req, res) => {
   }
 };
 
-// Cancel entire order
-const cancelOrder = async (req, res) => {
-  try {
-    const { orderId } = req.params;
-    const userId = req.session.userId;
-    const { reason } = req.body;
 
-    const order = await Order.findOne({ orderId, userId })
-      .populate('orderedItems.product');
 
-    if (!order) {
-      return res.status(404).json({
-        success: false,
-        message: 'Order not found'
-      });
-    }
-
-    // Check if order can be cancelled
-    if (!['Pending', 'Processing'].includes(order.status)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Order cannot be cancelled at this stage'
-      });
-    }
-
-    // Update order status
-    order.status = 'Cancelled';
-
-    // Cancel all items and restore stock
-    for (const item of order.orderedItems) {
-      if (item.status === 'Active') {
-        item.status = 'Cancelled';
-        item.cancellationReason = reason || 'Order cancelled by customer';
-        item.cancelledAt = new Date();
-
-        // Restore product stock
-        await Product.findByIdAndUpdate(
-          item.product._id,
-          { $inc: { quantity: item.quantity } }
-        );
-      }
-    }
-
-    // Add to order timeline
-    order.orderTimeline.push({
-      status: 'Cancelled',
-      description: `Order cancelled: ${reason || 'Cancelled by customer'}`
-    });
-
-    await order.save();
-
-    res.status(200).json({
-      success: true,
-      message: 'Order cancelled successfully'
-    });
-
-  } catch (error) {
-    console.error('Error cancelling order:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error cancelling order'
-    });
-  }
-};
 
 // Cancel individual item
 const cancelOrderItem = async (req, res) => {
@@ -142,6 +80,14 @@ const cancelOrderItem = async (req, res) => {
       return res.status(404).json({
         success: false,
         message: 'Order not found'
+      });
+    }
+
+    // Check if order can be cancelled based on status
+    if (['Shipped', 'Delivered', 'Return Request', 'Returned', 'Cancelled'].includes(order.status)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Order cannot be cancelled at this stage'
       });
     }
 
@@ -168,23 +114,77 @@ const cancelOrderItem = async (req, res) => {
     orderItem.cancelledAt = new Date();
 
     // Restore product stock
-    await Product.findByIdAndUpdate(
-      orderItem.product._id,
-      { $inc: { quantity: orderItem.quantity } }
-    );
+    try {
+      // Get current stock before update for verification
+      const productBefore = await Product.findById(orderItem.product._id);
+      const stockBefore = productBefore ? productBefore.quantity : 0;
 
-    // Check if all items are cancelled
+      const productUpdateResult = await Product.findByIdAndUpdate(
+        orderItem.product._id,
+        { $inc: { quantity: orderItem.quantity } },
+        { new: true }
+      );
+
+      console.log('Product stock restored for individual item cancellation:', {
+        productId: orderItem.product._id,
+        productName: orderItem.product.productName,
+        stockBefore: stockBefore,
+        quantityRestored: orderItem.quantity,
+        stockAfter: productUpdateResult ? productUpdateResult.quantity : 'unknown',
+        verified: productUpdateResult && (productUpdateResult.quantity === stockBefore + orderItem.quantity)
+      });
+    } catch (stockError) {
+      console.error('Error restoring product stock:', stockError);
+      // Continue with order cancellation even if stock update fails
+    }
+
+    // Recalculate order amounts based on active items only
     const activeItems = order.orderedItems.filter(item => item.status === 'Active');
+    const cancelledItems = order.orderedItems.filter(item => item.status === 'Cancelled');
+    
     if (activeItems.length === 0) {
+      // All items cancelled - set amounts to 0
       order.status = 'Cancelled';
+      order.totalPrice = 0;
+      order.finalAmount = 0;
+      // Keep original discount for record keeping, but it won't affect final amount
     } else {
+      // Partially cancelled - recalculate based on active items with proportional discount
       order.status = 'Partially Cancelled';
+      
+      // Calculate totals
+      const activeItemsTotal = activeItems.reduce((sum, item) => sum + item.totalPrice, 0);
+      const cancelledItemsTotal = cancelledItems.reduce((sum, item) => sum + item.totalPrice, 0);
+      const originalOrderTotal = activeItemsTotal + cancelledItemsTotal;
+      
+      // Calculate proportional discount for active items only
+      let applicableDiscount = 0;
+      if (order.discount > 0 && originalOrderTotal > 0) {
+        // Calculate what proportion of the original order the active items represent
+        const activeItemsProportion = activeItemsTotal / originalOrderTotal;
+        // Apply only the proportional discount to active items
+        applicableDiscount = Math.min(order.discount * activeItemsProportion, activeItemsTotal);
+      }
+      
+      // Update order totals
+      order.totalPrice = activeItemsTotal;
+      order.finalAmount = Math.max(0, activeItemsTotal - applicableDiscount + order.shippingCharges);
+      
+      console.log('Proportional discount calculation:', {
+        originalOrderTotal: originalOrderTotal,
+        activeItemsTotal: activeItemsTotal,
+        cancelledItemsTotal: cancelledItemsTotal,
+        originalDiscount: order.discount,
+        applicableDiscount: applicableDiscount,
+        finalAmount: order.finalAmount
+      });
     }
 
     // Add to order timeline
     order.orderTimeline.push({
       status: order.status,
-      description: `Item cancelled: ${orderItem.product.productName} - ${reason || 'Cancelled by customer'}`
+      description: `Item cancelled: ${orderItem.product.productName} - ${reason || 'Cancelled by customer'}`,
+      timestamp: new Date()
     });
 
     await order.save();
@@ -203,141 +203,21 @@ const cancelOrderItem = async (req, res) => {
   }
 };
 
-// Cancel partial quantity of an item
-const cancelPartialOrderItem = async (req, res) => {
-  try {
-    const { orderId, itemId } = req.params;
-    const userId = req.session.userId;
-    const { reason, cancelQuantity } = req.body;
 
-    // Validate cancel quantity
-    const parsedCancelQuantity = parseInt(cancelQuantity);
-    if (isNaN(parsedCancelQuantity) || parsedCancelQuantity < 1) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid cancellation quantity'
-      });
-    }
-
-    const order = await Order.findOne({ orderId, userId })
-      .populate('orderedItems.product');
-
-    if (!order) {
-      return res.status(404).json({
-        success: false,
-        message: 'Order not found'
-      });
-    }
-
-    // Find the specific item
-    const orderItem = order.orderedItems.id(itemId);
-    if (!orderItem) {
-      return res.status(404).json({
-        success: false,
-        message: 'Order item not found'
-      });
-    }
-
-    // Check if item can be cancelled
-    if (orderItem.status !== 'Active') {
-      return res.status(400).json({
-        success: false,
-        message: 'Item is already cancelled or returned'
-      });
-    }
-
-    // Check if cancel quantity is valid
-    if (parsedCancelQuantity >= orderItem.quantity) {
-      return res.status(400).json({
-        success: false,
-        message: 'Cannot cancel more items than ordered. Use full cancellation instead.'
-      });
-    }
-
-    // Calculate new quantities and prices
-    const remainingQuantity = orderItem.quantity - parsedCancelQuantity;
-    const newTotalPrice = orderItem.price * remainingQuantity;
-    const cancelledAmount = orderItem.price * parsedCancelQuantity;
-
-    // Update the item
-    orderItem.quantity = remainingQuantity;
-    orderItem.totalPrice = newTotalPrice;
-
-    // Restore product stock for cancelled quantity
-    await Product.findByIdAndUpdate(
-      orderItem.product._id,
-      { $inc: { quantity: parsedCancelQuantity } }
-    );
-
-    // Recalculate order totals
-    const newOrderTotal = order.orderedItems.reduce((total, item) => {
-      return item.status === 'Active' ? total + item.totalPrice : total;
-    }, 0);
-
-    order.totalPrice = newOrderTotal;
-    order.finalAmount = newOrderTotal + order.shippingCharges - order.discount;
-
-    // Update order status to partially cancelled if not already
-    if (order.status !== 'Partially Cancelled') {
-      order.status = 'Partially Cancelled';
-    }
-
-    // Add to order timeline
-    order.orderTimeline.push({
-      status: 'Partially Cancelled',
-      description: `Partial cancellation: ${parsedCancelQuantity} units of ${orderItem.product.productName} cancelled - ${reason || 'Cancelled by customer'}`
-    });
-
-    await order.save();
-
-    res.status(200).json({
-      success: true,
-      message: `${parsedCancelQuantity} units cancelled successfully`,
-      updatedOrder: {
-        totalPrice: order.totalPrice,
-        finalAmount: order.finalAmount,
-        item: {
-          quantity: orderItem.quantity,
-          totalPrice: orderItem.totalPrice
-        }
-      }
-    });
-
-  } catch (error) {
-    console.error('Error cancelling partial order item:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error cancelling partial order item'
-    });
-  }
-};
-
-// Bulk cancel multiple items with different quantities
-const bulkCancelOrderItems = async (req, res) => {
+// Cancel entire order
+const cancelEntireOrder = async (req, res) => {
   try {
     const { orderId } = req.params;
     const userId = req.session.userId;
-    const { reason, items } = req.body;
+    const { reason } = req.body;
 
-    // Validate required fields
-    if (!reason || reason.trim() === '') {
-      return res.status(400).json({
-        success: false,
-        message: 'Cancellation reason is required'
-      });
-    }
-
-    if (!items || !Array.isArray(items) || items.length === 0) {
-      return res.status(400).json({
-        success: false,
-        message: 'At least one item must be selected for cancellation'
-      });
-    }
+    console.log('Cancel entire order request:', { orderId, userId, reason });
 
     const order = await Order.findOne({ orderId, userId })
       .populate('orderedItems.product');
 
     if (!order) {
+      console.log('Order not found:', { orderId, userId });
       return res.status(404).json({
         success: false,
         message: 'Order not found'
@@ -345,125 +225,82 @@ const bulkCancelOrderItems = async (req, res) => {
     }
 
     // Check if order can be cancelled
-    if (!['Pending', 'Processing'].includes(order.status)) {
+    if (['Shipped', 'Delivered', 'Return Request', 'Returned', 'Cancelled'].includes(order.status)) {
+      console.log('Order cannot be cancelled, current status:', order.status);
       return res.status(400).json({
         success: false,
         message: 'Order cannot be cancelled at this stage'
       });
     }
 
-    let totalCancelledItems = 0;
-    let totalRefundAmount = 0;
-    const cancelledProducts = [];
+    console.log('Cancelling order with', order.orderedItems.length, 'items');
 
-    // Process each item for cancellation
-    for (const cancelItem of items) {
-      const { itemId, quantity } = cancelItem;
+    // Update order status and amounts
+    order.status = 'Cancelled';
+    order.totalPrice = 0;
+    order.finalAmount = 0;
 
-      // Validate quantity
-      const parsedQuantity = parseInt(quantity);
-      if (isNaN(parsedQuantity) || parsedQuantity < 1) {
-        return res.status(400).json({
-          success: false,
-          message: `Invalid cancellation quantity for item ${itemId}`
-        });
+    // Cancel all active items and restore stock
+    for (const item of order.orderedItems) {
+      if (item.status === 'Active') {
+        console.log('Cancelling item:', item.product.productName, 'quantity:', item.quantity);
+        
+        item.status = 'Cancelled';
+        item.cancellationReason = reason || 'Order cancelled by customer';
+        item.cancelledAt = new Date();
+
+        // Restore product stock - this is the key part for accurate inventory management
+        try {
+          // Get current stock before update for verification
+          const productBefore = await Product.findById(item.product._id);
+          const stockBefore = productBefore ? productBefore.quantity : 0;
+
+          const productUpdateResult = await Product.findByIdAndUpdate(
+            item.product._id,
+            { $inc: { quantity: item.quantity } },
+            { new: true }
+          );
+
+          console.log('Product stock restored for entire order cancellation:', {
+            productId: item.product._id,
+            productName: item.product.productName,
+            stockBefore: stockBefore,
+            quantityRestored: item.quantity,
+            stockAfter: productUpdateResult ? productUpdateResult.quantity : 'unknown',
+            verified: productUpdateResult && (productUpdateResult.quantity === stockBefore + item.quantity)
+          });
+        } catch (stockError) {
+          console.error('Error restoring product stock for item:', item.product.productName, stockError);
+          // Continue with other items even if one fails
+        }
       }
-
-      // Find the order item
-      const orderItem = order.orderedItems.id(itemId);
-      if (!orderItem) {
-        return res.status(404).json({
-          success: false,
-          message: `Order item ${itemId} not found`
-        });
-      }
-
-      // Check if item can be cancelled
-      if (orderItem.status !== 'Active') {
-        return res.status(400).json({
-          success: false,
-          message: `Item ${orderItem.product.productName} is already cancelled or returned`
-        });
-      }
-
-      // Check if requested quantity is valid
-      if (parsedQuantity > orderItem.quantity) {
-        return res.status(400).json({
-          success: false,
-          message: `Cannot cancel ${parsedQuantity} items. Only ${orderItem.quantity} available for ${orderItem.product.productName}`
-        });
-      }
-
-      // Calculate refund amount for this cancellation
-      const itemRefundAmount = (orderItem.price * parsedQuantity);
-      totalRefundAmount += itemRefundAmount;
-
-      // If cancelling all quantities, mark item as cancelled
-      if (parsedQuantity === orderItem.quantity) {
-        orderItem.status = 'Cancelled';
-        orderItem.cancellationReason = reason;
-        orderItem.cancelledAt = new Date();
-      } else {
-        // Partial cancellation - reduce quantity and adjust prices
-        orderItem.quantity -= parsedQuantity;
-        orderItem.totalPrice = orderItem.price * orderItem.quantity;
-      }
-
-      // Restore product stock
-      await Product.findByIdAndUpdate(
-        orderItem.product._id,
-        { $inc: { quantity: parsedQuantity } }
-      );
-
-      totalCancelledItems += parsedQuantity;
-      cancelledProducts.push({
-        name: orderItem.product.productName,
-        quantity: parsedQuantity,
-        refundAmount: itemRefundAmount
-      });
-    }
-
-    // Recalculate order totals
-    const activeItems = order.orderedItems.filter(item => item.status === 'Active');
-    if (activeItems.length === 0) {
-      order.status = 'Cancelled';
-    } else {
-      order.status = 'Partially Cancelled';
-
-      // Recalculate order total price
-      order.totalPrice = activeItems.reduce((sum, item) => sum + item.totalPrice, 0);
-      order.finalAmount = order.totalPrice - order.discount + order.shippingCharges;
     }
 
     // Add to order timeline
-    const productNames = cancelledProducts.map(p => `${p.name} (${p.quantity})`).join(', ');
     order.orderTimeline.push({
-      status: order.status,
-      description: `Bulk cancellation: ${productNames} - ${reason}`
+      status: 'Cancelled',
+      description: `Order cancelled: ${reason || 'Cancelled by customer'}`,
+      timestamp: new Date()
     });
 
     await order.save();
 
+    console.log('Order cancelled successfully:', orderId);
+
     res.status(200).json({
       success: true,
-      message: `Successfully cancelled ${totalCancelledItems} item(s)`,
-      cancelledItems: totalCancelledItems,
-      refundAmount: totalRefundAmount,
-      updatedOrder: {
-        status: order.status,
-        totalPrice: order.totalPrice,
-        finalAmount: order.finalAmount
-      }
+      message: 'Order cancelled successfully'
     });
 
   } catch (error) {
-    console.error('Error in bulk cancellation:', error);
+    console.error('Error cancelling entire order:', error);
     res.status(500).json({
       success: false,
-      message: 'Error processing bulk cancellation'
+      message: 'Error cancelling order'
     });
   }
 };
+
 
 // Download PDF invoice for an order
 const downloadInvoice = async (req, res) => {
@@ -513,12 +350,12 @@ const downloadInvoice = async (req, res) => {
   }
 };
 
+
+
 module.exports = {
   loadOrderList,
   loadOrderDetails,
-  cancelOrder,
   cancelOrderItem,
-  cancelPartialOrderItem,
-  bulkCancelOrderItems,
+  cancelEntireOrder,
   downloadInvoice
 };
