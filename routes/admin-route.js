@@ -6,6 +6,7 @@ const getUsersController = require("../controllers/admin/get-usersController");
 const getCategoryController = require("../controllers/admin/get-categoryController");
 const productController = require("../controllers/admin/product-controller");
 const orderController = require("../controllers/admin/order-controller");
+const returnController = require("../controllers/admin/return-controller");
 const { productUpload, handleMulterError } = require("../config/multer-config");
 
 const { isAdminAuthenticated, preventCache } = require('../middleware/auth-middleware');
@@ -59,9 +60,47 @@ adminRoute.get('/get-orders/:id', isAdminAuthenticated, preventCache, orderContr
 adminRoute.patch('/get-orders/:id/status', isAdminAuthenticated, preventCache, orderController.updateOrderStatus);
 
 // Return Request Routes
-adminRoute.get('/return-requests', isAdminAuthenticated, preventCache, orderController.getReturnRequests);
+// Debug route to check return requests
+adminRoute.get('/debug-returns', isAdminAuthenticated, preventCache, async (req, res) => {
+  try {
+    const Order = require('../models/order-schema');
+    
+    // Find all orders with individual item returns
+    const ordersWithReturns = await Order.find({
+      'orderedItems.status': 'Return Request'
+    }).populate('orderedItems.product', 'productName');
+    
+    console.log('Orders with individual returns:', ordersWithReturns.length);
+    
+    const returnData = [];
+    ordersWithReturns.forEach(order => {
+      const returnItems = order.orderedItems.filter(item => item.status === 'Return Request');
+      returnItems.forEach(item => {
+        returnData.push({
+          orderId: order.orderId,
+          itemId: item._id,
+          productName: item.product ? item.product.productName : 'Unknown',
+          status: item.status,
+          returnReason: item.returnReason,
+          returnRequestedAt: item.returnRequestedAt,
+          totalPrice: item.totalPrice
+        });
+      });
+    });
+    
+    res.json({
+      success: true,
+      count: returnData.length,
+      returns: returnData
+    });
+  } catch (error) {
+    res.json({ error: error.message });
+  }
+});
+
+adminRoute.get('/return-requests', isAdminAuthenticated, preventCache, returnController.getReturnRequests);
 adminRoute.get('/get-return-request-count', isAdminAuthenticated, preventCache, orderController.getReturnRequestCount);
-adminRoute.post('/return-requests/:id/approve', isAdminAuthenticated, preventCache, orderController.approveReturnRequest);
-adminRoute.post('/return-requests/:id/reject', isAdminAuthenticated, preventCache, orderController.rejectReturnRequest);
+adminRoute.post('/return-requests/:id/approve', isAdminAuthenticated, preventCache, returnController.approveReturnRequest);
+adminRoute.post('/return-requests/:id/reject', isAdminAuthenticated, preventCache, returnController.rejectReturnRequest);
 
 module.exports = adminRoute;

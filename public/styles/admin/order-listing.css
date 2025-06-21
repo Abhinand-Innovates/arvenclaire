@@ -273,6 +273,51 @@ body {
   color: #721c24;
 }
 
+.status-partially-returned {
+  background-color: #ffeaa7;
+  color: #d63031;
+}
+
+/* Individual Return Request Indicators */
+.has-return-request {
+  background-color: #fff8e1 !important;
+  border-left: 4px solid #ff9800;
+}
+
+.has-return-request:hover {
+  background-color: #fff3c4 !important;
+}
+
+.individual-return-indicator {
+  margin-left: 8px;
+  display: inline-flex;
+  align-items: center;
+  animation: pulse 2s infinite;
+}
+
+.individual-return-indicator i {
+  font-size: 0.9rem;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.order-id {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
 .action-buttons {
   display: flex;
   gap: 0.5rem;

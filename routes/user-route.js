@@ -92,6 +92,14 @@ router.get("/order-details/:orderId", isUserAuthenticated, preventCache, addUser
 router.post("/orders/:orderId/items/:itemId/cancel", isUserAuthenticated, preventCache, checkUserBlocked, orderController.cancelOrderItem);
 router.post("/orders/:orderId/cancel-entire", isUserAuthenticated, preventCache, checkUserBlocked, orderController.cancelEntireOrder);
 router.post("/orders/:orderId/request-return", isUserAuthenticated, preventCache, checkUserBlocked, orderController.requestReturn);
+// Test route to check if individual return route is working
+router.post("/orders/:orderId/items/:itemId/request-return", (req, res, next) => {
+  console.log('=== INDIVIDUAL RETURN ROUTE HIT ===');
+  console.log('Route params:', req.params);
+  console.log('Request body:', req.body);
+  console.log('User ID from session:', req.session.userId);
+  next();
+}, isUserAuthenticated, preventCache, checkUserBlocked, orderController.requestIndividualItemReturn);
 router.get("/orders/:orderId/download-invoice", isUserAuthenticated, preventCache, checkUserBlocked, orderController.downloadInvoice);
 
 // Cart-related routes

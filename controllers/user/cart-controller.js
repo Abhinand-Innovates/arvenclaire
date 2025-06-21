@@ -2,6 +2,7 @@ const Cart = require('../../models/cart-schema');
 const Product = require('../../models/product-schema');
 const Wishlist = require('../../models/wishlist-schema');
 const User = require('../../models/user-schema');
+const { calculateEffectivePrice, syncAllCartPrices } = require('../../utils/price-calculator');
 
 // Load cart page
 const loadCart = async (req, res) => {
@@ -24,8 +25,10 @@ const loadCart = async (req, res) => {
         }
       });
 
-    // Filter out items with unavailable products
+    // Filter out items with unavailable products and sync prices
     let cartItems = [];
+    let priceUpdatesNeeded = false;
+    
     if (cart && cart.items) {
       cartItems = cart.items.filter(item => 
         item.productId && 
@@ -35,6 +38,14 @@ const loadCart = async (req, res) => {
         item.productId.isListed &&
         !item.productId.isDeleted
       );
+
+      // Sync prices with current product data using utility function
+      priceUpdatesNeeded = syncAllCartPrices(cartItems);
+
+      // Save updated prices to database if needed
+      if (priceUpdatesNeeded) {
+        await cart.save();
+      }
     }
 
     res.render('cart', {
@@ -150,16 +161,22 @@ const addToCart = async (req, res) => {
         });
       }
 
+      // Calculate effective price with current offers using utility function
+      const effectivePrice = calculateEffectivePrice(product.salePrice, product.productOffer);
+      
       existingItem.quantity = newQuantity;
-      existingItem.price = product.salePrice; // Update price in case it changed
-      existingItem.totalPrice = product.salePrice * newQuantity;
+      existingItem.price = effectivePrice; // Use effective price including offers
+      existingItem.totalPrice = effectivePrice * newQuantity;
     } else {
+      // Calculate effective price with current offers using utility function
+      const effectivePrice = calculateEffectivePrice(product.salePrice, product.productOffer);
+      
       // Add new item
       cart.items.push({
         productId,
         quantity: parsedQuantity,
-        price: product.salePrice,
-        totalPrice: product.salePrice * parsedQuantity
+        price: effectivePrice,
+        totalPrice: effectivePrice * parsedQuantity
       });
     }
 
@@ -300,10 +317,13 @@ const updateCartQuantity = async (req, res) => {
       });
     }
 
+    // Calculate effective price with current offers using utility function
+    const effectivePrice = calculateEffectivePrice(product.salePrice, product.productOffer);
+    
     // Update quantity and total price
     cart.items[itemIndex].quantity = parsedQuantity;
-    cart.items[itemIndex].price = product.salePrice; // Update price in case it changed
-    cart.items[itemIndex].totalPrice = product.salePrice * parsedQuantity;
+    cart.items[itemIndex].price = effectivePrice; // Use effective price including offers
+    cart.items[itemIndex].totalPrice = effectivePrice * parsedQuantity;
 
     await cart.save();
 

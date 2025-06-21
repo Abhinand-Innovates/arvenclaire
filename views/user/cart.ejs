@@ -866,12 +866,11 @@
                                 availableItemsCount++;
                                 availableQuantity += item.quantity;
 
-                                // Calculate discount for this item based on productOffer
-                                if (item.productId.productOffer > 0) {
-                                    const regularPriceTotal = item.productId.regularPrice * item.quantity;
-                                    const discountAmount = (regularPriceTotal * item.productId.productOffer) / 100;
-                                    totalDiscount += discountAmount;
-                                }
+                                // Calculate discount for this item based on the difference between regular and effective price
+                                const regularPrice = item.productId.regularPrice;
+                                const effectivePrice = item.price; // This is already the effective price after offers
+                                const itemDiscount = (regularPrice - effectivePrice) * item.quantity;
+                                totalDiscount += itemDiscount;
                             } else {
                                 outOfStockQuantity += item.quantity;
                             }
@@ -1558,15 +1557,11 @@
                 subtotal += itemTotal;
                 availableItemsCount++;
 
-                // Calculate discount for this item based on productOffer
+                // Calculate discount for this item based on the difference between regular and effective price
                 const regularPrice = parseFloat(item.dataset.regularPrice);
-                const productOffer = parseFloat(item.dataset.productOffer || 0);
-
-                if (productOffer > 0) {
-                    const regularPriceTotal = regularPrice * quantity;
-                    const discountAmount = (regularPriceTotal * productOffer) / 100;
-                    totalDiscount += discountAmount;
-                }
+                const effectivePrice = itemTotal / quantity; // Calculate effective price from item total
+                const itemDiscount = (regularPrice - effectivePrice) * quantity;
+                totalDiscount += itemDiscount;
             }
 
             // Update button states for each item

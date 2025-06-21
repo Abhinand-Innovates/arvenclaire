@@ -541,7 +541,7 @@
         <div class="wallet-cards fade-in">
             <div class="balance-card">
                 <div class="balance-title">Total Balance</div>
-                <div class="balance-amount">₹0.00</div>
+                <div class="balance-amount">₹<%= wallet.balance.toFixed(2) %></div>
                 <div class="balance-change">
                     <i class="fas fa-wallet"></i>
                     Ready to use
@@ -552,7 +552,7 @@
                 <div class="stats-icon">
                     <i class="fas fa-arrow-down"></i>
                 </div>
-                <div class="stats-value">₹0</div>
+                <div class="stats-value">₹<%= wallet.totalSpent.toFixed(2) %></div>
                 <div class="stats-label">Total Spent</div>
             </div>
 
@@ -560,7 +560,7 @@
                 <div class="stats-icon">
                     <i class="fas fa-arrow-up"></i>
                 </div>
-                <div class="stats-value">₹0</div>
+                <div class="stats-value">₹<%= wallet.totalAdded.toFixed(2) || 0.00 %></div>
                 <div class="stats-label">Total Added</div>
             </div>
         </div>
@@ -602,12 +602,42 @@
                 <h2><i class="fas fa-list"></i> Recent Transactions</h2>
             </div>
 
-            <!-- Empty State -->
-            <div class="empty-state">
-                <i class="fas fa-receipt"></i>
-                <h3>No Transactions Yet</h3>
-                <p>Your transaction history will appear here once you start using your wallet.</p>
-            </div>
+            <% if (wallet.transactions && wallet.transactions.length > 0) { %>
+                <% wallet.transactions.forEach(transaction => { %>
+                    <div class="transaction-item">
+                        <div class="transaction-icon <%= transaction.type === 'credit' ? 'income' : 'expense' %>">
+                            <i class="fas <%= transaction.type === 'credit' ? 'fa-arrow-down' : 'fa-arrow-up' %>"></i>
+                        </div>
+                        <div class="transaction-details">
+                            <div class="transaction-title">
+                                <%= transaction.type === 'credit' ? 'Money Added' : 'Money Spent' %>
+                            </div>
+                            <div class="transaction-description">
+                                <%= transaction.description %>
+                            </div>
+                            <div class="transaction-date">
+                                <%= new Date(transaction.createdAt).toLocaleDateString('en-IN', {
+                                    year: 'numeric',
+                                    month: 'short',
+                                    day: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                }) %>
+                            </div>
+                        </div>
+                        <div class="transaction-amount <%= transaction.type === 'credit' ? 'positive' : 'negative' %>">
+                            <%= transaction.type === 'credit' ? '+' : '-' %>₹<%= transaction.amount.toFixed(2) %>
+                        </div>
+                    </div>
+                <% }); %>
+            <% } else { %>
+                <!-- Empty State -->
+                <div class="empty-state">
+                    <i class="fas fa-receipt"></i>
+                    <h3>No Transactions Yet</h3>
+                    <p>Your transaction history will appear here once you start using your wallet.</p>
+                </div>
+            <% } %>
         </div>
     </div>
 

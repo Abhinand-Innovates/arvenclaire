@@ -623,7 +623,7 @@
                                 <div class="stat-icon mx-auto mb-2">
                                     <i class="fas fa-shopping-bag"></i>
                                 </div>
-                                <div class="fw-bold fs-4">0</div>
+                                <div class="fw-bold fs-4"><%= stats.totalOrders %></div>
                                 <div class="small text-muted">Total Orders</div>
                             </div>
                         </div>
@@ -633,7 +633,7 @@
                                 <div class="stat-icon mx-auto mb-2">
                                     <i class="fas fa-heart"></i>
                                 </div>
-                                <div class="fw-bold fs-4">0</div>
+                                <div class="fw-bold fs-4"><%= stats.wishlistCount %></div>
                                 <div class="small text-muted">Wishlist Items</div>
                             </div>
                         </div>
@@ -643,7 +643,7 @@
                                 <div class="stat-icon mx-auto mb-2">
                                     <i class="fas fa-wallet"></i>
                                 </div>
-                                <div class="fw-bold fs-4">₹0.00</div>
+                                <div class="fw-bold fs-4">₹<%= stats.walletBalance.toFixed(2) %></div>
                                 <div class="small text-muted">Wallet Balance</div>
                             </div>
                         </div>
@@ -653,7 +653,7 @@
                                 <div class="stat-icon mx-auto mb-2">
                                     <i class="fas fa-tag"></i>
                                 </div>
-                                <div class="fw-bold fs-4">0</div>
+                                <div class="fw-bold fs-4"><%= stats.availableCoupons %></div>
                                 <div class="small text-muted">Available Coupons</div>
                             </div>
                         </div>

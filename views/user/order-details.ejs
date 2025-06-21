@@ -1,4 +1,4 @@
-x<!DOCTYPE html>
+if t    eturn -<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -9,6 +9,455 @@ x<!DOCTYPE html>
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
     <%- include("../partials/user/account-sidebar") %>
     <link rel="stylesheet" href="../../styles/user/order-details.css">
+    <style>
+        /* Standard Modal System */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 9998;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .standard-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            opacity: 0;
+            visibility: hidden;
+            transform: scale(0.9);
+            transition: all 0.3s ease;
+        }
+
+        .standard-modal.active {
+            opacity: 1;
+            visibility: visible;
+            transform: scale(1);
+        }
+
+        .modal-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .large-modal .modal-container {
+            max-width: 800px;
+        }
+
+        .modal-header {
+            padding: 24px 24px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #e5e7eb;
+            margin-bottom: 0;
+            padding-bottom: 16px;
+        }
+
+        .modal-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin: 0;
+        }
+
+        .modal-title i {
+            font-size: 1.1rem;
+        }
+
+        .text-danger { color: #dc2626 !important; }
+        .text-warning { color: #f59e0b !important; }
+        .text-primary { color: #3b82f6 !important; }
+
+        .modal-close-btn {
+            background: none;
+            border: none;
+            padding: 8px;
+            border-radius: 6px;
+            color: #6b7280;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-close-btn:hover {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .modal-body {
+            padding: 24px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .modal-footer {
+            padding: 16px 24px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            border-top: 1px solid #e5e7eb;
+            margin-top: auto;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            margin-left: auto;
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #374151;
+            font-size: 0.875rem;
+        }
+
+        .required {
+            color: #dc2626;
+            margin-right: 4px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+            background: white;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .form-control:disabled {
+            background: #f9fafb;
+            color: #6b7280;
+        }
+
+        /* Custom Reason Groups */
+        .custom-reason-group {
+            display: none;
+            animation: slideDown 0.3s ease;
+        }
+
+        .custom-reason-group.show {
+            display: block;
+        }
+
+        .custom-reason-textarea {
+            display: none;
+            margin-top: 12px;
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .custom-reason-textarea.show {
+            display: block;
+        }
+
+        /* Error Messages */
+        .error-message {
+            color: #dc2626;
+            font-size: 0.75rem;
+            margin-top: 6px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            min-width: 120px;
+            justify-content: center;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: #2563eb;
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #4b5563;
+        }
+
+        .btn-danger {
+            background: #dc2626;
+            color: white;
+        }
+
+        .btn-danger:hover:not(:disabled) {
+            background: #b91c1c;
+        }
+
+        /* Info Box */
+        .info-box {
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+
+        .info-box-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            color: #0369a1;
+            margin-bottom: 8px;
+        }
+
+        .info-box p {
+            margin: 0;
+            color: #0c4a6e;
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+
+        /* Return Modal Specific Styles */
+        .section-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin: 24px 0 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .return-product-item {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            overflow: hidden;
+            transition: all 0.2s ease;
+        }
+
+        .return-product-item.selected {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 1px #3b82f6;
+        }
+
+        .product-item-header {
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .product-checkbox {
+            position: relative;
+        }
+
+        .product-checkbox input[type="checkbox"] {
+            opacity: 0;
+            position: absolute;
+        }
+
+        .product-checkbox label {
+            display: block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #d1d5db;
+            border-radius: 4px;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+
+        .product-checkbox input[type="checkbox"]:checked + label {
+            background: #3b82f6;
+            border-color: #3b82f6;
+        }
+
+        .product-checkbox input[type="checkbox"]:checked + label::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .product-image {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 6px;
+        }
+
+        .product-details {
+            flex: 1;
+        }
+
+        .product-name {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 4px;
+        }
+
+        .product-brand,
+        .product-quantity {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-bottom: 2px;
+        }
+
+        .product-price {
+            font-weight: 600;
+            color: #059669;
+        }
+
+        .return-reason-section {
+            padding: 0 16px 16px;
+            border-top: 1px solid #f3f4f6;
+            display: none;
+        }
+
+        .return-reason-section.show {
+            display: block;
+        }
+
+        .selected-info {
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+
+        .item-name {
+            color: #1f2937;
+            margin-bottom: 16px;
+        }
+
+        /* Animations */
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            .standard-modal {
+                padding: 10px;
+            }
+            
+            .modal-container {
+                max-width: 100%;
+                margin: 0;
+            }
+            
+            .large-modal .modal-container {
+                max-width: 100%;
+            }
+            
+            .modal-header,
+            .modal-body,
+            .modal-footer {
+                padding-left: 16px;
+                padding-right: 16px;
+            }
+            
+            .modal-footer {
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            .modal-actions {
+                width: 100%;
+                margin-left: 0;
+            }
+            
+            .btn {
+                flex: 1;
+            }
+            
+            .product-item-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+            
+            .product-checkbox {
+                align-self: flex-start;
+            }
+        }
+    </style>
 </head>
 <body>
     <!-- Main Content -->
@@ -129,11 +578,29 @@ x<!DOCTYPE html>
                                 <div class="quantity-info">
                                     Quantity: <%= item.quantity %> | Total: ₹<%= item.totalPrice.toFixed(2) %>
                                 </div>
-                                <% if (item.status === 'Active' && !['Shipped', 'Delivered', 'Return Request', 'Returned', 'Cancelled'].includes(order.status)) { %>
+                                <% if (item.status === 'Active') { %>
                                     <div class="item-actions">
-                                        <button class="btn-cancel-item" onclick="cancelOrderItem('<%= order.orderId %>', '<%= item._id %>')">
-                                            <i class="fas fa-times"></i> Cancel
-                                        </button>
+                                        <% if (!['Shipped', 'Delivered', 'Return Request', 'Returned', 'Cancelled'].includes(order.status)) { %>
+                                            <button class="btn-cancel-item" onclick="cancelOrderItem('<%= order.orderId %>', '<%= item._id %>')">
+                                                <i class="fas fa-times"></i> Cancel
+                                            </button>
+                                        <% } %>
+                                        
+                                        <% if (order.status === 'Delivered') { %>
+                                            <button class="btn-return-item" onclick="openIndividualReturnModal('<%= item._id %>', '<%= item.product.productName %>')">
+                                                <i class="fas fa-undo"></i> Return
+                                            </button>
+                                        <% } %>
+                                    </div>
+                                <% } else if (item.status === 'Return Request') { %>
+                                    <div class="item-status-info">
+                                        <span class="status-badge status-pending">Return Requested</span>
+                                        <small class="text-muted">Admin will review your request</small>
+                                    </div>
+                                <% } else if (item.status === 'Returned') { %>
+                                    <div class="item-status-info">
+                                        <span class="status-badge status-completed">Returned</span>
+                                        <small class="text-success">Item has been returned</small>
                                     </div>
                                 <% } %>
                             </div>
@@ -305,22 +772,28 @@ x<!DOCTYPE html>
         </div>
     </div>
 
+    <!-- Standard Modal Overlay -->
+    <div class="modal-overlay" id="modalOverlay"></div>
+
     <!-- Cancel Item Modal -->
-    <div id="cancelItemModal" class="cancel-modal">
-        <div class="cancel-modal-content">
-            <div class="cancel-modal-header">
-                <h3 class="cancel-modal-title">
-                    <i class="fas fa-times-circle"></i>
-                    Cancel Product
-                </h3>
-                <button class="cancel-modal-close" onclick="closeCancelModal()">
+    <div id="cancelItemModal" class="standard-modal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <i class="fas fa-times-circle text-danger"></i>
+                    <span>Cancel Product</span>
+                </div>
+                <button class="modal-close-btn" onclick="closeCancelModal()">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-            <div class="cancel-modal-body">
+            
+            <div class="modal-body">
                 <div class="form-group">
-                    <label for="cancelReason" class="form-label required">Cancellation Reason</label>
-                    <select id="cancelReason" class="form-select" onchange="handleReasonChange()">
+                    <label for="cancelReason" class="form-label">
+                        <span class="required">*</span> Cancellation Reason
+                    </label>
+                    <select id="cancelReason" class="form-control" onchange="handleReasonChange()">
                         <option value="">Select a reason for cancellation</option>
                         <option value="Ordered by mistake">Ordered by mistake</option>
                         <option value="Found cheaper elsewhere">Found cheaper elsewhere</option>
@@ -335,17 +808,20 @@ x<!DOCTYPE html>
                 </div>
                 
                 <div id="customReasonGroup" class="form-group custom-reason-group">
-                    <label for="customReason" class="form-label required">Please specify your reason</label>
-                    <textarea id="customReason" class="form-input" placeholder="Please provide your specific reason for cancellation..." rows="3"></textarea>
+                    <label for="customReason" class="form-label">
+                        <span class="required">*</span> Please specify your reason
+                    </label>
+                    <textarea id="customReason" class="form-control" placeholder="Please provide your specific reason for cancellation..." rows="3"></textarea>
                     <div id="customReasonError" class="error-message">Please provide a custom reason</div>
                 </div>
             </div>
-            <div class="cancel-modal-footer">
-                <button class="modal-btn modal-btn-cancel" onclick="closeCancelModal()">
+            
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeCancelModal()">
                     <i class="fas fa-times"></i>
                     Cancel
                 </button>
-                <button id="confirmCancelBtn" class="modal-btn modal-btn-confirm" onclick="confirmCancellation()" disabled>
+                <button id="confirmCancelBtn" class="btn btn-danger" onclick="confirmCancellation()" disabled>
                     <i class="fas fa-check"></i>
                     Confirm Cancellation
                 </button>
@@ -354,29 +830,30 @@ x<!DOCTYPE html>
     </div>
 
     <!-- Cancel Order Modal -->
-    <div id="cancelOrderModal" class="cancel-order-modal">
-        <div class="cancel-order-modal-content">
-            <div class="cancel-order-modal-header">
-                <h3 class="cancel-order-modal-title">
-                    <i class="fas fa-exclamation-triangle"></i>
-                    <% if (order.status === 'Partially Cancelled') { %>
-                        Cancel Remaining Items
-                    <% } else { %>
-                        Cancel Entire Order
-                    <% } %>
-                </h3>
-                <button class="cancel-order-modal-close" onclick="closeCancelOrderModal()">
+    <div id="cancelOrderModal" class="standard-modal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <i class="fas fa-exclamation-triangle text-warning"></i>
+                    <span>
+                        <% if (order.status === 'Partially Cancelled') { %>
+                            Cancel Remaining Items
+                        <% } else { %>
+                            Cancel Entire Order
+                        <% } %>
+                    </span>
+                </div>
+                <button class="modal-close-btn" onclick="closeCancelOrderModal()">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-            <div class="cancel-order-modal-body">
-                <!-- Cancellation Form -->
-                <div class="form-group-enhanced">
-                    <label for="cancelOrderReason" class="form-label-enhanced required">
-                        <i class="fas fa-comment-alt"></i>
-                        Cancellation Reason
+            
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="cancelOrderReason" class="form-label">
+                        <span class="required">*</span> Cancellation Reason
                     </label>
-                    <select id="cancelOrderReason" class="form-select-enhanced" onchange="handleOrderReasonChange()">
+                    <select id="cancelOrderReason" class="form-control" onchange="handleOrderReasonChange()">
                         <option value="">
                             <% if (order.status === 'Partially Cancelled') { %>
                                 Select a reason for cancelling remaining items
@@ -394,20 +871,20 @@ x<!DOCTYPE html>
                         <option value="Duplicate order">Duplicate order</option>
                         <option value="Other">Other</option>
                     </select>
-                    <div id="orderReasonError" class="error-message-enhanced">Please select a cancellation reason</div>
+                    <div id="orderReasonError" class="error-message">Please select a cancellation reason</div>
                 </div>
                 
-                <div id="customOrderReasonGroup" class="form-group-enhanced custom-reason-group-enhanced">
-                    <label for="customOrderReason" class="form-label-enhanced required">
-                        <i class="fas fa-edit"></i>
-                        Please specify your reason
+                <div id="customOrderReasonGroup" class="form-group custom-reason-group">
+                    <label for="customOrderReason" class="form-label">
+                        <span class="required">*</span> Please specify your reason
                     </label>
-                    <textarea id="customOrderReason" class="form-input-enhanced" placeholder="<% if (order.status === 'Partially Cancelled') { %>Please provide your specific reason for cancelling remaining items...<% } else { %>Please provide your specific reason for cancelling this entire order...<% } %>" rows="4"></textarea>
-                    <div id="customOrderReasonError" class="error-message-enhanced">Please provide a custom reason</div>
+                    <textarea id="customOrderReason" class="form-control" placeholder="<% if (order.status === 'Partially Cancelled') { %>Please provide your specific reason for cancelling remaining items...<% } else { %>Please provide your specific reason for cancelling this entire order...<% } %>" rows="4"></textarea>
+                    <div id="customOrderReasonError" class="error-message">Please provide a custom reason</div>
                 </div>
             </div>
-            <div class="cancel-order-modal-footer">
-                <button class="modal-btn-enhanced modal-btn-cancel-enhanced" onclick="closeCancelOrderModal()">
+            
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeCancelOrderModal()">
                     <i class="fas fa-arrow-left"></i>
                     <% if (order.status === 'Partially Cancelled') { %>
                         Keep Items
@@ -415,7 +892,7 @@ x<!DOCTYPE html>
                         Keep Order
                     <% } %>
                 </button>
-                <button id="confirmOrderCancelBtn" class="modal-btn-enhanced modal-btn-confirm-enhanced" onclick="confirmOrderCancellation()" disabled>
+                <button id="confirmOrderCancelBtn" class="btn btn-danger" onclick="confirmOrderCancellation()" disabled>
                     <i class="fas fa-times-circle"></i>
                     <% if (order.status === 'Partially Cancelled') { %>
                         Cancel Remaining Items
@@ -428,30 +905,31 @@ x<!DOCTYPE html>
     </div>
 
     <!-- Return Order Modal -->
-    <div id="returnOrderModal" class="return-order-modal">
-        <div class="return-order-modal-content">
-            <div class="return-order-modal-header">
-                <h3 class="return-order-modal-title">
-                    <i class="fas fa-undo"></i>
-                    Return Order Items
-                </h3>
-                <button class="return-order-modal-close" onclick="closeReturnModal()">
+    <div id="returnOrderModal" class="standard-modal large-modal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <i class="fas fa-undo text-primary"></i>
+                    <span>Return Order Items</span>
+                </div>
+                <button class="modal-close-btn" onclick="closeReturnModal()">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-            <div class="return-order-modal-body">
+            
+            <div class="modal-body">
                 <!-- Return Instructions -->
-                <div class="return-instructions">
-                    <h4>
+                <div class="info-box">
+                    <div class="info-box-header">
                         <i class="fas fa-info-circle"></i>
-                        Return Policy
-                    </h4>
+                        <span>Return Policy</span>
+                    </div>
                     <p>Select the items you want to return and provide a reason for each. Returns are processed within 7-14 business days. Items must be in original condition with all tags and packaging.</p>
                 </div>
 
                 <!-- Return Products Section -->
                 <div class="return-products-section">
-                    <h4 class="return-products-title">
+                    <h4 class="section-title">
                         <i class="fas fa-box-open"></i>
                         Select Items to Return
                     </h4>
@@ -461,76 +939,142 @@ x<!DOCTYPE html>
                     returnableItems.forEach((item, index) => { 
                     %>
                         <div class="return-product-item" data-item-id="<%= item._id %>">
-                            <div class="return-product-header">
-                                <div class="return-product-checkbox">
+                            <div class="product-item-header">
+                                <div class="product-checkbox">
                                     <input type="checkbox" 
                                            id="return-item-<%= index %>" 
                                            onchange="toggleReturnItem('<%= item._id %>', this.checked)">
+                                    <label for="return-item-<%= index %>"></label>
                                 </div>
                                 <img src="/uploads/products/<%= item.product.mainImage %>"
                                      alt="<%= item.product.productName %>"
-                                     class="return-product-image">
-                                <div class="return-product-details">
-                                    <div class="return-product-name"><%= item.product.productName %></div>
-                                    <div class="return-product-brand">Brand: <%= item.product.brand %></div>
-                                    <div class="return-product-price">
-                                        <span class="return-current-price">₹<%= item.price.toFixed(2) %></span>
-                                    </div>
-                                    <div class="return-quantity-info">
-                                        Quantity: <%= item.quantity %> | Total: ₹<%= item.totalPrice.toFixed(2) %>
-                                    </div>
+                                     class="product-image">
+                                <div class="product-details">
+                                    <div class="product-name"><%= item.product.productName %></div>
+                                    <div class="product-brand">Brand: <%= item.product.brand %></div>
+                                    <div class="product-price">₹<%= item.price.toFixed(2) %></div>
+                                    <div class="product-quantity">Quantity: <%= item.quantity %> | Total: ₹<%= item.totalPrice.toFixed(2) %></div>
                                 </div>
                             </div>
 
-                            <!-- Return Reason Section (Hidden by default) -->
+                            <!-- Return Reason Section -->
                             <div class="return-reason-section" id="return-reason-<%= item._id %>">
-                                <label for="return-reason-select-<%= item._id %>" class="return-reason-label required">
-                                    <i class="fas fa-comment-alt"></i>
-                                    Return Reason
-                                </label>
-                                <select id="return-reason-select-<%= item._id %>" 
-                                        class="return-reason-select" 
-                                        onchange="handleReturnReasonChange('<%= item._id %>', this.value)">
-                                    <option value="">Select a reason for return</option>
-                                    <option value="Defective/Damaged product">Defective/Damaged product</option>
-                                    <option value="Wrong item received">Wrong item received</option>
-                                    <option value="Size/fit issues">Size/fit issues</option>
-                                    <option value="Quality not as expected">Quality not as expected</option>
-                                    <option value="Product not as described">Product not as described</option>
-                                    <option value="Changed my mind">Changed my mind</option>
-                                    <option value="Found better price elsewhere">Found better price elsewhere</option>
-                                    <option value="Ordered by mistake">Ordered by mistake</option>
-                                    <option value="Delivery delay">Delivery delay</option>
-                                    <option value="Other">Other</option>
-                                </select>
-                                
-                                <textarea id="return-custom-reason-<%= item._id %>" 
-                                          class="return-custom-reason" 
-                                          placeholder="Please provide specific details about your return reason..."
-                                          oninput="validateReturnReason('<%= item._id %>')"></textarea>
-                                
-                                <div id="return-error-<%= item._id %>" class="return-error-message">
-                                    Please select a return reason
+                                <div class="form-group">
+                                    <label for="return-reason-select-<%= item._id %>" class="form-label">
+                                        <span class="required">*</span> Return Reason
+                                    </label>
+                                    <select id="return-reason-select-<%= item._id %>" 
+                                            class="form-control" 
+                                            onchange="handleReturnReasonChange('<%= item._id %>', this.value)">
+                                        <option value="">Select a reason for return</option>
+                                        <option value="Defective/Damaged product">Defective/Damaged product</option>
+                                        <option value="Wrong item received">Wrong item received</option>
+                                        <option value="Size/fit issues">Size/fit issues</option>
+                                        <option value="Quality not as expected">Quality not as expected</option>
+                                        <option value="Product not as described">Product not as described</option>
+                                        <option value="Changed my mind">Changed my mind</option>
+                                        <option value="Found better price elsewhere">Found better price elsewhere</option>
+                                        <option value="Ordered by mistake">Ordered by mistake</option>
+                                        <option value="Delivery delay">Delivery delay</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                    
+                                    <textarea id="return-custom-reason-<%= item._id %>" 
+                                              class="form-control custom-reason-textarea" 
+                                              placeholder="Please provide specific details about your return reason..."
+                                              oninput="validateReturnReason('<%= item._id %>')"></textarea>
+                                    
+                                    <div id="return-error-<%= item._id %>" class="error-message">
+                                        Please select a return reason
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     <% }); %>
                 </div>
             </div>
-            <div class="return-order-modal-footer">
-                <div class="return-selected-info">
+            
+            <div class="modal-footer">
+                <div class="selected-info">
                     <span id="return-selected-text">No items selected</span>
                 </div>
-                <div class="return-modal-buttons">
-                    <button class="return-modal-btn return-modal-btn-cancel" onclick="closeReturnModal()">
+                <div class="modal-actions">
+                    <button class="btn btn-secondary" onclick="closeReturnModal()">
                         <i class="fas fa-times"></i>
                         Cancel
                     </button>
-                    <button id="submitReturnBtn" class="return-modal-btn return-modal-btn-submit" onclick="submitReturnRequest()" disabled>
+                    <button id="submitReturnBtn" class="btn btn-primary" onclick="submitReturnRequest()" disabled>
                         <i class="fas fa-paper-plane"></i>
                         Submit Return Request
                     </button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Individual Item Return Modal -->
+    <div id="individualReturnModal" class="standard-modal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <i class="fas fa-undo text-primary"></i>
+                    <span>Return Product</span>
+                </div>
+                <button class="modal-close-btn" onclick="closeIndividualReturnModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="return-item-info">
+                    <h5 id="individualReturnItemName" class="item-name">Product Name</h5>
+                    <div class="info-box">
+                        <div class="info-box-header">
+                            <i class="fas fa-info-circle"></i>
+                            <span>Return Policy</span>
+                        </div>
+                        <p>Returns are processed within 7-14 business days. Items must be in original condition with all tags and packaging.</p>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="individualReturnReason" class="form-label">
+                        <span class="required">*</span> Return Reason
+                    </label>
+                    <select id="individualReturnReason" class="form-control">
+                        <option value="">Select a reason for return</option>
+                        <option value="Defective/Damaged product">Defective/Damaged product</option>
+                        <option value="Wrong item received">Wrong item received</option>
+                        <option value="Size/fit issues">Size/fit issues</option>
+                        <option value="Quality not as expected">Quality not as expected</option>
+                        <option value="Product not as described">Product not as described</option>
+                        <option value="Changed my mind">Changed my mind</option>
+                        <option value="Found better price elsewhere">Found better price elsewhere</option>
+                        <option value="Ordered by mistake">Ordered by mistake</option>
+                        <option value="Delivery delay">Delivery delay</option>
+                        <option value="Other">Other</option>
+                    </select>
+                    <div id="individualReturnReasonError" class="error-message">Please select a return reason</div>
+                </div>
+                
+                <div id="individualCustomReasonGroup" class="form-group custom-reason-group">
+                    <label for="individualCustomReason" class="form-label">
+                        <span class="required">*</span> Please specify your reason
+                    </label>
+                    <textarea id="individualCustomReason" class="form-control" placeholder="Please provide specific details about your return reason..." rows="3"></textarea>
+                    <div id="individualCustomReasonError" class="error-message">Please provide a custom reason</div>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeIndividualReturnModal()">
+                    <i class="fas fa-times"></i>
+                    Cancel
+                </button>
+                <button id="submitIndividualReturnBtn" class="btn btn-primary" onclick="submitIndividualReturnRequest()" disabled>
+                    <i class="fas fa-paper-plane"></i>
+                    Submit Return Request
+                </button>
             </div>
         </div>
     </div>
@@ -541,6 +1085,19 @@ x<!DOCTYPE html>
         // Global variables for modal
         let currentOrderId = null;
         let currentItemId = null;
+
+        // Modal utility functions
+        function showModal(modalId) {
+            document.getElementById('modalOverlay').classList.add('active');
+            document.getElementById(modalId).classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function hideModal(modalId) {
+            document.getElementById('modalOverlay').classList.remove('active');
+            document.getElementById(modalId).classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
 
         // Open cancel modal
         function cancelOrderItem(orderId, itemId) {
@@ -555,14 +1112,12 @@ x<!DOCTYPE html>
             hideErrors();
             
             // Show modal
-            document.getElementById('cancelItemModal').style.display = 'block';
-            document.body.style.overflow = 'hidden';
+            showModal('cancelItemModal');
         }
 
         // Close cancel modal
         function closeCancelModal() {
-            document.getElementById('cancelItemModal').style.display = 'none';
-            document.body.style.overflow = 'auto';
+            hideModal('cancelItemModal');
             currentOrderId = null;
             currentItemId = null;
         }
@@ -682,37 +1237,60 @@ x<!DOCTYPE html>
                     }, 1500);
                 } else {
                     closeCancelModal();
-                    Swal.fire({
+                    const Toast = Swal.mixin({
+                        toast: true,
+                        position: 'bottom-right',
+                        showConfirmButton: false,
+                        timer: 4000,
+                        timerProgressBar: true
+                    });
+                    Toast.fire({
                         icon: 'error',
-                        title: 'Cancellation Failed',
-                        text: result.message || 'Failed to cancel product'
+                        title: result.message || 'Failed to cancel product'
                     });
                 }
             } catch (error) {
                 console.error('Error cancelling product:', error);
                 closeCancelModal();
-                Swal.fire({
+                const Toast = Swal.mixin({
+                    toast: true,
+                    position: 'bottom-right',
+                    showConfirmButton: false,
+                    timer: 4000,
+                    timerProgressBar: true
+                });
+                Toast.fire({
                     icon: 'error',
-                    title: 'Error!',
-                    text: 'Failed to cancel product. Please try again.'
+                    title: 'Failed to cancel product. Please try again.'
                 });
             }
         }
 
-        // Close modal when clicking outside
-        window.onclick = function(event) {
-            const modal = document.getElementById('cancelItemModal');
-            if (event.target === modal) {
+        // Close modal when clicking outside or on overlay
+        document.getElementById('modalOverlay').addEventListener('click', function() {
+            // Check which modal is currently active and close it
+            if (document.getElementById('cancelItemModal').classList.contains('active')) {
                 closeCancelModal();
+            } else if (document.getElementById('cancelOrderModal').classList.contains('active')) {
+                closeCancelOrderModal();
+            } else if (document.getElementById('returnOrderModal').classList.contains('active')) {
+                closeReturnModal();
+            } else if (document.getElementById('individualReturnModal').classList.contains('active')) {
+                closeIndividualReturnModal();
             }
-        }
+        });
 
         // Close modal with Escape key
         document.addEventListener('keydown', function(event) {
             if (event.key === 'Escape') {
-                const modal = document.getElementById('cancelItemModal');
-                if (modal.style.display === 'block') {
+                if (document.getElementById('cancelItemModal').classList.contains('active')) {
                     closeCancelModal();
+                } else if (document.getElementById('cancelOrderModal').classList.contains('active')) {
+                    closeCancelOrderModal();
+                } else if (document.getElementById('returnOrderModal').classList.contains('active')) {
+                    closeReturnModal();
+                } else if (document.getElementById('individualReturnModal').classList.contains('active')) {
+                    closeIndividualReturnModal();
                 }
             }
         });
@@ -727,13 +1305,11 @@ x<!DOCTYPE html>
             hideOrderErrors();
             
             // Show modal
-            document.getElementById('cancelOrderModal').style.display = 'block';
-            document.body.style.overflow = 'hidden';
+            showModal('cancelOrderModal');
         }
 
         function closeCancelOrderModal() {
-            document.getElementById('cancelOrderModal').style.display = 'none';
-            document.body.style.overflow = 'auto';
+            hideModal('cancelOrderModal');
         }
 
         function handleOrderReasonChange() {
@@ -847,41 +1423,36 @@ x<!DOCTYPE html>
                     }, 1500);
                 } else {
                     closeCancelOrderModal();
-                    Swal.fire({
+                    const Toast = Swal.mixin({
+                        toast: true,
+                        position: 'bottom-right',
+                        showConfirmButton: false,
+                        timer: 4000,
+                        timerProgressBar: true
+                    });
+                    Toast.fire({
                         icon: 'error',
-                        title: 'Cancellation Failed',
-                        text: result.message || 'Failed to cancel order'
+                        title: result.message || 'Failed to cancel order'
                     });
                 }
             } catch (error) {
                 console.error('Error cancelling order:', error);
                 closeCancelOrderModal();
-                Swal.fire({
+                const Toast = Swal.mixin({
+                    toast: true,
+                    position: 'bottom-right',
+                    showConfirmButton: false,
+                    timer: 4000,
+                    timerProgressBar: true
+                });
+                Toast.fire({
                     icon: 'error',
-                    title: 'Error!',
-                    text: 'Failed to cancel order. Please try again.'
+                    title: 'Failed to cancel order. Please try again.'
                 });
             }
         }
 
-        // Close order modal when clicking outside
-        window.addEventListener('click', function(event) {
-            const orderModal = document.getElementById('cancelOrderModal');
-            if (event.target === orderModal) {
-                closeCancelOrderModal();
-            }
-        });
-
-        // Close order modal with Escape key
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape') {
-                const orderModal = document.getElementById('cancelOrderModal');
-                if (orderModal.style.display === 'block') {
-                    closeCancelOrderModal();
-                }
-            }
-        });
-
+        
         // Return Order Modal Functions
         let selectedReturnItems = new Set();
         let returnReasons = new Map();
@@ -905,17 +1476,17 @@ x<!DOCTYPE html>
             });
             
             // Reset all form fields
-            document.querySelectorAll('.return-reason-select').forEach(select => {
+            document.querySelectorAll('.return-reason-section select').forEach(select => {
                 select.value = '';
             });
             
-            document.querySelectorAll('.return-custom-reason').forEach(textarea => {
+            document.querySelectorAll('.custom-reason-textarea').forEach(textarea => {
                 textarea.value = '';
                 textarea.classList.remove('show');
             });
             
             // Hide all error messages
-            document.querySelectorAll('.return-error-message').forEach(error => {
+            document.querySelectorAll('.error-message').forEach(error => {
                 error.classList.remove('show');
             });
             
@@ -924,13 +1495,11 @@ x<!DOCTYPE html>
             document.getElementById('submitReturnBtn').disabled = true;
             
             // Show modal
-            document.getElementById('returnOrderModal').style.display = 'block';
-            document.body.style.overflow = 'hidden';
+            showModal('returnOrderModal');
         }
 
         function closeReturnModal() {
-            document.getElementById('returnOrderModal').style.display = 'none';
-            document.body.style.overflow = 'auto';
+            hideModal('returnOrderModal');
         }
 
         function toggleReturnItem(itemId, isChecked) {
@@ -1067,9 +1636,17 @@ x<!DOCTYPE html>
                 return;
             }
             
-            // For now, we'll submit a single return request for the entire order
-            // with the first selected item's reason (since the current backend expects a single reason)
-            const firstItemReason = returnReasons.values().next().value;
+            // Prepare return request data with selected items and their reasons
+            const returnItems = [];
+            for (const itemId of selectedReturnItems) {
+                const reason = returnReasons.get(itemId);
+                if (reason) {
+                    returnItems.push({
+                        itemId: itemId,
+                        reason: reason
+                    });
+                }
+            }
             
             try {
                 // Show loading state
@@ -1078,14 +1655,16 @@ x<!DOCTYPE html>
                 submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
                 submitBtn.disabled = true;
                 
-                // Make actual API call to request return
-                const response = await fetch(`/orders/<%= order.orderId %>/request-return`, {
+                // Make API call to return request endpoint
+                const response = await fetch('/return/request', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({ 
-                        reason: firstItemReason || 'Return requested by customer'
+                        orderId: '<%= order.orderId %>',
+                        items: returnItems,
+                        requestType: 'bulk' // Indicates this is a bulk return request
                     })
                 });
                 
@@ -1095,26 +1674,37 @@ x<!DOCTYPE html>
                     closeReturnModal();
                     
                     // Show success message
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Return Request Submitted',
-                        text: result.message || 'Return request has been submitted successfully. Admin will review your request.',
-                        confirmButtonText: 'OK',
-                        confirmButtonColor: '#f59e0b'
-                    }).then(() => {
-                        // Reload the page to show updated status
-                        window.location.reload();
+                    const Toast = Swal.mixin({
+                        toast: true,
+                        position: 'bottom-right',
+                        showConfirmButton: false,
+                        timer: 4000,
+                        timerProgressBar: true
                     });
+                    Toast.fire({
+                        icon: 'success',
+                        title: result.message || 'Return request submitted successfully'
+                    });
+                    
+                    // Reload the page to show updated status
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1500);
                 } else {
                     // Reset button state
                     submitBtn.innerHTML = originalText;
                     submitBtn.disabled = false;
                     
-                    Swal.fire({
+                    const Toast = Swal.mixin({
+                        toast: true,
+                        position: 'bottom-right',
+                        showConfirmButton: false,
+                        timer: 4000,
+                        timerProgressBar: true
+                    });
+                    Toast.fire({
                         icon: 'error',
-                        title: 'Submission Failed',
-                        text: result.message || 'Failed to submit return request. Please try again.',
-                        confirmButtonColor: '#ef4444'
+                        title: result.message || 'Failed to submit return request'
                     });
                 }
                 
@@ -1126,33 +1716,222 @@ x<!DOCTYPE html>
                 submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Return Request';
                 submitBtn.disabled = false;
                 
-                Swal.fire({
+                const Toast = Swal.mixin({
+                    toast: true,
+                    position: 'bottom-right',
+                    showConfirmButton: false,
+                    timer: 4000,
+                    timerProgressBar: true
+                });
+                Toast.fire({
                     icon: 'error',
-                    title: 'Submission Failed',
-                    text: 'Failed to submit return request. Please try again.',
-                    confirmButtonColor: '#ef4444'
+                    title: 'Failed to submit return request. Please try again.'
                 });
             }
         }
 
-        // Close return modal when clicking outside
-        window.addEventListener('click', function(event) {
-            const returnModal = document.getElementById('returnOrderModal');
-            if (event.target === returnModal) {
-                closeReturnModal();
+        
+        // Individual Return Modal Functions
+        let currentIndividualItemId = null;
+        let currentIndividualItemName = null;
+
+        function openIndividualReturnModal(itemId, itemName) {
+            currentIndividualItemId = itemId;
+            currentIndividualItemName = itemName;
+            
+            // Set item name in modal
+            const itemNameElement = document.getElementById('individualReturnItemName');
+            if (itemNameElement) {
+                itemNameElement.textContent = itemName;
+            }
+            
+            // Reset form
+            const reasonSelect = document.getElementById('individualReturnReason');
+            const customReason = document.getElementById('individualCustomReason');
+            const customReasonGroup = document.getElementById('individualCustomReasonGroup');
+            const submitBtn = document.getElementById('submitIndividualReturnBtn');
+            
+            if (reasonSelect) reasonSelect.value = '';
+            if (customReason) customReason.value = '';
+            if (customReasonGroup) customReasonGroup.classList.remove('show');
+            if (submitBtn) submitBtn.disabled = true;
+            
+            hideIndividualReturnErrors();
+            
+            // Show modal
+            showModal('individualReturnModal');
+        }
+
+        function closeIndividualReturnModal() {
+            hideModal('individualReturnModal');
+            currentIndividualItemId = null;
+            currentIndividualItemName = null;
+        }
+
+        function handleIndividualReturnReasonChange() {
+            const reasonSelect = document.getElementById('individualReturnReason');
+            const customReasonGroup = document.getElementById('individualCustomReasonGroup');
+            const submitBtn = document.getElementById('submitIndividualReturnBtn');
+            
+            hideIndividualReturnErrors();
+            
+            if (reasonSelect.value === 'Other') {
+                customReasonGroup.classList.add('show');
+                submitBtn.disabled = true;
+            } else if (reasonSelect.value) {
+                customReasonGroup.classList.remove('show');
+                submitBtn.disabled = false;
+            } else {
+                customReasonGroup.classList.remove('show');
+                submitBtn.disabled = true;
+            }
+        }
+
+        // Handle custom reason input for individual return
+        document.getElementById('individualCustomReason').addEventListener('input', function() {
+            const submitBtn = document.getElementById('submitIndividualReturnBtn');
+            const customReason = this.value.trim();
+            
+            hideIndividualReturnErrors();
+            
+            if (customReason) {
+                submitBtn.disabled = false;
+            } else {
+                submitBtn.disabled = true;
             }
         });
 
-        // Close return modal with Escape key
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape') {
-                const returnModal = document.getElementById('returnOrderModal');
-                if (returnModal.style.display === 'block') {
-                    closeReturnModal();
+        // Handle reason dropdown change for individual return
+        document.getElementById('individualReturnReason').addEventListener('change', handleIndividualReturnReasonChange);
+
+        function hideIndividualReturnErrors() {
+            document.getElementById('individualReturnReasonError').classList.remove('show');
+            document.getElementById('individualCustomReasonError').classList.remove('show');
+        }
+
+        function showIndividualReturnError(elementId, message) {
+            const errorElement = document.getElementById(elementId);
+            if (message) {
+                errorElement.textContent = message;
+            }
+            errorElement.classList.add('show');
+        }
+
+        function validateIndividualReturnForm() {
+            const reasonSelect = document.getElementById('individualReturnReason');
+            const customReason = document.getElementById('individualCustomReason');
+            
+            hideIndividualReturnErrors();
+            
+            if (!reasonSelect.value) {
+                showIndividualReturnError('individualReturnReasonError');
+                return false;
+            }
+            
+            if (reasonSelect.value === 'Other' && !customReason.value.trim()) {
+                showIndividualReturnError('individualCustomReasonError');
+                return false;
+            }
+            
+            return true;
+        }
+
+        async function submitIndividualReturnRequest() {
+            if (!validateIndividualReturnForm()) {
+                return;
+            }
+            
+            const reasonSelect = document.getElementById('individualReturnReason');
+            const customReason = document.getElementById('individualCustomReason');
+            
+            let reason = reasonSelect.value;
+            if (reason === 'Other') {
+                reason = customReason.value.trim();
+            }
+            
+            try {
+                // Show loading state
+                const submitBtn = document.getElementById('submitIndividualReturnBtn');
+                const originalText = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+                submitBtn.disabled = true;
+                
+                // Make API call to return request endpoint
+                const response = await fetch('/return/request', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        orderId: '<%= order.orderId %>',
+                        items: [{
+                            itemId: currentIndividualItemId,
+                            reason: reason
+                        }],
+                        requestType: 'individual' // Indicates this is an individual return request
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    closeIndividualReturnModal();
+                    
+                    const Toast = Swal.mixin({
+                        toast: true,
+                        position: 'bottom-right',
+                        showConfirmButton: false,
+                        timer: 4000,
+                        timerProgressBar: true
+                    });
+                    Toast.fire({
+                        icon: 'success',
+                        title: result.message || `Return request submitted for "${currentIndividualItemName}"`
+                    });
+                    
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1500);
+                } else {
+                    // Reset button state
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                    
+                    const Toast = Swal.mixin({
+                        toast: true,
+                        position: 'bottom-right',
+                        showConfirmButton: false,
+                        timer: 4000,
+                        timerProgressBar: true
+                    });
+                    Toast.fire({
+                        icon: 'error',
+                        title: result.message || 'Failed to submit return request'
+                    });
                 }
+            } catch (error) {
+                console.error('Error submitting individual return request:', error);
+                
+                // Reset button state
+                const submitBtn = document.getElementById('submitIndividualReturnBtn');
+                submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Return Request';
+                submitBtn.disabled = false;
+                
+                const Toast = Swal.mixin({
+                    toast: true,
+                    position: 'bottom-right',
+                    showConfirmButton: false,
+                    timer: 4000,
+                    timerProgressBar: true
+                });
+                Toast.fire({
+                    icon: 'error',
+                    title: 'Failed to submit return request. Please try again.'
+                });
             }
-        });
+        }
 
+        
         // Download PDF invoice
         async function downloadInvoice(orderId) {
             // Get the button that was clicked
@@ -1202,10 +1981,16 @@ x<!DOCTYPE html>
                 }
             } catch (error) {
                 console.error('Error downloading invoice:', error);
-                Swal.fire({
+                const Toast = Swal.mixin({
+                    toast: true,
+                    position: 'bottom-right',
+                    showConfirmButton: false,
+                    timer: 4000,
+                    timerProgressBar: true
+                });
+                Toast.fire({
                     icon: 'error',
-                    title: 'Download Failed',
-                    text: error.message || 'Failed to download invoice. Please try again.'
+                    title: error.message || 'Failed to download invoice. Please try again.'
                 });
             } finally {
                 // Reset button state

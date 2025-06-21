@@ -125,14 +125,7 @@ const cancelOrderItem = async (req, res) => {
         { new: true }
       );
 
-      console.log('Product stock restored for individual item cancellation:', {
-        productId: orderItem.product._id,
-        productName: orderItem.product.productName,
-        stockBefore: stockBefore,
-        quantityRestored: orderItem.quantity,
-        stockAfter: productUpdateResult ? productUpdateResult.quantity : 'unknown',
-        verified: productUpdateResult && (productUpdateResult.quantity === stockBefore + orderItem.quantity)
-      });
+      // Product stock restored successfully
     } catch (stockError) {
       console.error('Error restoring product stock:', stockError);
       // Continue with order cancellation even if stock update fails
@@ -170,14 +163,7 @@ const cancelOrderItem = async (req, res) => {
       order.totalPrice = activeItemsTotal;
       order.finalAmount = Math.max(0, activeItemsTotal - applicableDiscount + order.shippingCharges);
       
-      console.log('Proportional discount calculation:', {
-        originalOrderTotal: originalOrderTotal,
-        activeItemsTotal: activeItemsTotal,
-        cancelledItemsTotal: cancelledItemsTotal,
-        originalDiscount: order.discount,
-        applicableDiscount: applicableDiscount,
-        finalAmount: order.finalAmount
-      });
+      // Proportional discount calculated successfully
     }
 
     // Add to order timeline
@@ -211,13 +197,10 @@ const cancelEntireOrder = async (req, res) => {
     const userId = req.session.userId;
     const { reason } = req.body;
 
-    console.log('Cancel entire order request:', { orderId, userId, reason });
-
     const order = await Order.findOne({ orderId, userId })
       .populate('orderedItems.product');
 
     if (!order) {
-      console.log('Order not found:', { orderId, userId });
       return res.status(404).json({
         success: false,
         message: 'Order not found'
@@ -226,14 +209,11 @@ const cancelEntireOrder = async (req, res) => {
 
     // Check if order can be cancelled
     if (['Shipped', 'Delivered', 'Return Request', 'Returned', 'Cancelled'].includes(order.status)) {
-      console.log('Order cannot be cancelled, current status:', order.status);
       return res.status(400).json({
         success: false,
         message: 'Order cannot be cancelled at this stage'
       });
     }
-
-    console.log('Cancelling order with', order.orderedItems.length, 'items');
 
     // Update order status and amounts
     order.status = 'Cancelled';
@@ -243,8 +223,6 @@ const cancelEntireOrder = async (req, res) => {
     // Cancel all active items and restore stock
     for (const item of order.orderedItems) {
       if (item.status === 'Active') {
-        console.log('Cancelling item:', item.product.productName, 'quantity:', item.quantity);
-        
         item.status = 'Cancelled';
         item.cancellationReason = reason || 'Order cancelled by customer';
         item.cancelledAt = new Date();
@@ -261,14 +239,7 @@ const cancelEntireOrder = async (req, res) => {
             { new: true }
           );
 
-          console.log('Product stock restored for entire order cancellation:', {
-            productId: item.product._id,
-            productName: item.product.productName,
-            stockBefore: stockBefore,
-            quantityRestored: item.quantity,
-            stockAfter: productUpdateResult ? productUpdateResult.quantity : 'unknown',
-            verified: productUpdateResult && (productUpdateResult.quantity === stockBefore + item.quantity)
-          });
+          // Product stock restored successfully
         } catch (stockError) {
           console.error('Error restoring product stock for item:', item.product.productName, stockError);
           // Continue with other items even if one fails
@@ -285,8 +256,6 @@ const cancelEntireOrder = async (req, res) => {
 
     await order.save();
 
-    console.log('Order cancelled successfully:', orderId);
-
     res.status(200).json({
       success: true,
       message: 'Order cancelled successfully'
@@ -302,14 +271,12 @@ const cancelEntireOrder = async (req, res) => {
 };
 
 
-// Request return for an order
+// Request return for an order (entire order or specific items)
 const requestReturn = async (req, res) => {
   try {
     const { orderId } = req.params;
     const userId = req.session.userId;
-    const { reason } = req.body;
-
-    console.log('Return request:', { orderId, userId, reason });
+    const { reason, items, requestType } = req.body;
 
     // Get order with populated product data
     const order = await Order.findOne({ orderId, userId })
@@ -330,7 +297,7 @@ const requestReturn = async (req, res) => {
       });
     }
 
-    // Check if return request already exists
+    // Check if return request already exists for entire order
     if (order.status === 'Return Request' || order.status === 'Returned') {
       return res.status(400).json({
         success: false,
@@ -350,26 +317,85 @@ const requestReturn = async (req, res) => {
       }
     }
 
-    // Update order status to Return Request
-    order.status = 'Return Request';
-    order.returnReason = reason || 'Return requested by customer';
-    order.returnRequestedAt = new Date();
+    // Handle individual item returns vs entire order return
+    if (items && Array.isArray(items) && items.length > 0) {
+      // Individual item return(s)
+      let returnedItemsCount = 0;
+      let returnDescription = '';
+      
+      for (const returnItem of items) {
+        const orderItem = order.orderedItems.id(returnItem.itemId);
+        if (orderItem && orderItem.status === 'Active') {
+          orderItem.status = 'Return Request';
+          orderItem.returnReason = returnItem.reason || reason || 'Return requested by customer';
+          orderItem.returnRequestedAt = new Date();
+          returnedItemsCount++;
+          
+          if (returnDescription) {
+            returnDescription += ', ';
+          }
+          returnDescription += orderItem.product.productName;
+        }
+      }
 
-    // Add to order timeline
-    order.orderTimeline.push({
-      status: 'Return Request',
-      description: `Return requested: ${reason || 'Return requested by customer'}`,
-      timestamp: new Date()
-    });
+      if (returnedItemsCount === 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'No valid items found for return'
+        });
+      }
 
-    await order.save();
+      // Check if all active items are now being returned
+      const activeItems = order.orderedItems.filter(item => item.status === 'Active');
+      const returnRequestItems = order.orderedItems.filter(item => item.status === 'Return Request');
+      
+      if (activeItems.length === 0 && returnRequestItems.length > 0) {
+        // All items are being returned
+        order.status = 'Return Request';
+        order.returnReason = `Individual items return: ${returnDescription}`;
+      } else {
+        // Partial return - keep order as delivered but mark items
+        order.returnReason = `Partial return requested: ${returnDescription}`;
+      }
 
-    console.log('Return request created successfully:', orderId);
+      order.returnRequestedAt = new Date();
 
-    res.status(200).json({
-      success: true,
-      message: 'Return request submitted successfully. Admin will review your request.'
-    });
+      // Add to order timeline
+      order.orderTimeline.push({
+        status: returnedItemsCount === order.orderedItems.length ? 'Return Request' : 'Partial Return Request',
+        description: `Return requested for items: ${returnDescription}`,
+        timestamp: new Date()
+      });
+
+      await order.save();
+
+      res.status(200).json({
+        success: true,
+        message: `Return request submitted for ${returnedItemsCount} item(s). Admin will review your request.`
+      });
+
+    } else {
+      // Entire order return (legacy support)
+      order.status = 'Return Request';
+      order.returnReason = reason || 'Return requested by customer';
+      order.returnRequestedAt = new Date();
+
+      // Add to order timeline
+      order.orderTimeline.push({
+        status: 'Return Request',
+        description: `Return requested: ${reason || 'Return requested by customer'}`,
+        timestamp: new Date()
+      });
+
+      await order.save();
+
+      res.status(200).json({
+        success: true,
+        message: 'Return request submitted successfully. Admin will review your request.'
+      });
+    }
+
+    // Return request created successfully
 
   } catch (error) {
     console.error('Error requesting return:', error);
@@ -431,11 +457,99 @@ const downloadInvoice = async (req, res) => {
 
 
 
+// Request return for individual item
+const requestIndividualItemReturn = async (req, res) => {
+  try {
+    const { orderId, itemId } = req.params;
+    const userId = req.session.userId;
+    const { reason } = req.body;
+
+    // Individual item return request received
+
+    // Get order with populated product data
+    const order = await Order.findOne({ orderId, userId })
+      .populate('orderedItems.product');
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: 'Order not found'
+      });
+    }
+
+    // Check if order can be returned (only delivered orders can be returned)
+    if (order.status !== 'Delivered') {
+      return res.status(400).json({
+        success: false,
+        message: 'Only delivered orders can be returned'
+      });
+    }
+
+    // Find the specific item
+    const orderItem = order.orderedItems.id(itemId);
+    if (!orderItem) {
+      return res.status(404).json({
+        success: false,
+        message: 'Order item not found'
+      });
+    }
+
+    // Check if item can be returned
+    if (orderItem.status !== 'Active') {
+      return res.status(400).json({
+        success: false,
+        message: 'Item is already cancelled, returned, or has a return request'
+      });
+    }
+
+    // Check if order is within return window (e.g., 7 days from delivery)
+    const deliveryDate = order.orderTimeline.find(timeline => timeline.status === 'Delivered')?.timestamp;
+    if (deliveryDate) {
+      const daysSinceDelivery = Math.floor((new Date() - new Date(deliveryDate)) / (1000 * 60 * 60 * 24));
+      if (daysSinceDelivery > 7) {
+        return res.status(400).json({
+          success: false,
+          message: 'Return window has expired. Returns are only allowed within 7 days of delivery.'
+        });
+      }
+    }
+
+    // Update item status to Return Request
+    orderItem.status = 'Return Request';
+    orderItem.returnReason = reason || 'Return requested by customer';
+    orderItem.returnRequestedAt = new Date();
+
+    // Add to order timeline
+    order.orderTimeline.push({
+      status: 'Individual Item Return Request',
+      description: `Return requested for item: ${orderItem.product.productName} - ${reason || 'Return requested by customer'}`,
+      timestamp: new Date()
+    });
+
+    await order.save();
+
+    res.status(200).json({
+      success: true,
+      message: `Return request submitted successfully for "${orderItem.product.productName}". Admin will review your request.`,
+      itemName: orderItem.product.productName,
+      returnAmount: orderItem.totalPrice
+    });
+
+  } catch (error) {
+    console.error('Error requesting individual item return:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error submitting return request'
+    });
+  }
+};
+
 module.exports = {
   loadOrderList,
   loadOrderDetails,
   cancelOrderItem,
   cancelEntireOrder,
   requestReturn,
+  requestIndividualItemReturn,
   downloadInvoice
 };

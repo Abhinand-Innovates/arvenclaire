@@ -30,8 +30,13 @@ const getOrders = async (req, res) => {
     // Get total count for pagination
     const totalOrders = await Order.countDocuments(searchQuery);
 
-    // Get return request count for notification
-    const returnRequestCount = await Order.countDocuments({ status: 'Return Request' });
+    // Get return request count for notification (including individual item returns)
+    const returnRequestCount = await Order.countDocuments({
+      $or: [
+        { status: 'Return Request' },
+        { 'orderedItems.status': 'Return Request' }
+      ]
+    });
 
     // Get orders with user details
     const orders = await Order.find(searchQuery)
@@ -233,89 +238,8 @@ const updateOrderStatus = async (req, res) => {
 };
 
 
-// Approve return request
-const approveReturnRequest = async (req, res) => {
-  try {
-    const orderId = req.params.id;
-    const { adminNote } = req.body;
-
-    const order = await Order.findById(orderId)
-      .populate('userId', 'fullname email')
-      .populate('orderedItems.product', 'productName quantity');
-
-    if (!order) {
-      return res.status(404).json({
-        success: false,
-        message: 'Order not found'
-      });
-    }
-
-    if (order.status !== 'Return Request') {
-      return res.status(400).json({
-        success: false,
-        message: 'Order is not in return request status'
-      });
-    }
-
-    // Update order status to Returned
-    order.status = 'Returned';
-    order.returnApprovedAt = new Date();
-    order.adminNote = adminNote || 'Return request approved by admin';
-
-    // Add to timeline
-    order.orderTimeline.push({
-      status: 'Returned',
-      timestamp: new Date(),
-      description: `Return request approved: ${adminNote || 'Return approved by admin'}`
-    });
-
-    // Restore product quantities
-    for (const item of order.orderedItems) {
-      if (item.status === 'Active') {
-        try {
-          await Product.findByIdAndUpdate(
-            item.product._id,
-            { $inc: { quantity: item.quantity } }
-          );
-          
-          console.log(`Restored ${item.quantity} units of ${item.product.productName}`);
-        } catch (stockError) {
-          console.error('Error restoring product stock:', stockError);
-        }
-      }
-    }
-
-    // Add refund amount to user's wallet
-    try {
-      const wallet = await Wallet.getOrCreateWallet(order.userId._id);
-      await wallet.addMoney(
-        order.finalAmount,
-        `Refund for returned order ${order.orderId}`,
-        order.orderId
-      );
-      
-      console.log(`Added ₹${order.finalAmount} to wallet for user ${order.userId.fullname}`);
-    } catch (walletError) {
-      console.error('Error adding money to wallet:', walletError);
-      // Continue with order update even if wallet fails
-    }
-
-    await order.save();
-
-    res.json({
-      success: true,
-      message: 'Return request approved successfully. Refund has been processed to customer wallet.',
-      order
-    });
-
-  } catch (error) {
-    console.error('Error approving return request:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to approve return request'
-    });
-  }
-};
+// Note: approveReturnRequest function moved to return-controller.js to avoid duplication
+// This function was causing double wallet credits
 
 
 // Reject return request
@@ -378,17 +302,35 @@ const rejectReturnRequest = async (req, res) => {
 };
 
 
-// Get return request count
+// Get return request count (including individual item returns)
 const getReturnRequestCount = async (req, res) => {
   try {
-    // Count orders with "Return Request" status
-    const returnRequestCount = await Order.countDocuments({ 
+    // Count orders with "Return Request" status (entire order returns)
+    const entireOrderReturns = await Order.countDocuments({ 
       status: 'Return Request' 
+    });
+
+    // Count orders with individual item return requests
+    const individualItemReturns = await Order.countDocuments({
+      'orderedItems.status': 'Return Request'
+    });
+
+    // Total return requests (avoid double counting if an order has both)
+    const totalReturnRequests = await Order.countDocuments({
+      $or: [
+        { status: 'Return Request' },
+        { 'orderedItems.status': 'Return Request' }
+      ]
     });
 
     res.json({
       success: true,
-      count: returnRequestCount
+      count: totalReturnRequests,
+      breakdown: {
+        entireOrderReturns,
+        individualItemReturns,
+        total: totalReturnRequests
+      }
     });
 
   } catch (error) {
@@ -529,7 +471,6 @@ module.exports = {
   getOrderById,
   getOrderDetailsPage,
   updateOrderStatus,
-  approveReturnRequest,
   rejectReturnRequest,
   getReturnRequestCount,
   getReturnRequests

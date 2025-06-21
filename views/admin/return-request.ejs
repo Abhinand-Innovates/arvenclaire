@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="/styles/admin/return-request.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <title>Return Requests</title>
     <style>
@@ -33,6 +34,38 @@
             color: #6c757d;
             margin: 0;
         }
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .stat-card i {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        .stat-card h3 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        .stat-card p {
+            margin: 0;
+            color: #6c757d;
+            font-size: 0.875rem;
+        }
+        .pending { color: #f39c12; }
+        .approved { color: #27ae60; }
+        .rejected { color: #e74c3c; }
+        .total { color: #3498db; }
+        
         .table-container {
             background: white;
             border-radius: 10px;
@@ -86,43 +119,28 @@
             vertical-align: middle;
             border-bottom: 1px solid #e9ecef;
         }
-        .return-table tr:hover {
-            background-color: #f8f9fa;
-        }
         .status-badge {
-            padding: 0.4rem 0.8rem;
+            padding: 0.25rem 0.75rem;
             border-radius: 20px;
             font-size: 0.75rem;
             font-weight: 600;
             text-transform: uppercase;
         }
-        .status-pending { background: #fff3cd; color: #856404; }
-        .status-completed { background: #d4edda; color: #155724; }
-        .status-rejected { background: #f8d7da; color: #721c24; }
-        .customer-info {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
         }
-        .customer-avatar {
-            width: 35px;
-            height: 35px;
-            border-radius: 50%;
-            background: #007bff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 600;
-            font-size: 0.8rem;
+        .status-approved {
+            background: #d1edff;
+            color: #0c5460;
         }
-        .customer-details h6 {
-            margin: 0;
-            font-size: 0.9rem;
-            font-weight: 600;
+        .status-rejected {
+            background: #f8d7da;
+            color: #721c24;
         }
-        .customer-details small {
-            color: #6c757d;
+        .status-returned {
+            background: #d4edda;
+            color: #155724;
         }
         .product-info {
             display: flex;
@@ -130,40 +148,353 @@
             gap: 0.75rem;
         }
         .product-image {
-            width: 40px;
-            height: 40px;
+            width: 50px;
+            height: 50px;
             object-fit: cover;
             border-radius: 6px;
-            border: 1px solid #dee2e6;
+        }
+        .product-placeholder {
+            width: 50px;
+            height: 50px;
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6c757d;
+            font-size: 1.2rem;
         }
         .product-details h6 {
             margin: 0;
-            font-size: 0.85rem;
+            font-size: 0.875rem;
             font-weight: 600;
         }
         .product-details small {
             color: #6c757d;
         }
+        .customer-info h6 {
+            margin: 0;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+        .customer-info small {
+            color: #6c757d;
+        }
+        .amount-breakdown {
+            text-align: right;
+        }
+        .amount-breakdown .subtotal {
+            margin-bottom: 2px;
+        }
+        .amount-breakdown .total-price {
+            font-size: 1rem;
+        }
+        .amount-breakdown .text-muted {
+            font-size: 0.75rem;
+        }
+        .return-items-info {
+            margin-top: 4px;
+        }
+        .return-items-info .text-info {
+            font-size: 0.7rem;
+            color: #17a2b8 !important;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
         .btn-sm {
-            padding: 0.4rem 0.8rem;
-            font-size: 0.8rem;
+            padding: 0.375rem 0.75rem;
+            font-size: 0.75rem;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #6c757d;
+        }
+        .empty-state i {
+            font-size: 4rem;
+            color: #dee2e6;
+            margin-bottom: 1.5rem;
+        }
+        .empty-state h4 {
+            color: #495057;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+        .empty-state p {
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+        .empty-state small {
+            color: #6c757d;
+            font-size: 0.875rem;
         }
         .pagination-container {
             padding: 1.5rem;
             border-top: 1px solid #dee2e6;
             background: #f8f9fa;
         }
+
+        /* Advanced Filters Styles */
+        .filters-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+
+        .filters-header {
+            background: #000000;
+            color: white;
+            padding: 1.5rem 2rem;
+            text-align: center;
+        }
+
+        .filters-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 0 0 0.5rem 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+        }
+
+        .filters-subtitle {
+            margin: 0;
+            opacity: 0.9;
+            font-size: 0.875rem;
+        }
+
+        .filters-form {
+            padding: 2rem;
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .filter-label {
+            font-weight: 600;
+            color: #374151;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .filter-label i {
+            color: #000000;
+            width: 16px;
+        }
+
+        .filter-input, .filter-select {
+            padding: 0.75rem 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .filter-input:focus, .filter-select:focus {
+            outline: none;
+            border-color: #000000;
+            box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .filter-select {
+            cursor: pointer;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.5rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            padding-right: 2.5rem;
+        }
+
+        /* Search Container */
+        .search-container {
+            position: relative;
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+            pointer-events: none;
+        }
+
+        /* Date Range Container */
+        .date-range-container {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        .date-separator {
+            text-align: center;
+            color: #6b7280;
+            font-weight: 500;
+            font-size: 0.875rem;
+        }
+
+        .date-input {
+            padding: 0.75rem 1rem;
+        }
+
+        /* Amount Range Container */
+        .amount-range-container {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        .amount-input-wrapper {
+            position: relative;
+        }
+
+        .currency-symbol {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6b7280;
+            font-weight: 600;
+            pointer-events: none;
+        }
+
+        .amount-input {
+            padding-left: 2.5rem;
+        }
+
+        .amount-separator {
+            text-align: center;
+            color: #6b7280;
+            font-weight: 500;
+            font-size: 0.875rem;
+        }
+
+        /* Filter Action Buttons */
+        .filter-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-filter {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            min-width: 120px;
+            justify-content: center;
+        }
+
+        .btn-apply {
+            background: #000000;
+            color: white;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-apply:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+            background: #333333;
+        }
+
+        .btn-clear {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-clear:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+        }
+
+        .btn-refresh {
+            background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(107, 114, 128, 0.3);
+        }
+
+        .btn-refresh:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(107, 114, 128, 0.4);
+        }
+
+        /* Table Header Updates */
+        .results-info {
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .results-count {
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .table-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
         @media (max-width: 768px) {
             .main-content {
                 margin-left: 0;
                 padding: 15px;
             }
-            .controls-row {
-                flex-direction: column;
-                align-items: stretch;
+            .filters-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
             }
-            .search-box {
-                max-width: 100%;
+            .date-range-container,
+            .amount-range-container {
+                grid-template-columns: 1fr;
+                gap: 0.5rem;
+            }
+            .date-separator,
+            .amount-separator {
+                transform: rotate(90deg);
+                font-size: 1rem;
+            }
+            .filter-actions {
+                flex-direction: column;
+            }
+            .btn-filter {
+                width: 100%;
+            }
+            .action-buttons {
+                flex-direction: column;
+            }
+            .table-header {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
             }
         }
     </style>
@@ -187,25 +518,196 @@
             <p class="page-subtitle">Manage and track all customer return requests</p>
         </div>
 
-        <!-- Table Container -->
-        <div class="table-container">
-            <!-- Table Header with Controls -->
-            <div class="table-header">
-                <div class="controls-row">
-                    <div class="search-box">
-                        <i class="fas fa-search"></i>
-                        <input type="text" class="form-control" id="returnSearch" 
-                               placeholder="Search orders, customers..." value="<%= searchTerm %>">
+        <!-- Statistics Cards -->
+        <div class="stats-row">
+            <div class="stat-card">
+                <i class="fas fa-clock pending"></i>
+                <h3 id="pendingCount">
+                    <%= returnRequests ? returnRequests.filter(req => req.status === 'Return Request').length : 0 %>
+                </h3>
+                <p>Pending Requests</p>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-check-circle approved"></i>
+                <h3 id="approvedCount">
+                    <%= returnRequests ? returnRequests.filter(req => req.status === 'Returned').length : 0 %>
+                </h3>
+                <p>Approved Returns</p>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-times-circle rejected"></i>
+                <h3 id="rejectedCount">
+                    <%= returnRequests ? returnRequests.filter(req => req.returnRejectedAt).length : 0 %>
+                </h3>
+                <p>Rejected Requests</p>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-list total"></i>
+                <h3 id="totalCount">
+                    <%= returnRequests ? returnRequests.length : 0 %>
+                </h3>
+                <p>Total Requests</p>
+            </div>
+        </div>
+
+        <!-- Advanced Filters Section -->
+        <div class="filters-container">
+            <div class="filters-header">
+                <h3 class="filters-title">
+                    <i class="fas fa-filter"></i>
+                    Advanced Filters & Sorting
+                </h3>
+                <p class="filters-subtitle">Refine your return requests view</p>
+            </div>
+            
+            <form id="filtersForm" class="filters-form">
+                <div class="filters-grid">
+                    <!-- Search Filter -->
+                    <div class="filter-group">
+                        <label class="filter-label">
+                            <i class="fas fa-search"></i>
+                            Search
+                        </label>
+                        <div class="search-container">
+                            <input type="text" 
+                                   name="search" 
+                                   id="searchInput" 
+                                   class="filter-input"
+                                   placeholder="Search by Order ID, Customer name, Email..."
+                                   value="<%= searchTerm || '' %>">
+                            <i class="fas fa-search search-icon"></i>
+                        </div>
                     </div>
-                    <div class="d-flex gap-2">
-                        <select class="form-select" id="statusFilter">
-                            <option value="" <%= statusFilter === '' ? 'selected' : '' %>>All Status</option>
-                            <option value="Return Request" <%= statusFilter === 'Return Request' ? 'selected' : '' %>>Pending</option>
-                            <option value="Returned" <%= statusFilter === 'Returned' ? 'selected' : '' %>>Completed</option>
+
+                    <!-- Status Filter -->
+                    <div class="filter-group">
+                        <label class="filter-label">
+                            <i class="fas fa-flag"></i>
+                            Status
+                        </label>
+                        <select name="status" class="filter-select">
+                            <option value="">All Status</option>
+                            <option value="Pending" <%= statusFilter === 'Pending' ? 'selected' : '' %>>Pending</option>
+                            <option value="Approved" <%= statusFilter === 'Approved' ? 'selected' : '' %>>Approved</option>
                             <option value="Rejected" <%= statusFilter === 'Rejected' ? 'selected' : '' %>>Rejected</option>
                         </select>
                     </div>
+
+                    <!-- Return Type Filter -->
+                    <div class="filter-group">
+                        <label class="filter-label">
+                            <i class="fas fa-layer-group"></i>
+                            Return Type
+                        </label>
+                        <select name="returnType" class="filter-select">
+                            <option value="">All Types</option>
+                            <option value="individual" <%= (typeof returnType !== 'undefined' && returnType === 'individual') ? 'selected' : '' %>>Individual Items</option>
+                            <option value="entire" <%= (typeof returnType !== 'undefined' && returnType === 'entire') ? 'selected' : '' %>>Entire Order</option>
+                        </select>
+                    </div>
+
+                    <!-- Sort By -->
+                    <div class="filter-group">
+                        <label class="filter-label">
+                            <i class="fas fa-sort"></i>
+                            Sort By
+                        </label>
+                        <select name="sortBy" class="filter-select">
+                            <option value="newest" <%= (typeof sortBy !== 'undefined' && sortBy === 'newest') ? 'selected' : '' %>>Newest First</option>
+                            <option value="oldest" <%= (typeof sortBy !== 'undefined' && sortBy === 'oldest') ? 'selected' : '' %>>Oldest First</option>
+                            <option value="amount-high" <%= (typeof sortBy !== 'undefined' && sortBy === 'amount-high') ? 'selected' : '' %>>Amount: High to Low</option>
+                            <option value="amount-low" <%= (typeof sortBy !== 'undefined' && sortBy === 'amount-low') ? 'selected' : '' %>>Amount: Low to High</option>
+                            <option value="customer-az" <%= (typeof sortBy !== 'undefined' && sortBy === 'customer-az') ? 'selected' : '' %>>Customer: A-Z</option>
+                            <option value="customer-za" <%= (typeof sortBy !== 'undefined' && sortBy === 'customer-za') ? 'selected' : '' %>>Customer: Z-A</option>
+                        </select>
+                    </div>
+
+                    <!-- Date Range Filter -->
+                    <div class="filter-group">
+                        <label class="filter-label">
+                            <i class="fas fa-calendar"></i>
+                            Date Range
+                        </label>
+                        <div class="date-range-container">
+                            <input type="date" 
+                                   name="dateFrom" 
+                                   class="filter-input date-input"
+                                   value="<%= (typeof dateFrom !== 'undefined') ? dateFrom : '' %>">
+                            <span class="date-separator">to</span>
+                            <input type="date" 
+                                   name="dateTo" 
+                                   class="filter-input date-input"
+                                   value="<%= (typeof dateTo !== 'undefined') ? dateTo : '' %>">
+                        </div>
+                    </div>
+
+                    <!-- Amount Range Filter -->
+                    <div class="filter-group">
+                        <label class="filter-label">
+                            <i class="fas fa-rupee-sign"></i>
+                            Amount Range
+                        </label>
+                        <div class="amount-range-container">
+                            <div class="amount-input-wrapper">
+                                <span class="currency-symbol">₹</span>
+                                <input type="number" 
+                                       name="minAmount" 
+                                       class="filter-input amount-input"
+                                       placeholder="Min"
+                                       min="0"
+                                       step="100"
+                                       value="<%= (typeof minAmount !== 'undefined') ? minAmount : '' %>">
+                            </div>
+                            <span class="amount-separator">to</span>
+                            <div class="amount-input-wrapper">
+                                <span class="currency-symbol">₹</span>
+                                <input type="number" 
+                                       name="maxAmount" 
+                                       class="filter-input amount-input"
+                                       placeholder="Max"
+                                       min="0"
+                                       step="100"
+                                       value="<%= (typeof maxAmount !== 'undefined') ? maxAmount : '' %>">
+                            </div>
+                        </div>
+                    </div>
                 </div>
+
+                <!-- Filter Action Buttons -->
+                <div class="filter-actions">
+                    <button type="submit" class="btn-filter btn-apply">
+                        <i class="fas fa-check"></i>
+                        Apply Filters
+                    </button>
+                    <button type="button" class="btn-filter btn-clear" onclick="clearAllFilters()">
+                        <i class="fas fa-times"></i>
+                        Clear All
+                    </button>
+                    <button type="button" class="btn-filter btn-refresh" onclick="refreshData()">
+                        <i class="fas fa-sync-alt"></i>
+                        Refresh
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Table Container -->
+        <div class="table-container">
+            <!-- Table Header with Results Info -->
+            <div class="table-header">
+                <div class="results-info">
+                    <% if (returnRequests && returnRequests.length > 0) { %>
+                        Showing <span class="results-count"><%= startIdx + 1 %>-<%= endIdx %></span>
+                        of <span class="results-count"><%= totalRequests %></span> return requests
+                    <% } else { %>
+                        <span class="results-count">No return requests found</span>
+                    <% } %>
+                </div>
+                <!-- <div class="table-actions">
+                    <button class="btn btn-outline-secondary btn-sm" onclick="exportData()">
+                        <i class="fas fa-download"></i> Export
+                    </button>
+                </div> -->
             </div>
 
             <!-- Table -->
@@ -215,111 +717,215 @@
                         <tr>
                             <th>Order ID</th>
                             <th>Customer</th>
-                            <th>Product</th>
+                            <th>Products</th>
                             <th>Amount</th>
                             <th>Request Date</th>
+                            <th>Reason</th>
                             <th>Status</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         <% if (returnRequests && returnRequests.length > 0) { %>
-                            <% returnRequests.forEach((order) => { %>
+                            <% returnRequests.forEach(order => { %>
                                 <tr>
                                     <td>
-                                        <div>
-                                            <strong><%= order.orderId %></strong>
-                                            <br>
-                                            <small class="text-muted"><%= new Date(order.createdAt).toLocaleDateString() %></small>
-                                        </div>
+                                        <strong><%= order.orderId %></strong>
                                     </td>
                                     <td>
                                         <div class="customer-info">
-                                            <div class="customer-avatar">
-                                                <%= (order.userId?.fullname || order.shippingAddress?.name || 'U').charAt(0).toUpperCase() %>
-                                            </div>
-                                            <div class="customer-details">
-                                                <h6><%= order.userId?.fullname || order.shippingAddress?.name || 'N/A' %></h6>
-                                                <small><%= order.userId?.email || 'N/A' %></small>
-                                            </div>
+                                            <h6><%= order.userId ? order.userId.fullname || 'Unknown Customer' : 'Unknown Customer' %></h6>
+                                            <small><%= order.userId ? order.userId.email || 'No email' : 'No email' %></small>
                                         </div>
                                     </td>
                                     <td>
                                         <div class="product-info">
-                                            <% if (order.orderedItems && order.orderedItems.length > 0) { %>
-                                                <img src="<%= order.orderedItems[0].product?.productImages?.[0] || '/images/placeholder-product.jpg' %>" 
-                                                     alt="Product" class="product-image">
+                                            <% if (order.returnType === 'individual' && order.returnItems && order.returnItems.length > 0) { %>
+                                                <% 
+                                                // For individual returns, show the specific returned item
+                                                const returnItem = order.returnItems[0];
+                                                const product = returnItem.product;
+                                                let productImage = null;
+                                                let hasImage = false;
+                                                
+                                                if (product && product.productImages && product.productImages.length > 0) {
+                                                    productImage = `/uploads/products/${product.productImages[0]}`;
+                                                    hasImage = true;
+                                                } else if (product && product.mainImage) {
+                                                    productImage = `/uploads/products/${product.mainImage}`;
+                                                    hasImage = true;
+                                                }
+                                                %>
+                                                <% if (hasImage) { %>
+                                                    <img src="<%= productImage %>" 
+                                                         alt="Product" class="product-image"
+                                                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                                    <div class="product-placeholder" style="display: none;">
+                                                        <i class="fas fa-image"></i>
+                                                    </div>
+                                                <% } else { %>
+                                                    <div class="product-placeholder">
+                                                        <i class="fas fa-image"></i>
+                                                    </div>
+                                                <% } %>
                                                 <div class="product-details">
-                                                    <h6><%= order.orderedItems[0].product?.productName || 'Product' %></h6>
-                                                    <small>Qty: <%= order.orderedItems.reduce((total, item) => total + item.quantity, 0) %></small>
-                                                    <% if (order.orderedItems.length > 1) { %>
-                                                        <br><small class="text-muted">+<%= order.orderedItems.length - 1 %> more</small>
-                                                    <% } %>
+                                                    <h6><%= product ? product.productName || 'Product Name' : 'Product Name' %></h6>
+                                                    <small>
+                                                        Qty: <%= returnItem.quantity || 1 %> | Individual Return
+                                                    </small>
+                                                </div>
+                                            <% } else if (order.orderedItems && order.orderedItems.length > 0) { %>
+                                                <% 
+                                                // For entire order returns, show first item with count
+                                                const firstItem = order.orderedItems[0];
+                                                const product = firstItem.product;
+                                                let productImage = null;
+                                                let hasImage = false;
+                                                
+                                                if (product && product.productImages && product.productImages.length > 0) {
+                                                    productImage = `/uploads/products/${product.productImages[0]}`;
+                                                    hasImage = true;
+                                                } else if (product && product.mainImage) {
+                                                    productImage = `/uploads/products/${product.mainImage}`;
+                                                    hasImage = true;
+                                                }
+                                                %>
+                                                <% if (hasImage) { %>
+                                                    <img src="<%= productImage %>" 
+                                                         alt="Product" class="product-image"
+                                                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                                    <div class="product-placeholder" style="display: none;">
+                                                        <i class="fas fa-image"></i>
+                                                    </div>
+                                                <% } else { %>
+                                                    <div class="product-placeholder">
+                                                        <i class="fas fa-image"></i>
+                                                    </div>
+                                                <% } %>
+                                                <div class="product-details">
+                                                    <h6><%= product ? product.productName || 'Product Name' : 'Product Name' %></h6>
+                                                    <small>
+                                                        <% if (order.orderedItems.length > 1) { %>
+                                                            +<%= order.orderedItems.length - 1 %> more items | Entire Order
+                                                        <% } else { %>
+                                                            Qty: <%= firstItem.quantity || 1 %> | Entire Order
+                                                        <% } %>
+                                                    </small>
                                                 </div>
                                             <% } else { %>
-                                                <img src="/images/placeholder-product.jpg" alt="Product" class="product-image">
                                                 <div class="product-details">
-                                                    <h6>Product</h6>
-                                                    <small>Qty: 0</small>
+                                                    <h6>No items</h6>
+                                                    <small>No products found</small>
                                                 </div>
                                             <% } %>
                                         </div>
                                     </td>
                                     <td>
-                                        <strong>₹<%= order.finalAmount.toLocaleString() %></strong>
+                                        <div class="amount-breakdown">
+                                            <div class="subtotal">
+                                                <small class="text-muted">
+                                                    <% if (order.returnType === 'individual') { %>
+                                                        Return Amount
+                                                    <% } else { %>
+                                                        Order Total
+                                                    <% } %>
+                                                </small>
+                                            </div>
+                                            <div class="total-price">
+                                                <strong>₹<%= (order.returnAmount || 0).toFixed(2) %></strong>
+                                            </div>
+                                            <% if (order.returnType === 'individual' && order.returnItems) { %>
+                                                <div class="return-items-info">
+                                                    <small class="text-info">
+                                                        <%= order.returnItems.length %> item(s) being returned
+                                                    </small>
+                                                </div>
+                                            <% } %>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <%= order.returnRequestedAt ? new Date(order.returnRequestedAt).toLocaleDateString('en-IN') : 'N/A' %>
+                                    </td>
+                                    <td>
+                                        <small>
+                                            <% if (order.returnType === 'individual' && order.returnItems && order.returnItems.length > 0) { %>
+                                                <%= order.returnItems[0].returnReason || 'No reason provided' %>
+                                            <% } else { %>
+                                                <%= order.returnReason || 'No reason provided' %>
+                                            <% } %>
+                                        </small>
                                     </td>
                                     <td>
                                         <% 
-                                            let displayDate = order.returnRequestedAt || order.updatedAt;
-                                        %>
-                                        <%= new Date(displayDate).toLocaleDateString() %>
-                                        <br>
-                                        <small class="text-muted"><%= new Date(displayDate).toLocaleTimeString() %></small>
-                                    </td>
-                                    <td>
-                                        <% 
-                                            let displayStatus = order.status;
-                                            let statusClass = 'pending';
+                                        let statusClass = 'status-pending';
+                                        let statusText = 'Pending';
+                                        
+                                        if (order.returnType === 'individual') {
+                                            // Individual item return status
+                                            const hasReturnedItems = order.returnItems.some(item => item.status === 'Returned');
+                                            const hasPendingItems = order.returnItems.some(item => item.status === 'Return Request');
                                             
-                                            if (order.returnRejectedAt && order.status === 'Delivered') {
-                                                displayStatus = 'Rejected';
-                                                statusClass = 'rejected';
-                                            } else if (order.status === 'Return Request') {
-                                                displayStatus = 'Pending';
-                                                statusClass = 'pending';
-                                            } else if (order.status === 'Returned') {
-                                                displayStatus = 'Completed';
-                                                statusClass = 'completed';
+                                            if (hasReturnedItems && !hasPendingItems) {
+                                                statusClass = 'status-returned';
+                                                statusText = 'Approved';
+                                            } else if (hasPendingItems) {
+                                                statusClass = 'status-pending';
+                                                statusText = 'Pending';
                                             }
+                                        } else {
+                                            // Entire order return status
+                                            if (order.status === 'Returned') {
+                                                statusClass = 'status-returned';
+                                                statusText = 'Approved';
+                                            } else if (order.returnRejectedAt) {
+                                                statusClass = 'status-rejected';
+                                                statusText = 'Rejected';
+                                            }
+                                        }
                                         %>
-                                        <span class="status-badge status-<%= statusClass %>">
-                                            <%= displayStatus %>
+                                        <span class="status-badge <%= statusClass %>">
+                                            <%= statusText %>
                                         </span>
                                     </td>
                                     <td>
-                                        <div class="d-flex gap-1">
-                                            <% if (order.status === 'Return Request') { %>
-                                                <button class="btn btn-success btn-sm" onclick="approveReturn('<%= order._id %>')">
-                                                    <i class="fas fa-check"></i>
+                                        <div class="action-buttons">
+                                            <% 
+                                            let showApproveReject = false;
+                                            if (order.returnType === 'individual') {
+                                                // Show approve/reject if there are pending individual items
+                                                showApproveReject = order.returnItems.some(item => item.status === 'Return Request');
+                                            } else {
+                                                // Show approve/reject if entire order is pending return
+                                                showApproveReject = order.status === 'Return Request';
+                                            }
+                                            %>
+                                            
+                                            <% if (showApproveReject) { %>
+                                                <button class="btn btn-success btn-sm" 
+                                                        onclick="approveReturn('<%= order._id %>')">
+                                                    <i class="fas fa-check"></i> Approve
                                                 </button>
-                                                <button class="btn btn-danger btn-sm" onclick="rejectReturn('<%= order._id %>')">
-                                                    <i class="fas fa-times"></i>
+                                                <button class="btn btn-danger btn-sm" 
+                                                        onclick="rejectReturn('<%= order._id %>')">
+                                                    <i class="fas fa-times"></i> Reject
                                                 </button>
                                             <% } %>
-                                            <button class="btn btn-info btn-sm" onclick="viewReturnDetails('<%= order._id %>')">
-                                                <i class="fas fa-eye"></i>
+                                            <button class="btn btn-info btn-sm" 
+                                                    onclick="viewReturnDetails('<%= order._id %>')">
+                                                <i class="fas fa-eye"></i> View
                                             </button>
                                         </div>
                                     </td>
                                 </tr>
-                            <% }) %>
+                            <% }); %>
                         <% } else { %>
                             <tr>
-                                <td colspan="7" class="text-center py-4">
-                                    <div class="text-muted">
-                                        <i class="fas fa-inbox fa-3x mb-3"></i>
-                                        <h5>No Return Requests Found</h5>
+                                <td colspan="8">
+                                    <div class="empty-state">
+                                        <i class="fas fa-inbox"></i>
+                                        <h4>No Return Requests</h4>
                                         <p>There are currently no return requests to display.</p>
+                                        <small>Return requests will appear here when customers submit them.</small>
                                     </div>
                                 </td>
                             </tr>
@@ -331,318 +937,199 @@
             <!-- Pagination -->
             <% if (returnRequests && returnRequests.length > 0) { %>
                 <div class="pagination-container">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div class="text-muted">
-                            Showing <%= startIdx + 1 %> to <%= endIdx %> of <%= totalRequests %> requests
-                        </div>
-                        <nav>
-                            <ul class="pagination pagination-sm mb-0">
-                                <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>">
-                                    <a class="page-link" href="#" onclick="goToPage(<%= currentPage - 1 %>)">Previous</a>
+                    <nav aria-label="Return requests pagination">
+                        <ul class="pagination justify-content-center mb-0">
+                            <% if (currentPage > 1) { %>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page=<%= currentPage - 1 %>&search=<%= searchTerm || '' %>&status=<%= statusFilter || '' %>">
+                                        <i class="fas fa-chevron-left"></i>
+                                    </a>
                                 </li>
-                                <% for(let i = 1; i <= totalPages; i++) { %>
-                                    <li class="page-item <%= i === currentPage ? 'active' : '' %>">
-                                        <a class="page-link" href="#" onclick="goToPage(<%= i %>)"><%= i %></a>
-                                    </li>
-                                <% } %>
-                                <li class="page-item <%= currentPage === totalPages ? 'disabled' : '' %>">
-                                    <a class="page-link" href="#" onclick="goToPage(<%= currentPage + 1 %>)">Next</a>
+                            <% } %>
+                            
+                            <% for (let i = Math.max(1, currentPage - 2); i <= Math.min(totalPages, currentPage + 2); i++) { %>
+                                <li class="page-item <%= i === currentPage ? 'active' : '' %>">
+                                    <a class="page-link" href="?page=<%= i %>&search=<%= searchTerm || '' %>&status=<%= statusFilter || '' %>">
+                                        <%= i %>
+                                    </a>
                                 </li>
-                            </ul>
-                        </nav>
-                    </div>
+                            <% } %>
+                            
+                            <% if (currentPage < totalPages) { %>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page=<%= currentPage + 1 %>&search=<%= searchTerm || '' %>&status=<%= statusFilter || '' %>">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </a>
+                                </li>
+                            <% } %>
+                        </ul>
+                    </nav>
                 </div>
             <% } %>
         </div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="/scripts/admin/return-request.js"></script>
     <script>
-        // Simple JavaScript for the return request page
+        // Advanced Filters Form Handling
         document.addEventListener('DOMContentLoaded', function() {
-            // Search functionality
-            const searchInput = document.getElementById('returnSearch');
-            if (searchInput) {
-                searchInput.addEventListener('input', debounce(handleSearch, 300));
+            const filtersForm = document.getElementById('filtersForm');
+            
+            // Handle form submission
+            filtersForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                applyFilters();
+            });
+
+            // Real-time search with debounce
+            const searchInput = document.getElementById('searchInput');
+            let searchTimeout;
+            
+            searchInput.addEventListener('input', function() {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    if (this.value.length >= 3 || this.value.length === 0) {
+                        applyFilters();
+                    }
+                }, 500);
+            });
+
+            // Validate amount range
+            const minAmountInput = document.querySelector('input[name="minAmount"]');
+            const maxAmountInput = document.querySelector('input[name="maxAmount"]');
+            
+            function validateAmountRange() {
+                const minAmount = parseFloat(minAmountInput.value) || 0;
+                const maxAmount = parseFloat(maxAmountInput.value) || Infinity;
+                
+                if (minAmount > maxAmount && maxAmount !== Infinity) {
+                    minAmountInput.style.borderColor = '#ef4444';
+                    maxAmountInput.style.borderColor = '#ef4444';
+                    return false;
+                } else {
+                    minAmountInput.style.borderColor = '#e5e7eb';
+                    maxAmountInput.style.borderColor = '#e5e7eb';
+                    return true;
+                }
             }
 
-            // Status filter
-            const statusFilter = document.getElementById('statusFilter');
-            if (statusFilter) {
-                statusFilter.addEventListener('change', handleStatusFilter);
+            minAmountInput.addEventListener('input', validateAmountRange);
+            maxAmountInput.addEventListener('input', validateAmountRange);
+
+            // Validate date range
+            const dateFromInput = document.querySelector('input[name="dateFrom"]');
+            const dateToInput = document.querySelector('input[name="dateTo"]');
+            
+            function validateDateRange() {
+                const dateFrom = new Date(dateFromInput.value);
+                const dateTo = new Date(dateToInput.value);
+                
+                if (dateFromInput.value && dateToInput.value && dateFrom > dateTo) {
+                    dateFromInput.style.borderColor = '#ef4444';
+                    dateToInput.style.borderColor = '#ef4444';
+                    return false;
+                } else {
+                    dateFromInput.style.borderColor = '#e5e7eb';
+                    dateToInput.style.borderColor = '#e5e7eb';
+                    return true;
+                }
             }
+
+            dateFromInput.addEventListener('change', validateDateRange);
+            dateToInput.addEventListener('change', validateDateRange);
         });
 
-        function debounce(func, wait) {
-            let timeout;
-            return function executedFunction(...args) {
-                const later = () => {
-                    clearTimeout(timeout);
-                    func(...args);
-                };
-                clearTimeout(timeout);
-                timeout = setTimeout(later, wait);
-            };
-        }
-
-        function handleSearch() {
-            const searchTerm = document.getElementById('returnSearch').value;
-            const statusFilter = document.getElementById('statusFilter').value;
-            updateURL(searchTerm, statusFilter);
-        }
-
-        function handleStatusFilter() {
-            const searchTerm = document.getElementById('returnSearch').value;
-            const statusFilter = document.getElementById('statusFilter').value;
-            updateURL(searchTerm, statusFilter);
-        }
-
-        function updateURL(search, status) {
+        function applyFilters() {
+            const form = document.getElementById('filtersForm');
+            const formData = new FormData(form);
             const url = new URL(window.location);
-            if (search) url.searchParams.set('search', search);
-            else url.searchParams.delete('search');
-            if (status) url.searchParams.set('status', status);
-            else url.searchParams.delete('status');
-            url.searchParams.delete('page'); // Reset to first page
+            
+            // Clear existing parameters
+            url.search = '';
+            
+            // Add form data to URL
+            for (let [key, value] of formData.entries()) {
+                if (value && value.trim() !== '') {
+                    url.searchParams.set(key, value.trim());
+                }
+            }
+            
+            // Reset to page 1 for new filters
+            url.searchParams.set('page', '1');
+            
+            // Navigate to filtered URL
             window.location.href = url.toString();
         }
 
-        function goToPage(page) {
+        function clearAllFilters() {
+            // Reset form
+            document.getElementById('filtersForm').reset();
+            
+            // Navigate to base URL without parameters
+            window.location.href = window.location.pathname;
+        }
+
+        function refreshData() {
+            window.location.reload();
+        }
+
+        function exportData() {
+            // Get current filters
             const url = new URL(window.location);
-            url.searchParams.set('page', page);
-            window.location.href = url.toString();
+            const params = url.searchParams;
+            
+            // Create export URL
+            const exportUrl = '/return-requests/export?' + params.toString();
+            
+            // Open export in new tab
+            window.open(exportUrl, '_blank');
+            
+            showToast('info', 'Export started. Download will begin shortly.');
         }
 
-        // Approve return request
-        async function approveReturn(requestId) {
-            const result = await Swal.fire({
-                title: 'Approve Return Request',
-                text: 'Are you sure you want to approve this return request?',
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonText: 'Yes, Approve',
-                cancelButtonText: 'Cancel',
-                confirmButtonColor: '#28a745',
-                input: 'textarea',
-                inputPlaceholder: 'Add admin note (optional)...',
-                inputAttributes: {
-                    'aria-label': 'Admin note'
-                }
+        // Enhanced search functionality
+        function searchReturns(searchTerm) {
+            const searchInput = document.getElementById('searchInput');
+            searchInput.value = searchTerm;
+            applyFilters();
+        }
+
+        function filterByStatus(status) {
+            const statusSelect = document.querySelector('select[name="status"]');
+            statusSelect.value = status;
+            applyFilters();
+        }
+
+        // Toast notification system
+        function showToast(icon, title, timer = 3000) {
+            const Toast = Swal.mixin({
+                toast: true,
+                position: 'bottom-right',
+                showConfirmButton: false,
+                timer: timer,
+                timerProgressBar: true
             });
-
-            if (result.isConfirmed) {
-                try {
-                    const response = await fetch(`/return-requests/${requestId}/approve`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ adminNote: result.value || '' })
-                    });
-
-                    const data = await response.json();
-
-                    if (data.success) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Approved!',
-                            text: data.message,
-                            confirmButtonColor: '#28a745'
-                        }).then(() => {
-                            window.location.reload();
-                        });
-                    } else {
-                        throw new Error(data.message);
-                    }
-                } catch (error) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: error.message || 'Failed to approve return request',
-                        confirmButtonColor: '#dc3545'
-                    });
-                }
-            }
-        }
-
-        // Reject return request
-        async function rejectReturn(requestId) {
-            const result = await Swal.fire({
-                title: 'Reject Return Request',
-                text: 'Please provide a reason for rejecting this return request:',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Reject',
-                cancelButtonText: 'Cancel',
-                confirmButtonColor: '#dc3545',
-                input: 'textarea',
-                inputPlaceholder: 'Enter rejection reason...',
-                inputAttributes: {
-                    'aria-label': 'Rejection reason'
-                },
-                inputValidator: (value) => {
-                    if (!value) {
-                        return 'You need to provide a rejection reason!'
-                    }
-                }
+            Toast.fire({
+                icon: icon,
+                title: title
             });
-
-            if (result.isConfirmed) {
-                try {
-                    const response = await fetch(`/return-requests/${requestId}/reject`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ rejectionReason: result.value })
-                    });
-
-                    const data = await response.json();
-
-                    if (data.success) {
-                        Swal.fire({
-                            icon: 'info',
-                            title: 'Rejected',
-                            text: data.message,
-                            confirmButtonColor: '#6c757d'
-                        }).then(() => {
-                            window.location.reload();
-                        });
-                    } else {
-                        throw new Error(data.message);
-                    }
-                } catch (error) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: error.message || 'Failed to reject return request',
-                        confirmButtonColor: '#dc3545'
-                    });
-                }
-            }
         }
 
-        // View return details
-        async function viewReturnDetails(requestId) {
-            try {
-                Swal.fire({
-                    title: 'Loading...',
-                    text: 'Fetching return request details...',
-                    allowOutsideClick: false,
-                    didOpen: () => {
-                        Swal.showLoading();
-                    }
-                });
-
-                const response = await fetch(`/get-orders/${requestId}`);
-                const result = await response.json();
-
-                if (!result.success) {
-                    throw new Error(result.message || 'Failed to fetch order details');
-                }
-
-                const order = result.order;
+        // Filter animation on load
+        document.addEventListener('DOMContentLoaded', function() {
+            const filterGroups = document.querySelectorAll('.filter-group');
+            filterGroups.forEach((group, index) => {
+                group.style.opacity = '0';
+                group.style.transform = 'translateY(20px)';
+                group.style.transition = 'all 0.6s ease';
                 
-                // Build product list
-                let productList = '';
-                if (order.orderedItems && order.orderedItems.length > 0) {
-                    order.orderedItems.forEach(item => {
-                        productList += `
-                            <div class="d-flex align-items-center mb-2 p-2 bg-light rounded">
-                                <img src="${item.product?.productImages?.[0] || '/images/placeholder-product.jpg'}" 
-                                     alt="Product" style="width: 50px; height: 50px; object-fit: cover; border-radius: 6px; margin-right: 10px;">
-                                <div>
-                                    <h6 class="mb-1">${item.product?.productName || 'Product Name'}</h6>
-                                    <small class="text-muted">Qty: ${item.quantity} | Price: ₹${item.price?.toLocaleString() || '0'}</small>
-                                </div>
-                            </div>
-                        `;
-                    });
-                }
-
-                // Determine status
-                let currentStatus = order.status;
-                if (order.returnRejectedAt && order.status === 'Delivered') {
-                    currentStatus = 'Rejected';
-                } else if (order.status === 'Return Request') {
-                    currentStatus = 'Pending Review';
-                } else if (order.status === 'Returned') {
-                    currentStatus = 'Completed';
-                }
-
-                const detailsHtml = `
-                    <div class="text-start">
-                        <div class="text-center mb-3">
-                            <span class="badge bg-primary fs-6">${currentStatus}</span>
-                        </div>
-                        
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <h6><i class="fas fa-shopping-cart me-2"></i>Order Information</h6>
-                                <p><strong>Order ID:</strong> ${order.orderId}</p>
-                                <p><strong>Order Date:</strong> ${new Date(order.createdAt).toLocaleDateString()}</p>
-                                <p><strong>Total Amount:</strong> ₹${order.finalAmount.toLocaleString()}</p>
-                            </div>
-                            <div class="col-md-6">
-                                <h6><i class="fas fa-user me-2"></i>Customer Information</h6>
-                                <p><strong>Name:</strong> ${order.userId?.fullname || order.shippingAddress?.name || 'N/A'}</p>
-                                <p><strong>Email:</strong> ${order.userId?.email || 'N/A'}</p>
-                                <p><strong>Phone:</strong> ${order.shippingAddress?.phone || 'N/A'}</p>
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <h6><i class="fas fa-box me-2"></i>Products</h6>
-                            ${productList}
-                        </div>
-
-                        ${order.returnReason ? `
-                        <div class="mb-3">
-                            <h6><i class="fas fa-comment-alt me-2"></i>Return Reason</h6>
-                            <div class="p-3 bg-light rounded border-start border-primary border-4">
-                                <em>${order.returnReason}</em>
-                            </div>
-                        </div>
-                        ` : ''}
-
-                        ${order.adminNote ? `
-                        <div class="mb-3">
-                            <h6><i class="fas fa-user-shield me-2"></i>Admin Note</h6>
-                            <div class="p-3 bg-success bg-opacity-10 rounded border-start border-success border-4">
-                                <em>${order.adminNote}</em>
-                            </div>
-                        </div>
-                        ` : ''}
-
-                        ${order.rejectionReason ? `
-                        <div class="mb-3">
-                            <h6><i class="fas fa-exclamation-triangle me-2"></i>Rejection Reason</h6>
-                            <div class="p-3 bg-danger bg-opacity-10 rounded border-start border-danger border-4">
-                                <em>${order.rejectionReason}</em>
-                            </div>
-                        </div>
-                        ` : ''}
-                    </div>
-                `;
-
-                Swal.fire({
-                    title: `Return Request Details - ${order.orderId}`,
-                    html: detailsHtml,
-                    width: '800px',
-                    confirmButtonText: 'Close',
-                    confirmButtonColor: '#6c757d'
-                });
-
-            } catch (error) {
-                console.error('Error fetching return details:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: error.message || 'Failed to load return request details',
-                    confirmButtonColor: '#dc3545'
-                });
-            }
-        }
+                setTimeout(() => {
+                    group.style.opacity = '1';
+                    group.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+        });
     </script>
 </body>
 </html>

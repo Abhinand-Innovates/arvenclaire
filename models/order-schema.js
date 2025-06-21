@@ -42,7 +42,7 @@ const orderSchema = new Schema({
     },
     status: {
       type: String,
-      enum: ['Active', 'Cancelled', 'Returned'],
+      enum: ['Active', 'Cancelled', 'Returned', 'Return Request'],
       default: 'Active'
     },
     cancellationReason: {
@@ -50,6 +50,18 @@ const orderSchema = new Schema({
       default: null
     },
     cancelledAt: {
+      type: Date,
+      default: null
+    },
+    returnReason: {
+      type: String,
+      default: null
+    },
+    returnRequestedAt: {
+      type: Date,
+      default: null
+    },
+    returnApprovedAt: {
       type: Date,
       default: null
     }
@@ -91,7 +103,7 @@ const orderSchema = new Schema({
   },
   status: {
     type: String,
-    enum: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled', 'Partially Cancelled', 'Return Request', 'Returned'],
+    enum: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled', 'Partially Cancelled', 'Return Request', 'Returned', 'Partially Returned'],
     default: 'Pending'
   },
   orderTimeline: [{

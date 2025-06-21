@@ -69,10 +69,21 @@
                     </thead>
                     <tbody id="ordersTableBody">
                         <% orders.forEach(order => { %>
-                            <tr>
+                            <%
+                                // Check if order has individual item return requests
+                                const hasIndividualReturns = order.orderedItems.some(item => item.status === 'Return Request');
+                                const hasEntireOrderReturn = order.status === 'Return Request';
+                                const hasAnyReturnRequest = hasIndividualReturns || hasEntireOrderReturn;
+                            %>
+                            <tr class="<%= hasAnyReturnRequest ? 'has-return-request' : '' %>">
                                 <td>
                                     <div class="order-id">
                                         <strong><%= order.orderId %></strong>
+                                        <% if (hasIndividualReturns && !hasEntireOrderReturn) { %>
+                                            <span class="individual-return-indicator" title="Individual item return request">
+                                                <i class="fas fa-exclamation-triangle text-warning"></i>
+                                            </span>
+                                        <% } %>
                                     </div>
                                 </td>
                                 <td>
@@ -101,6 +112,24 @@
                                         <small class="text-muted">
                                             Qty: <%= order.orderedItems.reduce((total, item) => total + item.quantity, 0) %>
                                         </small>
+                                        <% if (hasIndividualReturns) { %>
+                                            <%
+                                                const returnRequestItems = order.orderedItems.filter(item => item.status === 'Return Request');
+                                                const returnedItems = order.orderedItems.filter(item => item.status === 'Returned');
+                                            %>
+                                            <br>
+                                            <% if (returnRequestItems.length > 0) { %>
+                                                <small class="text-warning">
+                                                    <i class="fas fa-exclamation-triangle"></i> <%= returnRequestItems.length %> return request(s)
+                                                </small>
+                                            <% } %>
+                                            <% if (returnedItems.length > 0) { %>
+                                                <br>
+                                                <small class="text-danger">
+                                                    <i class="fas fa-undo"></i> <%= returnedItems.length %> returned
+                                                </small>
+                                            <% } %>
+                                        <% } %>
                                     </div>
                                 </td>
                                 <td>

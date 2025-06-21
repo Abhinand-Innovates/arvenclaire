@@ -3,6 +3,7 @@ const Address = require('../../models/address-schema');
 const Order = require('../../models/order-schema');
 const Product = require('../../models/product-schema');
 const User = require('../../models/user-schema');
+const { calculateEffectivePrice, syncAllCartPrices, calculateCartSummary } = require('../../utils/price-calculator');
 
 // Load checkout page
 const loadCheckout = async (req, res) => {
@@ -29,7 +30,7 @@ const loadCheckout = async (req, res) => {
       return res.redirect('/cart');
     }
 
-    // Filter out items with unavailable products and check stock
+    // Filter out items with unavailable products and sync prices
     const cartItems = cart.items.filter(item => 
       item.productId && 
       item.productId.category && 
@@ -38,6 +39,14 @@ const loadCheckout = async (req, res) => {
       item.productId.isListed &&
       !item.productId.isDeleted
     );
+
+    // Sync cart prices with current product data before checkout using utility function
+    const priceUpdatesNeeded = syncAllCartPrices(cartItems);
+
+    // Save updated prices to database if needed
+    if (priceUpdatesNeeded) {
+      await cart.save();
+    }
 
     if (cartItems.length === 0) {
       return res.redirect('/cart');
@@ -54,7 +63,7 @@ const loadCheckout = async (req, res) => {
     const addressDoc = await Address.findOne({ userId });
     const addresses = addressDoc ? addressDoc.address : [];
 
-    // Calculate order summary
+    // Calculate order summary using the same method as cart
     let subtotal = 0;
     let totalDiscount = 0;
 
@@ -63,7 +72,7 @@ const loadCheckout = async (req, res) => {
       const salePrice = item.productId.salePrice;
       const productOffer = item.productId.productOffer || 0;
       
-      // Calculate effective price after product offer
+      // Calculate effective price after product offer (same as cart calculation)
       const effectivePrice = salePrice - (salePrice * productOffer / 100);
       const itemTotal = effectivePrice * item.quantity;
       const itemDiscount = (regularPrice - effectivePrice) * item.quantity;
@@ -73,7 +82,7 @@ const loadCheckout = async (req, res) => {
     });
 
     const shippingCharges = subtotal >= 500 ? 0 : 50; // Free shipping above ₹500
-    const finalAmount = subtotal + shippingCharges;
+    const finalAmount = subtotal - totalDiscount + shippingCharges;
 
     // Check for address success message from session
     const addressSuccess = req.session.addressSuccess;
@@ -191,7 +200,7 @@ const placeOrder = async (req, res) => {
     });
 
     const shippingCharges = subtotal >= 500 ? 0 : 50;
-    const finalAmount = subtotal + shippingCharges;
+    const finalAmount = subtotal - totalDiscount + shippingCharges;
 
     // Create order
     const order = new Order({

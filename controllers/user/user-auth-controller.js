@@ -573,9 +573,33 @@ const loadProfile = async (req, res) => {
       return res.redirect('/login');
     }
 
+    // Get account stats
+    const Order = require('../../models/order-schema');
+    const Wishlist = require('../../models/wishlist-schema');
+    const Wallet = require('../../models/wallet-schema');
+
+    // Get total orders count
+    const totalOrders = await Order.countDocuments({ userId: userId });
+
+    // Get wishlist items count
+    const wishlistCount = await Wishlist.countDocuments({ userId: userId });
+
+    // Get wallet balance from Wallet model
+    const wallet = await Wallet.getOrCreateWallet(userId);
+    const walletBalance = wallet.balance || 0;
+
+    // Available coupons (placeholder for now)
+    const availableCoupons = 0;
+
     res.render('profile', {
       title: 'My Profile',
-      user: user
+      user: user,
+      stats: {
+        totalOrders,
+        wishlistCount,
+        walletBalance,
+        availableCoupons
+      }
     });
   } catch (error) {
     console.error('Error loading profile:', error);
@@ -625,9 +649,33 @@ const loadWallet = async (req, res) => {
       return res.redirect('/login');
     }
 
+    // Get wallet data
+    const Wallet = require('../../models/wallet-schema');
+    const wallet = await Wallet.getOrCreateWallet(userId);
+
+    // Calculate wallet statistics
+    const totalAdded = wallet.transactions
+      .filter(t => t.type === 'credit')
+      .reduce((sum, t) => sum + t.amount, 0);
+
+    const totalSpent = wallet.transactions
+      .filter(t => t.type === 'debit')
+      .reduce((sum, t) => sum + t.amount, 0);
+
+    // Get recent transactions (last 10)
+    const recentTransactions = wallet.transactions
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+      .slice(0, 10);
+
     res.render('wallet', {
       user,
-      title: 'My Wallet'
+      title: 'My Wallet',
+      wallet: {
+        balance: wallet.balance,
+        totalAdded,
+        totalSpent,
+        transactions: recentTransactions
+      }
     });
   } catch (error) {
     console.error('Error loading wallet page:', error);
