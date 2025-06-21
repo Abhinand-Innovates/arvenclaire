@@ -1656,13 +1656,12 @@ if t    eturn -<!DOCTYPE html>
                 submitBtn.disabled = true;
                 
                 // Make API call to return request endpoint
-                const response = await fetch('/return/request', {
+                const response = await fetch('/orders/<%= order.orderId %>/request-return', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({ 
-                        orderId: '<%= order.orderId %>',
                         items: returnItems,
                         requestType: 'bulk' // Indicates this is a bulk return request
                     })
@@ -1857,13 +1856,12 @@ if t    eturn -<!DOCTYPE html>
                 submitBtn.disabled = true;
                 
                 // Make API call to return request endpoint
-                const response = await fetch('/return/request', {
+                const response = await fetch('/orders/<%= order.orderId %>/request-return', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({ 
-                        orderId: '<%= order.orderId %>',
                         items: [{
                             itemId: currentIndividualItemId,
                             reason: reason

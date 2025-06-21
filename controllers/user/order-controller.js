@@ -395,8 +395,6 @@ const requestReturn = async (req, res) => {
       });
     }
 
-    // Return request created successfully
-
   } catch (error) {
     console.error('Error requesting return:', error);
     res.status(500).json({

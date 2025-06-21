@@ -4,6 +4,9 @@ const sendEmail = require("../../utils/sendEmail");
 const bcrypt = require("bcrypt");
 const Product = require("../../models/product-schema");
 const Category = require("../../models/category-schema");
+const order = require("../../models/order-schema");
+const Wishlist = require("../../models/wishlist-schema");
+const Wallet = require("../../models/wallet-schema");
 const Review = require("../../models/review-schema");
 const sharp = require("sharp");
 const path = require("path");
@@ -106,7 +109,7 @@ const signup = async (req, res) => {
     }
 
     const otp = generateOtp();
-    console.log(`otp is: ${otp}`);
+    console.log("otp is:", otp);
 
     const isSendMail = await sendEmail(email, otp);
 
@@ -188,7 +191,7 @@ const resendOtp = async (req, res) => {
 
     // otp Generation
     const otp = generateOtp();
-    console.log(`otp is: ${otp}`);
+    console.log("otp is:", otp);
     req.session.userOtp = otp;
 
     const isSendMail = await sendEmail(email, otp);
@@ -417,7 +420,7 @@ const resendForgotPasswordOtp = async (req, res) => {
 
     // otp Generation
     const otp = generateOtp();
-    console.log(`otp is: ${otp}`);
+    console.log("otp is:", otp);
 
     req.session.userOtp = {
       otp,
@@ -452,7 +455,7 @@ const verifyForgotPasswordOtp = (req, res) => {
     const { otp } = req.body;
     const sessionOtp = req.session.userOtp.otp;
 
-    console.log(otp, sessionOtp)
+    console.log("otp is:", otp);
 
     if (!sessionOtp) {
       return res.status(400).json({
@@ -460,16 +463,7 @@ const verifyForgotPasswordOtp = (req, res) => {
         message: "No OTP session found. Please request again.",
       });
     }
-
-    // if (Date.now() > sessionOtp.expiresAt) {
-    //   // Clear expired session data
-    //   req.session.userOtp = null;
-    //   return res.status(400).json({
-    //     success: false,
-    //     message: "OTP expired. Please request a new one.",
-    //   });
-    // }
-
+    
     // Ensure OTP comparison handles string/number types
     if (String(otp) !== String(sessionOtp)) {
       return res.status(400).json({
