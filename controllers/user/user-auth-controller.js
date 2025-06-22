@@ -4,9 +4,9 @@ const sendEmail = require("../../utils/sendEmail");
 const bcrypt = require("bcrypt");
 const Product = require("../../models/product-schema");
 const Category = require("../../models/category-schema");
-const order = require("../../models/order-schema");
-const Wishlist = require("../../models/wishlist-schema");
-const Wallet = require("../../models/wallet-schema");
+const Order = require('../../models/order-schema');
+const Wishlist = require('../../models/wishlist-schema');
+const Wallet = require('../../models/wallet-schema');
 const Review = require("../../models/review-schema");
 const sharp = require("sharp");
 const path = require("path");
@@ -281,7 +281,6 @@ const loadLogin = async (req, res) => {
 
 
 
-
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -334,7 +333,6 @@ const login = async (req, res) => {
     });
   }
 };
-
 
 
 
@@ -500,7 +498,6 @@ const loadNewPassword = async (req, res) => {
 
 
 
-
 const resetPassword = async (req, res) => {
   try {
     const { newPassword, confirmPassword } = req.body;
@@ -550,6 +547,81 @@ const resetPassword = async (req, res) => {
     });
   }
 };
+
+
+
+// Load change password page
+const loadChangePassword = async (req, res) => {
+  try {
+    const userId = req.session.userId;
+    if (!userId) {
+      return res.redirect('/login');
+    }
+
+    // Get user data for sidebar
+    const user = await User.findById(userId).select('fullname email profilePhoto');
+    if (!user) {
+      return res.redirect('/login');
+    }
+
+    res.render('change-password', {
+      user,
+      title: 'Change Password'
+    });
+  } catch (error) {
+    console.error('Error loading change password page:', error);
+    res.status(500).render('error', { message: 'Error loading change password page' });
+  }
+};
+
+
+
+const logout = async (req,res) => {
+
+  try {
+    if(!req.session.userId) {
+      return res.status(400).json({
+        success : false,
+        message : "No active session to logout from",
+      })
+    }
+
+    req.session.destroy((err) => {
+      if(err) {
+        console.error("Session destruction error",err)
+        return res.status (500).json({
+          success : false,
+          message : "Failed to logout, Please try again",
+        })
+      }
+
+
+    res.clearCookie("connect.sid");
+
+    // return res.status(200).json({
+    //   success : false,
+    //   message : "Successfully logged in",
+    //   redirectUrl : "/login",
+    // })
+    return res.status(200).redirect("/login")
+  })
+
+  } catch (error) {
+    console.error("Logout error",error);
+    return res.status(500).json({
+      success : false,
+      message : "Internal server error",
+    })
+  }
+}
+
+
+
+
+
+
+
+
 
 
 // Load profile page
@@ -603,32 +675,6 @@ const loadProfile = async (req, res) => {
 
 
 
-
-// Load change password page
-const loadChangePassword = async (req, res) => {
-  try {
-    const userId = req.session.userId;
-    if (!userId) {
-      return res.redirect('/login');
-    }
-
-    // Get user data for sidebar
-    const user = await User.findById(userId).select('fullname email profilePhoto');
-    if (!user) {
-      return res.redirect('/login');
-    }
-
-    res.render('change-password', {
-      user,
-      title: 'Change Password'
-    });
-  } catch (error) {
-    console.error('Error loading change password page:', error);
-    res.status(500).render('error', { message: 'Error loading change password page' });
-  }
-};
-
-
 // Load wallet page
 const loadWallet = async (req, res) => {
   try {
@@ -676,54 +722,6 @@ const loadWallet = async (req, res) => {
     res.status(500).render('error', { message: 'Error loading wallet page' });
   }
 };
-
-
-
-
-
-
-
-
-
-
-const logout = async (req,res) => {
-
-  try {
-    if(!req.session.userId) {
-      return res.status(400).json({
-        success : false,
-        message : "No active session to logout from",
-      })
-    }
-
-    req.session.destroy((err) => {
-      if(err) {
-        console.error("Session destruction error",err)
-        return res.status (500).json({
-          success : false,
-          message : "Failed to logout, Please try again",
-        })
-      }
-
-
-    res.clearCookie("connect.sid");
-
-    // return res.status(200).json({
-    //   success : false,
-    //   message : "Successfully logged in",
-    //   redirectUrl : "/login",
-    // })
-    return res.status(200).redirect("/login")
-  })
-
-  } catch (error) {
-    console.error("Logout error",error);
-    return res.status(500).json({
-      success : false,
-      message : "Internal server error",
-    })
-  }
-}
 
 
 
