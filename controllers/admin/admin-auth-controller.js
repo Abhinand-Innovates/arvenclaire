@@ -73,14 +73,14 @@ const postAdminLogin = async (req, res) => {
     }
 
     // Regenerate session for security
-    req.session.regenerate((err) => {
-      if (err) {
-        console.error('Admin session regeneration error:', err);
-        return res.status(500).json({
-          success: false,
-          message: "Login failed. Please try again.",
-        });
-      }
+    // req.session.regenerate((err) => {
+    //   if (err) {
+    //     console.error('Admin session regeneration error:', err);
+    //     return res.status(500).json({
+    //       success: false,
+    //       message: "Login failed. Please try again.",
+    //     });
+    //   }
 
       // Set admin session data
       req.session.admin_id = admin._id;
@@ -103,7 +103,7 @@ const postAdminLogin = async (req, res) => {
           redirectTo: '/admin-dashboard',
         });
       });
-    });
+
 
   } catch (error) {
     console.error("Admin login error:", error);

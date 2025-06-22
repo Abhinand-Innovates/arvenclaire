@@ -41,6 +41,16 @@ app.use("/",adminRoute);
 app.use("/",userRoute);
 
 
+// Catch 404 and render error page
+app.use((req, res, next) => {
+  res.status(404).render('error', {
+    status: 404,
+    message: 'Page not found',
+    error: {}
+  });
+}); 
+
+
 
 app.listen(port,() => {
     console.log("server is running http://localhost:3001")

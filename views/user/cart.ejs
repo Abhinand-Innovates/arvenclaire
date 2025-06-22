@@ -851,33 +851,38 @@
                     <h3 class="summary-title">Order Summary</h3>
 
                     <%
-                        let subtotal = 0;
+                        let subtotal = 0; // Based on regular prices
                         let totalDiscount = 0;
                         let totalItemCount = 0;
                         let availableItemsCount = 0;
                         let availableQuantity = 0;
                         let outOfStockQuantity = 0;
+                        let amountAfterDiscount = 0; // Amount customer actually pays
 
                         cartItems.forEach(item => {
                             totalItemCount += item.quantity; // Count all items (quantities)
 
                             if (item.productId.quantity > 0) {
-                                subtotal += item.totalPrice;
-                                availableItemsCount++;
-                                availableQuantity += item.quantity;
-
-                                // Calculate discount for this item based on the difference between regular and effective price
+                                // Subtotal based on regular prices
                                 const regularPrice = item.productId.regularPrice;
-                                const effectivePrice = item.price; // This is already the effective price after offers
-                                const itemDiscount = (regularPrice - effectivePrice) * item.quantity;
+                                const salePrice = item.productId.salePrice;
+                                const quantity = item.quantity;
+                                
+                                subtotal += regularPrice * quantity;
+                                amountAfterDiscount += item.totalPrice; // This is sale price * quantity
+                                availableItemsCount++;
+                                availableQuantity += quantity;
+
+                                // Calculate proportional discount
+                                const itemDiscount = (regularPrice - salePrice) * quantity;
                                 totalDiscount += itemDiscount;
                             } else {
                                 outOfStockQuantity += item.quantity;
                             }
                         });
 
-                        const shipping = subtotal > 500 ? 0 : 50;
-                        const total = subtotal - totalDiscount + shipping;
+                        const shipping = amountAfterDiscount > 500 ? 0 : 50; // Free shipping based on amount after discount
+                        const total = amountAfterDiscount + shipping; // Final amount customer pays
                         const outOfStockItemsCount = cartItems.length - availableItemsCount;
                     %>
 
@@ -1537,12 +1542,13 @@
         }
     }
 
-    // Update cart totals
+    // Update cart totals with subtotal based on regular prices
     function updateCartTotals() {
-        let subtotal = 0;
+        let subtotal = 0; // Based on regular prices
         let totalItemCount = 0; // Total quantity of all items
         let totalDiscount = 0;
         let availableItemsCount = 0;
+        let amountAfterDiscount = 0; // Amount customer actually pays
 
         document.querySelectorAll('.cart-item').forEach(item => {
             const isOutOfStock = item.classList.contains('out-of-stock');
@@ -1553,23 +1559,31 @@
             totalItemCount += quantity;
 
             if (!isOutOfStock) {
+                const regularPrice = parseFloat(item.dataset.regularPrice);
+                const salePrice = parseFloat(item.dataset.salePrice);
                 const itemTotal = parseFloat(item.querySelector('.item-total').textContent.replace('₹', ''));
-                subtotal += itemTotal;
+                
+                // Subtotal based on regular prices
+                subtotal += regularPrice * quantity;
+                
+                // Amount customer actually pays (sale price total)
+                amountAfterDiscount += itemTotal;
                 availableItemsCount++;
 
-                // Calculate discount for this item based on the difference between regular and effective price
-                const regularPrice = parseFloat(item.dataset.regularPrice);
-                const effectivePrice = itemTotal / quantity; // Calculate effective price from item total
-                const itemDiscount = (regularPrice - effectivePrice) * quantity;
-                totalDiscount += itemDiscount;
+                // Calculate proportional discount: (Regular Price - Sale Price) × Quantity
+                const itemDiscount = (regularPrice - salePrice) * quantity;
+                totalDiscount += Math.max(0, itemDiscount); // Ensure non-negative discount
+
+                // Update individual item discount display if needed
+                updateItemDiscountDisplay(item, regularPrice, salePrice, quantity);
             }
 
             // Update button states for each item
             updateButtonStates(productId);
         });
 
-        const shipping = subtotal > 500 ? 0 : 50;
-        const total = subtotal - totalDiscount + shipping;
+        const shipping = amountAfterDiscount > 500 ? 0 : 50; // Free shipping based on amount after discount
+        const total = amountAfterDiscount + shipping; // Total = Amount after discount + Shipping
 
         // Update summary
         const summaryRows = document.querySelectorAll('.summary-row');
@@ -1578,7 +1592,7 @@
             summaryRows[0].querySelector('.summary-value').textContent = `₹${subtotal.toFixed(2)}`;
             summaryRows[0].querySelector('.summary-label').textContent = `Subtotal (${totalItemCount} items)`;
 
-            // Update discount with calculated amount
+            // Update discount with calculated amount (proportional to quantity)
             const discountValue = summaryRows[1].querySelector('.summary-value');
             if (totalDiscount > 0) {
                 discountValue.innerHTML = `<span style="color: #059669;">-₹${totalDiscount.toFixed(2)}</span>`;
@@ -1625,6 +1639,47 @@
 
         // Update availability breakdown if it exists
         updateAvailabilityBreakdown(availableItemsCount, totalItemCount - availableItemsCount);
+    }
+
+    // Function to update individual item discount display
+    function updateItemDiscountDisplay(item, regularPrice, salePrice, quantity) {
+        const discountPerItem = regularPrice - salePrice;
+        const totalItemDiscount = discountPerItem * quantity;
+        
+        // Find or create discount display element
+        let discountDisplay = item.querySelector('.item-discount-info');
+        
+        if (totalItemDiscount > 0) {
+            if (!discountDisplay) {
+                // Create discount display element
+                discountDisplay = document.createElement('div');
+                discountDisplay.className = 'item-discount-info';
+                discountDisplay.style.cssText = `
+                    font-size: 0.75rem;
+                    color: #059669;
+                    font-weight: 600;
+                    margin-top: 0.25rem;
+                    display: flex;
+                    align-items: center;
+                    gap: 0.25rem;
+                `;
+                
+                // Insert after item price
+                const itemDetails = item.querySelector('.item-details');
+                const itemPrice = itemDetails.querySelector('.item-price');
+                itemPrice.parentNode.insertBefore(discountDisplay, itemPrice.nextSibling);
+            }
+            
+            // Update discount text with proportional amount
+            const discountPercentage = Math.round((discountPerItem / regularPrice) * 100);
+            discountDisplay.innerHTML = `
+                <i class="bi bi-tag-fill"></i>
+                You save ₹${totalItemDiscount.toFixed(2)} (${discountPercentage}% off × ${quantity})
+            `;
+        } else if (discountDisplay) {
+            // Remove discount display if no discount
+            discountDisplay.remove();
+        }
     }
 
     // Function to update availability breakdown in cart summary

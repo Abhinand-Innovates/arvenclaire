@@ -324,14 +324,14 @@ const login = async (req, res) => {
     }
 
     // Regenerate session for security
-    req.session.regenerate((err) => {
-      if (err) {
-        console.error('Session regeneration error:', err);
-        return res.status(500).json({
-          success: false,
-          message: "Login failed. Please try again.",
-        });
-      }
+    // req.session.regenerate((err) => {
+    //   if (err) {
+    //     console.error('Session regeneration error:', err);
+    //     return res.status(500).json({
+    //       success: false,
+    //       message: "Login failed. Please try again.",
+    //     });
+    //   }
 
       // Set user session data
       req.session.userId = user._id;
@@ -351,7 +351,7 @@ const login = async (req, res) => {
         // Redirect to dashboard
         return res.status(200).redirect('/dashboard');
       });
-    });
+    // });
 
   } catch (error) {
     console.error('Login error:', error);

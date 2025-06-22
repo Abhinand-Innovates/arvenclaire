@@ -3,7 +3,7 @@ const Address = require('../../models/address-schema');
 const Order = require('../../models/order-schema');
 const Product = require('../../models/product-schema');
 const User = require('../../models/user-schema');
-const { calculateEffectivePrice, syncAllCartPrices, calculateCartSummary } = require('../../utils/price-calculator');
+const { calculateFinalPrice, calculateItemTotal, calculateItemDiscount, syncAllCartPrices, calculateCartSummary } = require('../../utils/price-calculator');
 
 // Load checkout page
 const loadCheckout = async (req, res) => {
@@ -63,26 +63,30 @@ const loadCheckout = async (req, res) => {
     const addressDoc = await Address.findOne({ userId });
     const addresses = addressDoc ? addressDoc.address : [];
 
-    // Calculate order summary using the same method as cart
-    let subtotal = 0;
-    let totalDiscount = 0;
+    // Calculate order summary with subtotal based on regular prices
+    let subtotal = 0; // Based on regular prices (before discount)
+    let totalDiscount = 0; // Difference between regular and sale prices
+    let amountAfterDiscount = 0; // Amount customer actually pays (after discount)
 
     cartItems.forEach(item => {
       const regularPrice = item.productId.regularPrice;
       const salePrice = item.productId.salePrice;
-      const productOffer = item.productId.productOffer || 0;
+      const quantity = item.quantity;
       
-      // Calculate effective price after product offer (same as cart calculation)
-      const effectivePrice = salePrice - (salePrice * productOffer / 100);
-      const itemTotal = effectivePrice * item.quantity;
-      const itemDiscount = (regularPrice - effectivePrice) * item.quantity;
+      // Subtotal based on regular prices
+      subtotal += regularPrice * quantity;
       
-      subtotal += itemTotal;
+      // Calculate discount
+      const itemDiscount = calculateItemDiscount(regularPrice, salePrice, quantity);
       totalDiscount += itemDiscount;
+      
+      // Amount customer actually pays for this item
+      const itemFinalAmount = calculateItemTotal(salePrice, quantity);
+      amountAfterDiscount += itemFinalAmount;
     });
 
-    const shippingCharges = subtotal >= 500 ? 0 : 50; // Free shipping above ₹500
-    const finalAmount = subtotal - totalDiscount + shippingCharges;
+    const shippingCharges = amountAfterDiscount >= 500 ? 0 : 50; // Free shipping based on amount after discount
+    const finalAmount = amountAfterDiscount + shippingCharges; // Final amount = amount after discount + shipping
 
     // Check for address success message from session
     const addressSuccess = req.session.addressSuccess;
@@ -174,33 +178,38 @@ const placeOrder = async (req, res) => {
       });
     }
 
-    // Calculate order totals
-    let subtotal = 0;
-    let totalDiscount = 0;
+    // Calculate order totals with subtotal based on regular prices
+    let subtotal = 0; // Based on regular prices (before discount)
+    let totalDiscount = 0; // Difference between regular and sale prices
+    let amountAfterDiscount = 0; // Amount customer actually pays (after discount)
     const orderedItems = [];
 
     cartItems.forEach(item => {
       const regularPrice = item.productId.regularPrice;
       const salePrice = item.productId.salePrice;
-      const productOffer = item.productId.productOffer || 0;
+      const quantity = item.quantity;
       
-      const effectivePrice = salePrice - (salePrice * productOffer / 100);
-      const itemTotal = effectivePrice * item.quantity;
-      const itemDiscount = (regularPrice - effectivePrice) * item.quantity;
+      // Subtotal based on regular prices
+      subtotal += regularPrice * quantity;
       
-      subtotal += itemTotal;
+      // Calculate discount
+      const itemDiscount = calculateItemDiscount(regularPrice, salePrice, quantity);
       totalDiscount += itemDiscount;
+      
+      // Amount customer actually pays for this item
+      const itemFinalAmount = calculateItemTotal(salePrice, quantity);
+      amountAfterDiscount += itemFinalAmount;
 
       orderedItems.push({
         product: item.productId._id,
-        quantity: item.quantity,
-        price: effectivePrice,
-        totalPrice: itemTotal
+        quantity: quantity,
+        price: salePrice, // Store sale price as the price
+        totalPrice: itemFinalAmount
       });
     });
 
-    const shippingCharges = subtotal >= 500 ? 0 : 50;
-    const finalAmount = subtotal - totalDiscount + shippingCharges;
+    const shippingCharges = amountAfterDiscount >= 500 ? 0 : 50; // Free shipping based on amount after discount
+    const finalAmount = amountAfterDiscount + shippingCharges; // Final amount = amount after discount + shipping
 
     // Create order
     const order = new Order({

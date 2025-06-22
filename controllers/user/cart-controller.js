@@ -2,7 +2,7 @@ const Cart = require('../../models/cart-schema');
 const Product = require('../../models/product-schema');
 const Wishlist = require('../../models/wishlist-schema');
 const User = require('../../models/user-schema');
-const { calculateEffectivePrice, syncAllCartPrices } = require('../../utils/price-calculator');
+const { calculateFinalPrice, calculateItemTotal, syncAllCartPrices } = require('../../utils/price-calculator');
 
 // Load cart page
 const loadCart = async (req, res) => {
@@ -161,22 +161,22 @@ const addToCart = async (req, res) => {
         });
       }
 
-      // Calculate effective price with current offers using utility function
-      const effectivePrice = calculateEffectivePrice(product.salePrice, product.productOffer);
+      // Use sale price as the final price (no additional discounts)
+      const finalPrice = calculateFinalPrice(product.salePrice);
       
       existingItem.quantity = newQuantity;
-      existingItem.price = effectivePrice; // Use effective price including offers
-      existingItem.totalPrice = effectivePrice * newQuantity;
+      existingItem.price = finalPrice; // Use sale price as final price
+      existingItem.totalPrice = calculateItemTotal(finalPrice, newQuantity);
     } else {
-      // Calculate effective price with current offers using utility function
-      const effectivePrice = calculateEffectivePrice(product.salePrice, product.productOffer);
+      // Use sale price as the final price (no additional discounts)
+      const finalPrice = calculateFinalPrice(product.salePrice);
       
       // Add new item
       cart.items.push({
         productId,
         quantity: parsedQuantity,
-        price: effectivePrice,
-        totalPrice: effectivePrice * parsedQuantity
+        price: finalPrice,
+        totalPrice: calculateItemTotal(finalPrice, parsedQuantity)
       });
     }
 
@@ -317,13 +317,13 @@ const updateCartQuantity = async (req, res) => {
       });
     }
 
-    // Calculate effective price with current offers using utility function
-    const effectivePrice = calculateEffectivePrice(product.salePrice, product.productOffer);
+    // Use sale price as the final price (no additional discounts)
+    const finalPrice = calculateFinalPrice(product.salePrice);
     
     // Update quantity and total price
     cart.items[itemIndex].quantity = parsedQuantity;
-    cart.items[itemIndex].price = effectivePrice; // Use effective price including offers
-    cart.items[itemIndex].totalPrice = effectivePrice * parsedQuantity;
+    cart.items[itemIndex].price = finalPrice; // Use sale price as final price
+    cart.items[itemIndex].totalPrice = calculateItemTotal(finalPrice, parsedQuantity);
 
     await cart.save();
 

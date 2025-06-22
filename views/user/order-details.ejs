@@ -565,6 +565,15 @@ if t    eturn -<!DOCTYPE html>
                     </div>
 
                     <% order.orderedItems.forEach(item => { %>
+                        <%
+                            // Calculate discount information for this item
+                            const regularPrice = item.product.regularPrice || item.price;
+                            const salePrice = item.price;
+                            const quantity = item.quantity;
+                            const discountPerItem = regularPrice - salePrice;
+                            const totalItemDiscount = discountPerItem * quantity;
+                            const discountPercentage = regularPrice > 0 ? Math.round((discountPerItem / regularPrice) * 100) : 0;
+                        %>
                         <div class="order-item">
                             <img src="/uploads/products/<%= item.product.mainImage %>"
                                  alt="<%= item.product.productName %>"
@@ -573,10 +582,17 @@ if t    eturn -<!DOCTYPE html>
                                 <div class="item-name"><%= item.product.productName %></div>
                                 <div class="item-brand">Brand: <%= item.product.brand %></div>
                                 <div class="item-price">
-                                    <span class="current-price">₹<%= item.price.toFixed(2) %></span>
+                                    <span class="current-price">₹<%= salePrice.toFixed(2) %></span>
+                                    <% if (discountPerItem > 0) { %>
+                                        <span class="original-price" style="text-decoration: line-through; color: #6c757d; margin-left: 0.5rem;">₹<%= regularPrice.toFixed(2) %></span>
+                                        <span class="discount-badge" style="background: #10b981; color: white; padding: 0.125rem 0.5rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600; margin-left: 0.5rem;"><%= discountPercentage %>% OFF</span>
+                                    <% } %>
                                 </div>
                                 <div class="quantity-info">
-                                    Quantity: <%= item.quantity %> | Total: ₹<%= item.totalPrice.toFixed(2) %>
+                                    Quantity: <%= quantity %> | Total: ₹<%= item.totalPrice.toFixed(2) %>
+                                    <% if (totalItemDiscount > 0) { %>
+                                        <br><small style="color: #10b981; font-weight: 600;">You saved: ₹<%= totalItemDiscount.toFixed(2) %> on this item</small>
+                                    <% } %>
                                 </div>
                                 <% if (item.status === 'Active') { %>
                                     <div class="item-actions">
@@ -649,25 +665,57 @@ if t    eturn -<!DOCTYPE html>
                 </h3>
 
                 <%
-                    // Calculate current totals based on active items
+                    // Calculate current totals including active items and return request items
                     const activeItems = order.orderedItems.filter(item => item.status === 'Active');
+                    const returnRequestItems = order.orderedItems.filter(item => item.status === 'Return Request');
                     const cancelledItems = order.orderedItems.filter(item => item.status === 'Cancelled');
-                    const currentSubtotal = activeItems.reduce((sum, item) => sum + item.totalPrice, 0);
-                    const cancelledAmount = cancelledItems.reduce((sum, item) => sum + item.totalPrice, 0);
-                    const originalOrderTotal = currentSubtotal + cancelledAmount;
                     
-                    // Calculate proportional discount for active items only
-                    let applicableDiscount = 0;
-                    let currentTotal = 0;
+                    // Items that should be included in total calculation (Active + Return Request)
+                    const includedItems = [...activeItems, ...returnRequestItems];
                     
-                    if (currentSubtotal > 0 && order.discount > 0 && originalOrderTotal > 0) {
-                        // Calculate what proportion of the original order the active items represent
-                        const activeItemsProportion = currentSubtotal / originalOrderTotal;
-                        // Apply only the proportional discount to active items
-                        applicableDiscount = Math.min(order.discount * activeItemsProportion, currentSubtotal);
-                        currentTotal = Math.max(0, currentSubtotal - applicableDiscount + order.shippingCharges);
-                    } else if (currentSubtotal > 0) {
-                        currentTotal = currentSubtotal + order.shippingCharges;
+                    // Calculate subtotal based on regular prices for included items
+                    let currentSubtotal = 0; // Based on regular prices
+                    let amountAfterDiscount = 0; // Amount customer actually pays (sale prices)
+                    let totalDiscount = 0; // Total discount for included items
+                    
+                    includedItems.forEach(item => {
+                        // Get regular price from product (assuming it's stored in the product)
+                        const regularPrice = item.product.regularPrice || item.price; // Fallback to item.price if regularPrice not available
+                        const salePrice = item.price; // This is the sale price stored in the order
+                        const quantity = item.quantity;
+                        
+                        // Subtotal based on regular prices
+                        currentSubtotal += regularPrice * quantity;
+                        
+                        // Amount customer actually pays (sale price total)
+                        amountAfterDiscount += item.totalPrice;
+                        
+                        // Calculate discount for this item
+                        const itemDiscount = (regularPrice - salePrice) * quantity;
+                        totalDiscount += Math.max(0, itemDiscount);
+                    });
+                    
+                    // Calculate cancelled amounts
+                    let cancelledSubtotal = 0; // Based on regular prices
+                    let cancelledAmountAfterDiscount = 0; // Amount that was going to be paid
+                    let cancelledDiscount = 0; // Discount on cancelled items
+                    
+                    cancelledItems.forEach(item => {
+                        const regularPrice = item.product.regularPrice || item.price;
+                        const salePrice = item.price;
+                        const quantity = item.quantity;
+                        
+                        cancelledSubtotal += regularPrice * quantity;
+                        cancelledAmountAfterDiscount += item.totalPrice;
+                        
+                        const itemDiscount = (regularPrice - salePrice) * quantity;
+                        cancelledDiscount += Math.max(0, itemDiscount);
+                    });
+                    
+                    // Final total calculation
+                    let currentTotal = amountAfterDiscount;
+                    if (currentSubtotal > 0) {
+                        currentTotal += order.shippingCharges;
                     }
                     
                     // Additional variables for cancel button logic
@@ -676,40 +724,49 @@ if t    eturn -<!DOCTYPE html>
                 %>
 
                 <div class="summary-row">
-                    <span class="summary-label">Subtotal (Active Items)</span>
+                    <span class="summary-label">
+                        <% if (cancelledItems.length > 0) { %>
+                            <% if (returnRequestItems.length > 0) { %>
+                                Subtotal (Active + Return Requested)
+                            <% } else { %>
+                                Subtotal (Active Items)
+                            <% } %>
+                        <% } else { %>
+                            Subtotal
+                        <% } %>
+                    </span>
                     <span class="summary-value">₹<%= currentSubtotal.toFixed(2) %></span>
                 </div>
 
-                <% if (cancelledAmount > 0) { %>
+                <% if (cancelledSubtotal > 0) { %>
                 <div class="summary-row" style="color: #ef4444;">
-                    <span class="summary-label">Cancelled Items</span>
-                    <span class="summary-value">-₹<%= cancelledAmount.toFixed(2) %></span>
+                    <span class="summary-label">Cancelled Items (Regular Price)</span>
+                    <span class="summary-value">-₹<%= cancelledSubtotal.toFixed(2) %></span>
                 </div>
                 <% } %>
 
-                <% if (order.discount > 0) { %>
-                    <% if (cancelledAmount > 0 && applicableDiscount < order.discount) { %>
-                    <div class="summary-row" style="color: #6c757d; font-size: 0.85em;">
-                        <span class="summary-label">Original Discount</span>
-                        <span class="summary-value">-₹<%= order.discount.toFixed(2) %></span>
-                    </div>
-                    <div class="summary-row" style="color: #ef4444; font-size: 0.85em;">
-                        <span class="summary-label">Discount on Cancelled Items</span>
-                        <span class="summary-value">+₹<%= (order.discount - applicableDiscount).toFixed(2) %></span>
-                    </div>
-                    <% } %>
-                    <% if (applicableDiscount > 0) { %>
-                    <div class="summary-row">
-                        <span class="summary-label">
-                            <% if (cancelledAmount > 0) { %>
-                                Applicable Discount
+                <% if (totalDiscount > 0) { %>
+                <div class="summary-row">
+                    <span class="summary-label">
+                        <% if (cancelledItems.length > 0) { %>
+                            <% if (returnRequestItems.length > 0) { %>
+                                Discount (Active + Return Requested)
                             <% } else { %>
-                                Discount
+                                Discount (Active Items)
                             <% } %>
-                        </span>
-                        <span class="summary-value" style="color: var(--success-color);">-₹<%= applicableDiscount.toFixed(2) %></span>
-                    </div>
-                    <% } %>
+                        <% } else { %>
+                            Discount
+                        <% } %>
+                    </span>
+                    <span class="summary-value" style="color: var(--success-color);">-₹<%= totalDiscount.toFixed(2) %></span>
+                </div>
+                <% } %>
+
+                <% if (cancelledDiscount > 0) { %>
+                <div class="summary-row" style="color: #6c757d;">
+                    <span class="summary-label">Discount on Cancelled Items</span>
+                    <span class="summary-value">+₹<%= cancelledDiscount.toFixed(2) %></span>
+                </div>
                 <% } %>
 
                 <% if (currentSubtotal > 0) { %>
@@ -727,7 +784,7 @@ if t    eturn -<!DOCTYPE html>
 
                 <div class="summary-row">
                     <span class="summary-label">
-                        <% if (cancelledAmount > 0) { %>
+                        <% if (cancelledItems.length > 0) { %>
                             Current Total
                         <% } else { %>
                             Total
@@ -735,6 +792,13 @@ if t    eturn -<!DOCTYPE html>
                     </span>
                     <span class="summary-value">₹<%= currentTotal.toFixed(2) %></span>
                 </div>
+
+                <% if (returnRequestItems.length > 0) { %>
+                <div style="margin-top: 1rem; padding: 0.75rem; background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; font-size: 0.875rem; color: #0c4a6e;">
+                    <i class="fas fa-info-circle" style="color: #0369a1; margin-right: 0.5rem;"></i>
+                    <strong>Note:</strong> Items with return requests are still included in the total until the admin processes the return.
+                </div>
+                <% } %>
 
                 <!-- Download Invoice Button -->
                 <button class="btn-download-invoice" onclick="downloadInvoice('<%= order.orderId %>')">

@@ -575,10 +575,13 @@
                         <%
                             const regularPrice = item.productId.regularPrice;
                             const salePrice = item.productId.salePrice;
-                            const productOffer = item.productId.productOffer || 0;
-                            const effectivePrice = salePrice - (salePrice * productOffer / 100);
-                            const itemTotal = effectivePrice * item.quantity;
-                            const discount = regularPrice - effectivePrice;
+                            const quantity = item.quantity;
+                            
+                            // Calculate totals based on sale price (final price customer pays)
+                            const itemTotal = salePrice * quantity;
+                            const discountPerItem = regularPrice - salePrice;
+                            const totalDiscountForItem = discountPerItem * quantity;
+                            const discountPercentage = regularPrice > 0 ? Math.round((discountPerItem / regularPrice) * 100) : 0;
                         %>
                         <div class="product-item">
                             <img src="/uploads/products/<%= item.productId.mainImage %>"
@@ -588,14 +591,17 @@
                                 <div class="product-name"><%= item.productId.productName %></div>
                                 <div class="product-brand">Brand: <%= item.productId.brand %></div>
                                 <div class="product-price">
-                                    <span class="current-price">₹<%= effectivePrice.toFixed(2) %></span>
-                                    <% if (discount > 0) { %>
+                                    <span class="current-price">₹<%= salePrice.toFixed(2) %></span>
+                                    <% if (discountPerItem > 0) { %>
                                         <span class="original-price">₹<%= regularPrice.toFixed(2) %></span>
-                                        <span class="discount-badge"><%= productOffer %>% OFF</span>
+                                        <span class="discount-badge"><%= discountPercentage %>% OFF</span>
                                     <% } %>
                                 </div>
                                 <div class="quantity-info">
-                                    Quantity: <%= item.quantity %> | Total: ₹<%= itemTotal.toFixed(2) %>
+                                    Quantity: <%= quantity %> | Total: ₹<%= itemTotal.toFixed(2) %>
+                                    <% if (totalDiscountForItem > 0) { %>
+                                        <br><small style="color: var(--success-color);">You save: ₹<%= totalDiscountForItem.toFixed(2) %> on this item</small>
+                                    <% } %>
                                 </div>
                             </div>
                         </div>
