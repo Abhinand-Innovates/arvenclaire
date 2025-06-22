@@ -10,7 +10,7 @@ const cartController = require("../controllers/user/cart-controller");
 const { checkProductAvailabilityForPage, checkProductAvailability, checkProductAvailabilityForWishlist } = require("../middleware/product-availability-middleware");
 const { profileUpload, handleMulterError } = require("../config/multer-config");
 
-const { isUserAuthenticated, preventCache } = require("../middleware/auth-middleware");
+const { isUserAuthenticated, preventCache, redirectIfAuthenticated, validateSession } = require("../middleware/auth-middleware");
 const { addUserContext, checkUserBlocked } = require("../middleware/user-middleware");
 
 
@@ -23,37 +23,58 @@ router.get(
   "/auth/google/callback",
   passport.authenticate("google", { failureRedirect: "/signup" }),
   (req, res) => {
-    req.session.userId = req.user._id;
-    res.redirect("/dashboard");
+    // Regenerate session for security
+    req.session.regenerate((err) => {
+      if (err) {
+        console.error('Google OAuth session regeneration error:', err);
+        return res.redirect('/login?error=session');
+      }
+
+      // Set user session data
+      req.session.userId = req.user._id;
+      req.session.email = req.user.email;
+      req.session.loginTime = new Date();
+      req.session.googleUserId = req.user._id; // For Google OAuth identification
+
+      // Save session before redirecting
+      req.session.save((err) => {
+        if (err) {
+          console.error('Google OAuth session save error:', err);
+          return res.redirect('/login?error=session');
+        }
+
+        res.redirect("/dashboard");
+      });
+    });
   }
 );
 
 
-// Public routes (with user context for navbar)
-router.get("/signup", addUserContext, userController.loadSignup);
-router.get("/login", addUserContext, userController.loadLogin);
+// Public routes - redirect authenticated users away from login/signup
+router.get("/signup", preventCache, redirectIfAuthenticated, validateSession, userController.loadSignup);
+router.get("/login", preventCache, redirectIfAuthenticated, validateSession, userController.loadLogin);
 router.post("/signup", userController.signup);
 
-router.get("/verify-otp", userController.loadOtpPage);
+router.get("/verify-otp", preventCache, userController.loadOtpPage);
 router.post("/verify-otp", userController.verifyOtp);
 router.post("/resend-otp", userController.resendOtp);
 router.post("/login", userController.login);
 
-// Forgot password routes (no user context needed)
-router.get("/forgot-password", userController.loadForgotPassword);
+// Forgot password routes - redirect authenticated users
+router.get("/forgot-password", preventCache, redirectIfAuthenticated, validateSession, userController.loadForgotPassword);
 router.post("/forgot-password", userController.verifyForgotPasswordEmail);
-router.get("/forgot-verify-otp", userController.loadForgotVerifyOtp);
+router.get("/forgot-verify-otp", preventCache, redirectIfAuthenticated, validateSession, userController.loadForgotVerifyOtp);
 router.post("/forgot-verify-otp", userController.verifyForgotPasswordOtp);
 router.post("/resend-forgot-verify-otp", userController.resendForgotPasswordOtp);
-router.get("/new-password", userController.loadNewPassword);
+router.get("/new-password", preventCache, redirectIfAuthenticated, validateSession, userController.loadNewPassword);
 router.post("/reset-password", userController.resetPassword);
 
 // Routes that need user context for dropdown (apply middleware)
-router.get("/", addUserContext, checkUserBlocked, userController.loadLanding);
+router.get("/", validateSession, addUserContext, checkUserBlocked, userController.loadLanding);
 router.get("/dashboard", isUserAuthenticated, preventCache, addUserContext, checkUserBlocked, userController.loadDashboard);
-router.get("/shop", addUserContext, checkUserBlocked, userController.loadShop);
-router.get("/products", addUserContext, checkUserBlocked, userController.loadShop);
-router.get("/product/:id", addUserContext, checkUserBlocked, checkProductAvailabilityForPage, userController.loadProductDetails);
+router.get("/shop", validateSession, addUserContext, checkUserBlocked, userController.loadShop);
+router.get("/products", validateSession, addUserContext, checkUserBlocked, userController.loadShop);
+router.get("/product/:id", validateSession, addUserContext, checkUserBlocked, checkProductAvailabilityForPage, userController.loadProductDetails);
 router.get("/profile", isUserAuthenticated, preventCache, addUserContext, checkUserBlocked, userController.loadProfile);
 router.get("/logout", isUserAuthenticated, preventCache, checkUserBlocked, userController.logout);
 

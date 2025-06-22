@@ -217,53 +217,56 @@ const resendOtp = async (req, res) => {
 
 const loadDashboard = async (req, res) => {
   try {
-    const userId = req.session.userId;
-    if (userId) {
-      // Only show available, non-blocked, listed products with listed categories
-      const products = await Product.find({
-        isDeleted: false,
-        isBlocked: false,
-        isListed: true
-      }).populate({
-        path: 'category',
-        match: { isListed: true },
-        select: 'name'
-      }).sort({ createdAt: -1 }).lean();
-
-      // Filter out products with unlisted categories (populate returns null for unmatched)
-      const filteredProducts = products.filter(product => product.category !== null);
-
-      // Calculate average ratings for each product
-      const productsWithRatings = await Promise.all(
-        filteredProducts.map(async (product) => {
-          const reviews = await Review.find({
-            product: product._id,
-            isHidden: false
-          });
-
-          let averageRating = 0;
-          let totalReviews = reviews.length;
-
-          if (totalReviews > 0) {
-            const totalRating = reviews.reduce((sum, review) => sum + review.rating, 0);
-            averageRating = totalRating / totalReviews;
-          }
-
-          return {
-            ...product,
-            averageRating: averageRating,
-            totalReviews: totalReviews
-          };
-        })
-      );
-
-      // User context is automatically added by middleware
-      return res.render("dashboard", { products: productsWithRatings });
-    } else {
-      return res.redirect("/");
+    const userId = req.session.userId || req.session.googleUserId;
+    
+    // This check is redundant since isUserAuthenticated middleware handles it,
+    // but keeping for extra safety
+    if (!userId) {
+      return res.redirect("/login");
     }
+
+    // Only show available, non-blocked, listed products with listed categories
+    const products = await Product.find({
+      isDeleted: false,
+      isBlocked: false,
+      isListed: true
+    }).populate({
+      path: 'category',
+      match: { isListed: true },
+      select: 'name'
+    }).sort({ createdAt: -1 }).lean();
+
+    // Filter out products with unlisted categories (populate returns null for unmatched)
+    const filteredProducts = products.filter(product => product.category !== null);
+
+    // Calculate average ratings for each product
+    const productsWithRatings = await Promise.all(
+      filteredProducts.map(async (product) => {
+        const reviews = await Review.find({
+          product: product._id,
+          isHidden: false
+        });
+
+        let averageRating = 0;
+        let totalReviews = reviews.length;
+
+        if (totalReviews > 0) {
+          const totalRating = reviews.reduce((sum, review) => sum + review.rating, 0);
+          averageRating = totalRating / totalReviews;
+        }
+
+        return {
+          ...product,
+          averageRating: averageRating,
+          totalReviews: totalReviews
+        };
+      })
+    );
+
+    // User context is automatically added by middleware
+    return res.render("dashboard", { products: productsWithRatings });
   } catch (error) {
-    console.log("Home page not loading", error);
+    console.log("Dashboard loading error:", error);
     res.status(500).send("Server Error");
   }
 };
@@ -294,7 +297,7 @@ const login = async (req, res) => {
     }
 
     // Find user by email
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email: email.toLowerCase().trim() });
 
     if (!user) {
       return res.status(401).json({
@@ -303,12 +306,13 @@ const login = async (req, res) => {
       });
     }
 
-    if(user.isBlocked){
+    if (user.isBlocked) {
       return res.status(403).json({
-        success : false,
+        success: false,
         message: "Your account is blocked, Please contact support"
-      })
+      });
     }
+
     // Verify password
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
@@ -319,12 +323,36 @@ const login = async (req, res) => {
       });
     }
 
-    // Set user session
-    req.session.userId = user._id;
-    req.session.email = user.email;
+    // Regenerate session for security
+    req.session.regenerate((err) => {
+      if (err) {
+        console.error('Session regeneration error:', err);
+        return res.status(500).json({
+          success: false,
+          message: "Login failed. Please try again.",
+        });
+      }
 
-    // Redirect to dashboard
-    return res.status(200).redirect('/dashboard');
+      // Set user session data
+      req.session.userId = user._id;
+      req.session.email = user.email;
+      req.session.loginTime = new Date();
+
+      // Save session before redirecting
+      req.session.save((err) => {
+        if (err) {
+          console.error('Session save error:', err);
+          return res.status(500).json({
+            success: false,
+            message: "Login failed. Please try again.",
+          });
+        }
+
+        // Redirect to dashboard
+        return res.status(200).redirect('/dashboard');
+      });
+    });
+
   } catch (error) {
     console.error('Login error:', error);
     return res.status(500).json({
@@ -576,44 +604,46 @@ const loadChangePassword = async (req, res) => {
 
 
 
-const logout = async (req,res) => {
-
+const logout = async (req, res) => {
   try {
-    if(!req.session.userId) {
-      return res.status(400).json({
-        success : false,
-        message : "No active session to logout from",
-      })
+    // Check if there's an active session
+    const userId = req.session.userId || req.session.googleUserId;
+    
+    if (!userId) {
+      return res.redirect('/login');
     }
 
+    // Destroy session and clear cookies
     req.session.destroy((err) => {
-      if(err) {
-        console.error("Session destruction error",err)
-        return res.status (500).json({
-          success : false,
-          message : "Failed to logout, Please try again",
-        })
+      if (err) {
+        console.error("Session destruction error", err);
+        return res.status(500).json({
+          success: false,
+          message: "Failed to logout, Please try again",
+        });
       }
 
+      // Clear all session-related cookies
+      res.clearCookie("connect.sid");
+      
+      // Also clear any other potential session cookies
+      if (req.cookies) {
+        Object.keys(req.cookies).forEach(cookieName => {
+          res.clearCookie(cookieName);
+        });
+      }
 
-    res.clearCookie("connect.sid");
-
-    // return res.status(200).json({
-    //   success : false,
-    //   message : "Successfully logged in",
-    //   redirectUrl : "/login",
-    // })
-    return res.status(200).redirect("/login")
-  })
+      return res.redirect("/login");
+    });
 
   } catch (error) {
-    console.error("Logout error",error);
+    console.error("Logout error", error);
     return res.status(500).json({
-      success : false,
-      message : "Internal server error",
-    })
+      success: false,
+      message: "Internal server error",
+    });
   }
-}
+};
 
 
 
@@ -638,11 +668,6 @@ const loadProfile = async (req, res) => {
     if (!user) {
       return res.redirect('/login');
     }
-
-    // Get account stats
-    const Order = require('../../models/order-schema');
-    const Wishlist = require('../../models/wishlist-schema');
-    const Wallet = require('../../models/wallet-schema');
 
     // Get total orders count
     const totalOrders = await Order.countDocuments({ userId: userId });

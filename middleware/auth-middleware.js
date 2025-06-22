@@ -4,6 +4,7 @@ const User = require('../models/user-schema');
 
 const authMiddleware = {
 
+  
   //For admin
   isAdminAuthenticated : async (req, res, next) => {
   try {
@@ -27,6 +28,7 @@ const authMiddleware = {
 },
 
 
+
 //For user
 isUserAuthenticated : async (req, res, next) => {
   try {
@@ -45,7 +47,7 @@ isUserAuthenticated : async (req, res, next) => {
       return next();
     }
 
-    // Blocked or invalid user
+    // Blocked or invalid user - clear session and redirect
     req.session.destroy((err) => {
       if (err) console.error('Error destroying session:', err);
     });
@@ -54,6 +56,71 @@ isUserAuthenticated : async (req, res, next) => {
   } catch (error) {
     console.error('User Auth Middleware Error:', error);
     return res.status(500).render('error', { message: 'Authentication error' });
+  }
+},
+
+
+
+// Middleware to redirect authenticated users away from login/signup pages
+redirectIfAuthenticated : async (req, res, next) => {
+  try {
+    const userId = req.session.userId || req.session.googleUserId;
+    
+    if (userId) {
+      const user = await User.findById(userId);
+      
+      // If user exists and is not blocked, redirect to dashboard
+      if (user && !user.isBlocked) {
+        return res.redirect('/dashboard');
+      }
+      
+      // If user is blocked or doesn't exist, clear session and continue
+      req.session.destroy((err) => {
+        if (err) console.error('Error destroying session:', err);
+      });
+      res.clearCookie('connect.sid');
+    }
+    
+    next();
+  } catch (error) {
+    console.error('Redirect Auth Middleware Error:', error);
+    next(); // Continue to login/signup page on error
+  }
+},
+
+
+
+// Enhanced session validation middleware
+validateSession : async (req, res, next) => {
+  try {
+    const userId = req.session.userId || req.session.googleUserId;
+    
+    if (userId) {
+      const user = await User.findById(userId);
+      
+      // If user doesn't exist or is blocked, clear session
+      if (!user || user.isBlocked) {
+        req.session.destroy((err) => {
+          if (err) console.error('Error destroying session:', err);
+        });
+        res.clearCookie('connect.sid');
+        
+        // Set user context to null for views
+        res.locals.user = null;
+        return next();
+      }
+      
+      // Valid session - set user context
+      res.locals.user = user;
+    } else {
+      res.locals.user = null;
+    }
+    
+    next();
+  } catch (error) {
+    console.error('Session Validation Error:', error);
+    res.locals.user = null;
+    next();
   }
 },
 

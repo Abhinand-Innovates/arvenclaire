@@ -11,9 +11,9 @@ const { productUpload, handleMulterError } = require("../config/multer-config");
 
 const { isAdminAuthenticated, preventCache } = require('../middleware/auth-middleware');
 
-//Admin Login
-adminRoute.get("/admin-login",adminController.getAdminLogin);
-adminRoute.post("/admin-login",adminController.postAdminLogin);
+//Admin Login - with cache prevention for proper session handling
+adminRoute.get("/admin-login", preventCache, adminController.getAdminLogin);
+adminRoute.post("/admin-login", adminController.postAdminLogin);
 
 
 //Admin Dashboard
