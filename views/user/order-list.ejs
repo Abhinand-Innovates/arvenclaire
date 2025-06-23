@@ -306,6 +306,41 @@
             transform: none;
         }
 
+        .btn-retry-payment {
+            background: #f59e0b;
+            color: white;
+            border: none;
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+        }
+
+        .btn-retry-payment:hover {
+            background: #d97706;
+            color: white;
+            transform: translateY(-1px);
+            text-decoration: none;
+        }
+
+        .payment-status-failed {
+            color: #ef4444;
+            font-weight: 600;
+            font-size: 0.75rem;
+        }
+
+        .payment-status-pending {
+            color: #f59e0b;
+            font-weight: 600;
+            font-size: 0.75rem;
+        }
+
         
         .empty-state {
             text-align: center;
@@ -512,7 +547,7 @@
             }
         }
     </style>
-</head>
+    </head>
 <body>
     <!-- Main Content -->
     <div class="main-content">
@@ -592,6 +627,11 @@
                                 <div class="order-payment">
                                     <i class="fas fa-credit-card"></i>
                                     <%= order.paymentMethod %>
+                                    <% if (order.paymentStatus === 'Failed') { %>
+                                        <span class="payment-status-failed">• Payment Failed</span>
+                                    <% } else if (order.paymentStatus === 'Pending') { %>
+                                        <span class="payment-status-pending">• Payment Pending</span>
+                                    <% } %>
                                 </div>
                             </div>
 
@@ -621,9 +661,15 @@
                                 <a href="/order-details/<%= order.orderId %>" class="btn-view-details">
                                     <i class="fas fa-eye"></i> View Details
                                 </a>
-                                <button class="btn-download-invoice" onclick="downloadInvoice('<%= order.orderId %>')">
-                                    <i class="fas fa-download"></i> Invoice
-                                </button>
+                                <% if (order.paymentStatus === 'Failed') { %>
+                                    <a href="/checkout/retry-payment/<%= order.orderId %>" class="btn-retry-payment">
+                                        <i class="fas fa-redo"></i> Retry Payment
+                                    </a>
+                                <% } else if (order.paymentStatus === 'Completed') { %>
+                                    <button class="btn-download-invoice" onclick="downloadInvoice('<%= order.orderId %>')">
+                                        <i class="fas fa-download"></i> Invoice
+                                    </button>
+                                <% } %>
                             </div>
                         </div>
                     <% }); %>

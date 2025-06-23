@@ -105,7 +105,39 @@ router.delete("/address/:id", isUserAuthenticated, preventCache, checkUserBlocke
 // Checkout-related routes
 router.get("/checkout", isUserAuthenticated, preventCache, addUserContext, checkUserBlocked, checkoutController.loadCheckout);
 router.post("/checkout/place-order", isUserAuthenticated, preventCache, checkUserBlocked, checkoutController.placeOrder);
+router.post("/checkout/create-razorpay-order", isUserAuthenticated, preventCache, checkUserBlocked, checkoutController.createRazorpayOrder);
+router.post("/checkout/verify-payment", isUserAuthenticated, preventCache, checkUserBlocked, checkoutController.verifyPayment);
+router.post("/checkout/payment-failed", isUserAuthenticated, preventCache, checkUserBlocked, checkoutController.paymentFailed);
+router.get("/checkout/retry-payment/:orderId", isUserAuthenticated, preventCache, addUserContext, checkUserBlocked, checkoutController.loadRetryPayment);
 router.get("/order-success/:orderId", isUserAuthenticated, preventCache, addUserContext, checkUserBlocked, checkoutController.loadOrderSuccess);
+router.get("/order-failure/:orderId", isUserAuthenticated, preventCache, addUserContext, checkUserBlocked, checkoutController.loadOrderFailure);
+
+// Test route to simulate payment failure (for development/testing)
+router.get("/test-payment-failure/:orderId", isUserAuthenticated, preventCache, checkUserBlocked, async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    const userId = req.session.userId;
+    
+    // Find and update order to failed status for testing
+    const Order = require('../models/order-schema');
+    const order = await Order.findOne({ orderId, userId });
+    
+    if (order) {
+      order.paymentStatus = 'Failed';
+      order.orderTimeline.push({
+        status: 'Payment Failed',
+        description: 'Test payment failure simulation'
+      });
+      await order.save();
+    }
+    
+    // Redirect to failure page
+    res.redirect(`/order-failure/${orderId}`);
+  } catch (error) {
+    console.error('Error in test payment failure:', error);
+    res.redirect('/orders');
+  }
+});
 
 // Order-related routes
 router.get("/orders", isUserAuthenticated, preventCache, addUserContext, checkUserBlocked, orderController.loadOrderList);

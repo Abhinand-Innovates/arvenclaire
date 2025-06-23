@@ -431,6 +431,14 @@ const downloadInvoice = async (req, res) => {
       });
     }
 
+    // Check if payment is completed before allowing invoice download
+    if (order.paymentStatus !== 'Completed') {
+      return res.status(403).json({
+        success: false,
+        message: 'Invoice is only available for completed payments. Please complete your payment first.'
+      });
+    }
+
     // Generate PDF invoice
     const invoiceGenerator = new InvoiceGenerator();
     const pdfBuffer = await invoiceGenerator.generateInvoice(order, user);

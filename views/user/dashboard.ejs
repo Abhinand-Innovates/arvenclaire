@@ -1,4 +1,3 @@
-
 <%- include("../partials/user/header") %>
     <style>
         :root {
@@ -21,7 +20,7 @@
         /* Hero Carousel Styles */
         .hero-carousel {
             margin-bottom: 4rem;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
         }
 
         .carousel-img {
@@ -108,12 +107,14 @@
         }
 
         /* Modern section styling */
-        #new-arrivals, #best-selling {
+        #new-arrivals,
+        #best-selling {
             padding: 4rem 0;
             position: relative;
         }
 
-        #new-arrivals::before, #best-selling::before {
+        #new-arrivals::before,
+        #best-selling::before {
             content: '';
             position: absolute;
             top: 0;
@@ -253,8 +254,13 @@
         }
 
         @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
         }
 
         /* Prevent link click when clicking action buttons */
@@ -299,12 +305,10 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: linear-gradient(
-                135deg,
-                rgba(255,255,255,0.1) 0%,
-                rgba(255,255,255,0.05) 50%,
-                rgba(0,0,0,0.02) 100%
-            );
+            background: linear-gradient(135deg,
+                    rgba(255, 255, 255, 0.1) 0%,
+                    rgba(255, 255, 255, 0.05) 50%,
+                    rgba(0, 0, 0, 0.02) 100%);
             opacity: 0;
             transition: opacity 0.4s ease;
             z-index: 1;
@@ -323,12 +327,10 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: linear-gradient(
-                45deg,
-                rgba(255,255,255,0.1) 0%,
-                transparent 50%,
-                rgba(255,255,255,0.05) 100%
-            );
+            background: linear-gradient(45deg,
+                    rgba(255, 255, 255, 0.1) 0%,
+                    transparent 50%,
+                    rgba(255, 255, 255, 0.05) 100%);
             opacity: 0;
             transition: opacity 0.4s ease;
             z-index: 2;
@@ -444,7 +446,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.3) 100%);
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.3) 100%);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -507,19 +509,31 @@
         .banner-carousel {
             position: relative;
             overflow: hidden;
-            border-radius: 24px;
         }
 
         .banner-slide {
             display: none;
             opacity: 0;
-            transition: opacity 0.5s ease-in-out;
+            transition: opacity 0.5s ease;
         }
 
         .banner-slide.active {
             display: block;
             opacity: 1;
         }
+
+        .carousel-dot {
+            width: 12px;
+            height: 12px;
+            background-color: #aaa;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .carousel-dot.active {
+            background-color: white;
+        }
+
 
         /* Banner Navigation Buttons Inside */
         .banner-nav-btn {
@@ -594,12 +608,10 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: linear-gradient(
-                45deg,
-                rgba(255,255,255,0.03) 0%,
-                transparent 50%,
-                rgba(255,255,255,0.01) 100%
-            );
+            background: linear-gradient(45deg,
+                    rgba(255, 255, 255, 0.03) 0%,
+                    transparent 50%,
+                    rgba(255, 255, 255, 0.01) 100%);
             opacity: 1;
         }
 
@@ -610,7 +622,7 @@
             right: -50%;
             width: 200%;
             height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 40%, transparent 70%);
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 40%, transparent 70%);
             animation: rotate 30s linear infinite;
         }
 
@@ -646,8 +658,13 @@
         }
 
         @keyframes rotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
         }
 
         /* Modern Black Round Carousel Controls */
@@ -779,24 +796,24 @@
             .carousel-title {
                 font-size: 1.8rem;
             }
-            
+
             .carousel-text {
                 font-size: 1rem;
             }
-            
+
             .carousel-caption {
                 padding: 1.5rem;
                 width: 95%;
             }
-            
+
             .section-title {
                 font-size: 2rem;
             }
-            
+
             .banner-title {
                 font-size: 2rem;
             }
-            
+
             .banner-subtitle {
                 font-size: 1rem;
             }
@@ -815,26 +832,44 @@
         }
 
         /* Extended Staggered Animation for Multiple Products */
-        .product-loading:nth-child(1) { transition-delay: 0.1s; }
-        .product-loading:nth-child(2) { transition-delay: 0.25s; }
-        .product-loading:nth-child(3) { transition-delay: 0.4s; }
-        .product-loading:nth-child(4) { transition-delay: 0.55s; }
+        .product-loading:nth-child(1) {
+            transition-delay: 0.1s;
+        }
+
+        .product-loading:nth-child(2) {
+            transition-delay: 0.25s;
+        }
+
+        .product-loading:nth-child(3) {
+            transition-delay: 0.4s;
+        }
+
+        .product-loading:nth-child(4) {
+            transition-delay: 0.55s;
+        }
 
         /* Slower Skeleton Loading for Images */
         .product-img.loading {
             background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
             background-size: 200% 100%;
-            animation: skeleton 2.5s infinite ease-in-out; /* Increased from 1.5s to 2.5s */
+            animation: skeleton 2.5s infinite ease-in-out;
+            /* Increased from 1.5s to 2.5s */
         }
 
         .product-img.loaded {
-            animation: fadeIn 0.6s ease-out; /* Increased from 0.3s to 0.6s */
+            animation: fadeIn 0.6s ease-out;
+            /* Increased from 0.3s to 0.6s */
             background: none;
         }
 
         @keyframes skeleton {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
+            0% {
+                background-position: 200% 0;
+            }
+
+            100% {
+                background-position: -200% 0;
+            }
         }
 
         @keyframes fadeIn {
@@ -842,6 +877,7 @@
                 opacity: 0;
                 transform: scale(1.02);
             }
+
             100% {
                 opacity: 1;
                 transform: scale(1);
@@ -875,6 +911,7 @@
                 opacity: 1;
                 transform: translateX(0);
             }
+
             100% {
                 opacity: 0;
                 transform: translateX(-100px);
@@ -886,6 +923,7 @@
                 opacity: 1;
                 transform: translateX(0);
             }
+
             100% {
                 opacity: 0;
                 transform: translateX(100px);
@@ -897,6 +935,7 @@
                 opacity: 0;
                 transform: translateX(-100px);
             }
+
             100% {
                 opacity: 1;
                 transform: translateX(0);
@@ -908,6 +947,7 @@
                 opacity: 0;
                 transform: translateX(100px);
             }
+
             100% {
                 opacity: 1;
                 transform: translateX(0);
@@ -948,8 +988,13 @@
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
 
         /* Loading Overlay */
@@ -991,17 +1036,17 @@
     <!-- Static Image Section -->
     <section class="static-image-section">
         <div class="static-image-container">
-    <video autoplay muted loop playsinline class="static-image">
-        <source src="../../assets/watch video.mp4" type="video/mp4">
-        Your browser does not support the video tag.
-    </video>
-    <div class="image-overlay">
-        <div class="image-content">
-            <h2 class="image-title">Premium Watch Collection</h2>
-            <p class="image-subtitle">Discover timeless elegance and craftsmanship</p>
+            <video autoplay muted loop playsinline class="static-image">
+                <source src="../../assets/watch video.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <div class="image-overlay">
+                <div class="image-content">
+                    <h2 class="image-title">Premium Watch Collection</h2>
+                    <p class="image-subtitle">Discover timeless elegance and craftsmanship</p>
+                </div>
+            </div>
         </div>
-    </div>
-</div>
     </section>
 
     <!-- New Arrivals Section -->
@@ -1009,14 +1054,14 @@
         <h2 class="section-title">New Arrivals</h2>
         <p class="section-subtitle">Discover our latest collection of premium timepieces</p>
 
-        <% if (products && products.length > 0) { %>
+        <% if (products && products.length> 0) { %>
             <!-- Products Grid (shows 4 at a time) -->
             <div class="row" id="newArrivalsGrid">
                 <!-- Products will be loaded here by JavaScript -->
             </div>
 
             <!-- Carousel Controls (only show if more than 4 products) -->
-            <% if (products.length > 4) { %>
+            <% if (products.length> 4) { %>
                 <div class="carousel-controls">
                     <button class="carousel-btn prev" id="newArrivalsPrev" disabled></button>
                     <button class="carousel-btn next" id="newArrivalsNext"></button>
@@ -1027,26 +1072,27 @@
                         </div>
                     </div>
                 </div>
-            <% } %>
+                <% } %>
 
-            <div class="text-center mt-4">
-                <a href="/products" class="view-more-btn">View All Products</a>
-            </div>
+                    <div class="text-center mt-4">
+                        <a href="/products" class="view-more-btn">View All Products</a>
+                    </div>
 
-            <!-- Hidden products data for JavaScript -->
-            <script type="application/json" id="newArrivalsData">
+                    <!-- Hidden products data for JavaScript -->
+                    <script type="application/json" id="newArrivalsData">
                 <%- JSON.stringify(products) %>
             </script>
 
-        <% } else { %>
-            <div class="col-12 text-center py-5">
-                <div class="no-products-message">
-                    <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
-                    <h4 class="text-muted">No Products Available</h4>
-                    <p class="text-muted">There are currently no products to display. Please check back later.</p>
-                </div>
-            </div>
-        <% } %>
+                    <% } else { %>
+                        <div class="col-12 text-center py-5">
+                            <div class="no-products-message">
+                                <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+                                <h4 class="text-muted">No Products Available</h4>
+                                <p class="text-muted">There are currently no products to display. Please check back
+                                    later.</p>
+                            </div>
+                        </div>
+                        <% } %>
     </section>
 
     <!-- Black Theme Banner Section with Carousel -->
@@ -1057,29 +1103,39 @@
             <button class="banner-nav-btn banner-next" id="bannerNext"></button>
 
             <div class="banner-slide active">
-                <div class="banner-card black-theme">
+                <div class="banner-card black-theme"
+                    style="background-image: url('../../assets/banner.jpg'); background-size: cover; background-position: center;">
                     <div class="banner-content">
                         <h2 class="banner-title">Premium Watch Collection</h2>
-                        <p class="banner-subtitle">Experience luxury timepieces crafted with precision and elegance. Discover our exclusive collection of premium watches designed for the modern connoisseur.</p>
+                        <p class="banner-subtitle">Experience luxury timepieces crafted with precision and elegance.
+                            Discover our exclusive collection of premium watches designed for the modern connoisseur.
+                        </p>
+                        <a href="/products" class="banner-btn">Explore Collection</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="banner-slide">
+                <div class="banner-card black-theme"
+                    style="background-image: url('../../assets/men-category.jpg'); background-size: cover; background-position: center;">
+                    <div class="banner-content">
+                        <h2 class="banner-title">Premium Mens Collection</h2>
+                        <p class="banner-subtitle">Experience luxury timepieces crafted with precision and elegance.
+                            Discover our exclusive collection of premium watches designed for the modern connoisseur.
+                        </p>
                         <a href="/products" class="banner-btn">Explore Collection</a>
                     </div>
                 </div>
             </div>
             <div class="banner-slide">
-                <div class="banner-card black-theme">
+                <div class="banner-card black-theme"
+                    style="background-image: url('../../assets/women-category.jpg'); background-size: cover; background-position: center;">
                     <div class="banner-content">
-                        <h2 class="banner-title">Luxury Timepieces</h2>
-                        <p class="banner-subtitle">Handcrafted watches that combine traditional craftsmanship with modern innovation. Each piece tells a story of excellence and precision.</p>
-                        <a href="/products" class="banner-btn">Shop Now</a>
-                    </div>
-                </div>
-            </div>
-            <div class="banner-slide">
-                <div class="banner-card black-theme">
-                    <div class="banner-content">
-                        <h2 class="banner-title">Exclusive Collection</h2>
-                        <p class="banner-subtitle">Limited edition watches designed for the discerning collector. Discover rare pieces that define sophistication and style.</p>
-                        <a href="/products" class="banner-btn">Discover More</a>
+                        <h2 class="banner-title">Premium Womens Collection</h2>
+                        <p class="banner-subtitle">Experience luxury timepieces crafted with precision and elegance.
+                            Discover our exclusive collection of premium watches designed for the modern connoisseur.
+                        </p>
+                        <a href="/products" class="banner-btn">Explore Collection</a>
                     </div>
                 </div>
             </div>
@@ -1102,14 +1158,14 @@
         <h2 class="section-title">Best Selling</h2>
         <p class="section-subtitle">Our most popular timepieces loved by customers worldwide</p>
 
-        <% if (products && products.length > 0) { %>
+        <% if (products && products.length> 0) { %>
             <!-- Products Grid (shows 4 at a time) -->
             <div class="row" id="bestSellingGrid">
                 <!-- Products will be loaded here by JavaScript -->
             </div>
 
             <!-- Carousel Controls (only show if more than 4 products) -->
-            <% if (products.length > 4) { %>
+            <% if (products.length> 4) { %>
                 <div class="carousel-controls">
                     <button class="carousel-btn prev" id="bestSellingPrev" disabled></button>
                     <button class="carousel-btn next" id="bestSellingNext"></button>
@@ -1120,30 +1176,32 @@
                         </div>
                     </div>
                 </div>
-            <% } %>
+                <% } %>
 
-            <div class="text-center mt-4">
-                <a href="/products" class="view-more-btn">View All Products</a>
-            </div>
+                    <div class="text-center mt-4">
+                        <a href="/products" class="view-more-btn">View All Products</a>
+                    </div>
 
-            <!-- Hidden products data for JavaScript -->
-            <script type="application/json" id="bestSellingData">
+                    <!-- Hidden products data for JavaScript -->
+                    <script type="application/json" id="bestSellingData">
                 <%- JSON.stringify(products) %>
             </script>
 
-        <% } else { %>
-            <div class="col-12 text-center py-5">
-                <div class="no-products-message">
-                    <i class="fas fa-star fa-3x text-muted mb-3"></i>
-                    <h4 class="text-muted">No Best Selling Products Yet</h4>
-                    <p class="text-muted">Add some products to showcase your best sellers here.</p>
-                </div>
-            </div>
-        <% } %>
+                    <% } else { %>
+                        <div class="col-12 text-center py-5">
+                            <div class="no-products-message">
+                                <i class="fas fa-star fa-3x text-muted mb-3"></i>
+                                <h4 class="text-muted">No Best Selling Products Yet</h4>
+                                <p class="text-muted">Add some products to showcase your best sellers here.</p>
+                            </div>
+                        </div>
+                        <% } %>
     </section>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO"
+        crossorigin="anonymous"></script>
     <script>
         // Product Carousel Class for 4-products-at-a-time functionality
         class ProductCarousel {
@@ -1283,9 +1341,9 @@
                                         </div>
                                         ${product.totalReviews > 0 ? `
                                             <div class="rating">
-                                                ${Array.from({length: 5}, (_, i) =>
-                                                    `<i class="bi bi-star-fill ${product.averageRating >= (i + 1) ? '' : 'empty'}"></i>`
-                                                ).join('')}
+                                                ${Array.from({ length: 5 }, (_, i) =>
+                            `<i class="bi bi-star-fill ${product.averageRating >= (i + 1) ? '' : 'empty'}"></i>`
+                        ).join('')}
                                                 <span class="rating-text">(${product.averageRating.toFixed(1)})</span>
                                             </div>
                                         ` : ''}
@@ -1505,8 +1563,9 @@
             }
         }
 
+
         // Initialize everything when DOM is loaded
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             // Show redirect message if product was blocked/unavailable
             <% if (typeof redirectMessage !== 'undefined' && redirectMessage) { %>
                 Swal.fire({
@@ -1530,8 +1589,8 @@
                 <% delete session.redirectMessage; %>
             <% } %>
 
-            // Initialize page loader
-            new PageLoader();
+                // Initialize page loader
+                new PageLoader();
 
             // Initialize product carousels after a longer delay
             setTimeout(() => {
@@ -1650,5 +1709,4 @@
         }
     </script>
 
-<%- include("../partials/user/footer") %>
-    
+    <%- include("../partials/user/footer") %>

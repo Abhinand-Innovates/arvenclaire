@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retry Payment</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+    <%- include("../partials/user/header") %>
+    <style>
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --bg-tertiary: #e9ecef;
+            --border-color: #dee2e6;
+            --text-primary: #000000;
+            --text-secondary: #495057;
+            --text-muted: #6c757d;
+            --success-color: #10b981;
+            --error-color: #ef4444;
+            --warning-color: #f59e0b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #f5f5f5;
+            color: var(--text-primary);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            min-height: 100vh;
+            padding-top: 80px;
+        }
+
+        .retry-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 2rem;
+            min-height: calc(100vh - 80px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .retry-card {
+            background: var(--bg-primary);
+            border-radius: 20px;
+            padding: 3rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-color);
+            text-align: center;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .retry-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, var(--warning-color), #d97706);
+        }
+
+        .retry-icon {
+            width: 100px;
+            height: 100px;
+            background: var(--warning-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 2rem;
+            animation: retryPulse 2s ease-in-out infinite;
+        }
+
+        .retry-icon i {
+            font-size: 2.5rem;
+            color: white;
+        }
+
+        @keyframes retryPulse {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4);
+            }
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 0 0 15px rgba(245, 158, 11, 0);
+            }
+        }
+
+        .retry-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            animation: slideInUp 0.8s ease-out;
+        }
+
+        .retry-subtitle {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            animation: slideInUp 0.8s ease-out 0.2s both;
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .order-summary {
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 2rem 0;
+            border: 1px solid var(--border-color);
+            animation: slideInUp 0.8s ease-out 0.4s both;
+        }
+
+        .order-summary h4 {
+            color: var(--text-primary);
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .summary-row:last-child {
+            border-bottom: none;
+            font-weight: 600;
+            font-size: 1.125rem;
+            padding-top: 1rem;
+            margin-top: 1rem;
+            border-top: 2px solid var(--border-color);
+        }
+
+        .summary-label {
+            color: var(--text-secondary);
+        }
+
+        .summary-value {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .order-id {
+            background: var(--text-primary);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        .btn-retry-payment {
+            background: var(--warning-color);
+            color: white;
+            border: none;
+            padding: 1rem 2.5rem;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1.125rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            margin: 2rem auto 1rem;
+            animation: slideInUp 0.8s ease-out 0.6s both;
+        }
+
+        .btn-retry-payment:hover {
+            background: #d97706;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(245, 158, 11, 0.3);
+            text-decoration: none;
+        }
+
+        .btn-retry-payment:disabled {
+            background: var(--text-muted);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 1rem;
+            animation: slideInUp 0.8s ease-out 0.7s both;
+        }
+
+        .btn-secondary-custom {
+            background: transparent;
+            color: var(--text-muted);
+            border: 2px solid var(--border-color);
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+
+        .btn-secondary-custom:hover {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border-color: var(--text-primary);
+            transform: translateY(-2px);
+            text-decoration: none;
+        }
+
+        .security-info {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+            animation: slideInUp 0.8s ease-out 0.8s both;
+        }
+
+        .security-info h5 {
+            color: var(--success-color);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .security-info p {
+            color: var(--text-secondary);
+            margin: 0;
+            line-height: 1.6;
+            font-size: 0.875rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .retry-container {
+                padding: 1rem;
+            }
+
+            .retry-card {
+                padding: 2rem;
+            }
+
+            .retry-title {
+                font-size: 1.75rem;
+            }
+
+            .retry-subtitle {
+                font-size: 1rem;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .btn-retry-payment,
+            .btn-secondary-custom {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .summary-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.25rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .retry-icon {
+                width: 80px;
+                height: 80px;
+            }
+
+            .retry-icon i {
+                font-size: 2rem;
+            }
+
+            .order-summary {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="retry-container">
+        <div class="retry-card">
+            <div class="retry-icon">
+                <i class="fas fa-redo"></i>
+            </div>
+
+            <h1 class="retry-title">Retry Payment</h1>
+            <p class="retry-subtitle">Complete your payment to confirm your order</p>
+
+            <!-- Order Summary -->
+            <div class="order-summary">
+                <h4><i class="fas fa-receipt"></i> Order Summary</h4>
+                
+                <div class="summary-row">
+                    <span class="summary-label">Order ID</span>
+                    <span class="summary-value order-id"><%= order.orderId %></span>
+                </div>
+                
+                <div class="summary-row">
+                    <span class="summary-label">Total Amount</span>
+                    <span class="summary-value">₹<%= order.finalAmount.toFixed(2) %></span>
+                </div>
+                
+                <div class="summary-row">
+                    <span class="summary-label">Payment Method</span>
+                    <span class="summary-value">Online Payment</span>
+                </div>
+            </div>
+
+            <!-- Retry Payment Button -->
+            <button class="btn-retry-payment" onclick="initiatePayment()">
+                <i class="fas fa-credit-card"></i>
+                Pay ₹<%= order.finalAmount.toFixed(2) %>
+            </button>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <a href="/orders/<%= order._id %>" class="btn-secondary-custom">
+                    <i class="fas fa-eye"></i>
+                    View Order Details
+                </a>
+                <a href="/shop" class="btn-secondary-custom">
+                    <i class="fas fa-store"></i>
+                    Continue Shopping
+                </a>
+            </div>
+
+            <!-- Security Info -->
+            <div class="security-info">
+                <h5><i class="fas fa-shield-alt"></i> Secure Payment</h5>
+                <p>
+                    Your payment information is encrypted and secure. We use industry-standard security measures 
+                    to protect your financial data during the transaction process.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script>
+        // Payment data from server
+        const paymentData = {
+            key: '<%= key %>',
+            amount: <%= amount * 100 %>, // Amount in paise
+            currency: '<%= currency %>',
+            name: '<%= name %>',
+            description: '<%= description %>',
+            order_id: '<%= razorpayOrderId %>',
+            prefill: <%- JSON.stringify(prefill) %>,
+            theme: <%- JSON.stringify(theme) %>
+        };
+
+        function initiatePayment() {
+            const retryBtn = document.querySelector('.btn-retry-payment');
+            const originalText = retryBtn.innerHTML;
+
+            // Show loading state
+            retryBtn.disabled = true;
+            retryBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+
+            const options = {
+                ...paymentData,
+                handler: async function (response) {
+                    // Payment successful
+                    try {
+                        const verifyResponse = await fetch('/checkout/verify-payment', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                razorpay_order_id: response.razorpay_order_id,
+                                razorpay_payment_id: response.razorpay_payment_id,
+                                razorpay_signature: response.razorpay_signature,
+                                orderId: '<%= order.orderId %>'
+                            })
+                        });
+
+                        const verifyResult = await verifyResponse.json();
+
+                        if (verifyResult.success) {
+                            // Payment verified successfully
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Payment Successful!',
+                                text: 'Your payment has been processed successfully.',
+                                showConfirmButton: false,
+                                timer: 2000,
+                                timerProgressBar: true
+                            }).then(() => {
+                                window.location.href = `/order-success/<%= order.orderId %>`;
+                            });
+                        } else {
+                            throw new Error(verifyResult.message || 'Payment verification failed');
+                        }
+
+                    } catch (error) {
+                        console.error('Payment verification error:', error);
+                        
+                        // Mark payment as failed and redirect to failure page
+                        try {
+                            await fetch('/checkout/payment-failed', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    orderId: '<%= order.orderId %>',
+                                    error: { description: 'Payment verification failed' }
+                                })
+                            });
+                            
+                            // Redirect to failure page
+                            window.location.href = `/order-failure/<%= order.orderId %>`;
+                        } catch (failureError) {
+                            // Fallback: show alert if redirect fails
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Payment Verification Failed',
+                                text: 'There was an issue verifying your payment. Please contact support.',
+                                confirmButtonColor: '#ef4444'
+                            });
+
+                            // Reset button
+                            retryBtn.disabled = false;
+                            retryBtn.innerHTML = originalText;
+                        }
+                    }
+                },
+                modal: {
+                    ondismiss: function() {
+                        // Payment modal closed
+                        retryBtn.disabled = false;
+                        retryBtn.innerHTML = originalText;
+                    }
+                }
+            };
+
+            // Create Razorpay instance and open payment modal
+            const rzp = new Razorpay(options);
+            
+            rzp.on('payment.failed', async function (response) {
+                // Payment failed
+                try {
+                    await fetch('/checkout/payment-failed', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            orderId: '<%= order.orderId %>',
+                            error: response.error
+                        })
+                    });
+
+                    // Redirect to failure page instead of showing alert
+                    window.location.href = `/order-failure/<%= order.orderId %>`;
+
+                } catch (error) {
+                    console.error('Error handling payment failure:', error);
+                    
+                    // Fallback: show alert if redirect fails
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Payment Failed',
+                        text: response.error.description || 'Payment was not successful',
+                        confirmButtonColor: '#ef4444'
+                    });
+
+                    // Reset button
+                    retryBtn.disabled = false;
+                    retryBtn.innerHTML = originalText;
+                }
+            });
+
+            rzp.open();
+        }
+    </script>
+
+    <%- include("../partials/user/footer") %>
+</body>
+</html>

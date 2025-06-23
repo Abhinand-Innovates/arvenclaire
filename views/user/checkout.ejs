@@ -469,7 +469,7 @@
                 transform: translateY(0);
             }
         }
-    </style>
+        </style>
 </head>
 <body>
     <div class="checkout-container">
@@ -647,6 +647,29 @@
                 <!-- Payment Method -->
                 <div class="mt-3 pt-3" style="border-top: 2px solid var(--border-color);">
                     <h5 class="mb-3">Payment Method</h5>
+                    
+                    <!-- Wallet Payment -->
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="radio" name="paymentMethod" id="wallet" value="Wallet" 
+                               <%= (user.walletBalance && user.walletBalance >= orderSummary.finalAmount) ? '' : 'disabled' %>>
+                        <label class="form-check-label <%= (user.walletBalance && user.walletBalance >= orderSummary.finalAmount) ? '' : 'text-muted' %>" for="wallet">
+                            <i class="fas fa-wallet"></i> 
+                            Wallet Balance: ₹<%= (user.walletBalance || 0).toFixed(2) %>
+                            <% if (!user.walletBalance || user.walletBalance < orderSummary.finalAmount) { %>
+                                <small class="text-danger d-block">Insufficient balance</small>
+                            <% } %>
+                        </label>
+                    </div>
+
+                    <!-- Online Payment -->
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="radio" name="paymentMethod" id="online" value="Online Payment">
+                        <label class="form-check-label" for="online">
+                            <i class="fas fa-credit-card"></i> Online Payment (UPI, Cards, Net Banking)
+                        </label>
+                    </div>
+
+                    <!-- Cash on Delivery -->
                     <div class="form-check">
                         <input class="form-check-input" type="radio" name="paymentMethod" id="cod" value="Cash on Delivery" checked>
                         <label class="form-check-label" for="cod">
@@ -664,10 +687,9 @@
         </div>
     </div>
 
-
-
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <script>
         let selectedAddressId = null;
 
@@ -733,6 +755,9 @@
                 return;
             }
 
+            // Get selected payment method
+            const selectedPaymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
+            
             const placeOrderBtn = document.querySelector('.btn-place-order');
             const originalText = placeOrderBtn.innerHTML;
 
@@ -741,44 +766,37 @@
             placeOrderBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Placing Order...';
 
             try {
-                const response = await fetch('/checkout/place-order', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        selectedAddressId: selectedAddressId,
-                        paymentMethod: 'Cash on Delivery'
-                    })
-                });
-
-                const result = await response.json();
-
-                if (result.success) {
-                    // Redirect to order success page
-                    window.location.href = `/order-success/${result.orderId}`;
+                if (selectedPaymentMethod === 'Online Payment') {
+                    // Handle Razorpay payment
+                    await handleOnlinePayment();
                 } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Order Failed',
-                        text: result.message || 'Failed to place order',
-                        position: 'bottom-end',
-                        background: '#ffffff',
-                        color: '#000000',
-                        confirmButtonColor: '#000000',
-                        iconColor: '#dc3545'
+                    // Handle COD and Wallet payments
+                    const response = await fetch('/checkout/place-order', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            selectedAddressId: selectedAddressId,
+                            paymentMethod: selectedPaymentMethod
+                        })
                     });
 
-                    // Reset button
-                    placeOrderBtn.disabled = false;
-                    placeOrderBtn.innerHTML = originalText;
+                    const result = await response.json();
+
+                    if (result.success) {
+                        // Redirect to order success page
+                        window.location.href = `/order-success/${result.orderId}`;
+                    } else {
+                        throw new Error(result.message || 'Failed to place order');
+                    }
                 }
             } catch (error) {
                 console.error('Error placing order:', error);
                 Swal.fire({
                     icon: 'error',
-                    title: 'Error!',
-                    text: 'Failed to place order. Please try again.',
+                    title: 'Order Failed',
+                    text: error.message || 'Failed to place order. Please try again.',
                     position: 'bottom-end',
                     background: '#ffffff',
                     color: '#000000',
@@ -791,6 +809,162 @@
                 placeOrderBtn.innerHTML = originalText;
             }
         }
-    </script>
+
+        // Handle online payment with Razorpay
+        async function handleOnlinePayment() {
+            try {
+                // Create Razorpay order
+                const response = await fetch('/checkout/create-razorpay-order', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        selectedAddressId: selectedAddressId,
+                        paymentMethod: 'Online Payment'
+                    })
+                });
+
+                const result = await response.json();
+
+                if (!result.success) {
+                    throw new Error(result.message || 'Failed to create payment order');
+                }
+
+                // Initialize Razorpay
+                const options = {
+                    key: result.razorpayKeyId,
+                    amount: result.amount,
+                    currency: result.currency,
+                    name: 'ARVENCLAIRE',
+                    description: 'Order Payment',
+                    order_id: result.razorpayOrderId,
+                    prefill: {
+                        name: result.prefill.name,
+                        email: result.prefill.email,
+                        contact: result.prefill.contact
+                    },
+                    theme: {
+                        color: '#000000'
+                    },
+                    handler: async function (response) {
+                        // Payment successful - verify payment
+                        try {
+                            const verifyResponse = await fetch('/checkout/verify-payment', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    razorpay_order_id: response.razorpay_order_id,
+                                    razorpay_payment_id: response.razorpay_payment_id,
+                                    razorpay_signature: response.razorpay_signature,
+                                    orderId: result.orderId
+                                })
+                            });
+
+                            const verifyResult = await verifyResponse.json();
+
+                            if (verifyResult.success) {
+                                // Payment verified successfully
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Payment Successful!',
+                                    text: 'Your payment has been processed successfully.',
+                                    showConfirmButton: false,
+                                    timer: 2000,
+                                    timerProgressBar: true
+                                }).then(() => {
+                                    window.location.href = `/order-success/${result.orderId}`;
+                                });
+                            } else {
+                                throw new Error(verifyResult.message || 'Payment verification failed');
+                            }
+                        } catch (error) {
+                            console.error('Payment verification error:', error);
+                            
+                            // Mark payment as failed and redirect to failure page
+                            try {
+                                await fetch('/checkout/payment-failed', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify({
+                                        orderId: result.orderId,
+                                        error: { description: 'Payment verification failed' }
+                                    })
+                                });
+                                
+                                // Redirect to failure page
+                                window.location.href = `/order-failure/${result.orderId}`;
+                            } catch (failureError) {
+                                // Fallback: show alert if redirect fails
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Payment Verification Failed',
+                                    text: 'There was an issue verifying your payment. Please contact support.',
+                                    confirmButtonColor: '#ef4444'
+                                });
+                            }
+                        }
+                    },
+                    modal: {
+                        ondismiss: function() {
+                            // Payment modal closed - reset button
+                            const placeOrderBtn = document.querySelector('.btn-place-order');
+                            placeOrderBtn.disabled = false;
+                            placeOrderBtn.innerHTML = '<i class="fas fa-check-circle"></i> Place Order';
+                        }
+                    }
+                };
+
+                // Create Razorpay instance and open payment modal
+                const rzp = new Razorpay(options);
+                
+                rzp.on('payment.failed', async function (response) {
+                    // Payment failed
+                    try {
+                        await fetch('/checkout/payment-failed', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                orderId: result.orderId,
+                                error: response.error
+                            })
+                        });
+
+                        // Redirect to failure page instead of showing alert
+                        window.location.href = `/order-failure/${result.orderId}`;
+
+                    } catch (error) {
+                        console.error('Error handling payment failure:', error);
+                        
+                        // Fallback: show alert if redirect fails
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Payment Failed',
+                            text: response.error.description || 'Payment was not successful',
+                            confirmButtonColor: '#ef4444'
+                        });
+
+                        // Reset button
+                        const placeOrderBtn = document.querySelector('.btn-place-order');
+                        placeOrderBtn.disabled = false;
+                        placeOrderBtn.innerHTML = '<i class="fas fa-check-circle"></i> Place Order';
+                    }
+                });
+
+                rzp.open();
+
+            } catch (error) {
+                console.error('Error creating Razorpay order:', error);
+                throw error;
+            }
+        }
+
+            </script>
 
     <%- include("../partials/user/footer") %>

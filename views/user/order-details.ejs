@@ -458,7 +458,7 @@ if t    eturn -<!DOCTYPE html>
             }
         }
     </style>
-</head>
+    </head>
 <body>
     <!-- Main Content -->
     <div class="main-content">
@@ -510,7 +510,16 @@ if t    eturn -<!DOCTYPE html>
                         </div>
                         <div class="info-item">
                             <span class="info-label">Payment Method</span>
-                            <span class="info-value"><%= order.paymentMethod %></span>
+                            <span class="info-value">
+                                <%= order.paymentMethod %>
+                                <% if (order.paymentStatus === 'Failed') { %>
+                                    <br><span class="payment-status-failed">Payment Failed</span>
+                                <% } else if (order.paymentStatus === 'Pending') { %>
+                                    <br><span class="payment-status-pending">Payment Pending</span>
+                                <% } else if (order.paymentStatus === 'Completed') { %>
+                                    <br><span class="payment-status-completed">Payment Completed</span>
+                                <% } %>
+                            </span>
                         </div>
                         <div class="info-item">
                             <span class="info-label">Estimated Delivery</span>
@@ -800,11 +809,25 @@ if t    eturn -<!DOCTYPE html>
                 </div>
                 <% } %>
 
-                <!-- Download Invoice Button -->
-                <button class="btn-download-invoice" onclick="downloadInvoice('<%= order.orderId %>')">
-                    <i class="fas fa-download"></i>
-                    Download Invoice
-                </button>
+                <% if (order.paymentStatus === 'Failed') { %>
+                <div style="margin-top: 1rem; padding: 0.75rem; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; font-size: 0.875rem; color: #991b1b;">
+                    <i class="fas fa-exclamation-triangle" style="color: #ef4444; margin-right: 0.5rem;"></i>
+                    <strong>Payment Failed:</strong> Your order has been created but payment was not successful. Please retry payment to complete your order and access your invoice.
+                </div>
+                <% } %>
+
+                <!-- Download Invoice Button / Retry Payment Button -->
+                <% if (order.paymentStatus === 'Failed') { %>
+                    <a href="/checkout/retry-payment/<%= order.orderId %>" class="btn-retry-payment">
+                        <i class="fas fa-redo"></i>
+                        Retry Payment
+                    </a>
+                <% } else if (order.paymentStatus === 'Completed') { %>
+                    <button class="btn-download-invoice" onclick="downloadInvoice('<%= order.orderId %>')">
+                        <i class="fas fa-download"></i>
+                        Download Invoice
+                    </button>
+                <% } %>
 
                 <!-- Cancel Order Button / Return Button -->
                 <% if (order.status === 'Delivered') { %>
@@ -2063,4 +2086,5 @@ if t    eturn -<!DOCTYPE html>
     </script>
 </body>
 </html>
+
 
