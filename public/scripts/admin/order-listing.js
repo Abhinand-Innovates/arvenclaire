@@ -56,6 +56,25 @@ function debounce(func, wait) {
     };
 }
 
+// Calculate current total (same logic as order details page)
+function calculateCurrentTotal(order) {
+    const activeItems = order.orderedItems.filter(item => item.status === 'Active');
+    const returnRequestItems = order.orderedItems.filter(item => item.status === 'Return Request');
+    const includedItems = [...activeItems, ...returnRequestItems];
+    
+    let amountAfterDiscount = 0;
+    includedItems.forEach(item => {
+        amountAfterDiscount += item.totalPrice;
+    });
+    
+    let currentTotal = amountAfterDiscount;
+    if (includedItems.length > 0) {
+        currentTotal += order.shippingCharges;
+    }
+    
+    return currentTotal;
+}
+
 // Navigate to page
 function goToPage(page) {
     currentPage = page;
@@ -222,8 +241,7 @@ function renderOrdersTable(orders, paginationData) {
             </td>
             <td>
                 <div class="order-amount">
-                    <strong>₹${order.finalAmount.toLocaleString()}</strong>
-                    ${order.discount > 0 ? `<br><small class="text-success">-₹${order.discount.toLocaleString()} discount</small>` : ''}
+                    <strong>₹${calculateCurrentTotal(order).toFixed(2)}</strong>
                 </div>
             </td>
             <td>

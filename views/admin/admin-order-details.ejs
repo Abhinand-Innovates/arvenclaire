@@ -128,6 +128,26 @@
                             <span class="detail-value"><%= new Date(order.estimatedDelivery).toLocaleDateString() %></span>
                         </div>
                         <% } %>
+                        <%
+                            // Calculate current total (same as user order details page Order Summary card)
+                            const activeItems = order.orderedItems.filter(item => item.status === 'Active');
+                            const returnRequestItems = order.orderedItems.filter(item => item.status === 'Return Request');
+                            const includedItems = [...activeItems, ...returnRequestItems];
+                            
+                            let amountAfterDiscount = 0;
+                            includedItems.forEach(item => {
+                                amountAfterDiscount += item.totalPrice;
+                            });
+                            
+                            let currentTotal = amountAfterDiscount;
+                            if (includedItems.length > 0) {
+                                currentTotal += order.shippingCharges;
+                            }
+                        %>
+                        <div class="detail-item">
+                            <span class="detail-label" style="font-weight: 700;">Total Amount</span>
+                            <span class="detail-value" style="font-weight: 700; color: #059669; font-size: 1.1em;">₹<%= currentTotal.toLocaleString() %></span>
+                        </div>
                     </div>
                 </div>
 
@@ -255,44 +275,11 @@
                 </div>
             </div>
 
-            <!-- Row 3: Final Amount & Order Timeline -->
-            <div class="details-row">
-                <!-- Final Amount Card -->
-                <div class="detail-card amount-card">
-                    <div class="card-header">
-                        <h3 class="card-title">
-                            <i class="fas fa-calculator"></i>
-                            Final Amount
-                        </h3>
-                    </div>
-                    <div class="card-content">
-                        <div class="amount-breakdown">
-                            <div class="amount-item">
-                                <span class="amount-label">Subtotal</span>
-                                <span class="amount-value">₹<%= order.totalPrice.toLocaleString() %></span>
-                            </div>
-                            <% if (order.discount > 0) { %>
-                            <div class="amount-item discount">
-                                <span class="amount-label">Discount</span>
-                                <span class="amount-value">-₹<%= order.discount.toLocaleString() %></span>
-                            </div>
-                            <% } %>
-                            <div class="amount-item">
-                                <span class="amount-label">Shipping Charges</span>
-                                <span class="amount-value">₹<%= order.shippingCharges.toLocaleString() %></span>
-                            </div>
-                            <div class="amount-divider"></div>
-                            <div class="amount-item total">
-                                <span class="amount-label">Final Amount</span>
-                                <span class="amount-value">₹<%= order.finalAmount.toLocaleString() %></span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
+            <!-- Row 3: Order Timeline (Full Width) -->
+            <% if (order.orderTimeline && order.orderTimeline.length > 0) { %>
+            <div class="details-row full-width">
                 <!-- Order Timeline Card -->
-                <% if (order.orderTimeline && order.orderTimeline.length > 0) { %>
-                <div class="detail-card timeline-card">
+                <div class="detail-card timeline-card full-width-card">
                     <div class="card-header">
                         <h3 class="card-title">
                             <i class="fas fa-history"></i>
@@ -316,8 +303,8 @@
                         </div>
                     </div>
                 </div>
-                <% } %>
             </div>
+            <% } %>
         </div>
     </div>
 

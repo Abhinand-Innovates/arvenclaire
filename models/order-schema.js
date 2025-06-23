@@ -64,6 +64,14 @@ const orderSchema = new Schema({
     returnApprovedAt: {
       type: Date,
       default: null
+    },
+    returnRejectedAt: {
+      type: Date,
+      default: null
+    },
+    rejectionReason: {
+      type: String,
+      default: null
     }
   }],
   totalPrice: {

@@ -537,7 +537,10 @@
             <div class="stat-card">
                 <i class="fas fa-times-circle rejected"></i>
                 <h3 id="rejectedCount">
-                    <%= returnRequests ? returnRequests.filter(req => req.returnRejectedAt).length : 0 %>
+                    <%= returnRequests ? returnRequests.filter(req => 
+                        req.returnRejectedAt || 
+                        (req.returnType === 'individual' && req.returnItems.some(item => item.returnRejectedAt))
+                    ).length : 0 %>
                 </h3>
                 <p>Rejected Requests</p>
             </div>
@@ -821,26 +824,31 @@
                                         </div>
                                     </td>
                                     <td>
+                                        <%
+                                            // Calculate current total (same as order details page Total Amount field)
+                                            const activeItems = order.orderedItems.filter(item => item.status === 'Active');
+                                            const returnRequestItems = order.orderedItems.filter(item => item.status === 'Return Request');
+                                            const includedItems = [...activeItems, ...returnRequestItems];
+                                            
+                                            let amountAfterDiscount = 0;
+                                            includedItems.forEach(item => {
+                                                amountAfterDiscount += item.totalPrice;
+                                            });
+                                            
+                                            let currentTotal = amountAfterDiscount;
+                                            if (includedItems.length > 0) {
+                                                currentTotal += order.shippingCharges;
+                                            }
+                                        %>
                                         <div class="amount-breakdown">
                                             <div class="subtotal">
                                                 <small class="text-muted">
-                                                    <% if (order.returnType === 'individual') { %>
-                                                        Return Amount
-                                                    <% } else { %>
-                                                        Order Total
-                                                    <% } %>
+                                                    Total Amount
                                                 </small>
                                             </div>
                                             <div class="total-price">
-                                                <strong>₹<%= (order.returnAmount || 0).toFixed(2) %></strong>
+                                                <strong>₹<%= currentTotal.toFixed(2) %></strong>
                                             </div>
-                                            <% if (order.returnType === 'individual' && order.returnItems) { %>
-                                                <div class="return-items-info">
-                                                    <small class="text-info">
-                                                        <%= order.returnItems.length %> item(s) being returned
-                                                    </small>
-                                                </div>
-                                            <% } %>
                                         </div>
                                     </td>
                                     <td>
@@ -864,10 +872,14 @@
                                             // Individual item return status
                                             const hasReturnedItems = order.returnItems.some(item => item.status === 'Returned');
                                             const hasPendingItems = order.returnItems.some(item => item.status === 'Return Request');
+                                            const hasRejectedItems = order.returnItems.some(item => item.returnRejectedAt && item.status === 'Active');
                                             
-                                            if (hasReturnedItems && !hasPendingItems) {
+                                            if (hasReturnedItems && !hasPendingItems && !hasRejectedItems) {
                                                 statusClass = 'status-returned';
                                                 statusText = 'Approved';
+                                            } else if (hasRejectedItems && !hasPendingItems && !hasReturnedItems) {
+                                                statusClass = 'status-rejected';
+                                                statusText = 'Rejected';
                                             } else if (hasPendingItems) {
                                                 statusClass = 'status-pending';
                                                 statusText = 'Pending';
@@ -891,16 +903,20 @@
                                         <div class="action-buttons">
                                             <% 
                                             let showApproveReject = false;
+                                            let isRejected = false;
+                                            
                                             if (order.returnType === 'individual') {
                                                 // Show approve/reject if there are pending individual items
                                                 showApproveReject = order.returnItems.some(item => item.status === 'Return Request');
+                                                isRejected = order.returnItems.some(item => item.returnRejectedAt && item.status === 'Active');
                                             } else {
                                                 // Show approve/reject if entire order is pending return
                                                 showApproveReject = order.status === 'Return Request';
+                                                isRejected = order.returnRejectedAt && order.status === 'Delivered';
                                             }
                                             %>
                                             
-                                            <% if (showApproveReject) { %>
+                                            <% if (showApproveReject && !isRejected) { %>
                                                 <button class="btn btn-success btn-sm" 
                                                         onclick="approveReturn('<%= order._id %>')">
                                                     <i class="fas fa-check"></i> Approve

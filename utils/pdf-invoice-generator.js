@@ -5,6 +5,10 @@ class InvoiceGenerator {
   constructor() {
     this.doc = null;
     this.currentY = 0;
+    this.pageWidth = 595.28; // A4 width in points
+    this.pageHeight = 841.89; // A4 height in points
+    this.margin = 50;
+    this.contentWidth = this.pageWidth - (this.margin * 2);
   }
 
   // Generate PDF invoice for an order
@@ -14,7 +18,7 @@ class InvoiceGenerator {
         // Create new PDF document
         this.doc = new PDFDocument({ 
           size: 'A4', 
-          margin: 50,
+          margin: this.margin,
           info: {
             Title: `Invoice ${order.orderId}`,
             Author: companyConfig.name,
@@ -34,7 +38,6 @@ class InvoiceGenerator {
 
         // Generate invoice content
         this.addHeader();
-        this.addCompanyInfo();
         this.addInvoiceInfo(order);
         this.addBillingInfo(user, order);
         this.addItemsTable(order);
@@ -50,158 +53,157 @@ class InvoiceGenerator {
     });
   }
 
-  // Add header with company name
+  // Add simple header
   addHeader() {
-    this.currentY = 50;
+    this.currentY = this.margin;
     
-    // Company name
+    // Company name and Invoice title on same line
     this.doc
-      .fontSize(28)
-      .fillColor(companyConfig.colors.primary)
+      .fontSize(16)
+      .fillColor('#000000')
       .font('Helvetica-Bold')
-      .text(companyConfig.name, 50, this.currentY);
+      .text(companyConfig.name, this.margin, this.currentY);
     
-    this.currentY += 35;
-    
-    // Tagline
     this.doc
-      .fontSize(12)
-      .fillColor(companyConfig.colors.secondary)
+      .fontSize(14)
+      .fillColor('#000000')
+      .font('Helvetica-Bold');
+    
+    // Tagline on second line
+    this.doc
+      .fontSize(8)
+      .fillColor('#666666')
       .font('Helvetica')
-      .text(companyConfig.tagline, 50, this.currentY);
+      .text(companyConfig.tagline, this.margin, this.currentY + 20);
     
-    this.currentY += 30;
-    
-    // Add horizontal line
+    // Horizontal line
+    this.currentY += 40;
     this.doc
-      .strokeColor(companyConfig.colors.secondary)
+      .strokeColor('#cccccc')
       .lineWidth(1)
-      .moveTo(50, this.currentY)
-      .lineTo(545, this.currentY)
+      .moveTo(this.margin, this.currentY)
+      .lineTo(this.pageWidth - this.margin, this.currentY)
       .stroke();
     
     this.currentY += 20;
   }
 
-  // Add company information
-  addCompanyInfo() {
-    const startY = this.currentY;
-    
-    // Company address
-    this.doc
-      .fontSize(10)
-      .fillColor(companyConfig.colors.secondary)
-      .font('Helvetica')
-      .text('From:', 50, this.currentY);
-    
-    this.currentY += 15;
-    
-    this.doc
-      .fontSize(11)
-      .fillColor(companyConfig.colors.primary)
-      .font('Helvetica-Bold')
-      .text(companyConfig.name, 50, this.currentY);
-    
-    this.currentY += 12;
-    
-    this.doc
-      .fontSize(9)
-      .fillColor(companyConfig.colors.secondary)
-      .font('Helvetica')
-      .text(companyConfig.address.line1, 50, this.currentY);
-    
-    this.currentY += 10;
-    
-    this.doc.text(companyConfig.address.line2, 50, this.currentY);
-    this.currentY += 10;
-    
-    this.doc.text(`${companyConfig.address.city}, ${companyConfig.address.state} ${companyConfig.address.pincode}`, 50, this.currentY);
-    this.currentY += 10;
-    
-    this.doc.text(companyConfig.address.country, 50, this.currentY);
-    this.currentY += 15;
-    
-    this.doc.text(`Phone: ${companyConfig.contact.phone}`, 50, this.currentY);
-    this.currentY += 10;
-    
-    this.doc.text(`Email: ${companyConfig.contact.email}`, 50, this.currentY);
-    this.currentY += 10;
-    
-    this.doc.text(`Website: ${companyConfig.contact.website}`, 50, this.currentY);
-    
-    this.currentY = Math.max(this.currentY + 20, startY + 120);
-  }
-
   // Add invoice information
   addInvoiceInfo(order) {
-    const rightX = 350;
-    const startY = 120;
-    
-    // Invoice title
-    this.doc
-      .fontSize(20)
-      .fillColor(companyConfig.colors.primary)
-      .font('Helvetica-Bold')
-      .text('INVOICE', rightX, startY);
-    
-    // Invoice details
-    this.doc
-      .fontSize(10)
-      .fillColor(companyConfig.colors.secondary)
-      .font('Helvetica')
-      .text('Invoice Number:', rightX, startY + 35)
-      .text('Order ID:', rightX, startY + 50)
-      .text('Invoice Date:', rightX, startY + 65)
-      .text('Payment Method:', rightX, startY + 80);
+    // Create a bordered box for invoice details
+    const boxWidth = 200;
+    const boxHeight = 80;
+    const boxX = this.pageWidth - this.margin - boxWidth;
     
     this.doc
-      .fontSize(10)
-      .fillColor(companyConfig.colors.primary)
-      .font('Helvetica-Bold')
-      .text(`${companyConfig.invoice.prefix}-${order.orderId}`, rightX + 80, startY + 35)
-      .text(order.orderId, rightX + 80, startY + 50)
-      .text(new Date(order.invoiceDate).toLocaleDateString('en-IN'), rightX + 80, startY + 65)
-      .text(order.paymentMethod, rightX + 80, startY + 80);
+      .rect(boxX, this.currentY, boxWidth, boxHeight)
+      .stroke('#cccccc');
     
-    this.currentY = Math.max(this.currentY, startY + 110);
+    // Invoice details in a neat grid
+    const labelX = boxX + 10;
+    const valueX = boxX + 90;
+    let detailY = this.currentY + 12;
+    
+    const details = [
+      { label: 'Invoice No:', value: `${companyConfig.invoice.prefix}-${order.orderId}` },
+      { label: 'Order ID:', value: order.orderId },
+      { label: 'Date:', value: new Date(order.invoiceDate || order.createdAt).toLocaleDateString('en-IN') },
+      { label: 'Payment:', value: order.paymentMethod }
+    ];
+    
+    details.forEach(detail => {
+      this.doc
+        .fontSize(8)
+        .fillColor('#666666')
+        .font('Helvetica')
+        .text(detail.label, labelX, detailY);
+      
+      this.doc
+        .fontSize(8)
+        .fillColor('#000000')
+        .font('Helvetica-Bold')
+        .text(detail.value, valueX, detailY);
+      
+      detailY += 16;
+    });
+    
+    this.currentY += boxHeight + 20;
   }
 
   // Add billing information
   addBillingInfo(user, order) {
-    this.currentY += 20;
+    const leftWidth = (this.contentWidth - 40) / 2;
     
-    // Billing to section
+    // Company info
     this.doc
       .fontSize(10)
-      .fillColor(companyConfig.colors.secondary)
-      .font('Helvetica')
-      .text('Bill To:', 50, this.currentY);
+      .fillColor('#000000')
+      .font('Helvetica-Bold')
+      .text('From:', this.margin, this.currentY);
     
     this.currentY += 15;
     
     this.doc
-      .fontSize(11)
-      .fillColor(companyConfig.colors.primary)
+      .fontSize(9)
+      .fillColor('#000000')
       .font('Helvetica-Bold')
-      .text(order.shippingAddress.name, 50, this.currentY);
+      .text(companyConfig.name, this.margin, this.currentY);
     
     this.currentY += 12;
     
+    const companyInfo = [
+      companyConfig.address.line1,
+      companyConfig.address.line2,
+      `${companyConfig.address.city}, ${companyConfig.address.state} ${companyConfig.address.pincode}`,
+      companyConfig.contact.phone,
+      companyConfig.contact.email
+    ];
+    
+    companyInfo.forEach(line => {
+      this.doc
+        .fontSize(8)
+        .fillColor('#333333')
+        .font('Helvetica')
+        .text(line, this.margin, this.currentY);
+      this.currentY += 10;
+    });
+    
+    // Customer info
+    const customerX = this.margin + leftWidth + 40;
+    let customerY = this.currentY - (companyInfo.length * 10) - 27;
+    
+    this.doc
+      .fontSize(10)
+      .fillColor('#000000')
+      .font('Helvetica-Bold')
+      .text('Bill To:', customerX, customerY);
+    
+    customerY += 15;
+    
     this.doc
       .fontSize(9)
-      .fillColor(companyConfig.colors.secondary)
-      .font('Helvetica')
-      .text(order.shippingAddress.landMark, 50, this.currentY);
+      .fillColor('#000000')
+      .font('Helvetica-Bold')
+      .text(order.shippingAddress.name, customerX, customerY);
     
-    this.currentY += 10;
+    customerY += 12;
     
-    this.doc.text(`${order.shippingAddress.city}, ${order.shippingAddress.state} ${order.shippingAddress.pincode}`, 50, this.currentY);
-    this.currentY += 10;
+    const customerInfo = [
+      order.shippingAddress.landMark,
+      `${order.shippingAddress.city}, ${order.shippingAddress.state}`,
+      `PIN: ${order.shippingAddress.pincode}`,
+      order.shippingAddress.phone,
+      user.email
+    ];
     
-    this.doc.text(`Phone: ${order.shippingAddress.phone}`, 50, this.currentY);
-    this.currentY += 10;
-    
-    this.doc.text(`Email: ${user.email}`, 50, this.currentY);
+    customerInfo.forEach(line => {
+      this.doc
+        .fontSize(8)
+        .fillColor('#333333')
+        .font('Helvetica')
+        .text(line, customerX, customerY);
+      customerY += 10;
+    });
     
     this.currentY += 30;
   }
@@ -209,298 +211,299 @@ class InvoiceGenerator {
   // Add items table
   addItemsTable(order) {
     const tableTop = this.currentY;
-    const itemCodeX = 50;
-    const descriptionX = 150;
-    const quantityX = 350;
-    const priceX = 400;
-    const totalX = 480;
-    const statusX = 520;
+    const rowHeight = 25;
+    const headerHeight = 30;
     
     // Table header
     this.doc
-      .fontSize(10)
-      .fillColor('#ffffff')
-      .rect(50, tableTop, 495, 25)
-      .fill(companyConfig.colors.primary);
+      .rect(this.margin, tableTop, this.contentWidth, headerHeight)
+      .fill('#f5f5f5')
+      .stroke('#cccccc');
     
+    // Column headers
     this.doc
-      .fillColor('#ffffff')
+      .fontSize(8)
+      .fillColor('#000000')
       .font('Helvetica-Bold')
-      .text('Item', itemCodeX + 5, tableTop + 8)
-      .text('Description', descriptionX + 5, tableTop + 8)
-      .text('Qty', quantityX + 5, tableTop + 8)
-      .text('Price', priceX + 5, tableTop + 8)
-      .text('Total', totalX + 5, tableTop + 8);
+      .text('Product', this.margin + 10, tableTop + 10)
+      .text('Qty', this.margin + 250, tableTop + 10)
+      .text('Price', this.margin + 300, tableTop + 10)
+      .text('Total', this.margin + 370, tableTop + 10)
+      .text('Status', this.margin + 440, tableTop + 10);
     
-    this.currentY = tableTop + 25;
+    this.currentY = tableTop + headerHeight;
     
-    // Separate active and cancelled items
-    const activeItems = order.orderedItems.filter(item => item.status === 'Active');
-    const cancelledItems = order.orderedItems.filter(item => item.status === 'Cancelled');
-    
-    // Table rows for active items
-    activeItems.forEach((item, index) => {
+    // Add items
+    order.orderedItems.forEach((item, index) => {
       const rowY = this.currentY;
-      const rowHeight = 30;
+      
+      // Row border
+      this.doc
+        .rect(this.margin, rowY, this.contentWidth, rowHeight)
+        .stroke('#e0e0e0');
       
       // Alternate row background
-      if (index % 2 === 0) {
+      if (index % 2 === 1) {
         this.doc
-          .rect(50, rowY, 495, rowHeight)
-          .fill(companyConfig.colors.accent);
+          .rect(this.margin, rowY, this.contentWidth, rowHeight)
+          .fill('#fafafa');
       }
       
+      // Product name
       this.doc
-        .fontSize(9)
-        .fillColor(companyConfig.colors.primary)
+        .fontSize(8)
+        .fillColor('#000000')
         .font('Helvetica')
-        .text(item.product.productName.substring(0, 15) + '...', itemCodeX + 5, rowY + 8)
-        .text(`${item.product.brand} - ${item.product.productName.substring(0, 20)}...`, descriptionX + 5, rowY + 8)
-        .text(item.quantity.toString(), quantityX + 5, rowY + 8)
-        .text(`₹${item.price.toFixed(2)}`, priceX + 5, rowY + 8)
-        .text(`₹${item.totalPrice.toFixed(2)}`, totalX + 5, rowY + 8);
+        .text(this.truncateText(item.product.productName, 35), this.margin + 10, rowY + 8);
+      
+      // Quantity
+      this.doc
+        .fontSize(8)
+        .fillColor('#000000')
+        .font('Helvetica')
+        .text(item.quantity.toString(), this.margin + 250, rowY + 8);
+      
+      // Price
+      this.doc
+        .fontSize(8)
+        .fillColor('#000000')
+        .font('Helvetica')
+        .text(`₹${item.price.toFixed(2)}`, this.margin + 300, rowY + 8);
+      
+      // Total
+      this.doc
+        .fontSize(8)
+        .fillColor('#000000')
+        .font('Helvetica-Bold')
+        .text(`₹${item.totalPrice.toFixed(2)}`, this.margin + 370, rowY + 8);
+      
+      // Status
+      this.doc
+        .fontSize(7)
+        .fillColor('#666666')
+        .font('Helvetica')
+        .text(item.status, this.margin + 440, rowY + 8);
       
       this.currentY += rowHeight;
     });
     
-    // Add cancelled items section if any exist
-    if (cancelledItems.length > 0) {
-      // Add separator for cancelled items
-      this.currentY += 10;
-      this.doc
-        .fontSize(10)
-        .fillColor('#ef4444')
-        .font('Helvetica-Bold')
-        .text('Cancelled Items:', itemCodeX + 5, this.currentY);
-      this.currentY += 20;
-      
-      // Cancelled items rows
-      cancelledItems.forEach((item, index) => {
-        const rowY = this.currentY;
-        const rowHeight = 30;
-        
-        // Light red background for cancelled items
-        this.doc
-          .rect(50, rowY, 495, rowHeight)
-          .fill('#fee2e2');
-        
-        this.doc
-          .fontSize(9)
-          .fillColor('#991b1b')
-          .font('Helvetica')
-          .text(item.product.productName.substring(0, 15) + '...', itemCodeX + 5, rowY + 8)
-          .text(`${item.product.brand} - ${item.product.productName.substring(0, 20)}...`, descriptionX + 5, rowY + 8)
-          .text(item.quantity.toString(), quantityX + 5, rowY + 8)
-          .text(`₹${item.price.toFixed(2)}`, priceX + 5, rowY + 8)
-          .text(`₹${item.totalPrice.toFixed(2)}`, totalX + 5, rowY + 8);
-        
-        // Add "CANCELLED" text
-        this.doc
-          .fontSize(8)
-          .fillColor('#991b1b')
-          .font('Helvetica-Bold')
-          .text('CANCELLED', statusX - 40, rowY + 10);
-        
-        this.currentY += rowHeight;
-      });
-    }
-    
-    // Table border
+    // Table bottom border
     this.doc
-      .strokeColor(companyConfig.colors.secondary)
-      .lineWidth(1)
-      .rect(50, tableTop, 495, this.currentY - tableTop)
-      .stroke();
+      .rect(this.margin, tableTop, this.contentWidth, this.currentY - tableTop)
+      .stroke('#cccccc');
     
     this.currentY += 20;
   }
 
   // Add summary section
   addSummary(order) {
-    const summaryX = 350;
-    
-    // Calculate current totals based on active items
+    // Calculate totals using the same logic as order details page
     const activeItems = order.orderedItems.filter(item => item.status === 'Active');
+    const returnRequestItems = order.orderedItems.filter(item => item.status === 'Return Request');
     const cancelledItems = order.orderedItems.filter(item => item.status === 'Cancelled');
-    const currentSubtotal = activeItems.reduce((sum, item) => sum + item.totalPrice, 0);
+    const returnedItems = order.orderedItems.filter(item => item.status === 'Returned');
+    
+    const includedItems = [...activeItems, ...returnRequestItems];
+    
+    let amountAfterDiscount = 0;
+    includedItems.forEach(item => {
+      amountAfterDiscount += item.totalPrice;
+    });
+    
+    let currentTotal = amountAfterDiscount;
+    if (includedItems.length > 0) {
+      currentTotal += order.shippingCharges;
+    }
+    
     const cancelledAmount = cancelledItems.reduce((sum, item) => sum + item.totalPrice, 0);
-    const originalOrderTotal = currentSubtotal + cancelledAmount;
+    const returnedAmount = returnedItems.reduce((sum, item) => sum + item.totalPrice, 0);
     
-    // Calculate proportional discount for active items only
-    let applicableDiscount = 0;
-    let currentTotal = 0;
+    // Summary section
+    const summaryX = this.pageWidth - 200;
     
-    if (currentSubtotal > 0 && order.discount > 0 && originalOrderTotal > 0) {
-      // Calculate what proportion of the original order the active items represent
-      const activeItemsProportion = currentSubtotal / originalOrderTotal;
-      // Apply only the proportional discount to active items
-      applicableDiscount = Math.min(order.discount * activeItemsProportion, currentSubtotal);
-      currentTotal = Math.max(0, currentSubtotal - applicableDiscount + order.shippingCharges);
-    } else if (currentSubtotal > 0) {
-      currentTotal = currentSubtotal + order.shippingCharges;
-    }
-    
-    // Determine summary box height based on content
-    let summaryHeight = 100;
-    if (cancelledAmount > 0) {
-      summaryHeight = 160; // More space for cancelled items info
-    }
-    
-    // Summary box
+    // Subtotal
     this.doc
-      .strokeColor(companyConfig.colors.secondary)
-      .lineWidth(1)
-      .rect(summaryX, this.currentY, 195, summaryHeight)
-      .stroke();
-    
-    let yOffset = 15;
-    
-    // Summary content for active items
-    this.doc
-      .fontSize(10)
-      .fillColor(companyConfig.colors.secondary)
+      .fontSize(8)
+      .fillColor('#666666')
       .font('Helvetica')
-      .text('Subtotal (Active):', summaryX + 10, this.currentY + yOffset);
+      .text('Subtotal:', summaryX, this.currentY);
     
     this.doc
-      .fontSize(10)
-      .fillColor(companyConfig.colors.primary)
+      .fontSize(8)
+      .fillColor('#000000')
       .font('Helvetica')
-      .text(`₹${currentSubtotal.toFixed(2)}`, summaryX + 120, this.currentY + yOffset);
+      .text(`₹${amountAfterDiscount.toFixed(2)}`, summaryX + 100, this.currentY);
     
-    yOffset += 15;
+    this.currentY += 12;
     
-    // Show cancelled amount if any
-    if (cancelledAmount > 0) {
-      this.doc
-        .fontSize(10)
-        .fillColor('#ef4444')
-        .font('Helvetica')
-        .text('Cancelled Items:', summaryX + 10, this.currentY + yOffset);
-      
-      this.doc
-        .fontSize(10)
-        .fillColor('#ef4444')
-        .font('Helvetica')
-        .text(`-₹${cancelledAmount.toFixed(2)}`, summaryX + 120, this.currentY + yOffset);
-      
-      yOffset += 15;
-    }
-    
-    // Show discount information
+    // Discount (if any)
     if (order.discount > 0) {
-      if (cancelledAmount > 0 && applicableDiscount < order.discount) {
-        // Show original discount
-        this.doc
-          .fontSize(9)
-          .fillColor(companyConfig.colors.secondary)
-          .font('Helvetica')
-          .text('Original Discount:', summaryX + 10, this.currentY + yOffset);
-        
-        this.doc
-          .fontSize(9)
-          .fillColor(companyConfig.colors.secondary)
-          .font('Helvetica')
-          .text(`-₹${order.discount.toFixed(2)}`, summaryX + 120, this.currentY + yOffset);
-        
-        yOffset += 12;
-        
-        // Show discount adjustment
-        this.doc
-          .fontSize(9)
-          .fillColor('#ef4444')
-          .font('Helvetica')
-          .text('Discount Adjustment:', summaryX + 10, this.currentY + yOffset);
-        
-        this.doc
-          .fontSize(9)
-          .fillColor('#ef4444')
-          .font('Helvetica')
-          .text(`+₹${(order.discount - applicableDiscount).toFixed(2)}`, summaryX + 120, this.currentY + yOffset);
-        
-        yOffset += 15;
-      }
+      this.doc
+        .fontSize(8)
+        .fillColor('#666666')
+        .font('Helvetica')
+        .text('Discount:', summaryX, this.currentY);
       
-      if (applicableDiscount > 0) {
-        this.doc
-          .fontSize(10)
-          .fillColor(companyConfig.colors.secondary)
-          .font('Helvetica')
-          .text(cancelledAmount > 0 ? 'Applicable Discount:' : 'Discount:', summaryX + 10, this.currentY + yOffset);
-        
-        this.doc
-          .fontSize(10)
-          .fillColor('#10b981')
-          .font('Helvetica')
-          .text(`-₹${applicableDiscount.toFixed(2)}`, summaryX + 120, this.currentY + yOffset);
-        
-        yOffset += 15;
-      }
+      this.doc
+        .fontSize(8)
+        .fillColor('#000000')
+        .font('Helvetica')
+        .text(`-₹${order.discount.toFixed(2)}`, summaryX + 100, this.currentY);
+      
+      this.currentY += 12;
+    }
+    
+    // Cancelled amount (if any)
+    if (cancelledAmount > 0) {
+      this.doc
+        .fontSize(8)
+        .fillColor('#666666')
+        .font('Helvetica')
+        .text('Cancelled:', summaryX, this.currentY);
+      
+      this.doc
+        .fontSize(8)
+        .fillColor('#666666')
+        .font('Helvetica')
+        .text(`-₹${cancelledAmount.toFixed(2)}`, summaryX + 100, this.currentY);
+      
+      this.currentY += 12;
+    }
+    
+    // Returned amount (if any)
+    if (returnedAmount > 0) {
+      this.doc
+        .fontSize(8)
+        .fillColor('#666666')
+        .font('Helvetica')
+        .text('Returned:', summaryX, this.currentY);
+      
+      this.doc
+        .fontSize(8)
+        .fillColor('#666666')
+        .font('Helvetica')
+        .text(`-₹${returnedAmount.toFixed(2)}`, summaryX + 100, this.currentY);
+      
+      this.currentY += 12;
     }
     
     // Shipping
-    if (currentSubtotal > 0) {
-      this.doc
-        .fontSize(10)
-        .fillColor(companyConfig.colors.secondary)
-        .font('Helvetica')
-        .text('Shipping:', summaryX + 10, this.currentY + yOffset);
-      
-      this.doc
-        .fontSize(10)
-        .fillColor(companyConfig.colors.primary)
-        .font('Helvetica')
-        .text(order.shippingCharges === 0 ? 'FREE' : `₹${order.shippingCharges.toFixed(2)}`, summaryX + 120, this.currentY + yOffset);
-      
-      yOffset += 20;
-    }
+    this.doc
+      .fontSize(8)
+      .fillColor('#666666')
+      .font('Helvetica')
+      .text('Shipping:', summaryX, this.currentY);
+    
+    this.doc
+      .fontSize(8)
+      .fillColor('#000000')
+      .font('Helvetica')
+      .text(order.shippingCharges === 0 ? 'FREE' : `₹${order.shippingCharges.toFixed(2)}`, summaryX + 100, this.currentY);
+    
+    this.currentY += 15;
+    
+    // Horizontal line
+    this.doc
+      .strokeColor('#cccccc')
+      .lineWidth(1)
+      .moveTo(summaryX, this.currentY)
+      .lineTo(this.pageWidth - this.margin, this.currentY)
+      .stroke();
+    
+    this.currentY += 12;
     
     // Total
     this.doc
-      .fontSize(12)
-      .fillColor(companyConfig.colors.primary)
+      .fontSize(10)
+      .fillColor('#000000')
       .font('Helvetica-Bold')
-      .text(cancelledAmount > 0 ? 'Current Total:' : 'Total:', summaryX + 10, this.currentY + yOffset);
+      .text('Total:', summaryX, this.currentY);
     
     this.doc
-      .fontSize(12)
-      .fillColor(companyConfig.colors.primary)
+      .fontSize(10)
+      .fillColor('#000000')
       .font('Helvetica-Bold')
-      .text(`₹${currentTotal.toFixed(2)}`, summaryX + 120, this.currentY + yOffset);
+      .text(`₹${currentTotal.toFixed(2)}`, summaryX + 100, this.currentY);
     
-    this.currentY += summaryHeight + 20;
+    this.currentY += 40;
   }
 
   // Add footer
   addFooter() {
-    this.currentY += 30;
-    
     // Terms and conditions
     this.doc
-      .fontSize(10)
-      .fillColor(companyConfig.colors.primary)
+      .fontSize(9)
+      .fillColor('#000000')
       .font('Helvetica-Bold')
-      .text('Terms & Conditions:', 50, this.currentY);
+      .text('Terms & Conditions:', this.margin, this.currentY);
     
-    this.currentY += 15;
+    this.currentY += 12;
     
     companyConfig.invoice.terms.forEach(term => {
       this.doc
-        .fontSize(8)
-        .fillColor(companyConfig.colors.secondary)
+        .fontSize(7)
+        .fillColor('#333333')
         .font('Helvetica')
-        .text(`• ${term}`, 50, this.currentY);
-      this.currentY += 12;
+        .text(`• ${term}`, this.margin, this.currentY, { width: this.contentWidth });
+      this.currentY += 10;
+    });
+    
+    this.currentY += 15;
+    
+    // Business information
+    this.doc
+      .fontSize(9)
+      .fillColor('#000000')
+      .font('Helvetica-Bold')
+      .text('Business Information:', this.margin, this.currentY);
+    
+    this.currentY += 12;
+    
+    const businessInfo = [
+      `GST Number: ${companyConfig.business.gst}`,
+      `PAN Number: ${companyConfig.business.pan}`,
+      `CIN Number: ${companyConfig.business.cin}`
+    ];
+    
+    businessInfo.forEach(info => {
+      this.doc
+        .fontSize(7)
+        .fillColor('#333333')
+        .font('Helvetica')
+        .text(info, this.margin, this.currentY);
+      this.currentY += 10;
     });
     
     this.currentY += 20;
     
     // Footer message
     this.doc
-      .fontSize(12)
-      .fillColor(companyConfig.colors.primary)
+      .fontSize(9)
+      .fillColor('#000000')
       .font('Helvetica-Bold')
-      .text(companyConfig.invoice.footer, 50, this.currentY, { align: 'center', width: 495 });
+      .text(companyConfig.invoice.footer, this.margin, this.currentY, { 
+        align: 'center', 
+        width: this.contentWidth 
+      });
+    
+    this.currentY += 15;
+    
+    // Contact information
+    this.doc
+      .fontSize(7)
+      .fillColor('#666666')
+      .font('Helvetica')
+      .text(`${companyConfig.contact.email} | ${companyConfig.contact.phone} | ${companyConfig.contact.website}`, 
+            this.margin, this.currentY, { 
+              align: 'center', 
+              width: this.contentWidth 
+            });
+  }
+
+  // Helper method to truncate text
+  truncateText(text, maxLength) {
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength - 3) + '...';
   }
 }
 

@@ -133,12 +133,24 @@
                                     </div>
                                 </td>
                                 <td>
+                                    <%
+                                        // Calculate current total (same as order details page)
+                                        const activeItems = order.orderedItems.filter(item => item.status === 'Active');
+                                        const returnRequestItems = order.orderedItems.filter(item => item.status === 'Return Request');
+                                        const includedItems = [...activeItems, ...returnRequestItems];
+                                        
+                                        let amountAfterDiscount = 0;
+                                        includedItems.forEach(item => {
+                                            amountAfterDiscount += item.totalPrice;
+                                        });
+                                        
+                                        let currentTotal = amountAfterDiscount;
+                                        if (includedItems.length > 0) {
+                                            currentTotal += order.shippingCharges;
+                                        }
+                                    %>
                                     <div class="order-amount">
-                                        <strong>₹<%= order.finalAmount.toLocaleString() %></strong>
-                                        <% if (order.discount > 0) { %>
-                                            <br>
-                                            <small class="text-success">-₹<%= order.discount.toLocaleString() %> discount</small>
-                                        <% } %>
+                                        <strong>₹<%= currentTotal.toFixed(2) %></strong>
                                     </div>
                                 </td>
                                 <td>

@@ -136,6 +136,16 @@ const getOrderDetailsPage = async (req, res) => {
       });
     }
 
+    // Calculate subtotal and final amount based on active products only
+    const activeItems = order.orderedItems.filter(item => item.status === 'Active');
+    const subtotalActiveProducts = activeItems.reduce((total, item) => {
+      const regularPrice = item.product?.regularPrice || 0;
+      return total + (regularPrice * item.quantity);
+    }, 0);
+    
+    // Calculate final amount as subtotal minus discount
+    const finalAmountActive = Math.max(0, subtotalActiveProducts - (order.discount || 0));
+
     // Check if order is cancelled by user
     const isUserCancelled = order.status === 'Cancelled';
     
@@ -147,7 +157,11 @@ const getOrderDetailsPage = async (req, res) => {
     );
 
     res.render('admin-order-details', {
-      order,
+      order: {
+        ...order.toObject(),
+        subtotalActiveProducts: subtotalActiveProducts,
+        finalAmountActive: finalAmountActive
+      },
       isUserCancelled,
       hasUserCancellation,
       title: `Order Details - ${order.orderId}`

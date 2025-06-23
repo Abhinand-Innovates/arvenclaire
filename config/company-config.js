@@ -31,11 +31,13 @@ const companyConfig = {
     prefix: "INV",
     terms: [
       "All sales are final unless otherwise specified",
-      "Returns accepted within 7 days of delivery",
-      "Damaged items must be reported within 24 hours",
-      "Free shipping on orders above ₹500"
+      "Returns accepted within 7 days of delivery for eligible items",
+      "Damaged or defective items must be reported within 24 hours of delivery",
+      "Free shipping available on orders above ₹500",
+      "Refunds will be processed to the original payment method within 5-7 business days",
+      "For any queries, please contact our customer support team"
     ],
-    footer: "Thank you for shopping with ARVENCLAIRE!"
+    footer: "Thank you for choosing ARVENCLAIRE - Your Premium Fashion Destination!"
   },
   
   // Colors for PDF styling
