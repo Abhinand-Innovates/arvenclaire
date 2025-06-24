@@ -1,4 +1,4 @@
-if t    eturn -<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -457,6 +457,24 @@ if t    eturn -<!DOCTYPE html>
                 align-self: flex-start;
             }
         }
+
+    /* Payment Pending Notice */
+    .payment-pending-notice {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1rem;
+        background: #fef3c7;
+        border: 1px solid #f59e0b;
+        border-radius: 8px;
+        color: #92400e;
+        font-size: 0.875rem;
+        margin-top: 1rem;
+    }
+
+    .payment-pending-notice i {
+        color: #f59e0b;
+    }
     </style>
     </head>
 <body>
@@ -513,11 +531,10 @@ if t    eturn -<!DOCTYPE html>
                             <span class="info-value">
                                 <%= order.paymentMethod %>
                                 <% if (order.paymentStatus === 'Failed') { %>
-                                    <br><span class="payment-status-failed">Payment Failed</span>
-                                <% } else if (order.paymentStatus === 'Pending') { %>
+                                    <br><span class="payment-status-failed">Payment Failed</span<% } else if (order.paymentStatus === 'Pending') { %>
                                     <br><span class="payment-status-pending">Payment Pending</span>
                                 <% } else if (order.paymentStatus === 'Completed') { %>
-                                    <br><span class="payment-status-completed">Payment Completed</span>
+                                    <br><span style="color: #10b981; font-weight: 600; font-size: 0.75rem;">Payment Completed</span>
                                 <% } %>
                             </span>
                         </div>
@@ -605,7 +622,9 @@ if t    eturn -<!DOCTYPE html>
                                 </div>
                                 <% if (item.status === 'Active') { %>
                                     <div class="item-actions">
-                                        <% if (!['Shipped', 'Delivered', 'Return Request', 'Returned', 'Cancelled'].includes(order.status)) { %>
+                                        <% if (!['Shipped', 'Delivered', 'Return Request', 'Returned', 'Cancelled'].includes(order.status) && 
+                                               ((order.paymentMethod === 'Cash on Delivery') || 
+                                                (order.paymentMethod !== 'Cash on Delivery' && order.paymentStatus === 'Completed'))) { %>
                                             <button class="btn-cancel-item" onclick="cancelOrderItem('<%= order.orderId %>', '<%= item._id %>')">
                                                 <i class="fas fa-times"></i> Cancel
                                             </button>
@@ -730,6 +749,11 @@ if t    eturn -<!DOCTYPE html>
                     // Additional variables for cancel button logic
                     const canCancelOrder = !['Shipped', 'Delivered', 'Return Request', 'Returned', 'Cancelled'].includes(order.status);
                     const hasActiveItems = activeItems.length > 0;
+                    
+                    // For online payments, only allow cancellation after payment is completed
+                    // For COD, allow cancellation anytime before shipping
+                    const canCancelBasedOnPayment = (order.paymentMethod === 'Cash on Delivery') || 
+                                                   (order.paymentMethod !== 'Cash on Delivery' && order.paymentStatus === 'Completed');
                 %>
 
                 <div class="summary-row">
@@ -822,7 +846,10 @@ if t    eturn -<!DOCTYPE html>
                         <i class="fas fa-redo"></i>
                         Retry Payment
                     </a>
-                <% } else if (order.paymentStatus === 'Completed') { %>
+                <% } else if (
+                    (order.paymentMethod === 'Cash on Delivery') ||
+                    (order.paymentMethod !== 'Cash on Delivery' && order.paymentStatus === 'Completed')
+                ) { %>
                     <button class="btn-download-invoice" onclick="downloadInvoice('<%= order.orderId %>')">
                         <i class="fas fa-download"></i>
                         Download Invoice
@@ -835,7 +862,7 @@ if t    eturn -<!DOCTYPE html>
                         <i class="fas fa-undo"></i>
                         Return Order
                     </button>
-                <% } else if (canCancelOrder && hasActiveItems) { %>
+                <% } else if (canCancelOrder && hasActiveItems && canCancelBasedOnPayment) { %>
                     <button class="btn-cancel-order" onclick="openCancelOrderModal()">
                         <i class="fas fa-times"></i>
                         <% if (order.status === 'Partially Cancelled') { %>
@@ -844,6 +871,11 @@ if t    eturn -<!DOCTYPE html>
                             Cancel Order
                         <% } %>
                     </button>
+                <% } else if (canCancelOrder && hasActiveItems && !canCancelBasedOnPayment) { %>
+                    <div class="payment-pending-notice">
+                        <i class="fas fa-info-circle"></i>
+                        <span>Cancellation will be available after payment confirmation</span>
+                    </div>
                 <% } else if (!hasActiveItems && order.status === 'Partially Cancelled') { %>
                     <div style="margin-top: 1rem; padding: 0.75rem; background: #f8f9fa; border-radius: 8px; text-align: center; color: #6c757d; font-size: 0.875rem;">
                         <i class="fas fa-info-circle"></i>

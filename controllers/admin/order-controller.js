@@ -227,7 +227,19 @@ const updateOrderStatus = async (req, res) => {
     // Update order status
     order.status = status;
     
-    // Add to timeline
+    // For COD orders, update payment status to "Completed" when delivered
+    if (status === 'Delivered' && order.paymentMethod === 'Cash on Delivery' && order.paymentStatus === 'Pending') {
+      order.paymentStatus = 'Completed';
+      
+      // Add to timeline for payment status update
+      order.orderTimeline.push({
+        status: 'Payment Completed',
+        timestamp: new Date(),
+        description: 'Payment collected on delivery (Cash on Delivery)'
+      });
+    }
+    
+    // Add to timeline for status update
     order.orderTimeline.push({
       status: status,
       timestamp: new Date(),

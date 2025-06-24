@@ -358,6 +358,138 @@
             font-size: 0.875rem;
         }
 
+        /* Coupon Section */
+        .coupon-section {
+            background: var(--bg-primary);
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-color);
+            margin-bottom: 1.5rem;
+        }
+
+        .coupon-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .coupon-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .coupon-form {
+            display: flex;
+            gap: 0.75rem;
+            align-items: flex-start;
+        }
+
+        .coupon-input-group {
+            flex: 1;
+        }
+
+        .coupon-dropdown {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .coupon-dropdown:focus {
+            outline: none;
+            border-color: var(--text-primary);
+            box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .coupon-dropdown option {
+            padding: 0.5rem;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+        }
+
+        .btn-apply-coupon {
+            background: var(--text-primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .btn-apply-coupon:hover {
+            background: var(--text-secondary);
+            transform: translateY(-1px);
+        }
+
+        .btn-apply-coupon:disabled {
+            background: var(--text-muted);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-remove-coupon {
+            background: var(--error-color);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .btn-remove-coupon:hover {
+            background: #dc2626;
+            transform: translateY(-1px);
+        }
+
+        .coupon-success {
+            background: #f0fdf4;
+            border: 1px solid #22c55e;
+            border-radius: 8px;
+            padding: 0.75rem;
+            margin-top: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #15803d;
+            font-size: 0.875rem;
+        }
+
+        .coupon-error {
+            background: #fef2f2;
+            border: 1px solid #ef4444;
+            border-radius: 8px;
+            padding: 0.75rem;
+            margin-top: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #dc2626;
+            font-size: 0.875rem;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
         /* Order Summary Sidebar */
         .order-summary {
             background: var(--bg-primary);
@@ -426,6 +558,131 @@
             box-shadow: none;
         }
 
+        /* Payment Method Section */
+        .payment-methods {
+            display: grid;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .payment-option {
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.75rem;
+            background: var(--bg-primary);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            width: 100%;
+        }
+
+        .payment-option:hover {
+            border-color: var(--text-primary);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .payment-option.selected {
+            border-color: var(--text-primary);
+            background: var(--bg-secondary);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .payment-option.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: var(--bg-tertiary);
+        }
+
+        .payment-option.disabled:hover {
+            transform: none;
+            box-shadow: none;
+            border-color: var(--border-color);
+        }
+
+        .payment-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .payment-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--text-primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+
+        .payment-option.disabled .payment-icon {
+            background: var(--text-muted);
+        }
+
+        .payment-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            flex: 1;
+        }
+
+        .payment-option.disabled .payment-title {
+            color: var(--text-muted);
+        }
+
+        .payment-description {
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            margin-left: 44px;
+            line-height: 1.2;
+        }
+
+        .payment-option.disabled .payment-description {
+            color: var(--text-muted);
+        }
+
+        .payment-balance {
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 0.75rem;
+            margin-left: 44px;
+            line-height: 1.2;
+        }
+
+        .payment-insufficient {
+            color: var(--error-color);
+            font-size: 0.65rem;
+            margin-left: 44px;
+            margin-top: 0.1rem;
+            line-height: 1.2;
+        }
+
+        .payment-selected-indicator {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--success-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .payment-option.selected .payment-selected-indicator {
+            opacity: 1;
+        }
+
         /* Responsive Design */
         @media (max-width: 768px) {
             .checkout-container {
@@ -437,7 +694,11 @@
                 gap: 1rem;
             }
 
-            .order-summary {
+            .sidebar {
+                order: -1;
+            }
+
+            .order-summary, .coupon-section {
                 position: static;
             }
 
@@ -452,6 +713,19 @@
 
             .addresses-grid {
                 grid-template-columns: 1fr;
+            }
+
+            .coupon-form {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .payment-methods {
+                gap: 0.75rem;
+            }
+
+            .payment-option {
+                padding: 1rem;
             }
         }
 
@@ -609,8 +883,44 @@
                 </div>
             </div>
 
-            <!-- Order Summary Sidebar -->
-            <div class="order-summary fade-in">
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <!-- Coupon Section -->
+                <div class="coupon-section fade-in">
+                    <div class="coupon-header">
+                        <i class="fas fa-tag"></i>
+                        <h4 class="coupon-title">Apply Coupon</h4>
+                    </div>
+                    
+                    <div class="coupon-form">
+                        <div class="coupon-input-group">
+                            <select class="coupon-dropdown" id="couponSelect">
+                                <option value="">Select a coupon</option>
+                                <option value="SAVE10">SAVE10 - 10% off on orders above ₹500</option>
+                                <option value="WELCOME20">WELCOME20 - 20% off for new users</option>
+                                <option value="FLAT50">FLAT50 - ₹50 off on orders above ₹300</option>
+                                <option value="FREESHIP">FREESHIP - Free shipping on all orders</option>
+                            </select>
+                        </div>
+                        <button class="btn-apply-coupon" id="applyCouponBtn" onclick="applyCoupon()">
+                            Apply
+                        </button>
+                    </div>
+
+                    <!-- Coupon Status Messages -->
+                    <div id="couponSuccess" class="coupon-success" style="display: none;">
+                        <i class="fas fa-check-circle"></i>
+                        <span id="couponSuccessText"></span>
+                    </div>
+                    
+                    <div id="couponError" class="coupon-error" style="display: none;">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span id="couponErrorText"></span>
+                    </div>
+                </div>
+
+                <!-- Order Summary -->
+                <div class="order-summary fade-in">
                 <h3 class="section-title mb-3">
                     <i class="fas fa-receipt"></i>
                     Order Summary
@@ -639,42 +949,70 @@
                     </span>
                 </div>
 
-                <div class="summary-row">
-                    <span class="summary-label">Total</span>
-                    <span class="summary-value">₹<%= orderSummary.finalAmount.toFixed(2) %></span>
+                <div id="couponDiscountRow" class="summary-row" style="display: none;">
+                    <span class="summary-label">Coupon Discount</span>
+                    <span class="summary-value" style="color: var(--success-color);" id="couponDiscountAmount">-₹0.00</span>
                 </div>
 
-                <!-- Payment Method -->
+                <div class="summary-row">
+                    <span class="summary-label">Total</span>
+                    <span class="summary-value" id="finalTotal">₹<%= orderSummary.finalAmount.toFixed(2) %></span>
+                </div>
+
+                <!-- Payment Method Section -->
                 <div class="mt-3 pt-3" style="border-top: 2px solid var(--border-color);">
-                    <h5 class="mb-3">Payment Method</h5>
+                    <h5 class="mb-3" style="font-size: 1rem; font-weight: 600; color: var(--text-primary); display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fas fa-credit-card"></i>
+                        Payment Method
+                    </h5>
                     
-                    <!-- Wallet Payment -->
-                    <div class="form-check mb-3">
-                        <input class="form-check-input" type="radio" name="paymentMethod" id="wallet" value="Wallet" 
-                               <%= (user.walletBalance && user.walletBalance >= orderSummary.finalAmount) ? '' : 'disabled' %>>
-                        <label class="form-check-label <%= (user.walletBalance && user.walletBalance >= orderSummary.finalAmount) ? '' : 'text-muted' %>" for="wallet">
-                            <i class="fas fa-wallet"></i> 
-                            Wallet Balance: ₹<%= (user.walletBalance || 0).toFixed(2) %>
+                    <div class="payment-methods">
+                        <!-- Wallet Payment -->
+                        <div class="payment-option <%= (user.walletBalance && user.walletBalance >= orderSummary.finalAmount) ? '' : 'disabled' %>" 
+                             data-payment="Wallet" onclick="selectPaymentMethod(this)">
+                            <div class="payment-header">
+                                <div class="payment-icon">
+                                    <i class="fas fa-wallet"></i>
+                                </div>
+                                <div class="payment-title">Wallet Payment</div>
+                            </div>
+                            <div class="payment-description">Pay using your wallet balance</div>
+                            <div class="payment-balance">Balance: ₹<%= (user.walletBalance || 0).toFixed(2) %></div>
                             <% if (!user.walletBalance || user.walletBalance < orderSummary.finalAmount) { %>
-                                <small class="text-danger d-block">Insufficient balance</small>
+                                <div class="payment-insufficient">Insufficient balance</div>
                             <% } %>
-                        </label>
-                    </div>
+                            <div class="payment-selected-indicator">
+                                <i class="fas fa-check"></i>
+                            </div>
+                        </div>
 
-                    <!-- Online Payment -->
-                    <div class="form-check mb-3">
-                        <input class="form-check-input" type="radio" name="paymentMethod" id="online" value="Online Payment">
-                        <label class="form-check-label" for="online">
-                            <i class="fas fa-credit-card"></i> Online Payment (UPI, Cards, Net Banking)
-                        </label>
-                    </div>
+                        <!-- Online Payment -->
+                        <div class="payment-option" data-payment="Online Payment" onclick="selectPaymentMethod(this)">
+                            <div class="payment-header">
+                                <div class="payment-icon">
+                                    <i class="fas fa-credit-card"></i>
+                                </div>
+                                <div class="payment-title">Online Payment</div>
+                            </div>
+                            <div class="payment-description">UPI, Cards, Net Banking & More</div>
+                            <div class="payment-selected-indicator">
+                                <i class="fas fa-check"></i>
+                            </div>
+                        </div>
 
-                    <!-- Cash on Delivery -->
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="paymentMethod" id="cod" value="Cash on Delivery" checked>
-                        <label class="form-check-label" for="cod">
-                            <i class="fas fa-money-bill-wave"></i> Cash on Delivery
-                        </label>
+                        <!-- Cash on Delivery -->
+                        <div class="payment-option selected" data-payment="Cash on Delivery" onclick="selectPaymentMethod(this)">
+                            <div class="payment-header">
+                                <div class="payment-icon">
+                                    <i class="fas fa-money-bill-wave"></i>
+                                </div>
+                                <div class="payment-title">Cash on Delivery</div>
+                            </div>
+                            <div class="payment-description">Pay when your order is delivered</div>
+                            <div class="payment-selected-indicator">
+                                <i class="fas fa-check"></i>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -683,6 +1021,7 @@
                     <i class="fas fa-check-circle"></i>
                     Place Order
                 </button>
+                </div>
             </div>
         </div>
     </div>
@@ -692,6 +1031,10 @@
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <script>
         let selectedAddressId = null;
+        let selectedPaymentMethod = 'Cash on Delivery';
+        let appliedCoupon = null;
+        let originalTotal = <%= orderSummary.finalAmount %>;
+        let currentTotal = <%= orderSummary.finalAmount %>;
 
         // Initialize page
         document.addEventListener('DOMContentLoaded', function() {
@@ -737,6 +1080,142 @@
             placeOrderBtn.disabled = false;
         }
 
+        // Payment method selection
+        function selectPaymentMethod(element) {
+            // Check if payment option is disabled
+            if (element.classList.contains('disabled')) {
+                return;
+            }
+
+            // Remove selected class from all payment options
+            document.querySelectorAll('.payment-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+
+            // Add selected class to clicked option
+            element.classList.add('selected');
+            selectedPaymentMethod = element.dataset.payment;
+        }
+
+        // Coupon functionality
+        function applyCoupon() {
+            const couponSelect = document.getElementById('couponSelect');
+            const selectedCoupon = couponSelect.value;
+            
+            if (!selectedCoupon) {
+                showCouponError('Please select a coupon');
+                return;
+            }
+
+            // Simulate coupon validation and discount calculation
+            const couponData = getCouponData(selectedCoupon);
+            
+            if (!couponData) {
+                showCouponError('Invalid coupon code');
+                return;
+            }
+
+            // Check minimum order value
+            if (originalTotal < couponData.minOrder) {
+                showCouponError(`Minimum order value should be ₹${couponData.minOrder}`);
+                return;
+            }
+
+            // Calculate discount
+            let discount = 0;
+            if (couponData.type === 'percentage') {
+                discount = (originalTotal * couponData.value) / 100;
+                if (couponData.maxDiscount) {
+                    discount = Math.min(discount, couponData.maxDiscount);
+                }
+            } else if (couponData.type === 'fixed') {
+                discount = couponData.value;
+            }
+
+            // Apply discount
+            appliedCoupon = {
+                code: selectedCoupon,
+                discount: discount
+            };
+
+            currentTotal = originalTotal - discount;
+            
+            // Update UI
+            updateOrderSummary();
+            showCouponSuccess(`Coupon applied! You saved ₹${discount.toFixed(2)}`);
+            
+            // Change button to remove coupon
+            const applyBtn = document.getElementById('applyCouponBtn');
+            applyBtn.textContent = 'Remove';
+            applyBtn.className = 'btn-remove-coupon';
+            applyBtn.onclick = removeCoupon;
+        }
+
+        function removeCoupon() {
+            appliedCoupon = null;
+            currentTotal = originalTotal;
+            
+            // Update UI
+            updateOrderSummary();
+            hideCouponMessages();
+            
+            // Reset coupon selection
+            document.getElementById('couponSelect').value = '';
+            
+            // Change button back to apply
+            const applyBtn = document.getElementById('applyCouponBtn');
+            applyBtn.textContent = 'Apply';
+            applyBtn.className = 'btn-apply-coupon';
+            applyBtn.onclick = applyCoupon;
+        }
+
+        function getCouponData(couponCode) {
+            const coupons = {
+                'SAVE10': { type: 'percentage', value: 10, minOrder: 500, maxDiscount: 100 },
+                'WELCOME20': { type: 'percentage', value: 20, minOrder: 300, maxDiscount: 200 },
+                'FLAT50': { type: 'fixed', value: 50, minOrder: 300 },
+                'FREESHIP': { type: 'fixed', value: 0, minOrder: 0 } // Free shipping
+            };
+            
+            return coupons[couponCode] || null;
+        }
+
+        function updateOrderSummary() {
+            const couponRow = document.getElementById('couponDiscountRow');
+            const couponAmount = document.getElementById('couponDiscountAmount');
+            const finalTotal = document.getElementById('finalTotal');
+            
+            if (appliedCoupon && appliedCoupon.discount > 0) {
+                couponRow.style.display = 'flex';
+                couponAmount.textContent = `-₹${appliedCoupon.discount.toFixed(2)}`;
+            } else {
+                couponRow.style.display = 'none';
+            }
+            
+            finalTotal.textContent = `₹${currentTotal.toFixed(2)}`;
+        }
+
+        function showCouponSuccess(message) {
+            hideCouponMessages();
+            const successDiv = document.getElementById('couponSuccess');
+            const successText = document.getElementById('couponSuccessText');
+            successText.textContent = message;
+            successDiv.style.display = 'flex';
+        }
+
+        function showCouponError(message) {
+            hideCouponMessages();
+            const errorDiv = document.getElementById('couponError');
+            const errorText = document.getElementById('couponErrorText');
+            errorText.textContent = message;
+            errorDiv.style.display = 'flex';
+        }
+
+        function hideCouponMessages() {
+            document.getElementById('couponSuccess').style.display = 'none';
+            document.getElementById('couponError').style.display = 'none';
+        }
+
 
 
         // Place order
@@ -754,9 +1233,6 @@
                 });
                 return;
             }
-
-            // Get selected payment method
-            const selectedPaymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
             
             const placeOrderBtn = document.querySelector('.btn-place-order');
             const originalText = placeOrderBtn.innerHTML;
@@ -778,7 +1254,9 @@
                         },
                         body: JSON.stringify({
                             selectedAddressId: selectedAddressId,
-                            paymentMethod: selectedPaymentMethod
+                            paymentMethod: selectedPaymentMethod,
+                            appliedCoupon: appliedCoupon,
+                            finalAmount: currentTotal
                         })
                     });
 
@@ -821,7 +1299,9 @@
                     },
                     body: JSON.stringify({
                         selectedAddressId: selectedAddressId,
-                        paymentMethod: 'Online Payment'
+                        paymentMethod: 'Online Payment',
+                        appliedCoupon: appliedCoupon,
+                        finalAmount: currentTotal
                     })
                 });
 
@@ -871,6 +1351,7 @@
                                     icon: 'success',
                                     title: 'Payment Successful!',
                                     text: 'Your payment has been processed successfully.',
+                                    position: 'bottom-end',
                                     showConfirmButton: false,
                                     timer: 2000,
                                     timerProgressBar: true

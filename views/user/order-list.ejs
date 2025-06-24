@@ -631,6 +631,8 @@
                                         <span class="payment-status-failed">• Payment Failed</span>
                                     <% } else if (order.paymentStatus === 'Pending') { %>
                                         <span class="payment-status-pending">• Payment Pending</span>
+                                    <% } else if (order.paymentStatus === 'Completed') { %>
+                                        <span style="color: #10b981; font-weight: 600; font-size: 0.75rem;">• Payment Completed</span>
                                     <% } %>
                                 </div>
                             </div>
@@ -665,7 +667,10 @@
                                     <a href="/checkout/retry-payment/<%= order.orderId %>" class="btn-retry-payment">
                                         <i class="fas fa-redo"></i> Retry Payment
                                     </a>
-                                <% } else if (order.paymentStatus === 'Completed') { %>
+                                <% } else if (
+                                    (order.paymentMethod === 'Cash on Delivery') ||
+                                    (order.paymentMethod !== 'Cash on Delivery' && order.paymentStatus === 'Completed')
+                                ) { %>
                                     <button class="btn-download-invoice" onclick="downloadInvoice('<%= order.orderId %>')">
                                         <i class="fas fa-download"></i> Invoice
                                     </button>

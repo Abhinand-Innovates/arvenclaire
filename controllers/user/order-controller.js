@@ -1,7 +1,10 @@
 const Order = require('../../models/order-schema');
 const Product = require('../../models/product-schema');
 const User = require('../../models/user-schema');
+const Wallet = require('../../models/wallet-schema');
 const InvoiceGenerator = require('../../utils/pdf-invoice-generator');
+
+
 
 // Load order listing page
 const loadOrderList = async (req, res) => {
@@ -31,6 +34,9 @@ const loadOrderList = async (req, res) => {
     res.status(500).render('error', { message: 'Error loading orders' });
   }
 };
+
+
+
 
 // Load order details page
 const loadOrderDetails = async (req, res) => {
@@ -62,7 +68,6 @@ const loadOrderDetails = async (req, res) => {
     res.status(500).render('error', { message: 'Error loading order details' });
   }
 };
-
 
 
 
@@ -173,11 +178,36 @@ const cancelOrderItem = async (req, res) => {
       timestamp: new Date()
     });
 
+    // Credit wallet for online payments that are completed
+    let walletCreditAmount = 0;
+    if (order.paymentStatus === 'Completed' && order.paymentMethod !== 'Cash on Delivery') {
+      walletCreditAmount = orderItem.totalPrice;
+      
+      try {
+        const wallet = await Wallet.getOrCreateWallet(userId);
+        await wallet.addMoney(
+          walletCreditAmount,
+          `Refund for cancelled item: ${orderItem.product.productName} (Order: ${order.orderId})`,
+          order.orderId
+        );
+        console.log(`Wallet credited ₹${walletCreditAmount} for cancelled item in order ${order.orderId}`);
+      } catch (walletError) {
+        console.error('Error adding money to wallet for cancelled item:', walletError);
+        // Continue with cancellation even if wallet credit fails
+      }
+    }
+
     await order.save();
+
+    const responseMessage = walletCreditAmount > 0 
+      ? `Item cancelled successfully. ₹${walletCreditAmount} has been credited to your wallet.`
+      : 'Item cancelled successfully';
 
     res.status(200).json({
       success: true,
-      message: 'Item cancelled successfully'
+      message: responseMessage,
+      walletCredited: walletCreditAmount > 0,
+      creditAmount: walletCreditAmount
     });
 
   } catch (error) {
@@ -188,6 +218,7 @@ const cancelOrderItem = async (req, res) => {
     });
   }
 };
+
 
 
 // Cancel entire order
@@ -215,7 +246,27 @@ const cancelEntireOrder = async (req, res) => {
       });
     }
 
-    // Update order status and amounts
+    // Credit wallet for online payments that are completed - BEFORE updating order amounts
+    let walletCreditAmount = 0;
+    if (order.paymentStatus === 'Completed' && order.paymentMethod !== 'Cash on Delivery') {
+      // Calculate the total amount to be credited (current final amount before cancellation)
+      walletCreditAmount = order.finalAmount;
+      
+      try {
+        const wallet = await Wallet.getOrCreateWallet(userId);
+        await wallet.addMoney(
+          walletCreditAmount,
+          `Refund for cancelled order (Order: ${order.orderId})`,
+          order.orderId
+        );
+        console.log(`Wallet credited ₹${walletCreditAmount} for cancelled order ${order.orderId}`);
+      } catch (walletError) {
+        console.error('Error adding money to wallet for cancelled order:', walletError);
+        // Continue with cancellation even if wallet credit fails
+      }
+    }
+
+    // Update order status and amounts AFTER wallet credit
     order.status = 'Cancelled';
     order.totalPrice = 0;
     order.finalAmount = 0;
@@ -256,9 +307,15 @@ const cancelEntireOrder = async (req, res) => {
 
     await order.save();
 
+    const responseMessage = walletCreditAmount > 0 
+      ? `Order cancelled successfully. ₹${walletCreditAmount} has been credited to your wallet.`
+      : 'Order cancelled successfully';
+
     res.status(200).json({
       success: true,
-      message: 'Order cancelled successfully'
+      message: responseMessage,
+      walletCredited: walletCreditAmount > 0,
+      creditAmount: walletCreditAmount
     });
 
   } catch (error) {
@@ -269,6 +326,7 @@ const cancelEntireOrder = async (req, res) => {
     });
   }
 };
+
 
 
 // Request return for an order (entire order or specific items)
@@ -405,6 +463,7 @@ const requestReturn = async (req, res) => {
 };
 
 
+
 // Download PDF invoice for an order
 const downloadInvoice = async (req, res) => {
   try {
@@ -431,8 +490,14 @@ const downloadInvoice = async (req, res) => {
       });
     }
 
-    // Check if payment is completed before allowing invoice download
-    if (order.paymentStatus !== 'Completed') {
+    // Check if order is eligible for invoice download
+    // For online payments: payment must be completed
+    // For COD: invoice is available immediately after order placement
+    const isEligibleForInvoice = 
+      (order.paymentMethod === 'Cash on Delivery') ||
+      (order.paymentMethod !== 'Cash on Delivery' && order.paymentStatus === 'Completed');
+
+    if (!isEligibleForInvoice) {
       return res.status(403).json({
         success: false,
         message: 'Invoice is only available for completed payments. Please complete your payment first.'

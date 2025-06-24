@@ -14,6 +14,7 @@ const razorpay = new Razorpay({
   key_secret: process.env.RAZORPAY_KEY_SECRET
 });
 
+
 // Load checkout page
 const loadCheckout = async (req, res) => {
   try {
@@ -493,6 +494,8 @@ const createRazorpayOrder = async (req, res) => {
   }
 };
 
+
+
 // Verify Razorpay payment
 const verifyPayment = async (req, res) => {
   try {
@@ -592,6 +595,8 @@ const verifyPayment = async (req, res) => {
   }
 };
 
+
+
 // Handle payment failure
 const paymentFailed = async (req, res) => {
   try {
@@ -622,6 +627,8 @@ const paymentFailed = async (req, res) => {
     });
   }
 };
+
+
 
 // Load retry payment page
 const loadRetryPayment = async (req, res) => {
@@ -684,6 +691,8 @@ const loadRetryPayment = async (req, res) => {
   }
 };
 
+
+
 // Load order failure page
 const loadOrderFailure = async (req, res) => {
   try {
@@ -713,6 +722,8 @@ const loadOrderFailure = async (req, res) => {
     res.status(500).render('error', { message: 'Error loading order failure page' });
   }
 };
+
+
 
 module.exports = {
   loadCheckout,

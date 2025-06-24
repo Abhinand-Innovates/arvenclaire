@@ -263,12 +263,31 @@ class InvoiceGenerator {
         .font('Helvetica')
         .text(item.quantity.toString(), this.margin + 250, rowY + 8);
       
-      // Price
-      this.doc
-        .fontSize(8)
-        .fillColor('#000000')
-        .font('Helvetica')
-        .text(`₹${item.price.toFixed(2)}`, this.margin + 300, rowY + 8);
+      // Price (show regular price if different from sale price)
+      const regularPrice = item.product.regularPrice || item.price;
+      const salePrice = item.price;
+      
+      if (regularPrice > salePrice) {
+        // Show both regular and sale price
+        this.doc
+          .fontSize(7)
+          .fillColor('#999999')
+          .font('Helvetica')
+          .text(`₹${regularPrice.toFixed(2)}`, this.margin + 300, rowY + 4);
+        
+        this.doc
+          .fontSize(8)
+          .fillColor('#000000')
+          .font('Helvetica-Bold')
+          .text(`₹${salePrice.toFixed(2)}`, this.margin + 300, rowY + 14);
+      } else {
+        // Show only sale price
+        this.doc
+          .fontSize(8)
+          .fillColor('#000000')
+          .font('Helvetica')
+          .text(`₹${salePrice.toFixed(2)}`, this.margin + 300, rowY + 8);
+      }
       
       // Total
       this.doc
@@ -305,9 +324,26 @@ class InvoiceGenerator {
     
     const includedItems = [...activeItems, ...returnRequestItems];
     
+    // Calculate subtotal based on regular prices (original prices)
+    let subtotalRegularPrice = 0;
     let amountAfterDiscount = 0;
+    let totalItemDiscount = 0;
+    
     includedItems.forEach(item => {
+      // Get regular price from product (original price)
+      const regularPrice = item.product.regularPrice || item.price;
+      const salePrice = item.price; // This is the selling price
+      const quantity = item.quantity;
+      
+      // Subtotal based on regular prices
+      subtotalRegularPrice += regularPrice * quantity;
+      
+      // Amount customer actually pays (sale price total)
       amountAfterDiscount += item.totalPrice;
+      
+      // Calculate discount for this item
+      const itemDiscount = (regularPrice - salePrice) * quantity;
+      totalItemDiscount += Math.max(0, itemDiscount);
     });
     
     let currentTotal = amountAfterDiscount;
@@ -321,7 +357,7 @@ class InvoiceGenerator {
     // Summary section
     const summaryX = this.pageWidth - 200;
     
-    // Subtotal
+    // Subtotal (based on regular prices)
     this.doc
       .fontSize(8)
       .fillColor('#666666')
@@ -332,21 +368,38 @@ class InvoiceGenerator {
       .fontSize(8)
       .fillColor('#000000')
       .font('Helvetica')
-      .text(`₹${amountAfterDiscount.toFixed(2)}`, summaryX + 100, this.currentY);
+      .text(`₹${subtotalRegularPrice.toFixed(2)}`, summaryX + 100, this.currentY);
     
     this.currentY += 12;
     
-    // Discount (if any)
+    // Product discount (difference between regular and sale prices)
+    if (totalItemDiscount > 0) {
+      this.doc
+        .fontSize(8)
+        .fillColor('#666666')
+        .font('Helvetica')
+        .text('Product Discount:', summaryX, this.currentY);
+      
+      this.doc
+        .fontSize(8)
+        .fillColor('#10b981')
+        .font('Helvetica')
+        .text(`-₹${totalItemDiscount.toFixed(2)}`, summaryX + 100, this.currentY);
+      
+      this.currentY += 12;
+    }
+    
+    // Additional discount (coupon/order level discount)
     if (order.discount > 0) {
       this.doc
         .fontSize(8)
         .fillColor('#666666')
         .font('Helvetica')
-        .text('Discount:', summaryX, this.currentY);
+        .text('Additional Discount:', summaryX, this.currentY);
       
       this.doc
         .fontSize(8)
-        .fillColor('#000000')
+        .fillColor('#10b981')
         .font('Helvetica')
         .text(`-₹${order.discount.toFixed(2)}`, summaryX + 100, this.currentY);
       
