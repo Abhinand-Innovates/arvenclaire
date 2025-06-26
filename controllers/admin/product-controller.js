@@ -274,10 +274,7 @@ const addProduct = async (req, res) => {
         const selectedMainIndex = parseInt(mainImageIndex) || 0;
         const validMainIndex = selectedMainIndex < processedImages.length ? selectedMainIndex : 0;
 
-        console.log(`Main image index received: ${mainImageIndex}`);
-        console.log(`Using main image index: ${validMainIndex}`);
-        console.log(`Main image file: ${processedImages[validMainIndex]}`);
-
+                
         // Arrange images with main image first
         const mainImageFile = processedImages[validMainIndex];
         const subImageFiles = processedImages.filter((_, index) => index !== validMainIndex);
@@ -425,8 +422,7 @@ const updateProduct = async (req, res) => {
                 const newImageIndex = parseInt(mainImage);
                 if (newImageIndex >= 0 && newImageIndex < newImageFilenames.length) {
                     selectedMainImage = newImageFilenames[newImageIndex];
-                    console.log('Selected new image as main:', selectedMainImage);
-                }
+                                    }
             } else {
                 // It's an existing image filename
                 if (currentImages.includes(mainImage)) {
@@ -438,8 +434,7 @@ const updateProduct = async (req, res) => {
         // If no valid main image selected, use the first image
         if (!selectedMainImage) {
             selectedMainImage = currentImages[0];
-            console.log('Using first image as main (fallback):', selectedMainImage);
-        }
+                    }
 
         // Arrange images with selected main image first
         const subImages = currentImages.filter(img => img !== selectedMainImage);

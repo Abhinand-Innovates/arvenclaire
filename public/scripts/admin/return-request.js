@@ -37,18 +37,15 @@ function debounce(func, wait) {
 
 function handleSearch() {
     const searchTerm = document.getElementById('returnSearch').value;
-    console.log('Searching for:', searchTerm);
-    loadReturnRequests(searchTerm);
+        loadReturnRequests(searchTerm);
 }
 
 function handleStatusFilter() {
     const statusFilter = document.getElementById('statusFilter').value;
-    console.log('Filtering by status:', statusFilter);
-    loadReturnRequests(null, statusFilter);
+        loadReturnRequests(null, statusFilter);
 }
 
 function loadReturnRequests(searchTerm = '', statusFilter = '') {
-    console.log('Loading return requests with search:', searchTerm, 'status:', statusFilter);
     // This function can be used for dynamic loading if needed
 }
 
@@ -513,10 +510,10 @@ function showAlert(message, type = 'info') {
 
 // Utility function to update table (for future use)
 function updateReturnTable(requests) {
-    console.log('Updating table with requests:', requests);
+    // Update table with requests
 }
 
 // Utility function to update pagination (for future use)
 function updatePagination(pagination) {
-    console.log('Updating pagination:', pagination);
+    // Update pagination
 }

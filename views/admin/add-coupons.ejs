@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Coupon - Admin Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .main-content {
+            margin-left: 250px;
+            padding: 2rem;
+            background-color: #f8f9fa;
+            min-height: 100vh;
+        }
+        
+        .form-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .form-header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .form-body {
+            padding: 2rem;
+        }
+        
+        .form-section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            background: #f8f9fa;
+        }
+        
+        .section-title {
+            color: #2c3e50;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #2c3e50;
+        }
+        
+        .required {
+            color: #e74c3c;
+        }
+        
+        .form-control, .form-select, .form-textarea {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            height: auto;
+        }
+
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+
+        .form-check-input {
+            width: 2.5em;
+            height: 1.25em;
+            margin-top: 0.25em;
+        }
+
+        .form-check-label {
+            padding-left: 0.5em;
+            font-size: 1rem;
+        }
+        
+        .form-control:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: #2c3e50;
+            box-shadow: 0 0 0 3px rgba(44, 62, 80, 0.1);
+        }
+        
+        .error-message {
+            color: #e74c3c;
+            font-size: 0.8rem;
+            display: none;
+            margin-top: 0.25rem;
+        }
+        
+        .error .error-message {
+            display: block;
+        }
+        
+        .error .form-control,
+        .error .form-select,
+        .error .form-textarea {
+            border-color: #e74c3c;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            padding-top: 2rem;
+            border-top: 1px solid #e9ecef;
+            margin-top: 2rem;
+        }
+        
+        .btn {
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(44, 62, 80, 0.4);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
+        }
+    </style</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-2 p-0">
+                <%- include("../partials/admin/sidebar") %>
+            </div>
+            <div class="col-10 main-content">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="/admin-dashboard"><i class="fas fa-home"></i> Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/coupons">Coupons</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Add Coupon</li>
+                    </ol>
+                </nav>
+                <div class="form-container">
+                    <div class="form-header">
+                        <h1><i class="fas fa-plus"></i> Add New Coupon</h1>
+                        <p>Fill in the details below to add a new coupon</p>
+                    </div>
+                    <div class="form-body">
+                        <% if (typeof error !== 'undefined' && error) { %>
+                            <div class="alert alert-danger" role="alert">
+                                <i class="fas fa-exclamation-triangle"></i> <%= error %>
+                            </div>
+                        <% } %>
+                        <form id="couponForm" method="POST" action="/add-coupon">
+                            <div class="form-section">
+                                <h3 class="section-title"><i class="fas fa-ticket-alt"></i> Coupon Details</h3>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="code" class="form-label">Coupon Code</label>
+                                        <div class="input-group">
+                                            <input type="text" class="form-control" id="code" name="code" value="<%= typeof formData !== 'undefined' && formData && formData.code ? formData.code : '' %>" required>
+                                            <button class="btn btn-outline-secondary" type="button" id="generateCode">Generate</button>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="description" class="form-label">Description</label>
+                                        <input type="text" class="form-control" id="description" name="description" value="<%= typeof formData !== 'undefined' && formData && formData.description ? formData.description : '' %>" required>
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="discountType" class="form-label">Discount Type</label>
+                                        <select class="form-select" id="discountType" name="discountType">
+                                            <option value="percentage" <%= typeof formData !== 'undefined' && formData && formData.discountType === 'percentage' ? 'selected' : '' %>>Percentage</option>
+                                            <option value="flat" <%= typeof formData !== 'undefined' && formData && formData.discountType === 'flat' ? 'selected' : '' %>>Flat</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="discountValue" class="form-label">Discount Value</label>
+                                        <input type="number" class="form-control" id="discount" name="discount" step="0.01" min="0" value="<%= typeof formData !== 'undefined' && formData.discount ? formData.discount : '' %>" required>
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="minPurchaseAmount" class="form-label">Minimum Purchase Amount</label>
+                                        <input type="number" class="form-control" id="minPurchase" name="minPurchase" step="0.01" min="0" value="<%= typeof formData !== 'undefined' && formData.minPurchase ? formData.minPurchase : '' %>" required>
+                                    </div>
+                                     <div class="form-group">
+                                        <label for="isActive" class="form-label">Status</label>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="isActive" name="isActive" <%= typeof formData !== 'undefined' && formData.isActive ? 'checked' : 'checked' %>>
+                                            <label class="form-check-label" for="isActive">Is Active</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+        
+                            <div class="form-section">
+                                <h3 class="section-title"><i class="fas fa-calendar-alt"></i> Validity</h3>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="startDate" class="form-label">Start Date</label>
+                                        <input type="date" class="form-control" id="startDate" name="startDate" value="<%= typeof formData !== 'undefined' && formData.startDate ? formData.startDate : '' %>" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="endDate" class="form-label">End Date</label>
+                                        <input type="date" class="form-control" id="expiry" name="expiry" value="<%= typeof formData !== 'undefined' && formData.expiry ? formData.expiry : '' %>" required>
+                                    </div>
+                                </div>
+                            </div>
+        
+                            <div class="form-section">
+                                <h3 class="section-title"><i class="fas fa-users"></i> Usage Limits</h3>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="globalUsageLimit" class="form-label">Global Usage Limit</label>
+                                        <input type="number" class="form-control" id="usageLimit" name="usageLimit" min="1" value="<%= typeof formData !== 'undefined' && formData.usageLimit ? formData.usageLimit : '' %>" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="perUserLimit" class="form-label">Per User Limit</label>
+                                        <input type="number" class="form-control" id="userUsageLimit" name="userUsageLimit" min="1" value="<%= typeof formData !== 'undefined' && formData.userUsageLimit ? formData.userUsageLimit : '' %>" required>
+                                    </div>
+                                </div>
+                            </div>
+        
+                            <div class="form-section">
+                                <h3 class="section-title"><i class="fas fa-tags"></i> Applicability</h3>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="applicableCategories" class="form-label">Applicable Categories</label>
+                                        <select class="form-select" id="applicableCategories" name="applicableCategories" multiple>
+                                            <option value="">All Categories</option>
+                                            <% categories.forEach(category => { %>
+                                            <option value="<%= category._id %>"><%= category.name %></option>
+                                            <% }); %>
+                                        </select>
+                                        <small class="form-text text-muted">Hold down Ctrl (or Command on Mac) to select multiple categories.</small>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="maxDiscount" class="form-label">Maximum Discount Amount <span class="required">*</span></label>
+                                        <input type="number" class="form-control" id="maxDiscount" name="maxDiscount" step="0.01" min="0" required>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="applicableProducts" class="form-label">Applicable Products</label>
+                                    <select class="form-select" id="applicableProducts" name="applicableProducts" multiple>
+                                        <% products.forEach(product => { %>
+                                        <option value="<%= product._id %>"><%= product.productName %></option>
+                                        <% }); %>
+                                    </select>
+                                    <small class="form-text text-muted">Hold down Ctrl (or Command on Mac) to select multiple products.</small>
+                                </div>
+                            </div>
+        
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Coupon</button>
+                                <a href="/coupons" class="btn btn-secondary"><i class="fas fa-times"></i> Cancel</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('generateCode').addEventListener('click', () => {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let result = '';
+            for (let i = 0; i < 10; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            document.getElementById('code').value = result;
+        });
+
+        // Form validation
+        document.getElementById('couponForm').addEventListener('submit', function(e) {
+            let isValid = true;
+            const errors = [];
+
+            // Get form values
+            const startDate = new Date(document.getElementById('startDate').value);
+            const endDate = new Date(document.getElementById('expiry').value);
+            const discountType = document.getElementById('discountType').value;
+            const discount = parseFloat(document.getElementById('discount').value);
+            const minPurchase = parseFloat(document.getElementById('minPurchase').value);
+            const maxDiscount = parseFloat(document.getElementById('maxDiscount').value);
+
+            // Validate dates
+            if (startDate >= endDate) {
+                errors.push('End date must be after start date');
+                isValid = false;
+            }
+
+            // Validate discount based on type
+            if (discountType === 'percentage' && (discount <= 0 || discount > 100)) {
+                errors.push('Percentage discount must be between 1 and 100');
+                isValid = false;
+            } else if (discountType === 'flat' && discount <= 0) {
+                errors.push('Flat discount must be greater than 0');
+                isValid = false;
+            }
+
+            // Validate minimum purchase
+            if (minPurchase < 0) {
+                errors.push('Minimum purchase amount cannot be negative');
+                isValid = false;
+            }
+
+            // Validate max discount
+            if (maxDiscount <= 0) {
+                errors.push('Maximum discount amount must be greater than 0');
+                isValid = false;
+            }
+
+            // For percentage discounts, ensure max discount makes sense
+            if (discountType === 'percentage' && maxDiscount > (minPurchase * discount / 100)) {
+                // This is actually okay, just a warning
+            }
+
+            if (!isValid) {
+                e.preventDefault();
+                alert('Please fix the following errors:\n' + errors.join('\n'));
+            }
+        });
+
+        // Real-time discount validation
+        document.getElementById('discountType').addEventListener('change', validateDiscount);
+        document.getElementById('discount').addEventListener('input', validateDiscount);
+
+        function validateDiscount() {
+            const discountType = document.getElementById('discountType').value;
+            const discountInput = document.getElementById('discount');
+            const discount = parseFloat(discountInput.value);
+
+            if (discountType === 'percentage') {
+                discountInput.setAttribute('max', '100');
+                discountInput.setAttribute('placeholder', 'Enter percentage (1-100)');
+                if (discount > 100) {
+                    discountInput.value = '100';
+                }
+            } else {
+                discountInput.removeAttribute('max');
+                discountInput.setAttribute('placeholder', 'Enter flat amount');
+            }
+        }
+
+        // Set minimum date to today
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('startDate').setAttribute('min', today);
+        document.getElementById('expiry').setAttribute('min', today);
+
+        // Update end date minimum when start date changes
+        document.getElementById('startDate').addEventListener('change', function() {
+            const startDate = this.value;
+            document.getElementById('expiry').setAttribute('min', startDate);
+        });
+    </script>
+</body>
+</html>

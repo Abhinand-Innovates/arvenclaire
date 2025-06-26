@@ -9,6 +9,7 @@ const orderController = require("../controllers/admin/order-controller");
 const returnController = require("../controllers/admin/return-controller");
 const { productUpload, handleMulterError } = require("../config/multer-config");
 
+const couponController = require("../controllers/admin/coupon-controller");
 const { isAdminAuthenticated, preventCache } = require('../middleware/auth-middleware');
 
 //Admin Login - with cache prevention for proper session handling
@@ -70,8 +71,7 @@ adminRoute.get('/debug-returns', isAdminAuthenticated, preventCache, async (req,
       'orderedItems.status': 'Return Request'
     }).populate('orderedItems.product', 'productName');
     
-    console.log('Orders with individual returns:', ordersWithReturns.length);
-    
+        
     const returnData = [];
     ordersWithReturns.forEach(order => {
       const returnItems = order.orderedItems.filter(item => item.status === 'Return Request');
@@ -102,5 +102,16 @@ adminRoute.get('/return-requests', isAdminAuthenticated, preventCache, returnCon
 adminRoute.get('/get-return-request-count', isAdminAuthenticated, preventCache, orderController.getReturnRequestCount);
 adminRoute.post('/return-requests/:id/approve', isAdminAuthenticated, preventCache, returnController.approveReturnRequest);
 adminRoute.post('/return-requests/:id/reject', isAdminAuthenticated, preventCache, returnController.rejectReturnRequest);
+
+
+// Coupon Management
+adminRoute.get("/coupons", isAdminAuthenticated, preventCache, couponController.getCouponsPage);
+adminRoute.get("/add-coupon", isAdminAuthenticated, preventCache, couponController.getAddCouponPage);
+adminRoute.post("/add-coupon", isAdminAuthenticated, preventCache, couponController.addCoupon);
+adminRoute.get("/edit-coupon/:id", isAdminAuthenticated, preventCache, couponController.getEditCouponPage);
+adminRoute.post("/edit-coupon/:id", isAdminAuthenticated, preventCache, couponController.updateCoupon);
+adminRoute.put("/edit-coupon/:id", isAdminAuthenticated, preventCache, couponController.updateCoupon);
+adminRoute.patch("/coupon/:id/status", isAdminAuthenticated, preventCache, couponController.toggleCouponStatus);
+adminRoute.delete("/delete-coupon/:id", isAdminAuthenticated, preventCache, couponController.deleteCoupon);
 
 module.exports = adminRoute;

@@ -23,6 +23,7 @@ const walletTransactionSchema = new Schema({
   transactionId: {
     type: String,
     unique: true,
+    sparse: true, // This allows multiple null values but ensures uniqueness for non-null values
     default: function() {
       return 'TXN-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
     }

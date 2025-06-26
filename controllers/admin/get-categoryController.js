@@ -135,8 +135,7 @@ const toggleCategoryStatusAPI = async (req, res) => {
     try {
         const { id } = req.params;
         const { status } = req.body; // Expecting { status: true/false }
-            console.log(status)
-        if (!mongoose.Types.ObjectId.isValid(id)) {
+                    if (!mongoose.Types.ObjectId.isValid(id)) {
             return res.status(400).json({ message: 'Invalid category ID.' });
         }
         if (typeof status !== 'boolean') {
@@ -148,8 +147,7 @@ const toggleCategoryStatusAPI = async (req, res) => {
             return res.status(404).json({ message: 'Category not found.' });
         }
 
-        console.log(category)
-
+        
         category.isListed = status;
         await category.save();
 

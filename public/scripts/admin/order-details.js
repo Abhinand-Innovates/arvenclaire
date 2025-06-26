@@ -77,5 +77,5 @@ async function confirmStatusUpdate() {
 // Initialize page
 document.addEventListener('DOMContentLoaded', function() {
     // Add any initialization code here if needed
-    console.log('Order details page loaded');
+    // Order details page loaded
 });

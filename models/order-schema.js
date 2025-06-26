@@ -86,6 +86,10 @@ const orderSchema = new Schema({
     type: Number,
     default: 0
   },
+  couponDiscount: {
+    type: Number,
+    default: 0
+  },
   finalAmount: {
     type: Number,
     required: true
@@ -124,7 +128,7 @@ const orderSchema = new Schema({
   },
   status: {
     type: String,
-    enum: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled', 'Partially Cancelled', 'Return Request', 'Returned', 'Partially Returned'],
+    enum: ['Pending', 'Processing', 'Shipped', 'Delivered'],
     default: 'Pending'
   },
   orderTimeline: [{
@@ -175,6 +179,11 @@ const orderSchema = new Schema({
   },
   rejectionReason: {
     type: String,
+    default: null
+  },
+  coupon: {
+    type: Schema.Types.ObjectId,
+    ref: 'Coupon',
     default: null
   }
 }, { timestamps: true });
