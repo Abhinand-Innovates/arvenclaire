@@ -837,14 +837,44 @@ const applyCoupon = async (req, res) => {
     }
 
     // Find the coupon
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Start of today
+    
+    const endOfToday = new Date();
+    endOfToday.setHours(23, 59, 59, 999); // End of today
+    
     const coupon = await Coupon.findOne({ 
       code: couponCode.toUpperCase(), 
       isActive: true, 
-      expiry: { $gte: new Date() },
-      startDate: { $lte: new Date() }
+      expiry: { $gte: today },
+      startDate: { $lte: endOfToday }
     });
 
     if (!coupon) {
+      // Check if coupon exists but doesn't meet criteria for better error messages
+      const couponWithoutDateCheck = await Coupon.findOne({ 
+        code: couponCode.toUpperCase()
+      });
+      
+      if (couponWithoutDateCheck) {
+        if (!couponWithoutDateCheck.isActive) {
+          return res.status(400).json({
+            success: false,
+            message: 'This coupon is currently inactive'
+          });
+        } else if (new Date(couponWithoutDateCheck.expiry).setHours(23,59,59,999) < new Date().setHours(0,0,0,0)) {
+          return res.status(400).json({
+            success: false,
+            message: 'This coupon has expired'
+          });
+        } else if (new Date(couponWithoutDateCheck.startDate).setHours(0,0,0,0) > new Date().setHours(0,0,0,0)) {
+          return res.status(400).json({
+            success: false,
+            message: 'This coupon is not yet active'
+          });
+        }
+      }
+      
       return res.status(400).json({
         success: false,
         message: 'Invalid coupon code'

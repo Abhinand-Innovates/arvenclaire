@@ -177,4 +177,8 @@ router.get("/wallet", isUserAuthenticated, preventCache, addUserContext, checkUs
 
 
 
+// Coupon page route
+router.get("/coupon", isUserAuthenticated, preventCache, addUserContext, checkUserBlocked, userController.loadCouponPage);
+
+
 module.exports = router;

@@ -7,6 +7,7 @@ const Category = require("../../models/category-schema");
 const Order = require('../../models/order-schema');
 const Wishlist = require('../../models/wishlist-schema');
 const Wallet = require('../../models/wallet-schema');
+const Coupon = require('../../models/coupon-schema');
 const Review = require("../../models/review-schema");
 const sharp = require("sharp");
 const path = require("path");
@@ -1906,6 +1907,52 @@ const updatePassword = async (req, res) => {
 
 
 
+// Load coupon page
+const loadCouponPage = async (req, res) => {
+  try {
+    const userId = req.session.userId;
+    if (!userId) {
+      return res.redirect('/login');
+    }
+
+    // Get user data for sidebar
+    const user = await User.findById(userId).select('fullname email profilePhoto');
+    if (!user) {
+      return res.redirect('/login');
+    }
+
+    // Get all active coupons
+    const allCoupons = await Coupon.find({ isActive: true }).lean();
+
+    // For each coupon, check how many times this user has used it
+    const couponsWithUserUsage = await Promise.all(
+      allCoupons.map(async (coupon) => {
+        // Count how many times this user has used this coupon
+        const userUsageCount = await Order.countDocuments({
+          userId: userId,
+          coupon: coupon._id,
+          paymentStatus: { $ne: 'Failed' } // Count all orders except failed ones
+        });
+
+        return {
+          ...coupon,
+          userUsageCount: userUsageCount,
+          isUserLimitExceeded: userUsageCount >= coupon.userUsageLimit
+        };
+      })
+    );
+
+    res.render('coupon', {
+      user,
+      title: 'My Coupons',
+      coupons: couponsWithUserUsage
+    });
+  } catch (error) {
+    console.error('Error loading coupon page:', error);
+    res.status(500).render('error', { message: 'Error loading coupon page' });
+  }
+};
+
 module.exports = {
   loadLanding,
   loadSignup,
@@ -1945,5 +1992,5 @@ module.exports = {
   submitReview,
   markHelpful,
   checkProductStatus,
-
+  loadCouponPage,
 };

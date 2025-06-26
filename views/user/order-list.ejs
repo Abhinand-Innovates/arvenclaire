@@ -601,29 +601,7 @@
                                         day: 'numeric'
                                     }) %>
                                 </div>
-                                <div class="order-amount">
-                                    <i class="fas fa-rupee-sign"></i>
-                                    <%
-                                        // Calculate current amount based on active items with proportional discount
-                                        const activeItems = order.orderedItems.filter(item => item.status === 'Active');
-                                        const cancelledItems = order.orderedItems.filter(item => item.status === 'Cancelled');
-                                        const currentSubtotal = activeItems.reduce((sum, item) => sum + item.totalPrice, 0);
-                                        const cancelledAmount = cancelledItems.reduce((sum, item) => sum + item.totalPrice, 0);
-                                        const originalOrderTotal = currentSubtotal + cancelledAmount;
-                                        
-                                        let currentAmount = 0;
-                                        if (currentSubtotal > 0) {
-                                            let applicableDiscount = 0;
-                                            if (order.discount > 0 && originalOrderTotal > 0) {
-                                                // Calculate proportional discount for active items only
-                                                const activeItemsProportion = currentSubtotal / originalOrderTotal;
-                                                applicableDiscount = Math.min(order.discount * activeItemsProportion, currentSubtotal);
-                                            }
-                                            currentAmount = Math.max(0, currentSubtotal - applicableDiscount + order.shippingCharges);
-                                        }
-                                    %>
-                                    ₹<%= currentAmount.toFixed(2) %>
-                                </div>
+                                
                                 <div class="order-payment">
                                     <i class="fas fa-credit-card"></i>
                                     <%= order.paymentMethod %>
