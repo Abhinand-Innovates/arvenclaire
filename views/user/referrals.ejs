@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Referrals</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+    <%- include("../partials/user/account-sidebar") %>
+    <style>
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --bg-tertiary: #e9ecef;
+            --border-color: #dee2e6;
+            --text-primary: #000000;
+            --text-secondary: #495057;
+            --text-muted: #6c757d;
+            --hover-color: #f5f5f5;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --warning-color: #ffc107;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #f5f5f5;
+            color: var(--text-primary);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            min-height: 100vh;
+            padding-top: 80px;
+        }
+
+        .main-content {
+            margin-left: 280px;
+            padding: 1rem 2rem;
+            min-height: 100vh;
+        }
+
+        .page-header {
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-color);
+        }
+
+        .page-header h1 {
+            color: var(--text-primary);
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .page-header h1 i {
+            color: #007bff;
+        }
+
+        .page-header p {
+            color: var(--text-secondary);
+            margin-bottom: 0;
+            font-size: 1.1rem;
+        }
+
+        .card-light {
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+        }
+
+        .section-title {
+            color: var(--text-primary);
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .section-title i {
+            color: var(--text-primary);
+        }
+
+        .referral-code-box {
+            background-color: var(--bg-secondary);
+            border: 2px dashed var(--border-color);
+            border-radius: 10px;
+            padding: 1.5rem;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .referral-code {
+            font-size: 2rem; /* Increased size */
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: 2px;
+            background-color: var(--bg-primary);
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            border: 1px solid var(--border-color);
+        }
+
+        .copy-btn {
+            background-color: var(--text-primary);
+            color: #fff;
+            border: none;
+            padding: 0.6rem 1.2rem; /* Adjusted button size */
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            font-weight: 500; /* Adjusted font weight */
+        }
+
+        .copy-btn:hover {
+            background-color: #333;
+        }
+
+        .social-share-icons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .social-share-icons a {
+            font-size: 1.5rem;
+            color: var(--text-secondary);
+            transition: color 0.3s ease;
+        }
+
+        .social-share-icons a:hover {
+            color: var(--text-primary);
+        }
+
+        .fade-in {
+            animation: fadeIn 0.6s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .stat-card {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 15px;
+            padding: 1.5rem;
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .stat-card:hover {
+            background: var(--hover-color);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-icon {
+            width: 3rem;
+            height: 3rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            color: var(--text-primary);
+            margin: 0 auto 0.75rem auto;
+        }
+
+        .table-responsive {
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .table {
+            margin-bottom: 0;
+        }
+
+        .table thead th {
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            font-weight: 600;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .table tbody tr:hover {
+            background-color: var(--hover-color);
+        }
+
+        .badge {
+            font-size: 0.8rem;
+            padding: 0.4rem 0.6rem;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+                padding: 0.5rem 1rem;
+            }
+
+            .page-header {
+                padding: 1.5rem;
+                margin-bottom: 1.5rem;
+            }
+
+            .page-header h1 {
+                font-size: 1.5rem;
+            }
+
+            .card-light {
+                padding: 1rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .page-header h1 {
+                font-size: 1.25rem;
+            }
+
+            .card-light {
+                padding: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-content fade-in">
+        <!-- Breadcrumb -->
+        <div class="breadcrumb-container">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/profile">My Account</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Referrals</li>
+                </ol>
+            </nav>
+        </div>
+
+        <!-- Page Header -->
+        <div class="page-header fade-in">
+            <h1><i class="fas fa-user-friends"></i> My Referrals</h1>
+            <p>Invite friends and earn rewards for every successful referral!</p>
+        </div>
+
+        <div class="row g-4">
+            <!-- Referral Code Section -->
+            <div class="col-lg-12">
+                <div class="card-light">
+                    <h2 class="section-title"><i class="fas fa-link"></i> Your Referral Code</h2>
+                    <div class="referral-code-box">
+                        <div class="referral-code" id="referralCode">
+                            <% if (typeof referralCode !== 'undefined' && referralCode) { %>
+                                <%= referralCode %>
+                            <% } else if (typeof user !== 'undefined' && user._id) { %>
+                                REF<%= user._id.toString().slice(-6).toUpperCase() %>
+                            <% } else { %>
+                                REF123456
+                            <% } %>
+                        </div>
+                        <button class="copy-btn" onclick="copyReferralCode()">
+                            <i class="fas fa-copy"></i> Copy Code
+                        </button>
+                    </div>
+                    <div class="text-center mt-3">
+                        <small class="text-muted">Share this code with your friends. When they use it, you both get rewards!</small>
+                    </div>
+                    <div class="social-share-icons">
+                        <a href="https://www.facebook.com/sharer/sharer.php?u=<%= encodeURIComponent(referralLink) %>" target="_blank" title="Share on Facebook"><i class="fab fa-facebook"></i></a>
+                        <a href="https://twitter.com/intent/tweet?url=<%= encodeURIComponent(referralLink) %>&text=<%= encodeURIComponent('Join and get rewards!') %>" target="_blank" title="Share on Twitter"><i class="fab fa-twitter"></i></a>
+                        <a href="https://api.whatsapp.com/send?text=<%= encodeURIComponent('Join and get rewards! ' + referralLink) %>" target="_blank" title="Share on WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                        <a href="mailto:?subject=<%= encodeURIComponent('Invitation') %>&body=<%= encodeURIComponent('Join and get rewards! ' + referralLink) %>" title="Share via Email"><i class="fas fa-envelope"></i></a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Referral Stats Section -->
+            <div class="col-lg-12">
+                <div class="card-light">
+                    <h2 class="section-title"><i class="fas fa-chart-line"></i> Referral Stats</h2>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <div class="stat-card">
+                                <div class="stat-icon"><i class="fas fa-users"></i></div>
+                                <div class="fw-bold fs-4"><%= referrals.length %></div>
+                                <div class="small text-muted">Total Referrals</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="stat-card">
+                                <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+                                <div class="fw-bold fs-4"><%= referrals.filter(r => r.activated).length %></div>
+                                <div class="small text-muted">Successful Referrals</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="stat-card">
+                                <div class="stat-icon"><i class="fas fa-wallet"></i></div>
+                                <div class="fw-bold fs-4">₹<%= totalEarnings.toFixed(2) %></div>
+                                <div class="small text-muted">Total Earnings</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Referrals List Section -->
+            <div class="col-lg-12">
+                <div class="card-light">
+                    <h2 class="section-title"><i class="fas fa-list"></i> Referred Users</h2>
+                    <% if (referrals && referrals.length > 0) { %>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Date Joined</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% referrals.forEach(function(ref, idx) { %>
+                                        <tr>
+                                            <td><%= idx + 1 %></td>
+                                            <td><%= ref.fullname %></td>
+                                            <td><%= ref.email %></td>
+                                            <td><%= new Date(ref.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) %></td>
+                                            <td>
+                                                <% if (ref.activated) { %>
+                                                    <span class="badge bg-success">Active</span>
+                                                <% } else { %>
+                                                    <span class="badge bg-secondary">Pending</span>
+                                                <% } %>
+                                            </td>
+                                        </tr>
+                                    <% }) %>
+                                </tbody>
+                            </table>
+                        </div>
+                    <% } else { %>
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-user-friends fa-2x mb-2"></i>
+                            <div>No referrals yet. Share your code to start inviting friends!</div>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script>
+    <script>
+        function copyReferralCode() {
+            const code = document.getElementById('referralCode').innerText;
+            navigator.clipboard.writeText(code).then(() => {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Copied!',
+                    text: 'Referral code copied to clipboard.',
+                    timer: 1200,
+                    showConfirmButton: false
+                });
+            });
+        }
+    </script>
+</body>
+</html>

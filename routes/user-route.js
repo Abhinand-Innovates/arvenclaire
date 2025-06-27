@@ -175,7 +175,8 @@ router.post("/change-password", isUserAuthenticated, preventCache, checkUserBloc
 // Wallet route
 router.get("/wallet", isUserAuthenticated, preventCache, addUserContext, checkUserBlocked, userController.loadWallet);
 
-
+// Referrals page route
+router.get("/referrals", isUserAuthenticated, preventCache, addUserContext, checkUserBlocked, userController.loadReferrals);
 
 // Coupon page route
 router.get("/coupon", isUserAuthenticated, preventCache, addUserContext, checkUserBlocked, userController.loadCouponPage);

@@ -1953,6 +1953,44 @@ const loadCouponPage = async (req, res) => {
   }
 };
 
+// Load referrals page
+const loadReferrals = async (req, res) => {
+  try {
+    const userId = req.session.userId;
+    if (!userId) {
+      return res.redirect('/login');
+    }
+
+    // Get user data for sidebar
+    const user = await User.findById(userId).select('fullname email profilePhoto referralCode').lean();
+    if (!user) {
+      return res.redirect('/login');
+    }
+
+    // Find users referred by this user
+    const referrals = await User.find({ referredBy: user.referralCode })
+      .select('fullname email createdAt activated')
+      .lean();
+
+    // Calculate total earnings from successful referrals (example: $5 per referral)
+    const earningsPerReferral = 5;
+    const totalEarnings = referrals.filter(r => r.activated).length * earningsPerReferral;
+
+    const referralLink = `${req.protocol}://${req.get('host')}/signup?ref=${user.referralCode}`;
+
+    res.render('referrals', {
+      user,
+      referralCode: user.referralCode,
+      referrals,
+      totalEarnings,
+      referralLink
+    });
+  } catch (error) {
+    console.error('Error loading referrals page:', error);
+    res.status(500).render('error', { message: 'Error loading referrals page' });
+  }
+};
+
 module.exports = {
   loadLanding,
   loadSignup,
@@ -1993,4 +2031,5 @@ module.exports = {
   markHelpful,
   checkProductStatus,
   loadCouponPage,
+  loadReferrals,
 };

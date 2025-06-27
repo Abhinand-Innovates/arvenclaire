@@ -423,11 +423,11 @@
         }
 
         .btn-apply-coupon {
-            background: var(--text-primary);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
             padding: 1rem;
-            border-radius: 8px;
+            border-radius: 10px;
             font-size: 0.875rem;
             font-weight: 600;
             transition: all 0.3s ease;
@@ -435,12 +435,35 @@
             width: 100%;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-apply-coupon::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn-apply-coupon:hover::before {
+            left: 100%;
         }
 
         .btn-apply-coupon:hover {
-            background: var(--text-secondary);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-apply-coupon:active {
+            transform: translateY(-1px);
+            transition: all 0.1s ease;
         }
 
         .btn-apply-coupon:disabled {
@@ -450,12 +473,16 @@
             box-shadow: none;
         }
 
+        .btn-apply-coupon:disabled::before {
+            display: none;
+        }
+
         .btn-remove-coupon {
-            background: var(--text-primary);
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
             color: white;
             border: none;
             padding: 1rem;
-            border-radius: 8px;
+            border-radius: 10px;
             font-size: 0.875rem;
             font-weight: 600;
             transition: all 0.3s ease;
@@ -463,12 +490,35 @@
             width: 100%;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            box-shadow: 0 6px 20px rgba(240, 147, 251, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-remove-coupon::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn-remove-coupon:hover::before {
+            left: 100%;
         }
 
         .btn-remove-coupon:hover {
-            background: var(--text-secondary);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            background: linear-gradient(135deg, #e879f9 0%, #ef4444 100%);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 25px rgba(240, 147, 251, 0.4);
+        }
+
+        .btn-remove-coupon:active {
+            transform: translateY(-1px);
+            transition: all 0.1s ease;
         }
 
         /* Coupon Modal Styles */
