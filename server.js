@@ -17,11 +17,13 @@ const session = require('express-session');
 app.use(session({
   secret: 'your_secret_key', 
   resave: false,
-  saveUninitialized: false,
+  saveUninitialized: true,
   cookie: {
     httpOnly: true,
+    secure: false, // Set to true if using HTTPS
     maxAge: 24 * 60 * 60 * 1000  // 24 hours
-  }
+  },
+  name: 'sessionId' // Custom session name
 }));
 
 app.use(passport.initialize());

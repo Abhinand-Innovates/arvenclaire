@@ -54,6 +54,7 @@ router.get(
 router.get("/signup", preventCache, redirectIfAuthenticated, validateSession, userController.loadSignup);
 router.get("/login", preventCache, redirectIfAuthenticated, validateSession, userController.loadLogin);
 router.post("/signup", userController.signup);
+router.post("/validate-referral-code", userController.validateReferralCode);
 
 router.get("/verify-otp", preventCache, userController.loadOtpPage);
 router.post("/verify-otp", userController.verifyOtp);

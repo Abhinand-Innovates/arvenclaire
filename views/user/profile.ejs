@@ -235,64 +235,7 @@
         text-decoration: none;
     }
 
-    .stat-card {
-        background: var(--bg-primary);
-        border: 1px solid var(--border-color);
-        border-radius: 15px;
-        padding: 1.5rem;
-        color: var(--text-primary);
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        text-align: center;
-    }
-
-    .stat-card:hover {
-        background: var(--hover-color);
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-    }
-
-    .stat-icon {
-        width: 3rem;
-        height: 3rem;
-        background: var(--bg-secondary);
-        border: 1px solid var(--border-color);
-        border-radius: 15px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.25rem;
-        color: var(--text-primary);
-        margin: 0 auto 0.75rem auto;
-    }
-
-    .activity-item {
-        background: var(--bg-secondary);
-        border-radius: 15px;
-        padding: 1.5rem;
-        border-left: 4px solid var(--text-primary);
-        transition: all 0.3s ease;
-        margin-bottom: 1rem;
-        border: 1px solid var(--border-color);
-    }
-
-    .activity-item:hover {
-        background: var(--hover-color);
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-    }
-
-    .activity-icon {
-        width: 2.5rem;
-        height: 2.5rem;
-        background: var(--text-primary);
-        border-radius: 15px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-    }
-
+    
     .fade-in {
         animation: fadeIn 0.6s ease-in;
     }
@@ -371,25 +314,7 @@
             margin-bottom: 0.5rem;
         }
 
-        .refresh-btn {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            background-color: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            color: var(--text-muted);
-            width: 2.5rem;
-            height: 2.5rem;
-            border-radius: 0.5rem;
-            transition: all 0.2s ease;
-        }
-
-        .refresh-btn:hover {
-            color: var(--text-primary);
-            background-color: var(--bg-tertiary);
-            transform: rotate(90deg);
-        }
-
+        
     /* Mobile Responsive */
     @media (max-width: 768px) {
         .main-content {
@@ -413,15 +338,6 @@
         .profile-header {
             flex-direction: column;
             align-items: stretch;
-        }
-
-        .stat-card {
-            padding: 1rem;
-            text-align: center;
-        }
-
-        .stat-icon {
-            margin: 0 auto 0.75rem auto;
         }
 
         .d-flex.gap-3 {
@@ -503,7 +419,7 @@
 
         <div class="row g-3">
             <!-- Profile Details Section -->
-            <div class="col-lg-8">
+            <div class="col-12">
                 <div class="card-light p-3"> <!-- Reduced padding from p-4 to p-3 -->
                     <div class="text-center mb-4">
                         <h2 class="section-title mb-0">
@@ -608,82 +524,6 @@
                     </form>
                 </div>
             </div>
-
-            <!-- Account Stats Section -->
-            <div class="col-lg-4">
-                <div class="card-light p-4 mb-4">
-                    <h3 class="section-title">
-                        <i class="fas fa-chart-line"></i>
-                        Account Stats
-                    </h3>
-
-                    <div class="row g-3">
-                        <div class="col-6">
-                            <div class="stat-card text-center">
-                                <div class="stat-icon mx-auto mb-2">
-                                    <i class="fas fa-shopping-bag"></i>
-                                </div>
-                                <div class="fw-bold fs-4"><%= stats.totalOrders %></div>
-                                <div class="small text-muted">Total Orders</div>
-                            </div>
-                        </div>
-
-                        <div class="col-6">
-                            <div class="stat-card text-center">
-                                <div class="stat-icon mx-auto mb-2">
-                                    <i class="fas fa-heart"></i>
-                                </div>
-                                <div class="fw-bold fs-4"><%= stats.wishlistCount %></div>
-                                <div class="small text-muted">Wishlist Items</div>
-                            </div>
-                        </div>
-
-                        <div class="col-6">
-                            <div class="stat-card text-center">
-                                <div class="stat-icon mx-auto mb-2">
-                                    <i class="fas fa-wallet"></i>
-                                </div>
-                                <div class="fw-bold fs-4">₹<%= stats.walletBalance.toFixed(2) %></div>
-                                <div class="small text-muted">Wallet Balance</div>
-                            </div>
-                        </div>
-
-                        <div class="col-6">
-                            <div class="stat-card text-center">
-                                <div class="stat-icon mx-auto mb-2">
-                                    <i class="fas fa-tag"></i>
-                                </div>
-                                <div class="fw-bold fs-4"><%= stats.availableCoupons %></div>
-                                <div class="small text-muted">Available Coupons</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Recent Activity Section -->
-                <div class="card-light p-4 position-relative">
-                    <h3 class="section-title">
-                        <i class="fas fa-clock"></i>
-                        Recent Activity
-                    </h3>
-
-                    <button class="refresh-btn" onclick="refreshActivity()">
-                        <i class="fas fa-sync-alt"></i>
-                    </button>
-
-                    <div class="activity-item">
-                        <div class="d-flex align-items-center">
-                            <div class="activity-icon me-3">
-                                <i class="fas fa-tag"></i>
-                            </div>
-                            <div class="flex-grow-1">
-                                <div class="fw-semibold">Applied a coupon code</div>
-                                <div class="small text-muted">1 day ago</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 
@@ -693,15 +533,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script>
     <script>
-        function refreshActivity() {
-            const refreshBtn = document.querySelector('.refresh-btn i');
-            refreshBtn.style.transform = 'rotate(360deg)';
-
-            setTimeout(() => {
-                refreshBtn.style.transform = 'rotate(0deg)';
-            }, 500);
-        }
-
         // Sidebar navigation functionality
         function showSection(section) {
             // Remove active class from all menu items
@@ -764,19 +595,6 @@
                     console.log('Unknown section:', section);
             }
         }
-
-        // Add smooth hover effects
-        document.querySelectorAll('.stat-card').forEach(card => {
-            card.addEventListener('mouseenter', function() {
-                this.style.transform = 'translateY(-4px)';
-                this.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.15)';
-            });
-
-            card.addEventListener('mouseleave', function() {
-                this.style.transform = 'translateY(0)';
-                this.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.1)';
-            });
-        });
 
         // Main profile photo functions
         function triggerMainPhotoUpload() {

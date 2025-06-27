@@ -1,5 +1,6 @@
 const User = require("../../models/user-schema");
 const generateOtp = require("../../utils/generateOtp");
+const { generateReferralCodeWithPrefix } = require("../../utils/generateReferralCode");
 const sendEmail = require("../../utils/sendEmail");
 const bcrypt = require("bcrypt");
 const Product = require("../../models/product-schema");
@@ -58,7 +59,6 @@ const loadLanding = async (req, res) => {
     // User context is automatically added by middleware
     return res.render("dashboard", { products: productsWithRatings });
   } catch (error) {
-    console.log("Landing page not loading");
     res.status(500).send("Server error");
   }
 };
@@ -78,7 +78,7 @@ const loadSignup = async (req, res) => {
 
 const signup = async (req, res) => {
   try {
-    const { fullname, phone, email, password } = req.body;
+    const { fullname, phone, email, password, referralCode } = req.body;
 
     if (!fullname || fullname.length < 4) {
       return res.status(400).json({ success: false, message: "Full name must be at least 4 characters" });
@@ -122,12 +122,43 @@ const signup = async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    req.session.userData = { fullname, phone, email, password: hashedPassword };
+    
+    // Generate unique referral code for the new user
+    let userReferralCode;
+    let isReferralCodeUnique = false;
+    
+    while (!isReferralCodeUnique) {
+      userReferralCode = generateReferralCodeWithPrefix('REF', 6);
+      const existingUser = await User.findOne({ referralCode: userReferralCode });
+      if (!existingUser) {
+        isReferralCodeUnique = true;
+      }
+    }
+    
+    req.session.userData = { 
+      fullname, 
+      phone, 
+      email, 
+      password: hashedPassword, 
+      referralCode: userReferralCode,
+      referredByCode: referralCode || null 
+    };
     req.session.userOtp = otp;
 
-    res.json({
-      success: true,
-      message: "otp sent successfully",
+    // Explicitly save the session
+    req.session.save((err) => {
+      if (err) {
+        console.error('Session save error:', err);
+        return res.status(500).json({
+          success: false,
+          message: "Failed to save session data",
+        });
+      }
+      
+      res.json({
+        success: true,
+        message: "otp sent successfully",
+      });
     });
   } catch (error) {
     console.error("Error in loading signup page", error);
@@ -156,14 +187,53 @@ const verifyOtp = async (req, res) => {
 
     if (otp === req.session.userOtp) {
       const user = req.session.userData;
+      
+      // Create new user with referral code
       const saveUserData = new User({
         fullname: user.fullname,
         phone: user.phone,
         email: user.email,
         password: user.password,
+        referralCode: user.referralCode,
       });
 
       await saveUserData.save();
+      
+      // Process referral if referral code was provided
+      if (user.referredByCode) {
+        try {
+          // Find the user who referred this new user
+          const referrer = await User.findOne({ referralCode: user.referredByCode });
+          
+          if (referrer) {
+            // Create or get wallets for both users
+            const referrerWallet = await Wallet.getOrCreateWallet(referrer._id);
+            const newUserWallet = await Wallet.getOrCreateWallet(saveUserData._id);
+            
+            // Credit 150 rupees to referrer's wallet
+            await referrerWallet.addMoney(
+              150, 
+              `Referral bonus for referring ${user.fullname}`,
+              null
+            );
+            
+            // Credit 50 rupees to new user's wallet
+            await newUserWallet.addMoney(
+              50, 
+              `Welcome bonus for using referral code ${user.referredByCode}`,
+              null
+            );
+            
+            console.log(`Referral processed: ${referrer.fullname} earned ₹150, ${user.fullname} earned ₹50`);
+          } else {
+            console.log(`Invalid referral code provided: ${user.referredByCode}`);
+          }
+        } catch (referralError) {
+          console.error("Error processing referral:", referralError);
+          // Don't fail the signup process if referral processing fails
+        }
+      }
+      
       res.json({
         success: true,
         redirectUrl: "/login",
@@ -184,10 +254,20 @@ const verifyOtp = async (req, res) => {
 
 const resendOtp = async (req, res) => {
   try {
+    if (!req.session.userData) {
+      return res.status(401).json({ 
+        success: false,
+        message: "Your session has expired. Please restart the signup process." 
+      });
+    }
+
     const { email } = req.session.userData;
 
     if (!email) {
-      res.status(401).json({ message: "email not found, session ends" });
+      return res.status(401).json({ 
+        success: false,
+        message: "Email not found in session. Please restart the signup process." 
+      });
     }
 
     // otp Generation
@@ -195,22 +275,32 @@ const resendOtp = async (req, res) => {
     console.log("otp is:", otp);
     req.session.userOtp = otp;
 
+    // Save session after updating OTP
+    req.session.save((err) => {
+      if (err) {
+        console.error('Session save error during resend:', err);
+      }
+    });
+
     const isSendMail = await sendEmail(email, otp);
 
     if (!isSendMail) {
       return res.json({
         success: false,
-        message: "Failed to send OTP",
+        message: "Failed to send OTP. Please try again.",
       });
     }
 
     res.json({
       success: true,
-      message: "otp sent successfully",
+      message: "OTP sent successfully",
     });
   } catch (error) {
-    console.error("Error in resending otp", error);
-    res.status(500).send("Internal server error");
+    console.error("Error in resending otp:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error"
+    });
   }
 };
 
@@ -438,11 +528,10 @@ const verifyForgotPasswordEmail = async (req, res) => {
 
 const resendForgotPasswordOtp = async (req, res) => {
   try {
-
     const email = req.session.userOtp.email;
 
     if (!email) {
-      res.status(401).json({ message: "email not found, session ends" });
+      return res.status(401).json({ message: "email not found, session ends" });
     }
 
     // otp Generation
@@ -1953,6 +2042,43 @@ const loadCouponPage = async (req, res) => {
   }
 };
 
+// Validate referral code API endpoint
+const validateReferralCode = async (req, res) => {
+  try {
+    const { referralCode } = req.body;
+    
+    if (!referralCode || !referralCode.trim()) {
+      return res.json({
+        success: true,
+        valid: true,
+        message: "Referral code is optional"
+      });
+    }
+    
+    const referrer = await User.findOne({ referralCode: referralCode.trim() });
+    
+    if (referrer) {
+      return res.json({
+        success: true,
+        valid: true,
+        message: "Valid referral code"
+      });
+    } else {
+      return res.json({
+        success: true,
+        valid: false,
+        message: "Invalid referral code"
+      });
+    }
+  } catch (error) {
+    console.error("Error validating referral code:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error validating referral code"
+    });
+  }
+};
+
 // Load referrals page
 const loadReferrals = async (req, res) => {
   try {
@@ -1967,23 +2093,73 @@ const loadReferrals = async (req, res) => {
       return res.redirect('/login');
     }
 
-    // Find users referred by this user
-    const referrals = await User.find({ referredBy: user.referralCode })
-      .select('fullname email createdAt activated')
-      .lean();
+    // Get user's wallet to find referral transactions
+    const userWallet = await Wallet.findOne({ userId: userId });
+    
+    let referralTransactions = [];
+    let totalEarnings = 0;
+    let totalReferrals = 0;
 
-    // Calculate total earnings from successful referrals (example: $5 per referral)
-    const earningsPerReferral = 5;
-    const totalEarnings = referrals.filter(r => r.activated).length * earningsPerReferral;
+    if (userWallet && userWallet.transactions) {
+      // Filter referral bonus transactions
+      referralTransactions = userWallet.transactions.filter(transaction => 
+        transaction.description && transaction.description.includes('Referral bonus for referring')
+      ).map(transaction => ({
+        amount: transaction.amount,
+        description: transaction.description,
+        createdAt: transaction.createdAt,
+        type: transaction.type
+      })).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+      // Calculate totals
+      totalEarnings = referralTransactions.reduce((sum, transaction) => sum + transaction.amount, 0);
+      totalReferrals = referralTransactions.length;
+    }
+
+    // Also get welcome bonus transactions for new users who used this user's referral code
+    const welcomeBonusTransactions = await Wallet.aggregate([
+      {
+        $unwind: "$transactions"
+      },
+      {
+        $match: {
+          "transactions.description": { $regex: new RegExp(`Welcome bonus for using referral code ${user.referralCode}`) }
+        }
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "userId",
+          foreignField: "_id",
+          as: "referredUser"
+        }
+      },
+      {
+        $unwind: "$referredUser"
+      },
+      {
+        $project: {
+          referredUserName: "$referredUser.fullname",
+          referredUserEmail: "$referredUser.email",
+          amount: "$transactions.amount",
+          createdAt: "$transactions.createdAt"
+        }
+      },
+      {
+        $sort: { createdAt: -1 }
+      }
+    ]);
 
     const referralLink = `${req.protocol}://${req.get('host')}/signup?ref=${user.referralCode}`;
 
     res.render('referrals', {
       user,
       referralCode: user.referralCode,
-      referrals,
+      totalReferrals,
       totalEarnings,
-      referralLink
+      referralLink,
+      referralTransactions,
+      welcomeBonusTransactions
     });
   } catch (error) {
     console.error('Error loading referrals page:', error);
@@ -2031,5 +2207,6 @@ module.exports = {
   markHelpful,
   checkProductStatus,
   loadCouponPage,
+  validateReferralCode,
   loadReferrals,
 };

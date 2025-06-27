@@ -30,6 +30,11 @@
       background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
     }
 
+    .is-valid {
+      border-color: #28a745;
+      background-image: none !important;
+    }
+
     .password-wrapper {
       position: relative;
     }
@@ -73,6 +78,23 @@
     .signup-form > p {
       text-align: center;
     }
+
+    /* Light ash color for referral field */
+    #referralCode {
+      background-color: #e8e8e8 !important;
+      border-color: #c0c0c0 !important;
+      color: #4a4a4a !important;
+    }
+
+    #referralCode::placeholder {
+      color: #808080 !important;
+    }
+
+    #referralCode:focus {
+      background-color: #e0e0e0 !important;
+      border-color: #b0b0b0 !important;
+      box-shadow: 0 0 0 0.2rem rgba(176, 176, 176, 0.25) !important;
+    }
   </style>
 </head>
 
@@ -109,11 +131,9 @@
             <i class="bi bi-lock password-toggle" id="confirmpassword-toggle"></i>
             <div class="error-message" id="confirmpassword-error">Passwords do not match</div>
           </div>
-          <div class="form-check mb-2">
-            <input class="form-check-input" type="checkbox" id="rememberMe">
-            <label class="form-check-label text-muted" for="rememberMe">
-              Remember me
-            </label>
+          <div class="mb-3">
+            <input type="text" id="referralCode" name="referralCode" class="form-control" placeholder="Referral Code (Optional)" value="">
+            <div class="error-message" id="referralCode-error">Invalid referral code</div>
           </div>
           <button type="submit" class="btn btn-create py-2" id="signupButton">
             <span class="btn-text">Sign Up</span>
@@ -142,6 +162,15 @@
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
+    // Check for referral code in URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const refCode = urlParams.get('ref');
+    if (refCode) {
+      document.getElementById('referralCode').value = refCode;
+      // Trigger validation for the pre-filled referral code
+      document.getElementById('referralCode').dispatchEvent(new Event('input'));
+    }
+
     const form = document.getElementById("signupForm");
     const signupButton = document.getElementById("signupButton");
     const fields = [
@@ -331,6 +360,59 @@
       });
     });
 
+    // Referral code validation
+    const referralCodeInput = document.getElementById("referralCode");
+    const referralCodeError = document.getElementById("referralCode-error");
+    let referralCodeTimeout;
+
+    referralCodeInput.addEventListener("input", () => {
+      const referralCode = referralCodeInput.value.trim();
+      
+      // Clear previous timeout
+      if (referralCodeTimeout) {
+        clearTimeout(referralCodeTimeout);
+      }
+      
+      // Clear error state
+      referralCodeInput.classList.remove("is-invalid", "is-valid");
+      referralCodeError.style.display = "none";
+      
+      // If empty, it's valid (optional field)
+      if (!referralCode) {
+        return;
+      }
+      
+      // Debounce validation
+      referralCodeTimeout = setTimeout(async () => {
+        try {
+          const response = await fetch("/validate-referral-code", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ referralCode }),
+          });
+          
+          const data = await response.json();
+          
+          if (data.success) {
+            if (data.valid) {
+              referralCodeInput.classList.add("is-valid");
+              referralCodeInput.classList.remove("is-invalid");
+              referralCodeError.style.display = "none";
+            } else {
+              referralCodeInput.classList.add("is-invalid");
+              referralCodeInput.classList.remove("is-valid");
+              referralCodeError.textContent = data.message;
+              referralCodeError.style.display = "block";
+            }
+          }
+        } catch (error) {
+          console.error("Error validating referral code:", error);
+        }
+      }, 500); // 500ms delay
+    });
+
     // Password toggle functionality
     function setupPasswordToggle(inputId, toggleId) {
       const input = document.getElementById(inputId);
@@ -386,6 +468,7 @@
       const phone = document.getElementById("phone").value.trim();
       const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value;
+      const referralCode = document.getElementById("referralCode").value.trim();
 
       try {
         const response = await fetch("/signup", {
@@ -398,6 +481,7 @@
             phone,
             email,
             password,
+            referralCode,
           }),
         });
 

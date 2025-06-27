@@ -6,11 +6,16 @@ dotenv.config();
 const sendEmail = async (email, otp) => {
   try {
     const transporter = nodemailer.createTransport({
-      service: "gmail",
+      host: "smtp.gmail.com",
+      port: 587,
+      secure: false, // true for 465, false for other ports
       auth: {
         user: process.env.NODEMAILER_EMAIL,
         pass: process.env.NODEMAILER_PASSWORD,
       },
+      tls: {
+        rejectUnauthorized: false
+      }
     });
 
     const mailOptions = {
@@ -49,7 +54,7 @@ Arvenclaire Support Team
     return info.accepted.length > 0;
 
   } catch (error) {
-    console.log("Error sending email:", error.message);
+    console.error("Error sending email:", error.message);
     return false;
   }
 };

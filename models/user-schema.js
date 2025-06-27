@@ -39,6 +39,11 @@ const userSchema = new Schema({
   isAdmin: {
     type: Boolean,
     default: false,
+  },
+  referralCode: {
+    type: String,
+    unique: true,
+    sparse: true,
   }
 }, { timestamps: true });
 

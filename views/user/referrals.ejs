@@ -308,21 +308,21 @@
                         <div class="col-md-4">
                             <div class="stat-card">
                                 <div class="stat-icon"><i class="fas fa-users"></i></div>
-                                <div class="fw-bold fs-4"><%= referrals.length %></div>
+                                <div class="fw-bold fs-4"><%= (welcomeBonusTransactions && welcomeBonusTransactions.length) || 0 %></div>
                                 <div class="small text-muted">Total Referrals</div>
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div class="stat-card">
                                 <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
-                                <div class="fw-bold fs-4"><%= referrals.filter(r => r.activated).length %></div>
+                                <div class="fw-bold fs-4"><%= (welcomeBonusTransactions && welcomeBonusTransactions.length) || 0 %></div>
                                 <div class="small text-muted">Successful Referrals</div>
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div class="stat-card">
                                 <div class="stat-icon"><i class="fas fa-wallet"></i></div>
-                                <div class="fw-bold fs-4">₹<%= totalEarnings.toFixed(2) %></div>
+                                <div class="fw-bold fs-4">₹<%= (totalEarnings || 0).toFixed(2) %></div>
                                 <div class="small text-muted">Total Earnings</div>
                             </div>
                         </div>
@@ -330,11 +330,11 @@
                 </div>
             </div>
 
-            <!-- Referrals List Section -->
+            <!-- Referred Users Section -->
             <div class="col-lg-12">
                 <div class="card-light">
-                    <h2 class="section-title"><i class="fas fa-list"></i> Referred Users</h2>
-                    <% if (referrals && referrals.length > 0) { %>
+                    <h2 class="section-title"><i class="fas fa-users"></i> Referred Users</h2>
+                    <% if (welcomeBonusTransactions && welcomeBonusTransactions.length > 0) { %>
                         <div class="table-responsive">
                             <table class="table table-hover align-middle">
                                 <thead>
@@ -342,23 +342,21 @@
                                         <th>#</th>
                                         <th>Name</th>
                                         <th>Email</th>
+                                        <th>Welcome Bonus</th>
                                         <th>Date Joined</th>
                                         <th>Status</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <% referrals.forEach(function(ref, idx) { %>
+                                    <% welcomeBonusTransactions.forEach(function(transaction, idx) { %>
                                         <tr>
                                             <td><%= idx + 1 %></td>
-                                            <td><%= ref.fullname %></td>
-                                            <td><%= ref.email %></td>
-                                            <td><%= new Date(ref.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) %></td>
+                                            <td><%= transaction.referredUserName %></td>
+                                            <td><%= transaction.referredUserEmail %></td>
+                                            <td class="text-success fw-bold">₹<%= transaction.amount %></td>
+                                            <td><%= new Date(transaction.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) %></td>
                                             <td>
-                                                <% if (ref.activated) { %>
-                                                    <span class="badge bg-success">Active</span>
-                                                <% } else { %>
-                                                    <span class="badge bg-secondary">Pending</span>
-                                                <% } %>
+                                                <span class="badge bg-success">Active</span>
                                             </td>
                                         </tr>
                                     <% }) %>
@@ -369,6 +367,46 @@
                         <div class="text-center text-muted py-4">
                             <i class="fas fa-user-friends fa-2x mb-2"></i>
                             <div>No referrals yet. Share your code to start inviting friends!</div>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+
+            <!-- Referral Earnings History Section -->
+            <div class="col-lg-12">
+                <div class="card-light">
+                    <h2 class="section-title"><i class="fas fa-list"></i> My Referral Earnings</h2>
+                    <% if (referralTransactions && referralTransactions.length > 0) { %>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Description</th>
+                                        <th>Amount</th>
+                                        <th>Date</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% referralTransactions.forEach(function(transaction, idx) { %>
+                                        <tr>
+                                            <td><%= idx + 1 %></td>
+                                            <td><%= transaction.description %></td>
+                                            <td class="text-success fw-bold">+₹<%= transaction.amount %></td>
+                                            <td><%= new Date(transaction.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) %></td>
+                                            <td>
+                                                <span class="badge bg-success">Completed</span>
+                                            </td>
+                                        </tr>
+                                    <% }) %>
+                                </tbody>
+                            </table>
+                        </div>
+                    <% } else { %>
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-wallet fa-2x mb-2"></i>
+                            <div>No referral earnings yet. Start referring friends to earn rewards!</div>
                         </div>
                     <% } %>
                 </div>
