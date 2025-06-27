@@ -78,18 +78,24 @@ const cancelOrderItem = async (req, res) => {
     const userId = req.session.userId;
     const { reason } = req.body;
 
+    console.log(`Cancel item request - OrderId: ${orderId}, ItemId: ${itemId}, UserId: ${userId}`);
+
     const order = await Order.findOne({ orderId, userId })
       .populate('orderedItems.product');
 
     if (!order) {
+      console.log(`Order not found - OrderId: ${orderId}, UserId: ${userId}`);
       return res.status(404).json({
         success: false,
         message: 'Order not found'
       });
     }
 
+    console.log(`Order found - Status: ${order.status}, Payment Status: ${order.paymentStatus}`);
+
     // Check if order can be cancelled based on status
     if (['Shipped', 'Delivered', 'Return Request', 'Returned', 'Cancelled'].includes(order.status)) {
+      console.log(`Order cannot be cancelled - Current status: ${order.status}`);
       return res.status(400).json({
         success: false,
         message: 'Order cannot be cancelled at this stage'
@@ -99,14 +105,18 @@ const cancelOrderItem = async (req, res) => {
     // Find the specific item
     const orderItem = order.orderedItems.id(itemId);
     if (!orderItem) {
+      console.log(`Order item not found - ItemId: ${itemId}`);
       return res.status(404).json({
         success: false,
         message: 'Order item not found'
       });
     }
 
+    console.log(`Order item found - Status: ${orderItem.status}, Product: ${orderItem.product.productName}`);
+
     // Check if item can be cancelled
     if (orderItem.status !== 'Active') {
+      console.log(`Item cannot be cancelled - Current status: ${orderItem.status}`);
       return res.status(400).json({
         success: false,
         message: 'Item is already cancelled or returned'
@@ -118,19 +128,19 @@ const cancelOrderItem = async (req, res) => {
     orderItem.cancellationReason = reason || 'Item cancelled by customer';
     orderItem.cancelledAt = new Date();
 
+    console.log(`Item marked as cancelled - ${orderItem.product.productName}`);
+
     // Restore product stock
     try {
-      // Get current stock before update for verification
-      const productBefore = await Product.findById(orderItem.product._id);
-      const stockBefore = productBefore ? productBefore.quantity : 0;
-
       const productUpdateResult = await Product.findByIdAndUpdate(
         orderItem.product._id,
         { $inc: { quantity: orderItem.quantity } },
         { new: true }
       );
 
-      // Product stock restored successfully
+      if (productUpdateResult) {
+        console.log(`Product stock restored - ${orderItem.product.productName}: +${orderItem.quantity}`);
+      }
     } catch (stockError) {
       console.error('Error restoring product stock:', stockError);
       // Continue with order cancellation even if stock update fails
@@ -140,12 +150,14 @@ const cancelOrderItem = async (req, res) => {
     const activeItems = order.orderedItems.filter(item => item.status === 'Active');
     const cancelledItems = order.orderedItems.filter(item => item.status === 'Cancelled');
     
+    console.log(`Active items: ${activeItems.length}, Cancelled items: ${cancelledItems.length}`);
+    
     if (activeItems.length === 0) {
       // All items cancelled - set amounts to 0
       order.status = 'Cancelled';
       order.totalPrice = 0;
       order.finalAmount = 0;
-      // Keep original discount for record keeping, but it won't affect final amount
+      console.log('All items cancelled - Order status set to Cancelled');
     } else {
       // Partially cancelled - recalculate based on active items with proportional discount
       order.status = 'Partially Cancelled';
@@ -158,9 +170,7 @@ const cancelOrderItem = async (req, res) => {
       // Calculate proportional discount for active items only
       let applicableDiscount = 0;
       if (order.discount > 0 && originalOrderTotal > 0) {
-        // Calculate what proportion of the original order the active items represent
         const activeItemsProportion = activeItemsTotal / originalOrderTotal;
-        // Apply only the proportional discount to active items
         applicableDiscount = Math.min(order.discount * activeItemsProportion, activeItemsTotal);
       }
       
@@ -168,7 +178,7 @@ const cancelOrderItem = async (req, res) => {
       order.totalPrice = activeItemsTotal;
       order.finalAmount = Math.max(0, activeItemsTotal - applicableDiscount + order.shippingCharges);
       
-      // Proportional discount calculated successfully
+      console.log(`Order partially cancelled - New total: ₹${order.finalAmount}`);
     }
 
     // Add to order timeline
@@ -178,10 +188,28 @@ const cancelOrderItem = async (req, res) => {
       timestamp: new Date()
     });
 
-    // Credit wallet for online payments that are completed
+    // Credit wallet for ALL cancelled items (regardless of payment method)
     let walletCreditAmount = 0;
-    if (order.paymentStatus === 'Completed' && order.paymentMethod !== 'Cash on Delivery') {
+    
+    // For COD orders, credit only if payment was made (status is Completed)
+    // For online payments, credit if payment was completed
+    // For pending payments, still credit to wallet as a refund
+    if (order.paymentMethod === 'Cash on Delivery') {
+      // For COD, only credit if payment was actually collected (status Completed)
+      if (order.paymentStatus === 'Completed') {
+        walletCreditAmount = orderItem.totalPrice;
+        console.log(`COD order with completed payment - crediting ₹${walletCreditAmount} to wallet`);
+      } else {
+        console.log(`COD order with pending payment - no wallet credit needed`);
+      }
+    } else {
+      // For online payments (including pending ones), always credit to wallet
       walletCreditAmount = orderItem.totalPrice;
+      console.log(`Online payment order - crediting ₹${walletCreditAmount} to wallet`);
+    }
+    
+    if (walletCreditAmount > 0) {
+      console.log(`Processing wallet credit - Amount: ₹${walletCreditAmount}`);
       
       try {
         const wallet = await Wallet.getOrCreateWallet(userId);
@@ -190,7 +218,7 @@ const cancelOrderItem = async (req, res) => {
           `Refund for cancelled item: ${orderItem.product.productName} (Order: ${order.orderId})`,
           order.orderId
         );
-        console.log(`Wallet credited ₹${walletCreditAmount} for cancelled item in order ${order.orderId}`);
+        console.log(`Wallet credited successfully - ₹${walletCreditAmount} for order ${order.orderId}`);
       } catch (walletError) {
         console.error('Error adding money to wallet for cancelled item:', walletError);
         // Continue with cancellation even if wallet credit fails
@@ -198,6 +226,7 @@ const cancelOrderItem = async (req, res) => {
     }
 
     await order.save();
+    console.log('Order saved successfully');
 
     const responseMessage = walletCreditAmount > 0 
       ? `Item cancelled successfully. ₹${walletCreditAmount} has been credited to your wallet.`
@@ -214,7 +243,7 @@ const cancelOrderItem = async (req, res) => {
     console.error('Error cancelling order item:', error);
     res.status(500).json({
       success: false,
-      message: 'Error cancelling order item'
+      message: 'Error cancelling order item: ' + error.message
     });
   }
 };
@@ -228,29 +257,51 @@ const cancelEntireOrder = async (req, res) => {
     const userId = req.session.userId;
     const { reason } = req.body;
 
+    console.log(`Cancel entire order request - OrderId: ${orderId}, UserId: ${userId}`);
+
     const order = await Order.findOne({ orderId, userId })
       .populate('orderedItems.product');
 
     if (!order) {
+      console.log(`Order not found - OrderId: ${orderId}, UserId: ${userId}`);
       return res.status(404).json({
         success: false,
         message: 'Order not found'
       });
     }
 
+    console.log(`Order found - Status: ${order.status}, Payment Status: ${order.paymentStatus}, Final Amount: ₹${order.finalAmount}`);
+
     // Check if order can be cancelled
     if (['Shipped', 'Delivered', 'Return Request', 'Returned', 'Cancelled'].includes(order.status)) {
+      console.log(`Order cannot be cancelled - Current status: ${order.status}`);
       return res.status(400).json({
         success: false,
         message: 'Order cannot be cancelled at this stage'
       });
     }
 
-    // Credit wallet for online payments that are completed - BEFORE updating order amounts
+    // Credit wallet for ALL cancelled orders (regardless of payment method) - BEFORE updating order amounts
     let walletCreditAmount = 0;
-    if (order.paymentStatus === 'Completed' && order.paymentMethod !== 'Cash on Delivery') {
-      // Calculate the total amount to be credited (current final amount before cancellation)
+    
+    // For COD orders, credit only if payment was made (status is Completed)
+    // For online payments, credit the full amount regardless of payment status
+    if (order.paymentMethod === 'Cash on Delivery') {
+      // For COD, only credit if payment was actually collected (status Completed)
+      if (order.paymentStatus === 'Completed') {
+        walletCreditAmount = order.finalAmount;
+        console.log(`COD order with completed payment - crediting ₹${walletCreditAmount} to wallet`);
+      } else {
+        console.log(`COD order with pending payment - no wallet credit needed`);
+      }
+    } else {
+      // For online payments (including pending ones), always credit to wallet
       walletCreditAmount = order.finalAmount;
+      console.log(`Online payment order - crediting ₹${walletCreditAmount} to wallet`);
+    }
+    
+    if (walletCreditAmount > 0) {
+      console.log(`Processing wallet credit for entire order - Amount: ₹${walletCreditAmount}`);
       
       try {
         const wallet = await Wallet.getOrCreateWallet(userId);
@@ -259,7 +310,7 @@ const cancelEntireOrder = async (req, res) => {
           `Refund for cancelled order (Order: ${order.orderId})`,
           order.orderId
         );
-        console.log(`Wallet credited ₹${walletCreditAmount} for cancelled order ${order.orderId}`);
+        console.log(`Wallet credited successfully - ₹${walletCreditAmount} for cancelled order ${order.orderId}`);
       } catch (walletError) {
         console.error('Error adding money to wallet for cancelled order:', walletError);
         // Continue with cancellation even if wallet credit fails
@@ -271,32 +322,38 @@ const cancelEntireOrder = async (req, res) => {
     order.totalPrice = 0;
     order.finalAmount = 0;
 
+    console.log('Order status updated to Cancelled');
+
     // Cancel all active items and restore stock
+    let itemsCancelled = 0;
     for (const item of order.orderedItems) {
       if (item.status === 'Active') {
         item.status = 'Cancelled';
         item.cancellationReason = reason || 'Order cancelled by customer';
         item.cancelledAt = new Date();
+        itemsCancelled++;
 
-        // Restore product stock - this is the key part for accurate inventory management
+        console.log(`Cancelling item: ${item.product.productName}, Quantity: ${item.quantity}`);
+
+        // Restore product stock
         try {
-          // Get current stock before update for verification
-          const productBefore = await Product.findById(item.product._id);
-          const stockBefore = productBefore ? productBefore.quantity : 0;
-
           const productUpdateResult = await Product.findByIdAndUpdate(
             item.product._id,
             { $inc: { quantity: item.quantity } },
             { new: true }
           );
 
-          // Product stock restored successfully
+          if (productUpdateResult) {
+            console.log(`Product stock restored - ${item.product.productName}: +${item.quantity}, New stock: ${productUpdateResult.quantity}`);
+          }
         } catch (stockError) {
           console.error('Error restoring product stock for item:', item.product.productName, stockError);
           // Continue with other items even if one fails
         }
       }
     }
+
+    console.log(`Total items cancelled: ${itemsCancelled}`);
 
     // Add to order timeline
     order.orderTimeline.push({
@@ -306,6 +363,7 @@ const cancelEntireOrder = async (req, res) => {
     });
 
     await order.save();
+    console.log('Order saved successfully');
 
     const responseMessage = walletCreditAmount > 0 
       ? `Order cancelled successfully. ₹${walletCreditAmount} has been credited to your wallet.`
@@ -322,7 +380,7 @@ const cancelEntireOrder = async (req, res) => {
     console.error('Error cancelling entire order:', error);
     res.status(500).json({
       success: false,
-      message: 'Error cancelling order'
+      message: 'Error cancelling order: ' + error.message
     });
   }
 };
@@ -336,19 +394,25 @@ const requestReturn = async (req, res) => {
     const userId = req.session.userId;
     const { reason, items, requestType } = req.body;
 
+    console.log(`Return request - OrderId: ${orderId}, UserId: ${userId}, RequestType: ${requestType}`);
+
     // Get order with populated product data
     const order = await Order.findOne({ orderId, userId })
       .populate('orderedItems.product');
 
     if (!order) {
+      console.log(`Order not found - OrderId: ${orderId}, UserId: ${userId}`);
       return res.status(404).json({
         success: false,
         message: 'Order not found'
       });
     }
 
+    console.log(`Order found - Status: ${order.status}, Payment Status: ${order.paymentStatus}`);
+
     // Check if order can be returned (only delivered orders can be returned)
     if (order.status !== 'Delivered') {
+      console.log(`Order cannot be returned - Current status: ${order.status}`);
       return res.status(400).json({
         success: false,
         message: 'Only delivered orders can be returned'
@@ -357,6 +421,7 @@ const requestReturn = async (req, res) => {
 
     // Check if return request already exists for entire order
     if (order.status === 'Return Request' || order.status === 'Returned') {
+      console.log(`Return request already exists - Current status: ${order.status}`);
       return res.status(400).json({
         success: false,
         message: 'Return request already exists for this order'
@@ -367,7 +432,9 @@ const requestReturn = async (req, res) => {
     const deliveryDate = order.orderTimeline.find(timeline => timeline.status === 'Delivered')?.timestamp;
     if (deliveryDate) {
       const daysSinceDelivery = Math.floor((new Date() - new Date(deliveryDate)) / (1000 * 60 * 60 * 24));
+      console.log(`Days since delivery: ${daysSinceDelivery}`);
       if (daysSinceDelivery > 7) {
+        console.log('Return window has expired');
         return res.status(400).json({
           success: false,
           message: 'Return window has expired. Returns are only allowed within 7 days of delivery.'
@@ -381,6 +448,8 @@ const requestReturn = async (req, res) => {
       let returnedItemsCount = 0;
       let returnDescription = '';
       
+      console.log(`Processing individual item returns - ${items.length} items`);
+      
       for (const returnItem of items) {
         const orderItem = order.orderedItems.id(returnItem.itemId);
         if (orderItem && orderItem.status === 'Active') {
@@ -393,10 +462,13 @@ const requestReturn = async (req, res) => {
             returnDescription += ', ';
           }
           returnDescription += orderItem.product.productName;
+          
+          console.log(`Item marked for return: ${orderItem.product.productName}`);
         }
       }
 
       if (returnedItemsCount === 0) {
+        console.log('No valid items found for return');
         return res.status(400).json({
           success: false,
           message: 'No valid items found for return'
@@ -407,13 +479,17 @@ const requestReturn = async (req, res) => {
       const activeItems = order.orderedItems.filter(item => item.status === 'Active');
       const returnRequestItems = order.orderedItems.filter(item => item.status === 'Return Request');
       
+      console.log(`Active items: ${activeItems.length}, Return request items: ${returnRequestItems.length}`);
+      
       if (activeItems.length === 0 && returnRequestItems.length > 0) {
         // All items are being returned
         order.status = 'Return Request';
         order.returnReason = `Individual items return: ${returnDescription}`;
+        console.log('All items being returned - Order status set to Return Request');
       } else {
         // Partial return - keep order as delivered but mark items
         order.returnReason = `Partial return requested: ${returnDescription}`;
+        console.log('Partial return requested');
       }
 
       order.returnRequestedAt = new Date();
@@ -426,6 +502,7 @@ const requestReturn = async (req, res) => {
       });
 
       await order.save();
+      console.log('Order saved successfully');
 
       res.status(200).json({
         success: true,
@@ -434,6 +511,8 @@ const requestReturn = async (req, res) => {
 
     } else {
       // Entire order return (legacy support)
+      console.log('Processing entire order return');
+      
       order.status = 'Return Request';
       order.returnReason = reason || 'Return requested by customer';
       order.returnRequestedAt = new Date();
@@ -446,6 +525,7 @@ const requestReturn = async (req, res) => {
       });
 
       await order.save();
+      console.log('Order saved successfully');
 
       res.status(200).json({
         success: true,
@@ -457,7 +537,7 @@ const requestReturn = async (req, res) => {
     console.error('Error requesting return:', error);
     res.status(500).json({
       success: false,
-      message: 'Error submitting return request'
+      message: 'Error submitting return request: ' + error.message
     });
   }
 };
@@ -535,21 +615,25 @@ const requestIndividualItemReturn = async (req, res) => {
     const userId = req.session.userId;
     const { reason } = req.body;
 
-    // Individual item return request received
+    console.log(`Individual item return request - OrderId: ${orderId}, ItemId: ${itemId}, UserId: ${userId}`);
 
     // Get order with populated product data
     const order = await Order.findOne({ orderId, userId })
       .populate('orderedItems.product');
 
     if (!order) {
+      console.log(`Order not found - OrderId: ${orderId}, UserId: ${userId}`);
       return res.status(404).json({
         success: false,
         message: 'Order not found'
       });
     }
 
+    console.log(`Order found - Status: ${order.status}, Payment Status: ${order.paymentStatus}`);
+
     // Check if order can be returned (only delivered orders can be returned)
     if (order.status !== 'Delivered') {
+      console.log(`Order cannot be returned - Current status: ${order.status}`);
       return res.status(400).json({
         success: false,
         message: 'Only delivered orders can be returned'
@@ -559,14 +643,18 @@ const requestIndividualItemReturn = async (req, res) => {
     // Find the specific item
     const orderItem = order.orderedItems.id(itemId);
     if (!orderItem) {
+      console.log(`Order item not found - ItemId: ${itemId}`);
       return res.status(404).json({
         success: false,
         message: 'Order item not found'
       });
     }
 
+    console.log(`Order item found - Status: ${orderItem.status}, Product: ${orderItem.product.productName}`);
+
     // Check if item can be returned
     if (orderItem.status !== 'Active') {
+      console.log(`Item cannot be returned - Current status: ${orderItem.status}`);
       return res.status(400).json({
         success: false,
         message: 'Item is already cancelled, returned, or has a return request'
@@ -577,7 +665,9 @@ const requestIndividualItemReturn = async (req, res) => {
     const deliveryDate = order.orderTimeline.find(timeline => timeline.status === 'Delivered')?.timestamp;
     if (deliveryDate) {
       const daysSinceDelivery = Math.floor((new Date() - new Date(deliveryDate)) / (1000 * 60 * 60 * 24));
+      console.log(`Days since delivery: ${daysSinceDelivery}`);
       if (daysSinceDelivery > 7) {
+        console.log('Return window has expired');
         return res.status(400).json({
           success: false,
           message: 'Return window has expired. Returns are only allowed within 7 days of delivery.'
@@ -590,6 +680,8 @@ const requestIndividualItemReturn = async (req, res) => {
     orderItem.returnReason = reason || 'Return requested by customer';
     orderItem.returnRequestedAt = new Date();
 
+    console.log(`Item marked for return: ${orderItem.product.productName}`);
+
     // Add to order timeline
     order.orderTimeline.push({
       status: 'Individual Item Return Request',
@@ -598,6 +690,7 @@ const requestIndividualItemReturn = async (req, res) => {
     });
 
     await order.save();
+    console.log('Order saved successfully');
 
     res.status(200).json({
       success: true,
@@ -610,7 +703,7 @@ const requestIndividualItemReturn = async (req, res) => {
     console.error('Error requesting individual item return:', error);
     res.status(500).json({
       success: false,
-      message: 'Error submitting return request'
+      message: 'Error submitting return request: ' + error.message
     });
   }
 };
