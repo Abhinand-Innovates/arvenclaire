@@ -147,21 +147,56 @@ const loadCheckout = async (req, res) => {
       finalAmountWithCoupon = finalAmount - appliedCoupon.discount;
     }
 
-    // Filter out coupons that the user has already used up to their limit
-    const allCoupons = await Coupon.find({ isActive: true, expiry: { $gte: new Date() } });
+    // Get user-specific coupons and global coupons
+    const UserCoupon = require('../../models/user-coupon-schema');
+    
+    // Get user-specific coupons that belong to this user
+    const userCoupons = await UserCoupon.find({ 
+      userId: userId,
+      isUsed: false 
+    }).populate({
+      path: 'couponId',
+      match: { 
+        isActive: true, 
+        expiry: { $gte: new Date() } 
+      }
+    });
+
+    // Get global coupons (admin-created coupons with usage limit > 1, available to all users)
+    const globalCoupons = await Coupon.find({ 
+      isActive: true, 
+      expiry: { $gte: new Date() },
+      usageLimit: { $gt: 1 } // Global coupons typically have usage limit > 1
+    });
+
     const availableCoupons = [];
 
-    for (const coupon of allCoupons) {
-      // Check how many times this user has used this coupon
-      const userCouponUsage = await Order.countDocuments({
-        userId: userId,
-        coupon: coupon._id,
-        paymentStatus: { $ne: 'Failed' } // Count all orders except failed ones
-      });
+    // Add user-specific coupons
+    userCoupons.forEach(userCoupon => {
+      if (userCoupon.couponId) {
+        availableCoupons.push(userCoupon.couponId);
+      }
+    });
 
-      // Only include coupon if user hasn't reached their usage limit
-      if (userCouponUsage < coupon.userUsageLimit) {
-        availableCoupons.push(coupon);
+    // Add global coupons with usage tracking
+    for (const coupon of globalCoupons) {
+      // Check if user already has this coupon in their user-specific list
+      const hasUserSpecificVersion = userCoupons.some(uc => 
+        uc.couponId && uc.couponId._id.toString() === coupon._id.toString()
+      );
+
+      if (!hasUserSpecificVersion) {
+        // Check how many times this user has used this global coupon
+        const userCouponUsage = await Order.countDocuments({
+          userId: userId,
+          coupon: coupon._id,
+          paymentStatus: { $ne: 'Failed' }
+        });
+
+        // Only include coupon if user hasn't reached their usage limit
+        if (userCouponUsage < coupon.userUsageLimit) {
+          availableCoupons.push(coupon);
+        }
       }
     }
 
@@ -350,6 +385,20 @@ const placeOrder = async (req, res) => {
         appliedCouponId,
         { $inc: { usedCount: 1 } }
       );
+
+      // If it's a user-specific coupon, mark it as used
+      const appliedCoupon = await Coupon.findById(appliedCouponId);
+      if (appliedCoupon && appliedCoupon.usageLimit === 1) {
+        const UserCoupon = require('../../models/user-coupon-schema');
+        await UserCoupon.findOneAndUpdate(
+          { userId: userId, couponId: appliedCouponId },
+          { 
+            isUsed: true, 
+            usedAt: new Date(),
+            orderId: order._id 
+          }
+        );
+      }
     }
 
     // Process wallet payment if selected
@@ -651,6 +700,20 @@ const verifyPayment = async (req, res) => {
         order.coupon,
         { $inc: { usedCount: 1 } }
       );
+
+      // If it's a user-specific coupon, mark it as used
+      const appliedCoupon = await Coupon.findById(order.coupon);
+      if (appliedCoupon && appliedCoupon.usageLimit === 1) {
+        const UserCoupon = require('../../models/user-coupon-schema');
+        await UserCoupon.findOneAndUpdate(
+          { userId: order.userId, couponId: order.coupon },
+          { 
+            isUsed: true, 
+            usedAt: new Date(),
+            orderId: order._id 
+          }
+        );
+      }
     }
 
     // Update product quantities
@@ -879,6 +942,25 @@ const applyCoupon = async (req, res) => {
         success: false,
         message: 'Invalid coupon code'
       });
+    }
+
+    // Check if this is a user-specific coupon (usage limit = 1)
+    if (coupon.usageLimit === 1) {
+      const UserCoupon = require('../../models/user-coupon-schema');
+      
+      // Check if this user has access to this user-specific coupon
+      const userCoupon = await UserCoupon.findOne({
+        userId: userId,
+        couponId: coupon._id,
+        isUsed: false
+      });
+
+      if (!userCoupon) {
+        return res.status(400).json({
+          success: false,
+          message: 'This coupon is not available for your account'
+        });
+      }
     }
 
     // Check if coupon usage limit is reached

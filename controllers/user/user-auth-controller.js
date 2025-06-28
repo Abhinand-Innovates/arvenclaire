@@ -10,6 +10,7 @@ const Wishlist = require('../../models/wishlist-schema');
 const Wallet = require('../../models/wallet-schema');
 const Coupon = require('../../models/coupon-schema');
 const Review = require("../../models/review-schema");
+const { createWelcomeCoupon, createReferralRewardCoupon } = require("../../utils/createUserCoupons");
 const sharp = require("sharp");
 const path = require("path");
 const fs = require("fs");
@@ -199,6 +200,14 @@ const verifyOtp = async (req, res) => {
 
       await saveUserData.save();
       
+      // Create welcome coupon for the new user
+      try {
+        await createWelcomeCoupon(saveUserData._id);
+      } catch (couponError) {
+        console.error("Error creating welcome coupon:", couponError);
+        // Don't fail the signup process if coupon creation fails
+      }
+      
       // Process referral if referral code was provided
       if (user.referredByCode) {
         try {
@@ -223,6 +232,9 @@ const verifyOtp = async (req, res) => {
               `Welcome bonus for using referral code ${user.referredByCode}`,
               null
             );
+            
+            // Create referral reward coupon for the referrer
+            await createReferralRewardCoupon(referrer._id, user.fullname);
             
             console.log(`Referral processed: ${referrer.fullname} earned ₹150, ${user.fullname} earned ₹50`);
           } else {
@@ -2010,31 +2022,62 @@ const loadCouponPage = async (req, res) => {
       return res.redirect('/login');
     }
 
-    // Get all active coupons
-    const allCoupons = await Coupon.find({ isActive: true }).lean();
+    const UserCoupon = require('../../models/user-coupon-schema');
 
-    // For each coupon, check how many times this user has used it
-    const couponsWithUserUsage = await Promise.all(
-      allCoupons.map(async (coupon) => {
-        // Count how many times this user has used this coupon
+    // Get user-specific coupons and global active coupons
+    const userCoupons = await UserCoupon.find({ userId: userId })
+      .populate('couponId')
+      .lean();
+
+    // Get global active coupons (admin-created coupons available to all users)
+    const globalCoupons = await Coupon.find({ 
+      isActive: true,
+      usageLimit: { $gt: 1 } // Global coupons typically have usage limit > 1
+    }).lean();
+
+    // Combine user-specific coupons with global coupons
+    const allUserCoupons = [];
+
+    // Add user-specific coupons
+    userCoupons.forEach(userCoupon => {
+      if (userCoupon.couponId && userCoupon.couponId.isActive) {
+        allUserCoupons.push({
+          ...userCoupon.couponId,
+          userUsageCount: userCoupon.isUsed ? 1 : 0,
+          isUserLimitExceeded: userCoupon.isUsed,
+          isUserSpecific: true
+        });
+      }
+    });
+
+    // Add global coupons with usage tracking
+    for (const coupon of globalCoupons) {
+      // Check if user already has this coupon in their user-specific list
+      const hasUserSpecificVersion = userCoupons.some(uc => 
+        uc.couponId && uc.couponId._id.toString() === coupon._id.toString()
+      );
+
+      if (!hasUserSpecificVersion) {
+        // Count how many times this user has used this global coupon
         const userUsageCount = await Order.countDocuments({
           userId: userId,
           coupon: coupon._id,
-          paymentStatus: { $ne: 'Failed' } // Count all orders except failed ones
+          paymentStatus: { $ne: 'Failed' }
         });
 
-        return {
+        allUserCoupons.push({
           ...coupon,
           userUsageCount: userUsageCount,
-          isUserLimitExceeded: userUsageCount >= coupon.userUsageLimit
-        };
-      })
-    );
+          isUserLimitExceeded: userUsageCount >= coupon.userUsageLimit,
+          isUserSpecific: false
+        });
+      }
+    }
 
     res.render('coupon', {
       user,
       title: 'My Coupons',
-      coupons: couponsWithUserUsage
+      coupons: allUserCoupons
     });
   } catch (error) {
     console.error('Error loading coupon page:', error);

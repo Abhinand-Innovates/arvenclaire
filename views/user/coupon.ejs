@@ -47,24 +47,36 @@
             background: var(--bg-primary); 
             border: 1px solid var(--border-color); 
             border-radius: 12px; 
-            padding: 24px; 
-            margin-bottom: 20px; 
+            padding: 16px; 
+            margin-bottom: 16px; 
             box-shadow: 0 4px 12px rgba(0,0,0,0.08); 
             transition: all 0.3s ease; 
             position: relative;
             overflow: hidden;
+            max-width: 450px;
+            height: auto;
+            min-height: 280px;
         }
         .coupon-card:hover { 
             transform: translateY(-2px); 
             box-shadow: 0 8px 25px rgba(0,0,0,0.12); 
             border-color: var(--text-primary);
         }
+        .user-specific-coupon {
+            border: 2px solid #e91e63 !important;
+            background: linear-gradient(135deg, #fff 0%, #fdf2f8 100%) !important;
+            position: relative;
+        }
+        .user-specific-coupon:hover {
+            border-color: #c2185b !important;
+            box-shadow: 0 8px 25px rgba(233, 30, 99, 0.2) !important;
+        }
         .coupon-header { 
             display: flex; 
             justify-content: space-between; 
             align-items: flex-start; 
-            margin-bottom: 16px; 
-            padding-bottom: 16px;
+            margin-bottom: 12px; 
+            padding-bottom: 12px;
             border-bottom: 1px solid var(--border-color);
         }
         .coupon-code-section {
@@ -73,28 +85,28 @@
             gap: 12px;
         }
         .coupon-code { 
-            font-size: 1.25rem; 
-            font-weight: 700; 
+            font-size: 1rem; 
+            font-weight: 600; 
             color: var(--text-primary); 
             text-transform: uppercase; 
-            letter-spacing: 0.5px;
+            letter-spacing: 0.3px;
             background: var(--bg-secondary);
-            padding: 8px 16px;
-            border-radius: 8px;
+            padding: 6px 12px;
+            border-radius: 6px;
             border: 1px dashed var(--border-color);
         }
         .copy-btn {
             background: var(--text-primary);
             color: white;
             border: none;
-            padding: 8px 12px;
-            border-radius: 6px;
+            padding: 6px 10px;
+            border-radius: 4px;
             cursor: pointer;
-            font-size: 0.875rem;
+            font-size: 0.75rem;
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 4px;
         }
         .copy-btn:hover {
             background: var(--text-secondary);
@@ -103,13 +115,13 @@
         .coupon-status {
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.75rem;
+            gap: 4px;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
             font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.3px;
         }
         .status-active {
             background: #d4edda;
@@ -138,15 +150,15 @@
         }
         .coupon-description { 
             color: var(--text-secondary); 
-            font-size: 1rem; 
-            line-height: 1.5; 
-            margin-bottom: 20px; 
+            font-size: 0.9rem; 
+            line-height: 1.4; 
+            margin-bottom: 12px; 
         }
         .coupon-details-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 16px;
-            margin-top: 16px;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            margin-top: 12px;
         }
         .detail-item {
             display: flex;
@@ -168,12 +180,12 @@
         .discount-highlight {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 12px 20px;
+            padding: 8px 16px;
             border-radius: 8px;
             text-align: center;
-            margin: 16px 0;
+            margin: 12px 0;
             font-weight: 700;
-            font-size: 1.1rem;
+            font-size: 1rem;
             text-shadow: 0 1px 2px rgba(0,0,0,0.2);
         }
         .validity-indicator {
@@ -272,8 +284,8 @@
                             statusIcon = 'fas fa-ban';
                         }
                     %>
-                        <div class="col-lg-6">
-                            <div class="coupon-card">
+                        <div class="col-lg-4">
+                            <div class="coupon-card <%= coupon.isUserSpecific ? 'user-specific-coupon' : '' %>">
                                 <div class="coupon-header">
                                     <div class="coupon-code-section">
                                         <div class="coupon-code" id="code-<%= coupon._id %>"><%= coupon.code %></div>
