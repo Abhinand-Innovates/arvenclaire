@@ -143,6 +143,11 @@
                             if (includedItems.length > 0) {
                                 currentTotal += order.shippingCharges;
                             }
+                            
+                            // Subtract coupon discount if applied
+                            if (order.couponApplied && order.couponDiscount > 0) {
+                                currentTotal -= order.couponDiscount;
+                            }
                         %>
                         <div class="detail-item">
                             <span class="detail-label" style="font-weight: 700;">Total Amount</span>
@@ -345,3 +350,5 @@
     <script src="/scripts/admin/order-details.js"></script>
 </body>
 </html>
+
+

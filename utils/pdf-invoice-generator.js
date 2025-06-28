@@ -351,6 +351,11 @@ class InvoiceGenerator {
       currentTotal += order.shippingCharges;
     }
     
+    // Subtract coupon discount if applied
+    if (order.couponApplied && order.couponDiscount > 0) {
+      currentTotal -= order.couponDiscount;
+    }
+    
     const cancelledAmount = cancelledItems.reduce((sum, item) => sum + item.totalPrice, 0);
     const returnedAmount = returnedItems.reduce((sum, item) => sum + item.totalPrice, 0);
     
@@ -402,6 +407,23 @@ class InvoiceGenerator {
         .fillColor('#10b981')
         .font('Helvetica')
         .text(`-₹${order.discount.toFixed(2)}`, summaryX + 100, this.currentY);
+      
+      this.currentY += 12;
+    }
+    
+    // Coupon discount (if applied)
+    if (order.couponApplied && order.couponDiscount > 0) {
+      this.doc
+        .fontSize(8)
+        .fillColor('#666666')
+        .font('Helvetica')
+        .text('Coupon Discount:', summaryX, this.currentY);
+      
+      this.doc
+        .fontSize(8)
+        .fillColor('#10b981')
+        .font('Helvetica')
+        .text(`-₹${order.couponDiscount.toFixed(2)}`, summaryX + 100, this.currentY);
       
       this.currentY += 12;
     }

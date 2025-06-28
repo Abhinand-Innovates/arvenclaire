@@ -746,6 +746,11 @@
                         currentTotal += order.shippingCharges;
                     }
                     
+                    // Subtract coupon discount if applied
+                    if (order.couponApplied && order.couponDiscount > 0) {
+                        currentTotal -= order.couponDiscount;
+                    }
+                    
                     // Additional variables for cancel button logic
                     const canCancelOrder = !['Shipped', 'Delivered', 'Return Request', 'Returned', 'Cancelled'].includes(order.status);
                     const hasActiveItems = activeItems.length > 0;
@@ -812,6 +817,13 @@
                             ₹<%= order.shippingCharges.toFixed(2) %>
                         <% } %>
                     </span>
+                </div>
+                <% } %>
+
+                <% if (order.couponApplied && order.couponDiscount > 0) { %>
+                <div class="summary-row">
+                    <span class="summary-label">Coupon Discount</span>
+                    <span class="summary-value" style="color: var(--success-color);">-₹<%= order.couponDiscount.toFixed(2) %></span>
                 </div>
                 <% } %>
 

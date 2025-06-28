@@ -602,6 +602,14 @@
                                     }) %>
                                 </div>
                                 
+                                <div class="order-amount">
+                                    <i class="fas fa-rupee-sign"></i>
+                                    ₹<%= order.finalAmount.toFixed(2) %>
+                                    <% if (order.couponApplied && order.couponDiscount > 0) { %>
+                                        <span style="color: #10b981; font-weight: 600; font-size: 0.75rem;">• ₹<%= order.couponDiscount.toFixed(2) %> saved</span>
+                                    <% } %>
+                                </div>
+                                
                                 <div class="order-payment">
                                     <i class="fas fa-credit-card"></i>
                                     <%= order.paymentMethod %>

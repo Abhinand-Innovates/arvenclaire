@@ -148,6 +148,11 @@
                                         if (includedItems.length > 0) {
                                             currentTotal += order.shippingCharges;
                                         }
+                                        
+                                        // Subtract coupon discount if applied
+                                        if (order.couponApplied && order.couponDiscount > 0) {
+                                            currentTotal -= order.couponDiscount;
+                                        }
                                     %>
                                     <div class="order-amount">
                                         <strong>₹<%= currentTotal.toFixed(2) %></strong>
