@@ -35,6 +35,7 @@ adminRoute.get('/get-category', isAdminAuthenticated, preventCache, getCategoryC
 adminRoute.get('/get-categories', isAdminAuthenticated, preventCache, getCategoryController.getAllCategoriesAPI);
 adminRoute.post('/get-categories', isAdminAuthenticated, preventCache, getCategoryController.addCategoryAPI);
 adminRoute.put('/get-categories/:id', isAdminAuthenticated, preventCache, getCategoryController.updateCategoryAPI);
+adminRoute.patch('/get-categories/:id/offer', isAdminAuthenticated, preventCache, getCategoryController.updateCategoryOfferAPI);
 adminRoute.patch('/get-categories/:id/status', isAdminAuthenticated, preventCache, getCategoryController.toggleCategoryStatusAPI);
 adminRoute.delete('/get-categories/:id', isAdminAuthenticated, preventCache, getCategoryController.deleteCategoryAPI);
 

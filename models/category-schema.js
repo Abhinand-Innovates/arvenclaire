@@ -13,6 +13,12 @@ const categorySchema = new Schema({
     required: true,
     trim: true
   },
+  categoryOffer: {
+    type: Number,
+    default: 0,
+    min: 0,
+    max: 100
+  },
   isListed: {
     type: Boolean,
     default: true

@@ -16,11 +16,12 @@
         
         /* Set specific widths for columns to push Actions to the right */
         .table th:nth-child(1) { width: 5% !important; }    /* # column */
-        .table th:nth-child(2) { width: 20% !important; }   /* Category Name */
-        .table th:nth-child(3) { width: 25% !important; }   /* Description */
-        .table th:nth-child(4) { width: 15% !important; }   /* Status */
-        .table th:nth-child(5) { width: 15% !important; }   /* Created Date */
-        .table th:nth-child(6) { width: 20% !important; }   /* Actions */
+        .table th:nth-child(2) { width: 18% !important; }   /* Category Name */
+        .table th:nth-child(3) { width: 20% !important; }   /* Description */
+        .table th:nth-child(4) { width: 12% !important; }   /* Offer */
+        .table th:nth-child(5) { width: 12% !important; }   /* Status */
+        .table th:nth-child(6) { width: 13% !important; }   /* Created Date */
+        .table th:nth-child(7) { width: 20% !important; }   /* Actions */
         
         /* Align Actions header and content properly */
         .table th:last-child {
@@ -43,9 +44,49 @@
         
         /* Ensure buttons are properly styled */
         .action-buttons .btn-outline-black,
-        .action-buttons .btn-danger-outline {
+        .action-buttons .btn-danger-outline,
+        .action-buttons .btn-success-outline {
             white-space: nowrap !important;
             margin: 0 !important;
+        }
+
+        /* Offer badge styling */
+        .offer-badge {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-block;
+            min-width: 45px;
+            text-align: center;
+        }
+
+        .offer-badge.no-offer {
+            background: #6c757d;
+            opacity: 0.7;
+        }
+
+        /* Success outline button */
+        .btn-success-outline {
+            background: transparent;
+            border: 1px solid #28a745;
+            color: #28a745;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-success-outline:hover {
+            background: #28a745;
+            color: white;
+            transform: translateY(-1px);
         }
     </style>
     <title>Categories Management</title>
@@ -93,13 +134,14 @@
                             <th>#</th>
                             <th>Category Name</th>
                             <th>Description</th>
+                            <th>Offer</th>
                             <th>Status</th>
                             <th>Created Date</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody id="categoryTableBody">
-                        <tr><td colspan="6" class="text-center">Loading categories...</td></tr>
+                        <tr><td colspan="7" class="text-center">Loading categories...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -196,7 +238,7 @@
                 const searchTerm = searchInput.value.trim();
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="6" class="no-results">
+                        <td colspan="7" class="no-results">
                             <i class="fas fa-search"></i>
                             <h5>No categories found</h5>
                             ${searchTerm ? '<p>Try adjusting your search terms.</p>' : '<p>Add a new category to get started.</p>'}
@@ -213,6 +255,11 @@
                     <td><strong>${category.name}</strong></td>
                     <td><span class="category-description" title="${category.description || ''}">${category.description || 'N/A'}</span></td>
                     <td>
+                        <span class="offer-badge ${category.categoryOffer > 0 ? '' : 'no-offer'}">
+                            ${category.categoryOffer > 0 ? category.categoryOffer + '%' : '0%'}
+                        </span>
+                    </td>
+                    <td>
                         <label class="status-toggle">
                             <input type="checkbox" ${category.isListed ? 'checked' : ''} onchange="toggleStatus('${category._id}', this)">
                             <span class="toggle-slider"></span>
@@ -221,6 +268,9 @@
                     <td>${category.date}</td>
                     <td>
                         <div class="action-buttons">
+                            <button class="btn-success-outline" onclick="showOfferModal('${category._id}')">
+                                <i class="fas fa-percentage"></i> Offer
+                            </button>
                             <button class="btn-outline-black" onclick="showEditModal('${category._id}')">
                                 <i class="fas fa-edit"></i> Edit
                             </button>
@@ -233,6 +283,94 @@
             `).join('');
 
             paginationInfo.textContent = `Showing 1 to ${filteredCategories.length} of ${filteredCategories.length} entries`;
+        }
+
+        // Show Category Offer Modal
+        function showOfferModal(categoryId) {
+            const category = categories.find(c => c._id === categoryId);
+            if (!category) {
+                Swal.fire('Error!', 'Category not found.', 'error');
+                return;
+            }
+            
+            Swal.fire({
+                title: `<i class="fas fa-percentage me-2"></i>Set Offer for "${category.name}"`,
+                html: `
+                    <div class="text-start">
+                        <div class="mb-3">
+                            <label for="swal-offer" class="form-label">Category Offer Percentage <span class="text-danger">*</span></label>
+                            <input type="number" id="swal-offer" class="swal2-input" value="${category.categoryOffer || 0}" min="0" max="100" step="1" placeholder="Enter offer percentage (0-100)" style="display: block; width: 100%; margin: 0;">
+                            <small class="text-muted">Enter a value between 0 and 100. This offer will apply to all products in this category.</small>
+                        </div>
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Note:</strong> If a product has its own offer, the system will automatically apply the higher offer between the product offer and category offer.
+                        </div>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: '<i class="fas fa-check"></i> Update Offer',
+                cancelButtonText: '<i class="fas fa-times"></i> Cancel',
+                confirmButtonColor: '#28a745',
+                width: '500px',
+                preConfirm: () => {
+                    const offer = parseFloat(document.getElementById('swal-offer').value);
+                    
+                    if (isNaN(offer)) {
+                        Swal.showValidationMessage('Please enter a valid number');
+                        return false;
+                    }
+                    
+                    if (offer < 0 || offer > 100) {
+                        Swal.showValidationMessage('Offer must be between 0 and 100');
+                        return false;
+                    }
+                    
+                    return { categoryOffer: offer };
+                }
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    await updateCategoryOffer(categoryId, result.value.categoryOffer);
+                }
+            });
+        }
+
+        // Update category offer function
+        async function updateCategoryOffer(categoryId, offerPercentage) {
+            try {
+                const response = await fetch(`/get-categories/${categoryId}/offer`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ categoryOffer: offerPercentage })
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                // Update local data
+                const category = categories.find(c => c._id === categoryId);
+                if (category) category.categoryOffer = offerPercentage;
+                const filteredCategory = filteredCategories.find(c => c._id === categoryId);
+                if (filteredCategory) filteredCategory.categoryOffer = offerPercentage;
+                
+                // Re-render table to show updated offer
+                renderTable();
+                
+                Swal.fire({
+                    title: 'Success!',
+                    text: data.message,
+                    icon: 'success',
+                    timer: 3000,
+                    showConfirmButton: false
+                });
+            } catch (error) {
+                console.error('Error updating category offer:', error);
+                Swal.fire('Error!', `Could not update offer: ${error.message}`, 'error');
+            }
         }
 
         // Show Add Category Modal

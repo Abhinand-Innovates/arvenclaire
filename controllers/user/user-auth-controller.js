@@ -11,6 +11,7 @@ const Wallet = require('../../models/wallet-schema');
 const Coupon = require('../../models/coupon-schema');
 const Review = require("../../models/review-schema");
 const { createWelcomeCoupon, createReferralRewardCoupon } = require("../../utils/createUserCoupons");
+const { getProductsWithBestOffers, calculateBestOffer } = require("../../utils/offer-utils");
 const sharp = require("sharp");
 const path = require("path");
 const fs = require("fs");
@@ -19,23 +20,23 @@ const fs = require("fs");
 
 const loadLanding = async (req, res) => {
   try {
-    // Only show available, non-blocked, listed products with listed categories
-    const products = await Product.find({
+    // Get products with best offers applied
+    const filter = {
       isDeleted: false,
       isBlocked: false,
       isListed: true
-    }).populate({
-      path: 'category',
-      match: { isListed: true },
-      select: 'name'
-    }).sort({ createdAt: -1 }).lean();
+    };
 
-    // Filter out products with unlisted categories (populate returns null for unmatched)
-    const filteredProducts = products.filter(product => product.category !== null);
+    const options = {
+      sort: { createdAt: -1 },
+      limit: 12 // Limit for landing page
+    };
+
+    const productsWithOffers = await getProductsWithBestOffers(filter, options);
 
     // Calculate average ratings for each product
     const productsWithRatings = await Promise.all(
-      filteredProducts.map(async (product) => {
+      productsWithOffers.map(async (product) => {
         const reviews = await Review.find({
           product: product._id,
           isHidden: false
@@ -60,6 +61,7 @@ const loadLanding = async (req, res) => {
     // User context is automatically added by middleware
     return res.render("dashboard", { products: productsWithRatings });
   } catch (error) {
+    console.error('Error loading landing page:', error);
     res.status(500).send("Server error");
   }
 };
@@ -328,23 +330,23 @@ const loadDashboard = async (req, res) => {
       return res.redirect("/login");
     }
 
-    // Only show available, non-blocked, listed products with listed categories
-    const products = await Product.find({
+    // Get products with best offers applied
+    const filter = {
       isDeleted: false,
       isBlocked: false,
       isListed: true
-    }).populate({
-      path: 'category',
-      match: { isListed: true },
-      select: 'name'
-    }).sort({ createdAt: -1 }).lean();
+    };
 
-    // Filter out products with unlisted categories (populate returns null for unmatched)
-    const filteredProducts = products.filter(product => product.category !== null);
+    const options = {
+      sort: { createdAt: -1 },
+      limit: 12 // Limit for dashboard
+    };
+
+    const productsWithOffers = await getProductsWithBestOffers(filter, options);
 
     // Calculate average ratings for each product
     const productsWithRatings = await Promise.all(
-      filteredProducts.map(async (product) => {
+      productsWithOffers.map(async (product) => {
         const reviews = await Review.find({
           product: product._id,
           isHidden: false
@@ -925,28 +927,18 @@ const loadShop = async (req, res) => {
     }
 
     // Fetch products with category filtering
-    const [allProducts, totalProductsBeforeFilter] = await Promise.all([
-      Product.find(searchFilter)
-        .populate({
-          path: 'category',
-          match: { isListed: true },
-          select: 'name'
-        })
-        .sort(sortQuery)
-        .lean(),
-      Product.countDocuments(searchFilter)
-    ]);
+    // Get products with best offers applied
+    const options = {
+      sort: sortQuery,
+      limit: limit,
+      skip: skip
+    };
 
-    // Filter out products with unlisted categories (populate returns null for unmatched)
-    const filteredProducts = allProducts.filter(product => product.category !== null);
-
-    // Apply pagination to filtered products
-    const totalProducts = filteredProducts.length;
-    const products = filteredProducts.slice(skip, skip + limit);
+    const productsWithOffers = await getProductsWithBestOffers(searchFilter, options);
 
     // Calculate average ratings for each product
     const productsWithRatings = await Promise.all(
-      products.map(async (product) => {
+      productsWithOffers.map(async (product) => {
         const reviews = await Review.find({
           product: product._id,
           isHidden: false
@@ -967,6 +959,12 @@ const loadShop = async (req, res) => {
         };
       })
     );
+
+    // Get total count for pagination (need to count with category filter)
+    const totalProducts = await Product.countDocuments({
+      ...searchFilter,
+      category: { $in: await Category.find({ isListed: true }).distinct('_id') }
+    });
 
     // Calculate pagination
     const totalPages = Math.ceil(totalProducts / limit);
@@ -1043,8 +1041,15 @@ const loadProductDetails = async (req, res) => {
     // Product availability is already checked by middleware
     // Get product details with populated category
     const product = await Product.findById(productId)
-      .populate('category')
+      .populate('category', 'name categoryOffer isListed isDeleted')
       .lean();
+
+    // Calculate best offer for this product
+    const offerDetails = await calculateBestOffer(product);
+    const productWithOffer = {
+      ...product,
+      offerDetails
+    };
 
     // Get reviews for this product
     const reviews = await Review.find({
@@ -1057,51 +1062,47 @@ const loadProductDetails = async (req, res) => {
 
     // Get related products from the same category (excluding current product)
     // Only show if the category is listed
-    let relatedProductsRaw = [];
+    let relatedProducts = [];
     if (product.category && product.category.isListed) {
-      relatedProductsRaw = await Product.find({
+      const relatedFilter = {
         category: product.category._id,
         _id: { $ne: productId }, // Exclude current product
         isDeleted: false,
         isBlocked: false,
         isListed: true
-      })
-      .populate({
-        path: 'category',
-        match: { isListed: true },
-        select: 'name'
-      })
-      .sort({ createdAt: -1 })
-      .limit(4) // Show up to 4 related products
-      .lean();
+      };
 
-      // Filter out products with unlisted categories
-      relatedProductsRaw = relatedProductsRaw.filter(product => product.category !== null);
+      const relatedOptions = {
+        sort: { createdAt: -1 },
+        limit: 4 // Show up to 4 related products
+      };
+
+      const relatedProductsWithOffers = await getProductsWithBestOffers(relatedFilter, relatedOptions);
+
+      // Calculate average ratings for related products
+      relatedProducts = await Promise.all(
+        relatedProductsWithOffers.map(async (relatedProduct) => {
+          const reviews = await Review.find({
+            product: relatedProduct._id,
+            isHidden: false
+          });
+
+          let averageRating = 0;
+          let totalReviews = reviews.length;
+
+          if (totalReviews > 0) {
+            const totalRating = reviews.reduce((sum, review) => sum + review.rating, 0);
+            averageRating = totalRating / totalReviews;
+          }
+
+          return {
+            ...relatedProduct,
+            averageRating: averageRating,
+            totalReviews: totalReviews
+          };
+        })
+      );
     }
-
-    // Calculate average ratings for related products
-    const relatedProducts = await Promise.all(
-      relatedProductsRaw.map(async (relatedProduct) => {
-        const reviews = await Review.find({
-          product: relatedProduct._id,
-          isHidden: false
-        });
-
-        let averageRating = 0;
-        let totalReviews = reviews.length;
-
-        if (totalReviews > 0) {
-          const totalRating = reviews.reduce((sum, review) => sum + review.rating, 0);
-          averageRating = totalRating / totalReviews;
-        }
-
-        return {
-          ...relatedProduct,
-          averageRating: averageRating,
-          totalReviews: totalReviews
-        };
-      })
-    );
 
     // Calculate review statistics
     const totalReviews = reviews.length;
@@ -1127,7 +1128,7 @@ const loadProductDetails = async (req, res) => {
     }
 
     res.render('product-details', {
-      product,
+      product: productWithOffer,
       reviews,
       relatedProducts,
       // User context is automatically added by middleware

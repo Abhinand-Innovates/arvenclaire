@@ -4,6 +4,7 @@ const sharp = require('sharp');
 const path = require('path');
 const fs = require('fs');
 const { uploadDir } = require('../../config/multer-config');
+const { getProductsWithBestOffers } = require('../../utils/offer-utils');
 
 // Helper function to save base64 image
 const saveBase64Image = async (base64Data, filename) => {
@@ -531,25 +532,27 @@ const toggleProductStatus = async (req, res) => {
     }
 };
 
-// Get products for user dashboard
+// Get products for user dashboard with best offers applied
 const getProductsForUser = async (req, res) => {
     try {
-        const products = await Product.find({
+        const filter = {
             isDeleted: false,
             isBlocked: false,
             isListed: true
-        })
-        .populate({
-            path: 'category',
-            match: { isListed: true },
-            select: 'name'
-        })
-        .sort({ createdAt: -1 })
-        .limit(12)
-        .lean();
+        };
+
+        const options = {
+            sort: { createdAt: -1 },
+            limit: 12
+        };
+
+        // Get products with best offers calculated
+        const productsWithOffers = await getProductsWithBestOffers(filter, options);
 
         // Filter out products with unlisted categories
-        const filteredProducts = products.filter(product => product.category !== null);
+        const filteredProducts = productsWithOffers.filter(product => 
+            product.category && product.category.name
+        );
 
         res.json({ success: true, products: filteredProducts });
     } catch (error) {

@@ -633,9 +633,9 @@
                                 <img src="/uploads/products/<%= item.productId.mainImage %>"
                                      alt="<%= item.productId.productName %>"
                                      onerror="this.src='https://images.unsplash.com/photo-1523275335684-37898b6baf30?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80'">
-                                <% if (item.productId.regularPrice > item.productId.salePrice) { %>
+                                <% if (item.productId.offerDetails && item.productId.offerDetails.hasOffer) { %>
                                     <div class="discount-badge">
-                                        <%= Math.round(((item.productId.regularPrice - item.productId.salePrice) / item.productId.regularPrice) * 100) %>% OFF
+                                        <%= item.productId.offerDetails.bestOfferPercentage %>% OFF
                                     </div>
                                 <% } %>
 
@@ -659,9 +659,11 @@
                                 <h3 class="product-name"><%= item.productId.productName %></h3>
 
                                 <div class="product-price">
-                                    <span class="current-price">₹<%= item.productId.salePrice.toLocaleString() %></span>
-                                    <% if (item.productId.regularPrice > item.productId.salePrice) { %>
-                                        <span class="original-price">₹<%= item.productId.regularPrice.toLocaleString() %></span>
+                                    <% if (item.productId.offerDetails && item.productId.offerDetails.hasOffer) { %>
+                                        <span class="current-price">₹<%= item.productId.offerDetails.finalPrice.toLocaleString() %></span>
+                                        <span class="original-price">₹<%= item.productId.offerDetails.originalPrice.toLocaleString() %></span>
+                                    <% } else { %>
+                                        <span class="current-price">₹<%= item.productId.salePrice.toLocaleString() %></span>
                                     <% } %>
                                 </div>
 

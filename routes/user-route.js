@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const passport = require("passport");
 const userController = require("../controllers/user/user-auth-controller");
+const userProductController = require("../controllers/user/product-controller");
 const addressController = require("../controllers/user/address-controller");
 const orderController = require("../controllers/user/order-controller");
 const checkoutController = require("../controllers/user/checkout-controller");
@@ -83,6 +84,13 @@ router.get("/logout", isUserAuthenticated, preventCache, checkUserBlocked, userC
 router.post("/product/:id/review", isUserAuthenticated, preventCache, checkUserBlocked, userController.submitReview);
 router.post("/product/:id/review/:reviewId/helpful", isUserAuthenticated, preventCache, checkUserBlocked, userController.markHelpful);
 router.get("/product/:id/status", isUserAuthenticated, preventCache, checkUserBlocked, userController.checkProductStatus);
+
+// API routes for products with offers
+router.get("/api/products", validateSession, addUserContext, checkUserBlocked, userProductController.getProducts);
+router.get("/api/products/featured", validateSession, addUserContext, checkUserBlocked, userProductController.getFeaturedProducts);
+router.get("/api/products/search", validateSession, addUserContext, checkUserBlocked, userProductController.searchProducts);
+router.get("/api/products/:id", validateSession, addUserContext, checkUserBlocked, userProductController.getProductById);
+router.get("/api/category/:categoryId/products", validateSession, addUserContext, checkUserBlocked, userProductController.getProductsByCategory);
 // Profile-related routes
 router.get("/profile/edit", isUserAuthenticated, preventCache, addUserContext, checkUserBlocked, userController.loadEditProfile);
 router.post("/profile/edit", isUserAuthenticated, preventCache, checkUserBlocked, userController.updateProfileData);

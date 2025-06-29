@@ -1310,9 +1310,9 @@
                         <% products.forEach(product => { %>
                             <div class="product-card">
                                 <div class="product-image-container">
-                                    <% if (product.regularPrice > product.salePrice) { %>
+                                    <% if (product.offerDetails && product.offerDetails.hasOffer) { %>
                                         <div class="discount-badge">
-                                            <%= Math.round(((product.regularPrice - product.salePrice) / product.regularPrice) * 100) %>% OFF
+                                            <%= product.offerDetails.bestOfferPercentage %>% OFF
                                         </div>
                                     <% } %>
                                     <img src="/uploads/products/<%= product.mainImage %>"
@@ -1352,9 +1352,11 @@
                                     <h3 class="product-name"><%= product.productName %></h3>
 
                                     <div class="product-price">
-                                        <span class="current-price">₹<%= product.salePrice.toFixed(2) %></span>
-                                        <% if (product.regularPrice > product.salePrice) { %>
-                                            <span class="original-price">₹<%= product.regularPrice.toFixed(2) %></span>
+                                        <% if (product.offerDetails && product.offerDetails.hasOffer) { %>
+                                            <span class="current-price">₹<%= product.offerDetails.finalPrice.toFixed(2) %></span>
+                                            <span class="original-price">₹<%= product.offerDetails.originalPrice.toFixed(2) %></span>
+                                        <% } else { %>
+                                            <span class="current-price">₹<%= product.salePrice.toFixed(2) %></span>
                                         <% } %>
                                     </div>
 

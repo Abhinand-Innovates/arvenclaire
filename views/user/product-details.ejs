@@ -1666,12 +1666,14 @@
                     </div>
 
                     <div class="product-price">
-                        <span class="current-price">₹<%= product.salePrice.toFixed(2) %></span>
-                        <% if (product.regularPrice > product.salePrice) { %>
-                            <span class="original-price">₹<%= product.regularPrice.toFixed(2) %></span>
+                        <% if (product.offerDetails && product.offerDetails.hasOffer) { %>
+                            <span class="current-price">₹<%= product.offerDetails.finalPrice.toFixed(2) %></span>
+                            <span class="original-price">₹<%= product.offerDetails.originalPrice.toFixed(2) %></span>
                             <span class="discount-badge">
-                                <%= Math.round(((product.regularPrice - product.salePrice) / product.regularPrice) * 100) %>% OFF
+                                <%= product.offerDetails.bestOfferPercentage %>% OFF
                             </span>
+                        <% } else { %>
+                            <span class="current-price">₹<%= product.salePrice.toFixed(2) %></span>
                         <% } %>
                     </div>
 
@@ -1911,9 +1913,9 @@
                     <% relatedProducts.forEach(relatedProduct => { %>
                         <div class="related-product-card" onclick="window.location.href='/product/<%= relatedProduct._id %>'">
                             <div class="related-product-image-container">
-                                <% if (relatedProduct.regularPrice > relatedProduct.salePrice) { %>
+                                <% if (relatedProduct.offerDetails && relatedProduct.offerDetails.hasOffer) { %>
                                     <div class="related-product-discount">
-                                        <%= Math.round(((relatedProduct.regularPrice - relatedProduct.salePrice) / relatedProduct.regularPrice) * 100) %>% OFF
+                                        <%= relatedProduct.offerDetails.bestOfferPercentage %>% OFF
                                     </div>
                                 <% } %>
                                 <img src="/Uploads/products/<%= relatedProduct.mainImage %>"
@@ -1953,9 +1955,11 @@
                                 <h3 class="related-product-name"><%= relatedProduct.productName %></h3>
 
                                 <div class="related-product-price">
-                                    <span class="related-current-price">₹<%= relatedProduct.salePrice.toFixed(2) %></span>
-                                    <% if (relatedProduct.regularPrice > relatedProduct.salePrice) { %>
-                                        <span class="related-original-price">₹<%= relatedProduct.regularPrice.toFixed(2) %></span>
+                                    <% if (relatedProduct.offerDetails && relatedProduct.offerDetails.hasOffer) { %>
+                                        <span class="related-current-price">₹<%= relatedProduct.offerDetails.finalPrice.toFixed(2) %></span>
+                                        <span class="related-original-price">₹<%= relatedProduct.offerDetails.originalPrice.toFixed(2) %></span>
+                                    <% } else { %>
+                                        <span class="related-current-price">₹<%= relatedProduct.salePrice.toFixed(2) %></span>
                                     <% } %>
                                 </div>
 

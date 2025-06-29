@@ -3,6 +3,7 @@ const Product = require('../../models/product-schema');
 const Wishlist = require('../../models/wishlist-schema');
 const User = require('../../models/user-schema');
 const { calculateFinalPrice, calculateItemTotal, syncAllCartPrices } = require('../../utils/price-calculator');
+const { applyBestOffersToProducts } = require('../../utils/offer-utils');
 
 // Load cart page
 const loadCart = async (req, res) => {
@@ -21,7 +22,7 @@ const loadCart = async (req, res) => {
         path: 'items.productId',
         populate: {
           path: 'category',
-          select: 'name isListed isDeleted'
+          select: 'name isListed isDeleted categoryOffer'
         }
       });
 
@@ -39,8 +40,20 @@ const loadCart = async (req, res) => {
         !item.productId.isDeleted
       );
 
-      // Sync prices with current product data using utility function
-      priceUpdatesNeeded = syncAllCartPrices(cartItems);
+      // Apply offer calculations to cart items
+      if (cartItems.length > 0) {
+        const products = cartItems.map(item => item.productId);
+        const productsWithOffers = await applyBestOffersToProducts(products);
+        
+        // Map back to cart structure with offer details
+        cartItems = cartItems.map((item, index) => ({
+          ...item.toObject(),
+          productId: productsWithOffers[index]
+        }));
+      }
+
+      // Sync prices with current product data and offers using utility function
+      priceUpdatesNeeded = await syncAllCartPrices(cartItems);
 
       // Save updated prices to database if needed
       if (priceUpdatesNeeded) {
@@ -161,15 +174,15 @@ const addToCart = async (req, res) => {
         });
       }
 
-      // Use sale price as the final price (no additional discounts)
-      const finalPrice = calculateFinalPrice(product.salePrice);
+      // Calculate final price with offers
+      const finalPrice = await calculateFinalPrice(product);
       
       existingItem.quantity = newQuantity;
-      existingItem.price = finalPrice; // Use sale price as final price
+      existingItem.price = finalPrice; // Use final price after offers
       existingItem.totalPrice = calculateItemTotal(finalPrice, newQuantity);
     } else {
-      // Use sale price as the final price (no additional discounts)
-      const finalPrice = calculateFinalPrice(product.salePrice);
+      // Calculate final price with offers
+      const finalPrice = await calculateFinalPrice(product);
       
       // Add new item
       cart.items.push({
@@ -317,12 +330,12 @@ const updateCartQuantity = async (req, res) => {
       });
     }
 
-    // Use sale price as the final price (no additional discounts)
-    const finalPrice = calculateFinalPrice(product.salePrice);
+    // Calculate final price with offers
+    const finalPrice = await calculateFinalPrice(product);
     
     // Update quantity and total price
     cart.items[itemIndex].quantity = parsedQuantity;
-    cart.items[itemIndex].price = finalPrice; // Use sale price as final price
+    cart.items[itemIndex].price = finalPrice; // Use final price after offers
     cart.items[itemIndex].totalPrice = calculateItemTotal(finalPrice, parsedQuantity);
 
     await cart.save();
@@ -444,7 +457,7 @@ const removeOutOfStockItems = async (req, res) => {
         path: 'items.productId',
         populate: {
           path: 'category',
-          select: 'name isListed isDeleted'
+          select: 'name isListed isDeleted categoryOffer'
         }
       });
 
@@ -516,7 +529,7 @@ const validateCartItems = async (req, res) => {
         path: 'items.productId',
         populate: {
           path: 'category',
-          select: 'name isListed isDeleted'
+          select: 'name isListed isDeleted categoryOffer'
         }
       });
 

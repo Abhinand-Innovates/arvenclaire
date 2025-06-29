@@ -29,6 +29,7 @@ const getAllCategoriesAPI = async (req, res) => {
             _id: cat._id,
             name: cat.name,
             description: cat.description,
+            categoryOffer: cat.categoryOffer || 0,
             isListed: cat.isListed, // Use isListed, not status
             date: cat.createdAt.toISOString().split('T')[0] // Format date
         }));
@@ -43,15 +44,21 @@ const getAllCategoriesAPI = async (req, res) => {
 // API: Add a new category
 const addCategoryAPI = async (req, res) => {
     try {
-        const { name, description, status } = req.body;
+        const { name, description, status, categoryOffer } = req.body;
 
         if (!name) {
             return res.status(400).json({ message: 'Category name is required.' });
         }
 
+        // Validate category offer
+        if (categoryOffer !== undefined && (categoryOffer < 0 || categoryOffer > 100)) {
+            return res.status(400).json({ message: 'Category offer must be between 0 and 100.' });
+        }
+
         const newCategory = new Category({
             name,
             description,
+            categoryOffer: categoryOffer || 0,
             status: status !== undefined ? status : true // Default to true if not provided
         });
 
@@ -61,6 +68,7 @@ const addCategoryAPI = async (req, res) => {
             _id: newCategory._id,
             name: newCategory.name,
             description: newCategory.description,
+            categoryOffer: newCategory.categoryOffer,
             status: newCategory.status,
             date: newCategory.createdAt.toISOString().split('T')[0]
         });
@@ -78,7 +86,7 @@ const addCategoryAPI = async (req, res) => {
 const updateCategoryAPI = async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, description, status } = req.body; // Include status if you want to update it here too
+        const { name, description, status, categoryOffer } = req.body; // Include status if you want to update it here too
 
         if (!mongoose.Types.ObjectId.isValid(id)) {
             return res.status(400).json({ message: 'Invalid category ID.' });
@@ -86,6 +94,11 @@ const updateCategoryAPI = async (req, res) => {
 
         if (!name) {
             return res.status(400).json({ message: 'Category name is required.' });
+        }
+
+        // Validate category offer
+        if (categoryOffer !== undefined && (categoryOffer < 0 || categoryOffer > 100)) {
+            return res.status(400).json({ message: 'Category offer must be between 0 and 100.' });
         }
         
         // Check for name uniqueness if name is being changed (only among non-deleted categories)
@@ -107,6 +120,9 @@ const updateCategoryAPI = async (req, res) => {
         if (status !== undefined) { // Only update status if provided
             updateData.status = status;
         }
+        if (categoryOffer !== undefined) { // Only update categoryOffer if provided
+            updateData.categoryOffer = categoryOffer;
+        }
 
         const updatedCategory = await Category.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });
 
@@ -117,6 +133,7 @@ const updateCategoryAPI = async (req, res) => {
             _id: updatedCategory._id,
             name: updatedCategory.name,
             description: updatedCategory.description,
+            categoryOffer: updatedCategory.categoryOffer,
             status: updatedCategory.status,
             date: updatedCategory.createdAt.toISOString().split('T')[0] // or updatedAt
         });
@@ -165,6 +182,51 @@ const toggleCategoryStatusAPI = async (req, res) => {
 };
 
 
+// API: Update category offer
+const updateCategoryOfferAPI = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { categoryOffer } = req.body;
+
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ message: 'Invalid category ID.' });
+        }
+
+        // Validate category offer
+        if (categoryOffer === undefined || categoryOffer === null) {
+            return res.status(400).json({ message: 'Category offer is required.' });
+        }
+
+        if (categoryOffer < 0 || categoryOffer > 100) {
+            return res.status(400).json({ message: 'Category offer must be between 0 and 100.' });
+        }
+
+        const category = await Category.findById(id);
+        if (!category) {
+            return res.status(404).json({ message: 'Category not found.' });
+        }
+
+        if (category.isDeleted) {
+            return res.status(400).json({ message: 'Cannot update offer for deleted category.' });
+        }
+
+        category.categoryOffer = categoryOffer;
+        await category.save();
+
+        res.status(200).json({
+            message: `Category "${category.name}" offer updated to ${categoryOffer}%.`,
+            category: {
+                _id: category._id,
+                name: category.name,
+                categoryOffer: category.categoryOffer
+            }
+        });
+    } catch (error) {
+        console.error("Error updating category offer:", error);
+        res.status(500).json({ message: 'Error updating category offer', error: error.message });
+    }
+};
+
 // API: Soft delete a category
 const deleteCategoryAPI = async (req, res) => {
     try {
@@ -210,6 +272,7 @@ module.exports = {
     getAllCategoriesAPI,
     addCategoryAPI,
     updateCategoryAPI,
+    updateCategoryOfferAPI,
     toggleCategoryStatusAPI,
     deleteCategoryAPI
 };

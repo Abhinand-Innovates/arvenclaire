@@ -1,5 +1,6 @@
 const Wishlist = require('../../models/wishlist-schema');
 const User = require('../../models/user-schema');
+const { applyBestOffersToProducts } = require('../../utils/offer-utils');
 
 // Load wishlist listing page
 const loadWishlist = async (req, res) => {
@@ -38,6 +39,18 @@ const loadWishlist = async (req, res) => {
 
         return isValid;
       });
+
+      // Apply offer calculations to wishlist products
+      if (wishlistProducts.length > 0) {
+        const products = wishlistProducts.map(item => item.productId);
+        const productsWithOffers = await applyBestOffersToProducts(products);
+        
+        // Map back to wishlist structure
+        wishlistProducts = wishlistProducts.map((item, index) => ({
+          ...item.toObject(),
+          productId: productsWithOffers[index]
+        }));
+      }
     }
 
     res.render('wishlist', {

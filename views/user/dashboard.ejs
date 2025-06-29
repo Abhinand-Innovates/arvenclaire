@@ -1310,9 +1310,9 @@
                         const productHTML = `
                             <div class="col-6 col-md-3 mb-4 product-enter">
                                 <div class="card product-card" onclick="window.location.href='/product/${product._id}'">
-                                    ${product.productOffer > 0 ? `
+                                    ${product.offerDetails && product.offerDetails.hasOffer ? `
                                         <div class="discount-badge">
-                                            ${product.productOffer}% OFF
+                                            ${product.offerDetails.bestOfferPercentage}% OFF
                                         </div>
                                     ` : ''}
                                     <img src="/uploads/products/${product.mainImage}"
@@ -1342,10 +1342,12 @@
                                         <div class="product-brand">${product.brand}</div>
                                         <h5 class="product-title">${product.productName}</h5>
                                         <div class="product-price">
-                                            ${product.regularPrice > product.salePrice ? `
-                                                <span class="original-price">₹${product.regularPrice.toFixed(2)}</span>
-                                            ` : ''}
-                                            ₹${product.salePrice.toFixed(2)}
+                                            ${product.offerDetails && product.offerDetails.hasOffer ? `
+                                                <span class="original-price">₹${product.offerDetails.originalPrice.toFixed(2)}</span>
+                                                ₹${product.offerDetails.finalPrice.toFixed(2)}
+                                            ` : `
+                                                ₹${product.salePrice.toFixed(2)}
+                                            `}
                                         </div>
                                         ${product.totalReviews > 0 ? `
                                             <div class="rating">

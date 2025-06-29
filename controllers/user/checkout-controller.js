@@ -7,6 +7,7 @@ const Coupon = require('../../models/coupon-schema'); const Wallet = require('..
 const Razorpay = require('razorpay');
 const crypto = require('crypto');
 const { calculateFinalPrice, calculateItemTotal, calculateItemDiscount, syncAllCartPrices, calculateCartSummary } = require('../../utils/price-calculator');
+const { applyBestOffersToProducts } = require('../../utils/offer-utils');
 
 // Initialize Razorpay
 const razorpay = new Razorpay({
@@ -36,7 +37,7 @@ const loadCheckout = async (req, res) => {
         path: 'items.productId',
         populate: {
           path: 'category',
-          select: 'name isListed isDeleted'
+          select: 'name isListed isDeleted categoryOffer'
         }
       });
 
@@ -54,8 +55,19 @@ const loadCheckout = async (req, res) => {
       !item.productId.isDeleted
     );
 
-    // Sync cart prices with current product data before checkout using utility function
-    const priceUpdatesNeeded = syncAllCartPrices(cartItems);
+    // Apply offer calculations to cart items
+    if (cartItems.length > 0) {
+      const products = cartItems.map(item => item.productId);
+      const productsWithOffers = await applyBestOffersToProducts(products);
+      
+      // Map back to cart structure with offer details
+      cartItems.forEach((item, index) => {
+        item.productId = productsWithOffers[index];
+      });
+    }
+
+    // Sync cart prices with current product data and offers before checkout using utility function
+    const priceUpdatesNeeded = await syncAllCartPrices(cartItems);
 
     // Save updated prices to database if needed
     if (priceUpdatesNeeded) {
@@ -77,25 +89,30 @@ const loadCheckout = async (req, res) => {
     const addressDoc = await Address.findOne({ userId });
     const addresses = addressDoc ? addressDoc.address : [];
 
-    // Calculate order summary with subtotal based on regular prices
-    let subtotal = 0; // Based on regular prices (before discount)
-    let totalDiscount = 0; // Difference between regular and sale prices
-    let amountAfterDiscount = 0; // Amount customer actually pays (after discount)
+    // Calculate order summary with offer-based pricing
+    let subtotal = 0; // Based on sale prices (before offers)
+    let totalDiscount = 0; // Discount from offers
+    let amountAfterDiscount = 0; // Amount customer actually pays (after offers)
 
     cartItems.forEach(item => {
-      const regularPrice = item.productId.regularPrice;
-      const salePrice = item.productId.salePrice;
+      const salePrice = item.productId.salePrice; // Original sale price
       const quantity = item.quantity;
       
-      // Subtotal based on regular prices
-      subtotal += regularPrice * quantity;
+      // Get final price after offers (from stored cart price or offer details)
+      let finalPrice = item.price || salePrice;
+      if (item.productId.offerDetails && item.productId.offerDetails.finalPrice) {
+        finalPrice = item.productId.offerDetails.finalPrice;
+      }
       
-      // Calculate discount
-      const itemDiscount = calculateItemDiscount(regularPrice, salePrice, quantity);
+      // Subtotal based on sale prices (before offers)
+      subtotal += salePrice * quantity;
+      
+      // Calculate discount from offers
+      const itemDiscount = calculateItemDiscount(salePrice, finalPrice, quantity);
       totalDiscount += itemDiscount;
       
-      // Amount customer actually pays for this item
-      const itemFinalAmount = calculateItemTotal(salePrice, quantity);
+      // Amount customer actually pays for this item (after offers)
+      const itemFinalAmount = calculateItemTotal(finalPrice, quantity);
       amountAfterDiscount += itemFinalAmount;
     });
 
@@ -250,7 +267,7 @@ const placeOrder = async (req, res) => {
         path: 'items.productId',
         populate: {
           path: 'category',
-          select: 'name isListed isDeleted'
+          select: 'name isListed isDeleted categoryOffer'
         }
       });
 
@@ -292,32 +309,48 @@ const placeOrder = async (req, res) => {
       });
     }
 
-    // Calculate order totals with subtotal based on regular prices
-    let subtotal = 0; // Based on regular prices (before discount)
-    let totalDiscount = 0; // Difference between regular and sale prices
-    let amountAfterDiscount = 0; // Amount customer actually pays (after discount)
+    // Apply offer calculations to cart items for order processing
+    if (cartItems.length > 0) {
+      const products = cartItems.map(item => item.productId);
+      const productsWithOffers = await applyBestOffersToProducts(products);
+      
+      // Map back to cart structure with offer details
+      cartItems.forEach((item, index) => {
+        item.productId = productsWithOffers[index];
+      });
+    }
+
+    // Calculate order totals with offer-based pricing
+    let subtotal = 0; // Based on sale prices (before offers)
+    let totalDiscount = 0; // Discount from offers
+    let amountAfterDiscount = 0; // Amount customer actually pays (after offers)
     const orderedItems = [];
 
     cartItems.forEach(item => {
-      const regularPrice = item.productId.regularPrice;
-      const salePrice = item.productId.salePrice;
+      const salePrice = item.productId.salePrice; // Original sale price
       const quantity = item.quantity;
       
-      // Subtotal based on regular prices
-      subtotal += regularPrice * quantity;
+      // Get final price after offers (from stored cart price or offer details)
+      let finalPrice = item.price || salePrice;
+      if (item.productId.offerDetails && item.productId.offerDetails.finalPrice) {
+        finalPrice = item.productId.offerDetails.finalPrice;
+      }
       
-      // Calculate discount
-      const itemDiscount = calculateItemDiscount(regularPrice, salePrice, quantity);
+      // Subtotal based on sale prices (before offers)
+      subtotal += salePrice * quantity;
+      
+      // Calculate discount from offers
+      const itemDiscount = calculateItemDiscount(salePrice, finalPrice, quantity);
       totalDiscount += itemDiscount;
       
-      // Amount customer actually pays for this item
-      const itemFinalAmount = calculateItemTotal(salePrice, quantity);
+      // Amount customer actually pays for this item (after offers)
+      const itemFinalAmount = calculateItemTotal(finalPrice, quantity);
       amountAfterDiscount += itemFinalAmount;
 
       orderedItems.push({
         product: item.productId._id,
         quantity: quantity,
-        price: salePrice, // Store sale price as the price
+        price: finalPrice, // Store final price after offers
         totalPrice: itemFinalAmount
       });
     });
@@ -493,7 +526,7 @@ const createRazorpayOrder = async (req, res) => {
         path: 'items.productId',
         populate: {
           path: 'category',
-          select: 'name isListed isDeleted'
+          select: 'name isListed isDeleted categoryOffer'
         }
       });
 
@@ -535,27 +568,43 @@ const createRazorpayOrder = async (req, res) => {
       });
     }
 
-    // Calculate order totals
+    // Apply offer calculations to cart items for Razorpay order
+    if (cartItems.length > 0) {
+      const products = cartItems.map(item => item.productId);
+      const productsWithOffers = await applyBestOffersToProducts(products);
+      
+      // Map back to cart structure with offer details
+      cartItems.forEach((item, index) => {
+        item.productId = productsWithOffers[index];
+      });
+    }
+
+    // Calculate order totals with offer-based pricing
     let subtotal = 0;
     let totalDiscount = 0;
     let amountAfterDiscount = 0;
     const orderedItems = [];
 
     cartItems.forEach(item => {
-      const regularPrice = item.productId.regularPrice;
-      const salePrice = item.productId.salePrice;
+      const salePrice = item.productId.salePrice; // Original sale price
       const quantity = item.quantity;
       
-      subtotal += regularPrice * quantity;
-      const itemDiscount = calculateItemDiscount(regularPrice, salePrice, quantity);
+      // Get final price after offers (from stored cart price or offer details)
+      let finalPrice = item.price || salePrice;
+      if (item.productId.offerDetails && item.productId.offerDetails.finalPrice) {
+        finalPrice = item.productId.offerDetails.finalPrice;
+      }
+      
+      subtotal += salePrice * quantity;
+      const itemDiscount = calculateItemDiscount(salePrice, finalPrice, quantity);
       totalDiscount += itemDiscount;
-      const itemFinalAmount = calculateItemTotal(salePrice, quantity);
+      const itemFinalAmount = calculateItemTotal(finalPrice, quantity);
       amountAfterDiscount += itemFinalAmount;
 
       orderedItems.push({
         product: item.productId._id,
         quantity: quantity,
-        price: salePrice,
+        price: finalPrice,
         totalPrice: itemFinalAmount
       });
     });
