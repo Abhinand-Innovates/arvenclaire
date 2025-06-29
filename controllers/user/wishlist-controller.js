@@ -2,6 +2,7 @@ const Wishlist = require('../../models/wishlist-schema');
 const User = require('../../models/user-schema');
 const { applyBestOffersToProducts } = require('../../utils/offer-utils');
 
+
 // Load wishlist listing page
 const loadWishlist = async (req, res) => {
   try {
@@ -63,6 +64,8 @@ const loadWishlist = async (req, res) => {
     res.status(500).render('error', { message: 'Error loading wishlist' });
   }
 };
+
+
 
 // Add product to wishlist
 const addToWishlist = async (req, res) => {
@@ -136,6 +139,8 @@ const addToWishlist = async (req, res) => {
   }
 };
 
+
+
 // Remove product from wishlist
 const removeFromWishlist = async (req, res) => {
   try {
@@ -175,6 +180,8 @@ const removeFromWishlist = async (req, res) => {
   }
 };
 
+
+
 // Get wishlist count for navbar
 const getWishlistCount = async (req, res) => {
   try {
@@ -194,6 +201,8 @@ const getWishlistCount = async (req, res) => {
     res.json({ count: 0 });
   }
 };
+
+
 
 // Bulk transfer all wishlist items to cart
 const bulkTransferToCart = async (req, res) => {

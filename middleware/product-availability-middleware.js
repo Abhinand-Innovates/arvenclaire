@@ -115,6 +115,8 @@ const checkProductAvailability = async (req, res, next) => {
   }
 };
 
+
+
 /**
  * Middleware specifically for product detail page access
  * Redirects to shop page instead of returning JSON
@@ -227,6 +229,8 @@ const checkProductAvailabilityForPage = async (req, res, next) => {
   }
 };
 
+
+
 /**
  * Utility function to check multiple products availability
  * Useful for cart, wishlist, and bulk operations
@@ -307,6 +311,8 @@ const checkMultipleProductsAvailability = async (productIds) => {
   }
 };
 
+
+
 /**
  * Utility function to filter available products from a list
  * Returns only products that are available for purchase
@@ -322,6 +328,8 @@ const filterAvailableProducts = async (productIds) => {
     return [];
   }
 };
+
+
 
 /**
  * Middleware for cart operations that need product availability checking
@@ -370,6 +378,8 @@ const checkCartProductsAvailability = async (req, res, next) => {
     });
   }
 };
+
+
 
 /**
  * Middleware specifically for wishlist operations
@@ -479,6 +489,8 @@ const checkProductAvailabilityForWishlist = async (req, res, next) => {
     });
   }
 };
+
+
 
 module.exports = {
   checkProductAvailability,

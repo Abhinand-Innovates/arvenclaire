@@ -16,6 +16,8 @@ const generateReferralCode = (length = 8) => {
   return result;
 };
 
+
+
 /**
  * Generate a unique referral code with prefix
  * @param {string} prefix - Prefix for the referral code (default: 'REF')
@@ -26,6 +28,8 @@ const generateReferralCodeWithPrefix = (prefix = 'REF', length = 6) => {
   const randomPart = generateReferralCode(length);
   return `${prefix}${randomPart}`;
 };
+
+
 
 module.exports = {
   generateReferralCode,

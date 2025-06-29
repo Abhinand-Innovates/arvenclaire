@@ -1,6 +1,7 @@
 const Category = require('../models/category-schema');
 const Product = require('../models/product-schema');
 
+
 /**
  * Calculate the best offer for a product considering both product-level and category-level offers
  * @param {Object} product - Product object with populated category
@@ -82,6 +83,8 @@ const calculateBestOffer = async (product) => {
     }
 };
 
+
+
 /**
  * Apply best offers to an array of products
  * @param {Array} products - Array of product objects
@@ -119,6 +122,8 @@ const applyBestOffersToProducts = async (products) => {
         });
     }
 };
+
+
 
 /**
  * Get products with best offers for user display
@@ -162,6 +167,7 @@ const getProductsWithBestOffers = async (filter = {}, options = {}) => {
         throw error;
     }
 };
+
 
 module.exports = {
     calculateBestOffer,

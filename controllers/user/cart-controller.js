@@ -5,6 +5,8 @@ const User = require('../../models/user-schema');
 const { calculateFinalPrice, calculateItemTotal, syncAllCartPrices } = require('../../utils/price-calculator');
 const { applyBestOffersToProducts } = require('../../utils/offer-utils');
 
+
+
 // Load cart page
 const loadCart = async (req, res) => {
   try {
@@ -71,6 +73,8 @@ const loadCart = async (req, res) => {
     res.status(500).render('error', { message: 'Error loading cart' });
   }
 };
+
+
 
 // Add product to cart with comprehensive validation
 const addToCart = async (req, res) => {
@@ -229,6 +233,8 @@ const addToCart = async (req, res) => {
   }
 };
 
+
+
 // Get cart count for navbar
 const getCartCount = async (req, res) => {
   try {
@@ -248,6 +254,8 @@ const getCartCount = async (req, res) => {
     res.json({ count: 0 });
   }
 };
+
+
 
 // Update cart item quantity
 const updateCartQuantity = async (req, res) => {
@@ -359,6 +367,8 @@ const updateCartQuantity = async (req, res) => {
   }
 };
 
+
+
 // Remove item from cart
 const removeFromCart = async (req, res) => {
   try {
@@ -414,6 +424,8 @@ const removeFromCart = async (req, res) => {
   }
 };
 
+
+
 // Clear entire cart
 const clearCart = async (req, res) => {
   try {
@@ -445,6 +457,8 @@ const clearCart = async (req, res) => {
     });
   }
 };
+
+
 
 // Remove all out-of-stock items from cart
 const removeOutOfStockItems = async (req, res) => {
@@ -518,6 +532,8 @@ const removeOutOfStockItems = async (req, res) => {
   }
 };
 
+
+
 // Validate cart items and return availability status
 const validateCartItems = async (req, res) => {
   try {
@@ -589,6 +605,8 @@ const validateCartItems = async (req, res) => {
     });
   }
 };
+
+
 
 module.exports = {
   loadCart,

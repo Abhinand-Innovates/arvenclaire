@@ -1,6 +1,7 @@
 const Address = require('../../models/address-schema');
 const User = require('../../models/user-schema');
 
+
 // Load address listing page
 const loadAddressList = async (req, res) => {
   try {
@@ -26,6 +27,8 @@ const loadAddressList = async (req, res) => {
     res.status(500).render('error', { message: 'Error loading addresses' });
   }
 };
+
+
 
 // Load address form (for add/edit)
 const loadAddressForm = async (req, res) => {
@@ -64,6 +67,8 @@ const loadAddressForm = async (req, res) => {
     res.status(500).render('error', { message: 'Error loading address form' });
   }
 };
+
+
 
 // Save new address
 const saveAddress = async (req, res) => {
@@ -171,6 +176,8 @@ const saveAddress = async (req, res) => {
   }
 };
 
+
+
 // Update existing address
 const updateAddress = async (req, res) => {
   try {
@@ -276,6 +283,8 @@ const updateAddress = async (req, res) => {
   }
 };
 
+
+
 // Delete address
 const deleteAddress = async (req, res) => {
   try {
@@ -325,6 +334,8 @@ const deleteAddress = async (req, res) => {
   }
 };
 
+
+
 // Set address as default
 const setAsDefault = async (req, res) => {
   try {
@@ -370,6 +381,8 @@ const setAsDefault = async (req, res) => {
     });
   }
 };
+
+
 
 module.exports = {
   loadAddressList,

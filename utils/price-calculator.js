@@ -10,6 +10,7 @@
 
 const { calculateBestOffer } = require('./offer-utils');
 
+
 /**
  * Calculate the final price customer pays after applying best offer
  * @param {Object} product - The product object with category populated
@@ -27,6 +28,8 @@ const calculateFinalPrice = async (product) => {
   }
 };
 
+
+
 /**
  * Synchronous version for when offer details are already calculated
  * @param {number} salePrice - The sale price of the product
@@ -43,6 +46,8 @@ const calculateFinalPriceSync = (salePrice, offerDetails = null) => {
   return salePrice;
 };
 
+
+
 /**
  * Calculate item total price based on final price after offers
  * @param {number} finalPrice - The final price per item after offers
@@ -53,6 +58,8 @@ const calculateItemTotal = (finalPrice, quantity) => {
   if (!finalPrice || finalPrice < 0 || !quantity || quantity < 0) return 0;
   return finalPrice * quantity;
 };
+
+
 
 /**
  * Calculate discount amount for an item (difference between original price and final offer price)
@@ -67,6 +74,8 @@ const calculateItemDiscount = (originalPrice, finalPrice, quantity) => {
   
   return (originalPrice - finalPrice) * quantity;
 };
+
+
 
 /**
  * Calculate cart summary totals with offer-based pricing
@@ -122,6 +131,8 @@ const calculateCartSummary = (cartItems) => {
   };
 };
 
+
+
 /**
  * Sync cart item prices with current product data and offers
  * @param {Object} cartItem - Cart item object
@@ -155,6 +166,8 @@ const syncCartItemPrice = async (cartItem, productData) => {
   }
 };
 
+
+
 /**
  * Validate and update all cart items with current pricing and offers
  * @param {Array} cartItems - Array of cart items
@@ -171,6 +184,8 @@ const syncAllCartPrices = async (cartItems) => {
   
   return anyUpdated;
 };
+
+
 
 // Legacy function for backward compatibility
 const calculateEffectivePrice = async (product, productOffer = 0) => {

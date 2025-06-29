@@ -2,6 +2,7 @@ const Product = require('../../models/product-schema');
 const Category = require('../../models/category-schema');
 const { getProductsWithBestOffers, calculateBestOffer } = require('../../utils/offer-utils');
 
+
 /**
  * Get all products for user with best offers applied
  */
@@ -88,6 +89,8 @@ const getProducts = async (req, res) => {
     }
 };
 
+
+
 /**
  * Get single product by ID with best offer applied
  */
@@ -129,6 +132,8 @@ const getProductById = async (req, res) => {
         });
     }
 };
+
+
 
 /**
  * Get products by category with best offers applied
@@ -223,6 +228,8 @@ const getProductsByCategory = async (req, res) => {
     }
 };
 
+
+
 /**
  * Get featured products with best offers (for homepage)
  */
@@ -256,6 +263,8 @@ const getFeaturedProducts = async (req, res) => {
         });
     }
 };
+
+
 
 /**
  * Search products with best offers applied
@@ -324,6 +333,8 @@ const searchProducts = async (req, res) => {
         });
     }
 };
+
+
 
 module.exports = {
     getProducts,

@@ -57,6 +57,8 @@ const createWelcomeCoupon = async (userId) => {
     }
 };
 
+
+
 // Create referral reward coupon for referrer
 const createReferralRewardCoupon = async (referrerId, referredUserName) => {
     try {
@@ -111,6 +113,8 @@ const createReferralRewardCoupon = async (referrerId, referredUserName) => {
         return null;
     }
 };
+
+
 
 module.exports = {
     createWelcomeCoupon,

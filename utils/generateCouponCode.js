@@ -9,13 +9,19 @@ const generateCouponCode = (prefix = '', length = 8) => {
     return result;
 };
 
+
+
 const generateWelcomeCouponCode = () => {
     return generateCouponCode('WELCOME', 6);
 };
 
+
+
 const generateReferralRewardCouponCode = () => {
     return generateCouponCode('REFER', 6);
 };
+
+
 
 module.exports = {
     generateCouponCode,

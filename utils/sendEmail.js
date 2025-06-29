@@ -3,6 +3,7 @@ const dotenv = require("dotenv");
 
 dotenv.config();
 
+
 const sendEmail = async (email, otp) => {
   try {
     const transporter = nodemailer.createTransport({
@@ -58,5 +59,7 @@ Arvenclaire Support Team
     return false;
   }
 };
+
+
 
 module.exports = sendEmail;

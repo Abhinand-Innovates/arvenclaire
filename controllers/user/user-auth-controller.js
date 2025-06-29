@@ -2086,6 +2086,8 @@ const loadCouponPage = async (req, res) => {
   }
 };
 
+
+
 // Validate referral code API endpoint
 const validateReferralCode = async (req, res) => {
   try {
@@ -2122,6 +2124,8 @@ const validateReferralCode = async (req, res) => {
     });
   }
 };
+
+
 
 // Load referrals page
 const loadReferrals = async (req, res) => {
@@ -2210,6 +2214,8 @@ const loadReferrals = async (req, res) => {
     res.status(500).render('error', { message: 'Error loading referrals page' });
   }
 };
+
+
 
 module.exports = {
   loadLanding,
