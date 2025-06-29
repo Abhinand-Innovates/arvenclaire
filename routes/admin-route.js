@@ -118,9 +118,7 @@ adminRoute.delete("/delete-coupon/:id", isAdminAuthenticated, preventCache, coup
 
 // Sales Report Management
 adminRoute.get("/sales-report", isAdminAuthenticated, preventCache, salesReportController.getSalesReport);
-adminRoute.get("/api/sales-data", isAdminAuthenticated, preventCache, salesReportController.getSalesData);
-adminRoute.get("/sales-report/export/excel", isAdminAuthenticated, preventCache, salesReportController.exportToExcel);
-adminRoute.get("/sales-report/export/pdf", isAdminAuthenticated, preventCache, salesReportController.exportToPDF);
-adminRoute.post("/sales-report/create-sample-orders", isAdminAuthenticated, preventCache, salesReportController.createSampleOrders);
+adminRoute.get("/sales-report/export-pdf", isAdminAuthenticated, preventCache, salesReportController.exportPDF);
+adminRoute.get("/sales-report/export-excel", isAdminAuthenticated, preventCache, salesReportController.exportExcel);
 
 module.exports = adminRoute;
