@@ -10,6 +10,7 @@ const returnController = require("../controllers/admin/return-controller");
 const { productUpload, handleMulterError } = require("../config/multer-config");
 
 const couponController = require("../controllers/admin/coupon-controller");
+const salesReportController = require("../controllers/admin/sales-report-controller");
 const { isAdminAuthenticated, preventCache } = require('../middleware/auth-middleware');
 
 //Admin Login - with cache prevention for proper session handling
@@ -114,5 +115,12 @@ adminRoute.post("/edit-coupon/:id", isAdminAuthenticated, preventCache, couponCo
 adminRoute.put("/edit-coupon/:id", isAdminAuthenticated, preventCache, couponController.updateCoupon);
 adminRoute.patch("/coupon/:id/status", isAdminAuthenticated, preventCache, couponController.toggleCouponStatus);
 adminRoute.delete("/delete-coupon/:id", isAdminAuthenticated, preventCache, couponController.deleteCoupon);
+
+// Sales Report Management
+adminRoute.get("/sales-report", isAdminAuthenticated, preventCache, salesReportController.getSalesReport);
+adminRoute.get("/api/sales-data", isAdminAuthenticated, preventCache, salesReportController.getSalesData);
+adminRoute.get("/sales-report/export/excel", isAdminAuthenticated, preventCache, salesReportController.exportToExcel);
+adminRoute.get("/sales-report/export/pdf", isAdminAuthenticated, preventCache, salesReportController.exportToPDF);
+adminRoute.post("/sales-report/create-sample-orders", isAdminAuthenticated, preventCache, salesReportController.createSampleOrders);
 
 module.exports = adminRoute;

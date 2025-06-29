@@ -1,0 +1,543 @@
+<%- include("../partials/admin/sidebar") %>
+
+<style>
+    /* Breadcrumb Styles */
+    .breadcrumb {
+        background-color: transparent;
+        padding: 0.75rem 0;
+        margin-bottom: 1.5rem;
+        font-size: 0.875rem;
+    }
+
+    .breadcrumb-item a {
+        color: #6c757d;
+        text-decoration: none;
+    }
+
+    .breadcrumb-item a:hover {
+        color: #000;
+        text-decoration: underline;
+    }
+
+    .breadcrumb-item.active {
+        color: #495057;
+        font-weight: 500;
+    }
+
+    .breadcrumb-item + .breadcrumb-item::before {
+        content: ">";
+        color: #6c757d;
+    }
+
+    /* Export buttons styling */
+    .export-buttons .btn {
+        font-size: 0.875rem;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .export-buttons .btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .sales-report-container {
+        background-color: #f8f9fa;
+        min-height: 100vh;
+        padding: 20px;
+    }
+
+    .report-header {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    }
+
+    .report-title {
+        font-size: 2.25rem;
+        font-weight: 900;
+        color: #333;
+        margin-bottom: 1rem;
+    }
+
+    .filter-section {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    }
+
+    .filter-row {
+        display: flex;
+        gap: 1rem;
+        align-items: end;
+        flex-wrap: wrap;
+    }
+
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+        min-width: 150px;
+    }
+
+    .filter-group label {
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+        color: #555;
+    }
+
+    .filter-group select,
+    .filter-group input {
+        padding: 0.5rem;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 0.875rem;
+    }
+
+    .btn-filter {
+        background-color: #000;
+        color: white;
+        border: none;
+        padding: 0.5rem 1.5rem;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 500;
+        height: fit-content;
+    }
+
+    .btn-filter:hover {
+        background-color: #333;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        text-align: center;
+    }
+
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+        color: #666;
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+
+    /* Combined discount card styling */
+    .discount-breakdown {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .discount-main {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 0.25rem;
+    }
+
+    .discount-sub {
+        font-size: 0.9rem;
+        color: #888;
+        font-weight: 500;
+    }
+
+    .report-table {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        margin-bottom: 2rem;
+    }
+
+    .table {
+        margin-bottom: 0;
+    }
+
+    .table th {
+        background-color: #f8f9fa;
+        border-top: none;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .table td {
+        vertical-align: middle;
+    }
+
+    .status-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+
+    .status-delivered {
+        background-color: #d4edda;
+        color: #155724;
+    }
+
+    .status-shipped {
+        background-color: #d1ecf1;
+        color: #0c5460;
+    }
+
+    .status-processing {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+
+    .pagination-container {
+        display: flex;
+        justify-content: center;
+        margin-top: 2rem;
+    }
+
+    
+    @media (max-width: 768px) {
+        .filter-row {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .filter-group {
+            min-width: auto;
+        }
+
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .table-responsive {
+            font-size: 0.875rem;
+        }
+
+        .report-header .d-flex {
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .export-buttons {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+        }
+
+        .export-buttons .btn {
+            font-size: 0.8rem;
+            padding: 0.4rem 0.8rem;
+        }
+    }
+</style>
+
+<div class="main-content">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/admin-dashboard"><i class="fas fa-home"></i> Dashboard</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Sales Report</li>
+        </ol>
+    </nav>
+    
+    <div class="sales-report-container">
+        <!-- Header -->
+        <div class="report-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="report-title">Sales Report</h1>
+                    <p class="text-muted mb-0">Comprehensive overview of your sales performance</p>
+                </div>
+                <div class="export-buttons">
+                    <button class="btn btn-outline-success me-2" onclick="exportToExcel()">
+                        <i class="fas fa-file-excel"></i> Export Excel
+                    </button>
+                    <button class="btn btn-outline-danger" onclick="exportToPDF()">
+                        <i class="fas fa-file-pdf"></i> Export PDF
+                    </button>
+                    <% if (orderStats.totalOrdersAll === 0) { %>
+                        <button class="btn btn-outline-info ms-2" onclick="createSampleOrders()">
+                            <i class="fas fa-plus"></i> Create Sample Orders
+                        </button>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filter-section">
+            <form method="GET" action="/sales-report">
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label for="period">Period</label>
+                        <select name="period" id="period" onchange="toggleCustomDates()">
+                            <option value="all" <%= period === 'all' ? 'selected' : '' %>>All Time</option>
+                            <option value="today" <%= period === 'today' ? 'selected' : '' %>>Today</option>
+                            <option value="week" <%= period === 'week' ? 'selected' : '' %>>Last 7 Days</option>
+                            <option value="month" <%= period === 'month' ? 'selected' : '' %>>Last 30 Days</option>
+                            <option value="year" <%= period === 'year' ? 'selected' : '' %>>Last Year</option>
+                            <option value="custom" <%= period === 'custom' ? 'selected' : '' %>>Custom Range</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="paymentMethod">Payment Method</label>
+                        <select name="paymentMethod" id="paymentMethod">
+                            <option value="all" <%= paymentMethod === 'all' ? 'selected' : '' %>>All Methods</option>
+                            <option value="Cash on Delivery" <%= paymentMethod === 'Cash on Delivery' ? 'selected' : '' %>>Cash on Delivery</option>
+                            <option value="Online Payment" <%= paymentMethod === 'Online Payment' ? 'selected' : '' %>>Online Payment</option>
+                            <option value="Wallet" <%= paymentMethod === 'Wallet' ? 'selected' : '' %>>Wallet</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="orderStatus">Order Status</label>
+                        <select name="orderStatus" id="orderStatus">
+                            <option value="all" <%= orderStatus === 'all' ? 'selected' : '' %>>All Status</option>
+                            <option value="Pending" <%= orderStatus === 'Pending' ? 'selected' : '' %>>Pending</option>
+                            <option value="Processing" <%= orderStatus === 'Processing' ? 'selected' : '' %>>Processing</option>
+                            <option value="Shipped" <%= orderStatus === 'Shipped' ? 'selected' : '' %>>Shipped</option>
+                            <option value="Delivered" <%= orderStatus === 'Delivered' ? 'selected' : '' %>>Delivered</option>
+                            <option value="Cancelled" <%= orderStatus === 'Cancelled' ? 'selected' : '' %>>Cancelled</option>
+                            <option value="Return Request" <%= orderStatus === 'Return Request' ? 'selected' : '' %>>Return Request</option>
+                            <option value="Returned" <%= orderStatus === 'Returned' ? 'selected' : '' %>>Returned</option>
+                        </select>
+                    </div>
+                    <div class="filter-group" id="startDateGroup" style="display: <%= period === 'custom' ? 'flex' : 'none' %>;">
+                        <label for="startDate">Start Date</label>
+                        <input type="date" name="startDate" id="startDate" value="<%= startDate || '' %>">
+                    </div>
+                    <div class="filter-group" id="endDateGroup" style="display: <%= period === 'custom' ? 'flex' : 'none' %>;">
+                        <label for="endDate">End Date</label>
+                        <input type="date" name="endDate" id="endDate" value="<%= endDate || '' %>">
+                    </div>
+                    <button type="submit" class="btn-filter">Apply Filter</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value">₹<%= salesSummary.totalSales ? salesSummary.totalSales.toLocaleString('en-IN') : '0' %></div>
+                <div class="stat-label">Total Sales (Delivered)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value"><%= orderStats.totalOrdersAll || 0 %></div>
+                <div class="stat-label">Total Orders</div>
+            </div>
+            <div class="stat-card">
+                <div class="discount-breakdown">
+                    <div class="discount-main">₹<%= salesSummary.totalDiscount ? salesSummary.totalDiscount.toLocaleString('en-IN') : '0' %></div>
+                    <div class="discount-sub">Coupon: ₹<%= salesSummary.totalCouponDiscount ? salesSummary.totalCouponDiscount.toLocaleString('en-IN') : '0' %></div>
+                </div>
+                <div class="stat-label">Total Discount</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">��<%= salesSummary.averageOrderValue ? Math.round(salesSummary.averageOrderValue).toLocaleString('en-IN') : '0' %></div>
+                <div class="stat-label">Average Order Value</div>
+            </div>
+        </div>
+
+        <!-- Orders Table - Full Width -->
+        <div class="report-table">
+            <h4 class="mb-3">Recent Orders</h4>
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Customer</th>
+                            <th>Date</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% if (orders && orders.length > 0) { %>
+                            <% orders.forEach(order => { %>
+                                <%
+                                    // Calculate current total (same as order details page)
+                                    const activeItems = order.orderedItems.filter(item => item.status === 'Active');
+                                    const returnRequestItems = order.orderedItems.filter(item => item.status === 'Return Request');
+                                    const includedItems = [...activeItems, ...returnRequestItems];
+                                    
+                                    let amountAfterDiscount = 0;
+                                    includedItems.forEach(item => {
+                                        amountAfterDiscount += item.totalPrice;
+                                    });
+                                    
+                                    let currentTotal = amountAfterDiscount;
+                                    if (includedItems.length > 0) {
+                                        currentTotal += order.shippingCharges;
+                                    }
+                                    
+                                    // Subtract coupon discount if applied
+                                    if (order.couponApplied && order.couponDiscount > 0) {
+                                        currentTotal -= order.couponDiscount;
+                                    }
+                                %>
+                                <tr>
+                                    <td><strong><%= order.orderId %></strong></td>
+                                    <td>
+                                        <%= order.userId ? order.userId.fullname : 'N/A' %>
+                                        <br>
+                                        <small class="text-muted"><%= order.userId ? order.userId.email : '' %></small>
+                                    </td>
+                                    <td><%= new Date(order.createdAt).toLocaleDateString('en-IN') %></td>
+                                    <td><strong>₹<%= currentTotal.toLocaleString('en-IN') %></strong></td>
+                                    <td>
+                                        <span class="status-badge status-<%= order.status.toLowerCase() %>">
+                                            <%= order.status %>
+                                        </span>
+                                    </td>
+                                </tr>
+                            <% }) %>
+                        <% } else { %>
+                            <tr>
+                                <td colspan="5" class="text-center text-muted">
+                                    <% if (orderStats.totalOrdersAll === 0) { %>
+                                        No orders found in the database. 
+                                        <% if (typeof orderStats !== 'undefined') { %>
+                                            <br><small>Click "Create Sample Orders" to add test data.</small>
+                                        <% } %>
+                                    <% } else { %>
+                                        No orders found for the selected period
+                                    <% } %>
+                                </td>
+                            </tr>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <% if (totalPages > 1) { %>
+                <div class="pagination-container">
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination">
+                            <% if (hasPrevPage) { %>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page=<%= currentPage - 1 %>&period=<%= period %>&paymentMethod=<%= paymentMethod %>&orderStatus=<%= orderStatus %>&startDate=<%= startDate || '' %>&endDate=<%= endDate || '' %>">Previous</a>
+                                </li>
+                            <% } %>
+                            
+                            <% for (let i = 1; i <= totalPages; i++) { %>
+                                <li class="page-item <%= i === currentPage ? 'active' : '' %>">
+                                    <a class="page-link" href="?page=<%= i %>&period=<%= period %>&paymentMethod=<%= paymentMethod %>&orderStatus=<%= orderStatus %>&startDate=<%= startDate || '' %>&endDate=<%= endDate || '' %>"><%= i %></a>
+                                </li>
+                            <% } %>
+                            
+                            <% if (hasNextPage) { %>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page=<%= currentPage + 1 %>&period=<%= period %>&paymentMethod=<%= paymentMethod %>&orderStatus=<%= orderStatus %>&startDate=<%= startDate || '' %>&endDate=<%= endDate || '' %>">Next</a>
+                                </li>
+                            <% } %>
+                        </ul>
+                    </nav>
+                </div>
+            <% } %>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleCustomDates() {
+        const period = document.getElementById('period').value;
+        const startDateGroup = document.getElementById('startDateGroup');
+        const endDateGroup = document.getElementById('endDateGroup');
+        
+        if (period === 'custom') {
+            startDateGroup.style.display = 'flex';
+            endDateGroup.style.display = 'flex';
+        } else {
+            startDateGroup.style.display = 'none';
+            endDateGroup.style.display = 'none';
+        }
+    }
+
+    // Export functions
+    function exportToExcel() {
+        const period = document.getElementById('period').value;
+        const paymentMethod = document.getElementById('paymentMethod').value;
+        const orderStatus = document.getElementById('orderStatus').value;
+        const startDate = document.getElementById('startDate').value;
+        const endDate = document.getElementById('endDate').value;
+        
+        let url = '/sales-report/export/excel?period=' + period + '&paymentMethod=' + paymentMethod + '&orderStatus=' + orderStatus;
+        if (period === 'custom' && startDate && endDate) {
+            url += '&startDate=' + startDate + '&endDate=' + endDate;
+        }
+        
+        window.open(url, '_blank');
+    }
+
+    function exportToPDF() {
+        const period = document.getElementById('period').value;
+        const paymentMethod = document.getElementById('paymentMethod').value;
+        const orderStatus = document.getElementById('orderStatus').value;
+        const startDate = document.getElementById('startDate').value;
+        const endDate = document.getElementById('endDate').value;
+        
+        let url = '/sales-report/export/pdf?period=' + period + '&paymentMethod=' + paymentMethod + '&orderStatus=' + orderStatus;
+        if (period === 'custom' && startDate && endDate) {
+            url += '&startDate=' + startDate + '&endDate=' + endDate;
+        }
+        
+        window.open(url, '_blank');
+    }
+
+    // Create sample orders for testing
+    async function createSampleOrders() {
+        try {
+            const response = await fetch('/sales-report/create-sample-orders', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            const result = await response.json();
+            
+            if (response.ok) {
+                alert('Sample orders created successfully! Refreshing page...');
+                window.location.reload();
+            } else {
+                alert('Error: ' + (result.error || result.message));
+            }
+        } catch (error) {
+            console.error('Error creating sample orders:', error);
+            alert('Failed to create sample orders');
+        }
+    }
+
+    // Set active sidebar item
+    document.addEventListener('DOMContentLoaded', function() {
+        const navItems = document.querySelectorAll('.nav-item[data-route]');
+        navItems.forEach(nav => nav.classList.remove('active'));
+        
+        const salesNavItem = document.querySelector('[data-route="sales"]');
+        if (salesNavItem) {
+            salesNavItem.classList.add('active');
+        }
+    });
+</script>
+
+</body>
+</html>
