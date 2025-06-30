@@ -114,16 +114,62 @@
             font-size: 0.8rem;
             display: none;
             margin-top: 0.25rem;
+            padding: 0.25rem 0.5rem;
+            background: #fef2f2;
+            border-left: 3px solid #e74c3c;
+            border-radius: 0 4px 4px 0;
         }
         
         .error .error-message {
             display: block;
+            animation: slideDown 0.3s ease;
         }
         
         .error .form-control,
         .error .form-select,
         .error .form-textarea {
             border-color: #e74c3c;
+            box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1);
+        }
+
+        .success .form-control,
+        .success .form-select,
+        .success .form-textarea {
+            border-color: #27ae60;
+            box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.1);
+        }
+
+        .success .form-label::after {
+            content: " ✓";
+            color: #27ae60;
+            font-weight: bold;
+            margin-left: 0.25rem;
+        }
+
+        .char-counter {
+            font-size: 0.75rem;
+            color: #6c757d;
+            text-align: right;
+            margin-top: 0.25rem;
+        }
+
+        .char-counter.warning {
+            color: #f39c12;
+        }
+
+        .char-counter.danger {
+            color: #e74c3c;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
         
         .form-actions {
@@ -213,28 +259,35 @@
                                 <h3 class="section-title"><i class="fas fa-ticket-alt"></i> Coupon Details</h3>
                                 <div class="form-row">
                                     <div class="form-group">
-                                        <label for="code" class="form-label">Coupon Code</label>
+                                        <label for="code" class="form-label">Coupon Code <span class="required">*</span></label>
                                         <div class="input-group">
-                                            <input type="text" class="form-control" id="code" name="code" value="<%= typeof formData !== 'undefined' && formData && formData.code ? formData.code : '' %>" required>
+                                            <input type="text" class="form-control" id="code" name="code" maxlength="20" value="<%= typeof formData !== 'undefined' && formData && formData.code ? formData.code : '' %>" required>
                                             <button class="btn btn-outline-secondary" type="button" id="generateCode">Generate</button>
                                         </div>
+                                        <div class="char-counter" id="codeCounter">0/20 characters</div>
+                                        <div class="error-message">Coupon code is required</div>
                                     </div>
                                     <div class="form-group">
-                                        <label for="description" class="form-label">Description</label>
-                                        <input type="text" class="form-control" id="description" name="description" value="<%= typeof formData !== 'undefined' && formData && formData.description ? formData.description : '' %>" required>
+                                        <label for="description" class="form-label">Description <span class="required">*</span></label>
+                                        <input type="text" class="form-control" id="description" name="description" maxlength="100" value="<%= typeof formData !== 'undefined' && formData && formData.description ? formData.description : '' %>" required>
+                                        <div class="char-counter" id="descriptionCounter">0/100 characters</div>
+                                        <div class="error-message">Description is required</div>
                                     </div>
                                 </div>
                                 <div class="form-row">
                                     <div class="form-group">
-                                        <label for="discountType" class="form-label">Discount Type</label>
-                                        <select class="form-select" id="discountType" name="discountType">
+                                        <label for="discountType" class="form-label">Discount Type <span class="required">*</span></label>
+                                        <select class="form-select" id="discountType" name="discountType" required>
+                                            <option value="">Select discount type</option>
                                             <option value="percentage" <%= typeof formData !== 'undefined' && formData && formData.discountType === 'percentage' ? 'selected' : '' %>>Percentage</option>
                                             <option value="flat" <%= typeof formData !== 'undefined' && formData && formData.discountType === 'flat' ? 'selected' : '' %>>Flat</option>
                                         </select>
+                                        <div class="error-message">Please select a discount type</div>
                                     </div>
                                     <div class="form-group">
-                                        <label for="discountValue" class="form-label">Discount Value</label>
+                                        <label for="discountValue" class="form-label">Discount Value <span class="required">*</span></label>
                                         <input type="number" class="form-control" id="discount" name="discount" step="0.01" min="0" value="<%= typeof formData !== 'undefined' && formData.discount ? formData.discount : '' %>" required>
+                                        <div class="error-message">Discount value is required</div>
                                     </div>
                                 </div>
                                 <div class="form-group mt-3">
@@ -249,8 +302,9 @@
                                 </div>
                                 <div class="form-row">
                                     <div class="form-group">
-                                        <label for="minPurchaseAmount" class="form-label">Minimum Purchase Amount</label>
+                                        <label for="minPurchaseAmount" class="form-label">Minimum Purchase Amount <span class="required">*</span></label>
                                         <input type="number" class="form-control" id="minPurchase" name="minPurchase" step="0.01" min="0" value="<%= typeof formData !== 'undefined' && formData.minPurchase ? formData.minPurchase : '' %>" required>
+                                        <div class="error-message">Minimum purchase amount is required</div>
                                     </div>
                                      <div class="form-group">
                                         <label for="isActive" class="form-label">Status</label>
@@ -266,12 +320,14 @@
                                 <h3 class="section-title"><i class="fas fa-calendar-alt"></i> Validity</h3>
                                 <div class="form-row">
                                     <div class="form-group">
-                                        <label for="startDate" class="form-label">Start Date</label>
+                                        <label for="startDate" class="form-label">Start Date <span class="required">*</span></label>
                                         <input type="date" class="form-control" id="startDate" name="startDate" value="<%= typeof formData !== 'undefined' && formData.startDate ? formData.startDate : '' %>" required>
+                                        <div class="error-message">Start date is required</div>
                                     </div>
                                     <div class="form-group">
-                                        <label for="endDate" class="form-label">End Date</label>
+                                        <label for="endDate" class="form-label">End Date <span class="required">*</span></label>
                                         <input type="date" class="form-control" id="expiry" name="expiry" value="<%= typeof formData !== 'undefined' && formData.expiry ? formData.expiry : '' %>" required>
+                                        <div class="error-message">End date is required</div>
                                     </div>
                                 </div>
                             </div>
@@ -280,12 +336,14 @@
                                 <h3 class="section-title"><i class="fas fa-users"></i> Usage Limits</h3>
                                 <div class="form-row">
                                     <div class="form-group">
-                                        <label for="globalUsageLimit" class="form-label">Global Usage Limit</label>
+                                        <label for="globalUsageLimit" class="form-label">Global Usage Limit <span class="required">*</span></label>
                                         <input type="number" class="form-control" id="usageLimit" name="usageLimit" min="1" value="<%= typeof formData !== 'undefined' && formData.usageLimit ? formData.usageLimit : '' %>" required>
+                                        <div class="error-message">Global usage limit is required</div>
                                     </div>
                                     <div class="form-group">
-                                        <label for="perUserLimit" class="form-label">Per User Limit</label>
+                                        <label for="perUserLimit" class="form-label">Per User Limit <span class="required">*</span></label>
                                         <input type="number" class="form-control" id="userUsageLimit" name="userUsageLimit" min="1" value="<%= typeof formData !== 'undefined' && formData.userUsageLimit ? formData.userUsageLimit : '' %>" required>
+                                        <div class="error-message">Per user limit is required</div>
                                     </div>
                                 </div>
                             </div>

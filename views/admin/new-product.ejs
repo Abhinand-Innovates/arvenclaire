@@ -95,16 +95,62 @@
             font-size: 0.8rem;
             display: none;
             margin-top: 0.25rem;
+            padding: 0.25rem 0.5rem;
+            background: #fef2f2;
+            border-left: 3px solid #e74c3c;
+            border-radius: 0 4px 4px 0;
         }
         
         .error .error-message {
             display: block;
+            animation: slideDown 0.3s ease;
         }
         
         .error .form-control,
         .error .form-select,
         .error .form-textarea {
             border-color: #e74c3c;
+            box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1);
+        }
+
+        .success .form-control,
+        .success .form-select,
+        .success .form-textarea {
+            border-color: #27ae60;
+            box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.1);
+        }
+
+        .success .form-label::after {
+            content: " ✓";
+            color: #27ae60;
+            font-weight: bold;
+            margin-left: 0.25rem;
+        }
+
+        .char-counter {
+            font-size: 0.75rem;
+            color: #6c757d;
+            text-align: right;
+            margin-top: 0.25rem;
+        }
+
+        .char-counter.warning {
+            color: #f39c12;
+        }
+
+        .char-counter.danger {
+            color: #e74c3c;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
         
         .images-section {
@@ -711,6 +757,9 @@
                 cropConfirm.addEventListener('click', handleCropConfirm);
             }
 
+            // Real-time validation for all form fields
+            setupFieldValidation();
+
             // Price calculation and validation
             const regularPrice = document.getElementById('regularPrice');
             const productOffer = document.getElementById('productOffer');
@@ -719,12 +768,22 @@
             if (regularPrice && productOffer && salePrice) {
                 // Calculate sale price when regular price changes
                 regularPrice.addEventListener('input', function() {
+                    validateRegularPrice();
                     calculateSalePrice();
+                });
+
+                regularPrice.addEventListener('blur', function() {
+                    validateRegularPrice();
                 });
 
                 // Calculate sale price when discount changes
                 productOffer.addEventListener('input', function() {
+                    validateProductOffer();
                     calculateSalePrice();
+                });
+
+                productOffer.addEventListener('blur', function() {
+                    validateProductOffer();
                 });
 
                 // Prevent manual editing of sale price
@@ -746,45 +805,262 @@
                     calculateSalePrice();
                 }
             }
+        }
 
-            // Add quantity validation
-            const quantityInput = document.getElementById('quantity');
-            if (quantityInput) {
-                quantityInput.addEventListener('input', function() {
-                    validateQuantity();
-                });
+        // Setup real-time validation for all form fields
+        function setupFieldValidation() {
+            // Product Name validation
+            const productName = document.getElementById('productName');
+            if (productName) {
+                productName.addEventListener('input', validateProductName);
+                productName.addEventListener('blur', validateProductName);
+            }
 
-                quantityInput.addEventListener('blur', function() {
-                    validateQuantity();
-                });
+            // Brand validation
+            const brand = document.getElementById('brand');
+            if (brand) {
+                brand.addEventListener('input', validateBrand);
+                brand.addEventListener('blur', validateBrand);
+            }
+
+            // Category validation
+            const category = document.getElementById('category');
+            if (category) {
+                category.addEventListener('change', validateCategory);
+                category.addEventListener('blur', validateCategory);
+            }
+
+            // Quantity validation
+            const quantity = document.getElementById('quantity');
+            if (quantity) {
+                quantity.addEventListener('input', validateQuantity);
+                quantity.addEventListener('blur', validateQuantity);
+            }
+
+            // Features validation
+            const features = document.getElementById('features');
+            if (features) {
+                features.addEventListener('input', validateFeatures);
+                features.addEventListener('blur', validateFeatures);
+            }
+
+            // Description validation
+            const description = document.getElementById('description');
+            if (description) {
+                description.addEventListener('input', validateDescription);
+                description.addEventListener('blur', validateDescription);
             }
         }
 
-        // Validate quantity field
-        function validateQuantity() {
-            const quantity = document.getElementById('quantity').value.trim();
-            const quantityValue = parseInt(quantity);
-            const quantityGroup = document.getElementById('quantity').closest('.form-group');
-            const quantityErrorMsg = quantityGroup.querySelector('.error-message');
+        // Individual field validation functions
+        function validateProductName() {
+            const productName = document.getElementById('productName');
+            const productNameGroup = productName.closest('.form-group');
+            const errorMsg = productNameGroup.querySelector('.error-message');
+            const value = productName.value.trim();
 
-            if (!quantity || isNaN(quantityValue) || quantityValue < 0 || !Number.isInteger(parseFloat(quantity))) {
-                quantityGroup.classList.add('error');
-                if (!quantity || isNaN(quantityValue)) {
-                    quantityErrorMsg.textContent = 'Stock quantity is required';
-                } else if (quantityValue < 0) {
-                    quantityErrorMsg.textContent = 'Stock quantity cannot be negative';
-                } else if (!Number.isInteger(parseFloat(quantity))) {
-                    quantityErrorMsg.textContent = 'Stock quantity must be a whole number';
-                }
-                quantityErrorMsg.style.display = 'block';
+            if (!value) {
+                showFieldError(productNameGroup, errorMsg, 'Product name is required');
+                return false;
+            } else if (value.length < 3) {
+                showFieldError(productNameGroup, errorMsg, 'Product name must be at least 3 characters long');
+                return false;
+            } else if (value.length > 100) {
+                showFieldError(productNameGroup, errorMsg, 'Product name cannot exceed 100 characters');
+                return false;
+            } else if (!/^[a-zA-Z0-9\s\-_&().,]+$/.test(value)) {
+                showFieldError(productNameGroup, errorMsg, 'Product name contains invalid characters');
                 return false;
             } else {
-                quantityGroup.classList.remove('error');
-                quantityErrorMsg.style.display = 'none';
+                hideFieldError(productNameGroup, errorMsg);
                 return true;
             }
         }
 
+        function validateBrand() {
+            const brand = document.getElementById('brand');
+            const brandGroup = brand.closest('.form-group');
+            const errorMsg = brandGroup.querySelector('.error-message');
+            const value = brand.value.trim();
+
+            if (!value) {
+                showFieldError(brandGroup, errorMsg, 'Brand name is required');
+                return false;
+            } else if (value.length < 2) {
+                showFieldError(brandGroup, errorMsg, 'Brand name must be at least 2 characters long');
+                return false;
+            } else if (value.length > 50) {
+                showFieldError(brandGroup, errorMsg, 'Brand name cannot exceed 50 characters');
+                return false;
+            } else if (!/^[a-zA-Z0-9\s\-_&().,]+$/.test(value)) {
+                showFieldError(brandGroup, errorMsg, 'Brand name contains invalid characters');
+                return false;
+            } else {
+                hideFieldError(brandGroup, errorMsg);
+                return true;
+            }
+        }
+
+        function validateCategory() {
+            const category = document.getElementById('category');
+            const categoryGroup = category.closest('.form-group');
+            const errorMsg = categoryGroup.querySelector('.error-message');
+
+            if (!category.value.trim()) {
+                showFieldError(categoryGroup, errorMsg, 'Please select a category');
+                return false;
+            } else {
+                hideFieldError(categoryGroup, errorMsg);
+                return true;
+            }
+        }
+
+        function validateQuantity() {
+            const quantity = document.getElementById('quantity');
+            const quantityGroup = quantity.closest('.form-group');
+            const errorMsg = quantityGroup.querySelector('.error-message');
+            const value = quantity.value.trim();
+
+            if (!value) {
+                showFieldError(quantityGroup, errorMsg, 'Stock quantity is required');
+                return false;
+            }
+
+            const quantityValue = parseInt(value);
+            if (isNaN(quantityValue)) {
+                showFieldError(quantityGroup, errorMsg, 'Please enter a valid number');
+                return false;
+            } else if (quantityValue < 0) {
+                showFieldError(quantityGroup, errorMsg, 'Stock quantity cannot be negative');
+                return false;
+            } else if (!Number.isInteger(parseFloat(value))) {
+                showFieldError(quantityGroup, errorMsg, 'Stock quantity must be a whole number');
+                return false;
+            } else if (quantityValue > 10000) {
+                showFieldError(quantityGroup, errorMsg, 'Stock quantity cannot exceed 10,000');
+                return false;
+            } else {
+                hideFieldError(quantityGroup, errorMsg);
+                return true;
+            }
+        }
+
+        function validateRegularPrice() {
+            const regularPrice = document.getElementById('regularPrice');
+            const regularPriceGroup = regularPrice.closest('.form-group');
+            const errorMsg = regularPriceGroup.querySelector('.error-message');
+            const value = regularPrice.value.trim();
+
+            if (!value) {
+                showFieldError(regularPriceGroup, errorMsg, 'Regular price is required');
+                return false;
+            }
+
+            const priceValue = parseFloat(value);
+            if (isNaN(priceValue)) {
+                showFieldError(regularPriceGroup, errorMsg, 'Please enter a valid price');
+                return false;
+            } else if (priceValue <= 0) {
+                showFieldError(regularPriceGroup, errorMsg, 'Price must be greater than 0');
+                return false;
+            } else if (priceValue > 1000000) {
+                showFieldError(regularPriceGroup, errorMsg, 'Price cannot exceed ₹10,00,000');
+                return false;
+            } else if (!/^\d+(\.\d{1,2})?$/.test(value)) {
+                showFieldError(regularPriceGroup, errorMsg, 'Price can have maximum 2 decimal places');
+                return false;
+            } else {
+                hideFieldError(regularPriceGroup, errorMsg);
+                return true;
+            }
+        }
+
+        function validateProductOffer() {
+            const productOffer = document.getElementById('productOffer');
+            const productOfferGroup = productOffer.closest('.form-group');
+            const errorMsg = productOfferGroup.querySelector('.error-message');
+            const value = productOffer.value.trim();
+
+            // Product offer is optional, so empty value is valid
+            if (!value) {
+                hideFieldError(productOfferGroup, errorMsg);
+                return true;
+            }
+
+            const offerValue = parseFloat(value);
+            if (isNaN(offerValue)) {
+                showFieldError(productOfferGroup, errorMsg, 'Please enter a valid offer percentage');
+                return false;
+            } else if (offerValue < 0) {
+                showFieldError(productOfferGroup, errorMsg, 'Offer percentage cannot be negative');
+                return false;
+            } else if (offerValue > 100) {
+                showFieldError(productOfferGroup, errorMsg, 'Offer percentage cannot exceed 100%');
+                return false;
+            } else if (!/^\d+(\.\d{1,2})?$/.test(value)) {
+                showFieldError(productOfferGroup, errorMsg, 'Offer can have maximum 2 decimal places');
+                return false;
+            } else {
+                hideFieldError(productOfferGroup, errorMsg);
+                return true;
+            }
+        }
+
+        function validateFeatures() {
+            const features = document.getElementById('features');
+            const featuresGroup = features.closest('.form-group');
+            const errorMsg = featuresGroup.querySelector('.error-message');
+            const value = features.value.trim();
+
+            if (!value) {
+                showFieldError(featuresGroup, errorMsg, 'Product features are required');
+                return false;
+            } else if (value.length < 10) {
+                showFieldError(featuresGroup, errorMsg, 'Features must be at least 10 characters long');
+                return false;
+            } else if (value.length > 500) {
+                showFieldError(featuresGroup, errorMsg, 'Features cannot exceed 500 characters');
+                return false;
+            } else {
+                hideFieldError(featuresGroup, errorMsg);
+                return true;
+            }
+        }
+
+        function validateDescription() {
+            const description = document.getElementById('description');
+            const descriptionGroup = description.closest('.form-group');
+            const errorMsg = descriptionGroup.querySelector('.error-message');
+            const value = description.value.trim();
+
+            if (!value) {
+                showFieldError(descriptionGroup, errorMsg, 'Product description is required');
+                return false;
+            } else if (value.length < 20) {
+                showFieldError(descriptionGroup, errorMsg, 'Description must be at least 20 characters long');
+                return false;
+            } else if (value.length > 2000) {
+                showFieldError(descriptionGroup, errorMsg, 'Description cannot exceed 2000 characters');
+                return false;
+            } else {
+                hideFieldError(descriptionGroup, errorMsg);
+                return true;
+            }
+        }
+
+        // Helper functions for showing/hiding field errors
+        function showFieldError(fieldGroup, errorElement, message) {
+            fieldGroup.classList.add('error');
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+        }
+
+        function hideFieldError(fieldGroup, errorElement) {
+            fieldGroup.classList.remove('error');
+            errorElement.style.display = 'none';
+        }
+
+        
         // Handle file selection
         function handleFileSelection(e) {
             const files = Array.from(e.target.files);
@@ -1172,148 +1448,34 @@
         function validateForm() {
             let isValid = true;
 
-            // Clear previous errors
-            document.querySelectorAll('.form-group').forEach(group => {
-                group.classList.remove('error');
-                const errorMsg = group.querySelector('.error-message');
-                if (errorMsg) {
-                    errorMsg.style.display = 'none';
-                }
-            });
+            // Run all individual field validations
+            if (!validateProductName()) isValid = false;
+            if (!validateBrand()) isValid = false;
+            if (!validateCategory()) isValid = false;
+            if (!validateRegularPrice()) isValid = false;
+            if (!validateQuantity()) isValid = false;
+            if (!validateFeatures()) isValid = false;
+            if (!validateDescription()) isValid = false;
+            if (!validateProductOffer()) isValid = false;
 
-            // Validate Product Name
-            const productName = document.getElementById('productName');
-            const productNameGroup = productName.closest('.form-group');
-            const productNameError = productNameGroup.querySelector('.error-message');
-            if (!productName.value.trim()) {
-                productNameGroup.classList.add('error');
-                productNameError.textContent = 'Product name is required';
-                productNameError.style.display = 'block';
-                isValid = false;
-            }
-
-            // Validate Brand
-            const brand = document.getElementById('brand');
-            const brandGroup = brand.closest('.form-group');
-            const brandError = brandGroup.querySelector('.error-message');
-            if (!brand.value.trim()) {
-                brandGroup.classList.add('error');
-                brandError.textContent = 'Brand is required';
-                brandError.style.display = 'block';
-                isValid = false;
-            }
-
-            // Validate Category
-            const category = document.getElementById('category');
-            const categoryGroup = category.closest('.form-group');
-            const categoryError = categoryGroup.querySelector('.error-message');
-            if (!category.value.trim()) {
-                categoryGroup.classList.add('error');
-                categoryError.textContent = 'Please select a category';
-                categoryError.style.display = 'block';
-                isValid = false;
-            }
-
-            // Validate Regular Price
-            const regularPrice = document.getElementById('regularPrice');
-            const regularPriceGroup = regularPrice.closest('.form-group');
-            const regularPriceError = regularPriceGroup.querySelector('.error-message');
-            const regularPriceValue = parseFloat(regularPrice.value);
-            if (!regularPrice.value.trim()) {
-                regularPriceGroup.classList.add('error');
-                regularPriceError.textContent = 'Regular price is required';
-                regularPriceError.style.display = 'block';
-                isValid = false;
-            } else if (isNaN(regularPriceValue) || regularPriceValue <= 0) {
-                regularPriceGroup.classList.add('error');
-                regularPriceError.textContent = 'Please enter a valid price greater than 0';
-                regularPriceError.style.display = 'block';
-                isValid = false;
-            }
-
-            // Validate Sale Price
+            // Validate sale price (auto-calculated field)
             const salePrice = document.getElementById('salePrice');
             const salePriceGroup = salePrice.closest('.form-group');
             const salePriceError = salePriceGroup.querySelector('.error-message');
             const salePriceValue = parseFloat(salePrice.value);
+            const regularPriceValue = parseFloat(document.getElementById('regularPrice').value);
+
             if (!salePrice.value.trim()) {
-                salePriceGroup.classList.add('error');
-                salePriceError.textContent = 'Sale price is required';
-                salePriceError.style.display = 'block';
+                showFieldError(salePriceGroup, salePriceError, 'Sale price is required (auto-calculated)');
                 isValid = false;
             } else if (isNaN(salePriceValue) || salePriceValue <= 0) {
-                salePriceGroup.classList.add('error');
-                salePriceError.textContent = 'Please enter a valid sale price greater than 0';
-                salePriceError.style.display = 'block';
+                showFieldError(salePriceGroup, salePriceError, 'Invalid sale price calculation');
                 isValid = false;
-            } else if (salePriceValue > regularPriceValue) {
-                salePriceGroup.classList.add('error');
-                salePriceError.textContent = 'Sale price cannot be higher than regular price';
-                salePriceError.style.display = 'block';
+            } else if (salePriceValue > regularPriceValue && regularPriceValue > 0) {
+                showFieldError(salePriceGroup, salePriceError, 'Sale price cannot be higher than regular price');
                 isValid = false;
-            }
-
-            // Validate Quantity
-            const quantity = document.getElementById('quantity');
-            const quantityGroup = quantity.closest('.form-group');
-            const quantityError = quantityGroup.querySelector('.error-message');
-            const quantityValue = parseInt(quantity.value);
-            if (!quantity.value.trim()) {
-                quantityGroup.classList.add('error');
-                quantityError.textContent = 'Stock quantity is required';
-                quantityError.style.display = 'block';
-                isValid = false;
-            } else if (isNaN(quantityValue) || quantityValue < 0 || !Number.isInteger(parseFloat(quantity.value))) {
-                quantityGroup.classList.add('error');
-                if (isNaN(quantityValue)) {
-                    quantityError.textContent = 'Please enter a valid stock quantity';
-                } else if (quantityValue < 0) {
-                    quantityError.textContent = 'Stock quantity cannot be negative';
-                } else if (!Number.isInteger(parseFloat(quantity.value))) {
-                    quantityError.textContent = 'Stock quantity must be a whole number';
-                }
-                quantityError.style.display = 'block';
-                isValid = false;
-            }
-
-            // Validate Description
-            const description = document.getElementById('description');
-            const descriptionGroup = description.closest('.form-group');
-            const descriptionError = descriptionGroup.querySelector('.error-message');
-            if (!description.value.trim()) {
-                descriptionGroup.classList.add('error');
-                descriptionError.textContent = 'Product description is required';
-                descriptionError.style.display = 'block';
-                isValid = false;
-            }
-
-            // Validate Features
-            const features = document.getElementById('features');
-            const featuresGroup = features.closest('.form-group');
-            const featuresError = featuresGroup.querySelector('.error-message');
-            if (!features.value.trim()) {
-                featuresGroup.classList.add('error');
-                featuresError.textContent = 'Product features are required';
-                featuresError.style.display = 'block';
-                isValid = false;
-            }
-
-            // Validate Product Offer (optional field)
-            const productOffer = document.getElementById('productOffer');
-            const productOfferGroup = productOffer.closest('.form-group');
-            const productOfferError = productOfferGroup.querySelector('.error-message');
-            const productOfferValue = productOffer.value.trim() ? parseFloat(productOffer.value) : null;
-            if (productOfferValue !== null && (isNaN(productOfferValue) || productOfferValue < 0 || productOfferValue > 100)) {
-                productOfferGroup.classList.add('error');
-                if (isNaN(productOfferValue)) {
-                    productOfferError.textContent = 'Please enter a valid offer percentage';
-                } else if (productOfferValue < 0) {
-                    productOfferError.textContent = 'Offer percentage cannot be negative';
-                } else if (productOfferValue > 100) {
-                    productOfferError.textContent = 'Offer percentage cannot exceed 100%';
-                }
-                productOfferError.style.display = 'block';
-                isValid = false;
+            } else {
+                hideFieldError(salePriceGroup, salePriceError);
             }
 
             // Validate Images
@@ -1329,6 +1491,33 @@
             }
 
             console.log(`Form validation result: ${isValid}`);
+            
+            // Show summary of validation errors if any
+            if (!isValid) {
+                const errorFields = document.querySelectorAll('.form-group.error');
+                const errorCount = errorFields.length;
+                
+                if (errorCount > 0) {
+                    // Scroll to first error
+                    errorFields[0].scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'center' 
+                    });
+                    
+                    // Show summary toast
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Validation Errors',
+                        text: `Please fix ${errorCount} field error(s) before submitting.`,
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 4000,
+                        timerProgressBar: true
+                    });
+                }
+            }
+            
             return isValid;
         }
 

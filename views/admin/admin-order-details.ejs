@@ -129,30 +129,43 @@
                         </div>
                         <% } %>
                         <%
+                            // Check if entire order is cancelled
+                            const isEntireOrderCancelled = order.status === 'Cancelled';
+                            
                             // Calculate current total (same as user order details page Order Summary card)
                             const activeItems = order.orderedItems.filter(item => item.status === 'Active');
                             const returnRequestItems = order.orderedItems.filter(item => item.status === 'Return Request');
                             const includedItems = [...activeItems, ...returnRequestItems];
                             
                             let amountAfterDiscount = 0;
-                            includedItems.forEach(item => {
-                                amountAfterDiscount += item.totalPrice;
-                            });
+                            let currentTotal = 0;
                             
-                            let currentTotal = amountAfterDiscount;
-                            if (includedItems.length > 0) {
-                                currentTotal += order.shippingCharges;
-                            }
-                            
-                            // Subtract coupon discount if applied
-                            if (order.couponApplied && order.couponDiscount > 0) {
-                                currentTotal -= order.couponDiscount;
+                            if (!isEntireOrderCancelled) {
+                                includedItems.forEach(item => {
+                                    amountAfterDiscount += item.totalPrice;
+                                });
+                                
+                                currentTotal = amountAfterDiscount;
+                                if (includedItems.length > 0) {
+                                    currentTotal += order.shippingCharges;
+                                }
+                                
+                                // Subtract coupon discount if applied
+                                if (order.couponApplied && order.couponDiscount > 0) {
+                                    currentTotal -= order.couponDiscount;
+                                }
                             }
                         %>
                         <div class="detail-item">
                             <span class="detail-label" style="font-weight: 700;">Total Amount</span>
-                            <span class="detail-value" style="font-weight: 700; color: #059669; font-size: 1.1em;">₹<%= currentTotal.toLocaleString() %></span>
+                            <span class="detail-value" style="font-weight: 700; color: <% if (isEntireOrderCancelled) { %>#dc2626<% } else { %>#059669<% } %>; font-size: 1.1em;">₹<%= currentTotal.toLocaleString() %></span>
                         </div>
+                        <% if (isEntireOrderCancelled) { %>
+                        <div style="margin-top: 1rem; padding: 0.75rem; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; font-size: 0.875rem; color: #991b1b;">
+                            <i class="fas fa-times-circle" style="color: #dc2626; margin-right: 0.5rem;"></i>
+                            <strong>Order Cancelled:</strong> This entire order has been cancelled by the customer. All amounts have been set to zero and refunds have been processed.
+                        </div>
+                        <% } %>
                     </div>
                 </div>
 
