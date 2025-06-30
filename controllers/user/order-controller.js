@@ -419,12 +419,12 @@ const requestReturn = async (req, res) => {
       });
     }
 
-    // Check if return request already exists for entire order
-    if (order.status === 'Return Request' || order.status === 'Returned') {
-      console.log(`Return request already exists - Current status: ${order.status}`);
+    // Check if return request already exists for entire order or if return has been attempted
+    if (order.status === 'Return Request' || order.status === 'Returned' || order.returnAttempted) {
+      console.log(`Return request already exists or attempted - Current status: ${order.status}, Return attempted: ${order.returnAttempted}`);
       return res.status(400).json({
         success: false,
-        message: 'Return request already exists for this order'
+        message: 'Return request has already been submitted for this order. Only one return attempt is allowed per order.'
       });
     }
 
@@ -452,10 +452,11 @@ const requestReturn = async (req, res) => {
       
       for (const returnItem of items) {
         const orderItem = order.orderedItems.id(returnItem.itemId);
-        if (orderItem && orderItem.status === 'Active') {
+        if (orderItem && orderItem.status === 'Active' && !orderItem.returnAttempted) {
           orderItem.status = 'Return Request';
           orderItem.returnReason = returnItem.reason || reason || 'Return requested by customer';
           orderItem.returnRequestedAt = new Date();
+          orderItem.returnAttempted = true; // Mark that return has been attempted
           returnedItemsCount++;
           
           if (returnDescription) {
@@ -464,6 +465,8 @@ const requestReturn = async (req, res) => {
           returnDescription += orderItem.product.productName;
           
           console.log(`Item marked for return: ${orderItem.product.productName}`);
+        } else if (orderItem && orderItem.returnAttempted) {
+          console.log(`Item return already attempted: ${orderItem.product.productName}`);
         }
       }
 
@@ -516,6 +519,14 @@ const requestReturn = async (req, res) => {
       order.status = 'Return Request';
       order.returnReason = reason || 'Return requested by customer';
       order.returnRequestedAt = new Date();
+      order.returnAttempted = true; // Mark that return has been attempted
+      
+      // Also mark all items as return attempted
+      order.orderedItems.forEach(item => {
+        if (item.status === 'Active') {
+          item.returnAttempted = true;
+        }
+      });
 
       // Add to order timeline
       order.orderTimeline.push({
@@ -615,25 +626,19 @@ const requestIndividualItemReturn = async (req, res) => {
     const userId = req.session.userId;
     const { reason } = req.body;
 
-    console.log(`Individual item return request - OrderId: ${orderId}, ItemId: ${itemId}, UserId: ${userId}`);
-
     // Get order with populated product data
     const order = await Order.findOne({ orderId, userId })
       .populate('orderedItems.product');
 
     if (!order) {
-      console.log(`Order not found - OrderId: ${orderId}, UserId: ${userId}`);
       return res.status(404).json({
         success: false,
         message: 'Order not found'
       });
     }
 
-    console.log(`Order found - Status: ${order.status}, Payment Status: ${order.paymentStatus}`);
-
     // Check if order can be returned (only delivered orders can be returned)
     if (order.status !== 'Delivered') {
-      console.log(`Order cannot be returned - Current status: ${order.status}`);
       return res.status(400).json({
         success: false,
         message: 'Only delivered orders can be returned'
@@ -643,21 +648,17 @@ const requestIndividualItemReturn = async (req, res) => {
     // Find the specific item
     const orderItem = order.orderedItems.id(itemId);
     if (!orderItem) {
-      console.log(`Order item not found - ItemId: ${itemId}`);
       return res.status(404).json({
         success: false,
         message: 'Order item not found'
       });
     }
 
-    console.log(`Order item found - Status: ${orderItem.status}, Product: ${orderItem.product.productName}`);
-
     // Check if item can be returned
-    if (orderItem.status !== 'Active') {
-      console.log(`Item cannot be returned - Current status: ${orderItem.status}`);
+    if (orderItem.status !== 'Active' || orderItem.returnAttempted) {
       return res.status(400).json({
         success: false,
-        message: 'Item is already cancelled, returned, or has a return request'
+        message: 'Item is already cancelled, returned, has a return request, or return has already been attempted. Only one return attempt is allowed per item.'
       });
     }
 
@@ -665,9 +666,7 @@ const requestIndividualItemReturn = async (req, res) => {
     const deliveryDate = order.orderTimeline.find(timeline => timeline.status === 'Delivered')?.timestamp;
     if (deliveryDate) {
       const daysSinceDelivery = Math.floor((new Date() - new Date(deliveryDate)) / (1000 * 60 * 60 * 24));
-      console.log(`Days since delivery: ${daysSinceDelivery}`);
       if (daysSinceDelivery > 7) {
-        console.log('Return window has expired');
         return res.status(400).json({
           success: false,
           message: 'Return window has expired. Returns are only allowed within 7 days of delivery.'
@@ -679,8 +678,7 @@ const requestIndividualItemReturn = async (req, res) => {
     orderItem.status = 'Return Request';
     orderItem.returnReason = reason || 'Return requested by customer';
     orderItem.returnRequestedAt = new Date();
-
-    console.log(`Item marked for return: ${orderItem.product.productName}`);
+    orderItem.returnAttempted = true; // Mark that return has been attempted
 
     // Add to order timeline
     order.orderTimeline.push({
@@ -690,7 +688,6 @@ const requestIndividualItemReturn = async (req, res) => {
     });
 
     await order.save();
-    console.log('Order saved successfully');
 
     res.status(200).json({
       success: true,

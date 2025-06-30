@@ -186,8 +186,7 @@ const verifyOtp = async (req, res) => {
   try {
     const { otp } = req.body;
 
-    console.log(req.session.userOtp);
-
+    
     if (otp === req.session.userOtp) {
       const user = req.session.userData;
       
@@ -238,10 +237,7 @@ const verifyOtp = async (req, res) => {
             // Create referral reward coupon for the referrer
             await createReferralRewardCoupon(referrer._id, user.fullname);
             
-            console.log(`Referral processed: ${referrer.fullname} earned ₹150, ${user.fullname} earned ₹50`);
-          } else {
-            console.log(`Invalid referral code provided: ${user.referredByCode}`);
-          }
+            }
         } catch (referralError) {
           console.error("Error processing referral:", referralError);
           // Don't fail the signup process if referral processing fails
@@ -637,8 +633,7 @@ const resetPassword = async (req, res) => {
 
     const { _id } = await User.findOne({ email });
 
-    console.log(_id)
-
+    
     // 1. Validate passwords match
     if (newPassword !== confirmPassword) {
       return res.status(400).json({

@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Order = require('../../models/order-schema');
 const User = require('../../models/user-schema');
 const Product = require('../../models/product-schema');
@@ -184,6 +185,14 @@ const approveReturnRequest = async (req, res) => {
   try {
     const orderId = req.params.id;
     const { adminNote } = req.body;
+    
+    // Validate order ID format
+    if (!orderId || !mongoose.Types.ObjectId.isValid(orderId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid order ID format'
+      });
+    }
 
     const order = await Order.findById(orderId)
       .populate('userId', 'fullname email')
@@ -254,7 +263,6 @@ const approveReturnRequest = async (req, res) => {
               item.product._id,
               { $inc: { quantity: item.quantity } }
             );
-            // Product stock restored successfully
           } catch (stockError) {
             console.error('Error restoring product stock:', stockError);
           }
@@ -292,9 +300,8 @@ const approveReturnRequest = async (req, res) => {
             item.product._id,
             { $inc: { quantity: item.quantity } }
           );
-          // Product stock restored successfully
         } catch (stockError) {
-          console.error('Error restoring product stock:', stockError);
+          console.error('Error restoring individual item stock:', stockError);
         }
       }
       
@@ -325,8 +332,6 @@ const approveReturnRequest = async (req, res) => {
         `Refund for returned items: ${returnedItemsDescription} (Order: ${order.orderId})`,
         order.orderId
       );
-      
-      // Refund amount added to wallet successfully
     } catch (walletError) {
       console.error('Error adding money to wallet:', walletError);
       // Continue with order update even if wallet fails
@@ -346,7 +351,8 @@ const approveReturnRequest = async (req, res) => {
     console.error('Error approving return request:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to approve return request'
+      message: 'Failed to approve return request',
+      error: error.message
     });
   }
 };
@@ -414,6 +420,7 @@ const rejectReturnRequest = async (req, res) => {
           item.status = 'Active'; // Reset to active status
           item.returnRejectedAt = new Date();
           item.rejectionReason = rejectionReason;
+          // Keep returnAttempted as true to prevent future return attempts
         }
       }
       
@@ -425,7 +432,6 @@ const rejectReturnRequest = async (req, res) => {
           `Refund for rejected entire order return (Order: ${order.orderId})`,
           order.orderId
         );
-        console.log(`Refund of ₹${entireOrderRefundAmount} added to wallet for rejected entire order`);
       } catch (walletError) {
         console.error('Error adding entire order rejection refund to wallet:', walletError);
       }
@@ -439,6 +445,7 @@ const rejectReturnRequest = async (req, res) => {
         item.status = 'Active'; // Reset to active status
         item.returnRejectedAt = new Date();
         item.rejectionReason = rejectionReason;
+        // Keep returnAttempted as true to prevent future return attempts
         
         // Calculate refund amount for rejected item (if business logic requires refund on rejection)
         const itemRefundAmount = item.totalPrice || (item.price * item.quantity);
@@ -463,7 +470,6 @@ const rejectReturnRequest = async (req, res) => {
           `Refund for rejected return items: ${rejectedItemsDescription} (Order: ${order.orderId})`,
           order.orderId
         );
-        console.log(`Refund of ₹${rejectionRefundAmount} added to wallet for rejected items`);
       } catch (walletError) {
         console.error('Error adding rejection refund to wallet:', walletError);
       }

@@ -824,30 +824,18 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <%
-                                            // Calculate current total (same as order details page Total Amount field)
-                                            const activeItems = order.orderedItems.filter(item => item.status === 'Active');
-                                            const returnRequestItems = order.orderedItems.filter(item => item.status === 'Return Request');
-                                            const includedItems = [...activeItems, ...returnRequestItems];
-                                            
-                                            let amountAfterDiscount = 0;
-                                            includedItems.forEach(item => {
-                                                amountAfterDiscount += item.totalPrice;
-                                            });
-                                            
-                                            let currentTotal = amountAfterDiscount;
-                                            if (includedItems.length > 0) {
-                                                currentTotal += order.shippingCharges;
-                                            }
-                                        %>
                                         <div class="amount-breakdown">
                                             <div class="subtotal">
                                                 <small class="text-muted">
-                                                    Total Amount
+                                                    <% if (order.returnType === 'individual') { %>
+                                                        Return Amount
+                                                    <% } else { %>
+                                                        Total Amount
+                                                    <% } %>
                                                 </small>
                                             </div>
                                             <div class="total-price">
-                                                <strong>₹<%= currentTotal.toFixed(2) %></strong>
+                                                <strong>₹<%= order.returnAmount ? order.returnAmount.toFixed(2) : '0.00' %></strong>
                                             </div>
                                         </div>
                                     </td>

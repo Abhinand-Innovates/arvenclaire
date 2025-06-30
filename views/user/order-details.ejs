@@ -621,19 +621,43 @@
                                     <% } %>
                                 </div>
                                 <% if (item.status === 'Active') { %>
+                                    <%
+                                        // Check if any item in the order has a return request
+                                        const hasAnyReturnRequest = order.orderedItems.some(orderItem => orderItem.status === 'Return Request');
+                                        
+                                        // Check if this specific item has already been processed for return (approved, rejected, or attempted)
+                                        const itemAlreadyProcessedForReturn = item.returnApprovedAt || item.returnRejectedAt || item.returnAttempted;
+                                    %>
                                     <div class="item-actions">
-                                        <% if (!['Shipped', 'Delivered', 'Return Request', 'Returned', 'Cancelled'].includes(order.status) && 
-                                               ((order.paymentMethod === 'Cash on Delivery') || 
-                                                (order.paymentMethod !== 'Cash on Delivery' && order.paymentStatus === 'Completed'))) { %>
+                                        <% if ((order.status === 'Delivered' || order.status === 'Partially Returned' || hasAnyReturnRequest) && !itemAlreadyProcessedForReturn) { %>
+                                            <!-- For delivered, partially returned orders, or orders with any return requests, only show return button if item hasn't been processed -->
+                                            <button class="btn-return-item" onclick="openIndividualReturnModal('<%= item._id %>', '<%= item.product.productName %>')">
+                                                <i class="fas fa-undo"></i> Return
+                                            </button>
+                                        <% } else if (!['Shipped', 'Return Request', 'Returned', 'Cancelled', 'Partially Returned'].includes(order.status) && 
+                                                     !itemAlreadyProcessedForReturn &&
+                                                     ((order.paymentMethod === 'Cash on Delivery') || 
+                                                      (order.paymentMethod !== 'Cash on Delivery' && order.paymentStatus === 'Completed'))) { %>
+                                            <!-- For non-delivered orders without any return requests, show cancel button if item hasn't been processed -->
                                             <button class="btn-cancel-item" onclick="cancelOrderItem('<%= order.orderId %>', '<%= item._id %>')">
                                                 <i class="fas fa-times"></i> Cancel
                                             </button>
                                         <% } %>
                                         
-                                        <% if (order.status === 'Delivered') { %>
-                                            <button class="btn-return-item" onclick="openIndividualReturnModal('<%= item._id %>', '<%= item.product.productName %>')">
-                                                <i class="fas fa-undo"></i> Return
-                                            </button>
+                                        <% if (itemAlreadyProcessedForReturn) { %>
+                                            <!-- Show status for items that have already been processed for return -->
+                                            <div class="item-status-info">
+                                                <% if (item.returnApprovedAt) { %>
+                                                    <span class="status-badge status-completed">Return Processed</span>
+                                                    <small class="text-success">Return was approved</small>
+                                                <% } else if (item.returnRejectedAt) { %>
+                                                    <span class="status-badge status-rejected">Return Rejected</span>
+                                                    <small class="text-muted">Return was rejected - no further returns allowed</small>
+                                                <% } else if (item.returnAttempted && item.status === 'Active') { %>
+                                                    <span class="status-badge status-rejected">Return Not Available</span>
+                                                    <small class="text-muted">Return attempt already made - only one return allowed per item</small>
+                                                <% } %>
+                                            </div>
                                         <% } %>
                                     </div>
                                 <% } else if (item.status === 'Return Request') { %>
@@ -869,7 +893,13 @@
                 <% } %>
 
                 <!-- Cancel Order Button / Return Button -->
-                <% if (order.status === 'Delivered') { %>
+                <%
+                    // Check if any item in the order has a return request for order summary button logic
+                    const hasAnyReturnRequestForSummary = order.orderedItems.some(orderItem => orderItem.status === 'Return Request');
+                    // Check if there are any items that can still be returned (Active and not attempted)
+                    const hasReturnableItems = order.orderedItems.some(orderItem => orderItem.status === 'Active' && !orderItem.returnAttempted);
+                %>
+                <% if ((order.status === 'Delivered' || order.status === 'Partially Returned' || hasAnyReturnRequestForSummary) && hasReturnableItems) { %>
                     <button class="btn-return-order" onclick="openReturnModal()">
                         <i class="fas fa-undo"></i>
                         Return Order
@@ -1066,7 +1096,7 @@
                     </h4>
 
                     <% 
-                    const returnableItems = order.orderedItems.filter(item => item.status === 'Active');
+                    const returnableItems = order.orderedItems.filter(item => item.status === 'Active' && !item.returnAttempted);
                     returnableItems.forEach((item, index) => { 
                     %>
                         <div class="return-product-item" data-item-id="<%= item._id %>">
