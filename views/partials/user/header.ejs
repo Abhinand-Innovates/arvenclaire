@@ -534,15 +534,24 @@
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-light py-3 shadow-sm fixed-top" style="background-color: #ffffff !important;">
         <div class="container">
-            <a class="navbar-brand" href="/dashboard"
-                style="font-family: 'Times New Roman', Times, serif;">ARVENCLAIRE</a>
+            <% if (typeof user !== 'undefined' && user) { %>
+                <a class="navbar-brand" href="/dashboard"
+                    style="font-family: 'Times New Roman', Times, serif;">ARVENCLAIRE</a>
+            <% } else { %>
+                <a class="navbar-brand" href="/"
+                    style="font-family: 'Times New Roman', Times, serif;">ARVENCLAIRE</a>
+            <% } %>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link active" href="/dashboard">Home</a>
+                        <% if (typeof user !== 'undefined' && user) { %>
+                            <a class="nav-link active" href="/dashboard">Home</a>
+                        <% } else { %>
+                            <a class="nav-link active" href="/">Home</a>
+                        <% } %>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="/shop">Shop</a>
@@ -696,6 +705,7 @@
                 const linkPath = new URL(link.href).pathname;
                 if (linkPath === currentPath ||
                     (currentPath === '/dashboard' && linkPath === '/dashboard') ||
+                    (currentPath === '/' && linkPath === '/') ||
                     (currentPath === '/shop' && linkPath === '/shop') ||
                     (currentPath === '/about' && linkPath === '/about') ||
                     (currentPath === '/contact' && linkPath === '/contact') ||
@@ -1079,3 +1089,5 @@
             }
         }
     </script>
+    </body>
+    </html>
