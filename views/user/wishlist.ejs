@@ -180,23 +180,64 @@
         }
 
         .browse-btn {
-            background: var(--text-primary);
+            background: linear-gradient(135deg, #000000 0%, #333333 50%, #000000 100%);
             color: white;
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1rem;
             text-decoration: none;
-            font-weight: 500;
             display: inline-flex;
             align-items: center;
-            gap: 0.5rem;
-            transition: all 0.3s ease;
-            border: 1px solid var(--text-primary);
+            justify-content: center;
+            gap: 0.75rem;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            position: relative;
+            overflow: hidden;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            min-width: 200px;
+        }
+
+        .browse-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .browse-btn:hover::before {
+            left: 100%;
         }
 
         .browse-btn:hover {
-            background: transparent;
-            color: var(--text-primary);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.25);
+            color: white;
             text-decoration: none;
+            background: linear-gradient(135deg, #111111 0%, #444444 50%, #111111 100%);
+        }
+
+        .browse-btn:active {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .browse-btn i {
+            font-size: 1.1rem;
+            color: white !important;
+            transition: transform 0.3s ease;
+        }
+
+        .browse-btn:hover i {
+            transform: scale(1.1);
+            color: white !important;
         }
 
         /* Mobile Responsive */
@@ -227,6 +268,9 @@
             .browse-btn {
                 width: 100%;
                 justify-content: center;
+                padding: 1.25rem 2rem;
+                font-size: 1.1rem;
+                min-width: auto;
             }
 
             .empty-state {

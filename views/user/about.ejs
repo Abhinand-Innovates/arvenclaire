@@ -1,0 +1,955 @@
+<%- include('../partials/user/header') %>
+
+    <style>
+        /* Modern About Page Styling - Scoped to avoid header conflicts */
+        .about-page {
+            background-color: #ffffff;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333333;
+        }
+
+        .about-page-content {
+            margin-top: 80px;
+        }
+
+        .about-hero {
+            background: linear-gradient(135deg, #000000 0%, #333333 100%);
+            color: white;
+            padding: 100px 0;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .about-hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/><circle cx="10" cy="60" r="0.5" fill="white" opacity="0.1"/><circle cx="90" cy="40" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+            opacity: 0.3;
+        }
+
+        .about-hero h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            position: relative;
+            z-index: 2;
+            letter-spacing: -0.02em;
+        }
+
+        .about-hero p {<div class="story-image slide-in-right visible">
+  <video autoplay muted loop playsinline class="full-width-video" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+    <source src="../../assets/Logo_Video_Ready_Arvenclaire.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+  <div class="story-image-placeholder" style="display: none;">
+    <i class="bi bi-image"></i>
+    <p>Our Story Video</p>
+  </div>
+</div>
+
+            font-size: 1.25rem;
+            margin-bottom: 0;
+            position: relative;
+            z-index: 2;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .about-section {
+            padding: 80px 0;
+        }
+
+        .about-section:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #000000;
+            margin-bottom: 3rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 3px;
+            background: linear-gradient(90deg, #000000, #666666);
+            border-radius: 2px;
+        }
+
+        /* Story Section with Image */
+        .story-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: stretch;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .story-content {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: #555555;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .story-content p {
+            margin-bottom: 1.5rem;
+        }
+
+        .story-image {
+            position: relative;
+            border-radius: 0;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            flex: 1;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        .story-image:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+        }
+
+        .story-image img,
+        .story-image video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            border-radius: 0;
+            background: #000000;
+            margin: 0;
+            padding: 0;
+            transform: none;
+            transition: transform 0.3s ease;
+        }
+
+        .story-image:hover img,
+        .story-image:hover video {
+            transform: scale(1.02);
+        }
+
+        .story-image-placeholder {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #666666;
+            font-size: 1.1rem;
+            border-radius: 0;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .story-image-placeholder i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        /* Specific styling for the full-width video */
+        .full-width-video {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            border: none !important;
+            border-radius: 0 !important;
+            transform: none !important;
+        }
+
+        .values-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .value-card {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            transition: all 0.3s ease;
+            border: 1px solid #f0f0f0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .value-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #000000, #666666);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .value-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .value-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .value-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #000000, #333333);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 2rem;
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .value-card:hover .value-icon {
+            transform: scale(1.1);
+            background: linear-gradient(135deg, #333333, #000000);
+        }
+
+        .value-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #000000;
+            margin-bottom: 1rem;
+        }
+
+        .value-description {
+            color: #666666;
+            line-height: 1.6;
+        }
+
+        /* Features Section */
+        .features-section {
+            background: linear-gradient(135deg, #000000 0%, #333333 100%);
+            color: white;
+            padding: 80px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .features-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23dots)"/></svg>');
+        }
+
+        .features-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 3rem;
+            text-align: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .features-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 3px;
+            background: linear-gradient(90deg, #ffffff, #cccccc);
+            border-radius: 2px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .feature-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .feature-item:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        }
+
+        .feature-icon {
+            width: 70px;
+            height: 70px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 1.8rem;
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .feature-item:hover .feature-icon {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        .feature-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 1rem;
+        }
+
+        .feature-description {
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        /* Services Section */
+        .services-section {
+            padding: 80px 0;
+            background: #f8f9fa;
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 3rem;
+            margin-top: 3rem;
+        }
+
+        .service-card {
+            background: white;
+            padding: 3rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            border: 1px solid #f0f0f0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .service-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #000000, #666666);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .service-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+        }
+
+        .service-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .service-icon {
+            width: 90px;
+            height: 90px;
+            background: linear-gradient(135deg, #000000, #333333);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 2rem;
+            font-size: 2.2rem;
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .service-card:hover .service-icon {
+            transform: scale(1.1) rotate(5deg);
+            background: linear-gradient(135deg, #333333, #000000);
+        }
+
+        .service-title {
+            font-size: 1.6rem;
+            font-weight: 600;
+            color: #000000;
+            margin-bottom: 1rem;
+        }
+
+        .service-description {
+            color: #666666;
+            line-height: 1.7;
+            margin-bottom: 1.5rem;
+        }
+
+        .service-features {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .service-features li {
+            padding: 0.5rem 0;
+            color: #555555;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .service-features li::before {
+            content: '✓';
+            color: #000000;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .cta-section {
+            background: #f8f9fa;
+            padding: 80px 0;
+            text-align: center;
+        }
+
+        .cta-content {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .cta-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #000000;
+            margin-bottom: 1rem;
+        }
+
+        .cta-description {
+            font-size: 1.1rem;
+            color: #666666;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #000000, #333333);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 50px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            color: white;
+            text-decoration: none;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: #000000;
+            padding: 15px 30px;
+            border: 2px solid #000000;
+            border-radius: 50px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1rem;
+        }
+
+        .btn-secondary:hover {
+            background: #000000;
+            color: white;
+            transform: translateY(-2px);
+            text-decoration: none;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 992px) {
+            .story-container {
+                grid-template-columns: 1fr;
+                gap: 3rem;
+            }
+
+            .story-image {
+                order: -1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .about-hero {
+                padding: 60px 0;
+            }
+
+            .about-hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .about-hero p {
+                font-size: 1.1rem;
+            }
+
+            .about-section,
+            .features-section,
+            .services-section {
+                padding: 60px 0;
+            }
+
+            .section-title,
+            .features-title {
+                font-size: 2rem;
+            }
+
+            .story-container {
+                gap: 2rem;
+            }
+
+            .story-image img,
+            .story-image video {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                margin: 0;
+                padding: 0;
+                transform: none;
+            }
+
+            .story-image:hover img,
+            .story-image:hover video {
+                transform: scale(1.02);
+            }
+
+            .story-image-placeholder {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+
+            .values-grid,
+            .features-grid,
+            .services-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .value-card,
+            .service-card {
+                padding: 2rem;
+            }
+
+            .cta-title {
+                font-size: 2rem;
+            }
+
+            .cta-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .btn-primary,
+            .btn-secondary {
+                width: 100%;
+                max-width: 300px;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .about-hero h1 {
+                font-size: 2rem;
+            }
+
+            .section-title,
+            .features-title {
+                font-size: 1.75rem;
+            }
+
+            .value-card,
+            .service-card {
+                padding: 1.5rem;
+            }
+
+            .story-image img,
+            .story-image video {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                margin: 0;
+                padding: 0;
+                transform: none;
+            }
+
+            .story-image:hover img,
+            .story-image:hover video {
+                transform: scale(1.02);
+            }
+
+            .story-image-placeholder {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+        }
+
+        /* Animation for scroll reveal */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .slide-in-left {
+            opacity: 0;
+            transform: translateX(-50px);
+            transition: all 0.6s ease;
+        }
+
+        .slide-in-left.visible {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .slide-in-right {
+            opacity: 0;
+            transform: translateX(50px);
+            transition: all 0.6s ease;
+        }
+
+        .slide-in-right.visible {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    </style>
+
+    <div class="about-page">
+        <div class="about-page-content">
+            <!-- Hero Section -->
+            <section class="about-hero">
+                <div class="container">
+                    <h1 class="fade-in">About Arvenclaire</h1>
+                    <p class="fade-in">Crafting timeless elegance through exceptional luxury watches since our inception
+                    </p>
+                </div>
+            </section>
+
+            <!-- Our Story Section with Image -->
+            <section class="about-section">
+                <div class="container">
+                    <h2 class="section-title fade-in">Our Story</h2>
+                    <div class="story-container">
+                        <div class="story-content slide-in-left">
+                            <p>
+                                Arvenclaire was born from a passion for precision, elegance, and timeless craftsmanship.
+                                Founded with the vision of bringing the world's finest luxury watches to discerning
+                                customers, we have established ourselves as a trusted destination for horological
+                                excellence.
+                            </p>
+                            <p>
+                                Our journey began with a simple belief: that a watch is more than just a timepiece—it's
+                                a statement of style, a symbol of achievement, and a companion for life's most precious
+                                moments. This philosophy drives everything we do, from curating our exceptional
+                                collection to providing unparalleled customer service.
+                            </p>
+                            <p>
+                                Today, Arvenclaire stands as a beacon of luxury and sophistication in the world of fine
+                                timepieces, serving customers who appreciate the artistry and heritage that goes into
+                                every watch we offer.
+                            </p>
+                        </div>
+                        <div class="story-image slide-in-right">
+                            <video autoplay muted loop playsinline
+                                onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                <source src="../../assets/Logo_Video_Ready_Arvenclaire.mp4" type="video/mp4">
+                                Your browser does not support the video tag.
+                            </video>
+
+                            <div class="story-image-placeholder" style="display: none;">
+                                <i class="bi bi-image"></i>
+                                <p>Our Story Video</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Our Values Section -->
+            <section class="about-section">
+                <div class="container">
+                    <h2 class="section-title fade-in">Our Values</h2>
+                    <div class="values-grid">
+                        <div class="value-card fade-in">
+                            <div class="value-icon">
+                                <i class="bi bi-gem"></i>
+                            </div>
+                            <h3 class="value-title">Excellence</h3>
+                            <p class="value-description">
+                                We are committed to offering only the finest luxury watches from the world's most
+                                prestigious brands, ensuring every piece meets our exacting standards of quality and
+                                craftsmanship.
+                            </p>
+                        </div>
+                        <div class="value-card fade-in">
+                            <div class="value-icon">
+                                <i class="bi bi-shield-check"></i>
+                            </div>
+                            <h3 class="value-title">Authenticity</h3>
+                            <p class="value-description">
+                                Every watch in our collection is guaranteed authentic, sourced directly from authorized
+                                dealers and manufacturers, giving you complete confidence in your purchase.
+                            </p>
+                        </div>
+                        <div class="value-card fade-in">
+                            <div class="value-icon">
+                                <i class="bi bi-heart"></i>
+                            </div>
+                            <h3 class="value-title">Service</h3>
+                            <p class="value-description">
+                                Our dedicated team of watch specialists provides personalized service, expert advice,
+                                and ongoing support to ensure your experience with us is exceptional from start to
+                                finish.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Website Features Section -->
+            <section class="features-section">
+                <div class="container">
+                    <h2 class="features-title fade-in">Why Choose Our Platform</h2>
+                    <div class="features-grid">
+                        <div class="feature-item fade-in">
+                            <div class="feature-icon">
+                                <i class="bi bi-shield-lock"></i>
+                            </div>
+                            <h3 class="feature-title">Secure Shopping</h3>
+                            <p class="feature-description">
+                                Advanced SSL encryption and secure payment gateways ensure your personal and financial
+                                information is always protected during transactions.
+                            </p>
+                        </div>
+                        <div class="feature-item fade-in">
+                            <div class="feature-icon">
+                                <i class="bi bi-truck"></i>
+                            </div>
+                            <h3 class="feature-title">Fast Delivery</h3>
+                            <p class="feature-description">
+                                Express shipping options with full insurance and tracking. Most orders are processed
+                                within 24 hours and delivered within 2-3 business days.
+                            </p>
+                        </div>
+                        <div class="feature-item fade-in">
+                            <div class="feature-icon">
+                                <i class="bi bi-headset"></i>
+                            </div>
+                            <h3 class="feature-title">24/7 Support</h3>
+                            <p class="feature-description">
+                                Our dedicated customer service team is available around the clock to assist with any
+                                questions, concerns, or technical support you may need.
+                            </p>
+                        </div>
+                        <div class="feature-item fade-in">
+                            <div class="feature-icon">
+                                <i class="bi bi-arrow-repeat"></i>
+                            </div>
+                            <h3 class="feature-title">Easy Returns</h3>
+                            <p class="feature-description">
+                                30-day hassle-free return policy. If you're not completely satisfied with your purchase,
+                                we'll make it right with free return shipping.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Services Section -->
+            <section class="services-section">
+                <div class="container">
+                    <h2 class="section-title fade-in">Our Services</h2>
+                    <div class="services-grid">
+                        <div class="service-card fade-in">
+                            <div class="service-icon">
+                                <i class="bi bi-search"></i>
+                            </div>
+                            <h3 class="service-title">Watch Authentication</h3>
+                            <p class="service-description">
+                                Every timepiece undergoes rigorous authentication by certified horologists to guarantee
+                                authenticity and quality.
+                            </p>
+                            <ul class="service-features">
+                                <li>Certified authentication process</li>
+                                <li>Detailed condition reports</li>
+                                <li>Authenticity certificates</li>
+                                <li>Expert verification</li>
+                            </ul>
+                        </div>
+                        <div class="service-card fade-in">
+                            <div class="service-icon">
+                                <i class="bi bi-tools"></i>
+                            </div>
+                            <h3 class="service-title">Watch Servicing</h3>
+                            <p class="service-description">
+                                Professional maintenance and repair services to keep your luxury timepieces in perfect
+                                working condition.
+                            </p>
+                            <ul class="service-features">
+                                <li>Complete movement servicing</li>
+                                <li>Case and bracelet restoration</li>
+                                <li>Water resistance testing</li>
+                                <li>Warranty on all services</li>
+                            </ul>
+                        </div>
+                        <div class="service-card fade-in">
+                            <div class="service-icon">
+                                <i class="bi bi-person-check"></i>
+                            </div>
+                            <h3 class="service-title">Personal Consultation</h3>
+                            <p class="service-description">
+                                One-on-one consultations with watch experts to help you find the perfect timepiece for
+                                your style and needs.
+                            </p>
+                            <ul class="service-features">
+                                <li>Expert recommendations</li>
+                                <li>Style and preference analysis</li>
+                                <li>Investment guidance</li>
+                                <li>Virtual and in-person options</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Call to Action Section -->
+            <section class="cta-section">
+                <div class="container">
+                    <div class="cta-content fade-in">
+                        <h2 class="cta-title">Ready to Find Your Perfect Timepiece?</h2>
+                        <p class="cta-description">
+                            Explore our curated collection of luxury watches and discover the perfect timepiece that
+                            reflects your style and sophistication.
+                        </p>
+                        <div class="cta-buttons">
+                            <a href="/shop" class="btn-primary">
+                                <i class="bi bi-shop"></i>
+                                Shop Now
+                            </a>
+                            <a href="/contact" class="btn-secondary">
+                                <i class="bi bi-envelope"></i>
+                                Contact Us
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </div>
+
+    <%- include('../partials/user/footer') %>
+
+        <script>
+            // Scroll reveal animation
+            document.addEventListener('DOMContentLoaded', function () {
+                const observerOptions = {
+                    threshold: 0.1,
+                    rootMargin: '0px 0px -50px 0px'
+                };
+
+                const observer = new IntersectionObserver(function (entries) {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('visible');
+                        }
+                    });
+                }, observerOptions);
+
+                // Observe all animated elements
+                document.querySelectorAll('.fade-in, .slide-in-left, .slide-in-right').forEach(el => {
+                    observer.observe(el);
+                });
+
+                // Add staggered animation delay for grid items
+                document.querySelectorAll('.values-grid .value-card').forEach((card, index) => {
+                    card.style.transitionDelay = `${index * 0.1}s`;
+                });
+
+                document.querySelectorAll('.features-grid .feature-item').forEach((item, index) => {
+                    item.style.transitionDelay = `${index * 0.1}s`;
+                });
+
+                document.querySelectorAll('.services-grid .service-card').forEach((card, index) => {
+                    card.style.transitionDelay = `${index * 0.1}s`;
+                });
+            });
+        </script>

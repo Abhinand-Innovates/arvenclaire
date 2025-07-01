@@ -1,0 +1,456 @@
+
+<link rel="stylesheet" href="../../styles/user/contact.css">
+
+<%- include('../partials/user/header') %>
+
+<div class="contact-page">
+    <div class="contact-page-content">
+        <!-- Hero Section -->
+        <section class="contact-hero">
+            <div class="container">
+                <h1 class="fade-in">Contact Us</h1>
+                <p class="fade-in">We're here to help you find the perfect timepiece and answer any questions you may have</p>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section class="contact-section">
+            <div class="container">
+                <div class="contact-container">
+                    <!-- Contact Information -->
+                    <div class="contact-info slide-in-left">
+                        <h2>Get in Touch</h2>
+                        <p>
+                            Have questions about our luxury watch collection? Need assistance with your order? Our expert team is here to provide personalized service and guidance.
+                        </p>
+                        
+                        <div class="contact-details">
+                            <div class="contact-item">
+                                <div class="contact-icon">
+                                    <i class="bi bi-geo-alt"></i>
+                                </div>
+                                <div class="contact-text">
+                                    <div class="contact-label">Address</div>
+                                    <div class="contact-value">123 Luxury Avenue, Watch District<br>New York, NY 10001</div>
+                                </div>
+                            </div>
+                            
+                            <div class="contact-item">
+                                <div class="contact-icon">
+                                    <i class="bi bi-telephone"></i>
+                                </div>
+                                <div class="contact-text">
+                                    <div class="contact-label">Phone</div>
+                                    <div class="contact-value">+1 (555) 123-4567</div>
+                                </div>
+                            </div>
+                            
+                            <div class="contact-item">
+                                <div class="contact-icon">
+                                    <i class="bi bi-envelope"></i>
+                                </div>
+                                <div class="contact-text">
+                                    <div class="contact-label">Email</div>
+                                    <div class="contact-value">info@arvenclaire.com</div>
+                                </div>
+                            </div>
+                            
+                            <div class="contact-item">
+                                <div class="contact-icon">
+                                    <i class="bi bi-clock"></i>
+                                </div>
+                                <div class="contact-text">
+                                    <div class="contact-label">Business Hours</div>
+                                    <div class="contact-value">Mon - Fri: 9:00 AM - 6:00 PM<br>Sat - Sun: 10:00 AM - 4:00 PM</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Contact Form -->
+                    <div class="contact-form slide-in-right">
+                        <h2>Send us a Message</h2>
+                        
+                        <div class="success-message" id="successMessage">
+                            <i class="bi bi-check-circle me-2"></i>
+                            Thank you for your message! We'll get back to you soon.
+                        </div>
+                        
+                        <form id="contactForm">
+                            <div class="form-group">
+                                <label for="name" class="form-label">Full Name *</label>
+                                <input type="text" id="name" name="name" class="form-control" required>
+                                <div class="form-error">Please enter your full name</div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="email" class="form-label">Email Address *</label>
+                                <input type="email" id="email" name="email" class="form-control" required>
+                                <div class="form-error">Please enter a valid email address</div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="subject" class="form-label">Subject *</label>
+                                <input type="text" id="subject" name="subject" class="form-control" required>
+                                <div class="form-error">Please enter a subject</div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="message" class="form-label">Message *</label>
+                                <textarea id="message" name="message" class="form-control" rows="5" required placeholder="Tell us how we can help you..."></textarea>
+                                <div class="form-error">Please enter your message</div>
+                            </div>
+                            
+                            <button type="submit" class="submit-btn" id="submitBtn">
+                                <span class="btn-text">Send Message</span>
+                                <i class="bi bi-send"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FAQ Section -->
+        <section class="faq-section">
+            <div class="container">
+                <h2 class="faq-title fade-in">Frequently Asked Questions</h2>
+                <div class="faq-container">
+                    <div class="faq-item fade-in">
+                        <button class="faq-question" onclick="toggleFAQ(this)">
+                            What is your return policy?
+                            <i class="bi bi-chevron-down faq-icon"></i>
+                        </button>
+                        <div class="faq-answer">
+                            <p>We offer a 30-day return policy for all unworn watches in their original condition. The watch must be returned with all original packaging, documentation, and accessories. Custom or engraved items are not eligible for return.</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-item fade-in">
+                        <button class="faq-question" onclick="toggleFAQ(this)">
+                            Do you provide authenticity certificates?
+                            <i class="bi bi-chevron-down faq-icon"></i>
+                        </button>
+                        <div class="faq-answer">
+                            <p>Yes, every luxury watch comes with a certificate of authenticity and manufacturer's warranty. We source all our watches directly from authorized dealers and manufacturers to guarantee their authenticity.</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-item fade-in">
+                        <button class="faq-question" onclick="toggleFAQ(this)">
+                            What payment methods do you accept?
+                            <i class="bi bi-chevron-down faq-icon"></i>
+                        </button>
+                        <div class="faq-answer">
+                            <p>We accept all major credit cards (Visa, MasterCard, American Express), PayPal, bank transfers, and cryptocurrency payments. All transactions are secured with SSL encryption for your safety.</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-item fade-in">
+                        <button class="faq-question" onclick="toggleFAQ(this)">
+                            Do you offer watch servicing and repairs?
+                            <i class="bi bi-chevron-down faq-icon"></i>
+                        </button>
+                        <div class="faq-answer">
+                            <p>Yes, we provide professional watch servicing and repair services through certified watchmakers. We offer both warranty repairs and general maintenance services to keep your timepiece in perfect condition.</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-item fade-in">
+                        <button class="faq-question" onclick="toggleFAQ(this)">
+                            How long does shipping take?
+                            <i class="bi bi-chevron-down faq-icon"></i>
+                        </button>
+                        <div class="faq-answer">
+                            <p>Standard shipping takes 3-5 business days within the US. Express shipping (1-2 days) and international shipping are also available. All shipments are fully insured and require signature confirmation for security.</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-item fade-in">
+                        <button class="faq-question" onclick="toggleFAQ(this)">
+                            Can I schedule a private viewing?
+                            <i class="bi bi-chevron-down faq-icon"></i>
+                        </button>
+                        <div class="faq-answer">
+                            <p>Absolutely! We offer private consultations by appointment where you can view and try on watches in a comfortable, personalized setting. Contact us to schedule your private viewing experience.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Google Maps Section -->
+        <section class="map-section">
+            <div class="container">
+                <div class="map-container fade-in">
+                    <h2 class="map-title">Visit Our Showroom</h2>
+                    <p class="map-description">
+                        Experience our luxury watches in person at our elegant showroom. Our expert staff will be delighted to assist you in finding the perfect timepiece.
+                    </p>
+                    
+                    <div class="map-embed">
+                        <iframe 
+                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3022.9663095343008!2d-74.00425878459418!3d40.74844097932681!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c259bf5c1654f3%3A0xc80f9cfce5383d5d!2sNew%20York%2C%20NY%2C%20USA!5e0!3m2!1sen!2sus!4v1635959542207!5m2!1sen!2sus"
+                            allowfullscreen="" 
+                            loading="lazy" 
+                            referrerpolicy="no-referrer-when-downgrade">
+                        </iframe>
+                    </div>
+
+                    <div class="map-info">
+                        <div class="map-info-item fade-in">
+                            <div class="map-info-icon">
+                                <i class="bi bi-car-front"></i>
+                            </div>
+                            <h3 class="map-info-title">Parking</h3>
+                            <p class="map-info-text">Complimentary valet parking available for all showroom visitors</p>
+                        </div>
+
+                        <div class="map-info-item fade-in">
+                            <div class="map-info-icon">
+                                <i class="bi bi-subway"></i>
+                            </div>
+                            <h3 class="map-info-title">Public Transport</h3>
+                            <p class="map-info-text">Conveniently located near subway stations and bus stops</p>
+                        </div>
+
+                        <div class="map-info-item fade-in">
+                            <div class="map-info-icon">
+                                <i class="bi bi-calendar-check"></i>
+                            </div>
+                            <h3 class="map-info-title">Appointments</h3>
+                            <p class="map-info-text">Private consultations available by appointment for personalized service</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+</div>
+
+<%- include('../partials/user/footer') %>
+
+<script>
+    // Scroll reveal animation
+    document.addEventListener('DOMContentLoaded', function() {
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver(function(entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        // Observe all animated elements
+        document.querySelectorAll('.fade-in, .slide-in-left, .slide-in-right').forEach(el => {
+            observer.observe(el);
+        });
+
+        // Contact form handling
+        const contactForm = document.getElementById('contactForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const successMessage = document.getElementById('successMessage');
+
+        contactForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Clear previous errors
+            clearFormErrors();
+            
+            // Get form data
+            const formData = new FormData(contactForm);
+            const data = {
+                name: formData.get('name').trim(),
+                email: formData.get('email').trim(),
+                subject: formData.get('subject').trim(),
+                message: formData.get('message').trim()
+            };
+            
+            // Validate form
+            let isValid = true;
+            
+            if (!data.name) {
+                showFieldError('name', 'Please enter your full name');
+                isValid = false;
+            }
+            
+            if (!data.email) {
+                showFieldError('email', 'Please enter your email address');
+                isValid = false;
+            } else if (!isValidEmail(data.email)) {
+                showFieldError('email', 'Please enter a valid email address');
+                isValid = false;
+            }
+            
+            if (!data.subject) {
+                showFieldError('subject', 'Please enter a subject');
+                isValid = false;
+            }
+            
+            if (!data.message) {
+                showFieldError('message', 'Please enter your message');
+                isValid = false;
+            }
+            
+            if (!isValid) {
+                return;
+            }
+            
+            // Show loading state
+            setSubmitButtonLoading(true);
+            
+            try {
+                const response = await fetch('/contact', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Show success message
+                    successMessage.style.display = 'block';
+                    contactForm.reset();
+                    
+                    // Hide success message after 5 seconds
+                    setTimeout(() => {
+                        successMessage.style.display = 'none';
+                    }, 5000);
+                    
+                    // Show SweetAlert success message
+                    if (typeof showSweetAlert === 'function') {
+                        showSweetAlert(result.message, 'success');
+                    }
+                } else {
+                    // Show error message
+                    if (typeof showSweetAlert === 'function') {
+                        showSweetAlert(result.message, 'error');
+                    } else {
+                        alert(result.message);
+                    }
+                }
+            } catch (error) {
+                console.error('Error submitting contact form:', error);
+                if (typeof showSweetAlert === 'function') {
+                    showSweetAlert('Failed to send message. Please try again later.', 'error');
+                } else {
+                    alert('Failed to send message. Please try again later.');
+                }
+            } finally {
+                setSubmitButtonLoading(false);
+            }
+        });
+        
+        // Form validation helpers
+        function clearFormErrors() {
+            document.querySelectorAll('.form-group').forEach(group => {
+                group.classList.remove('error');
+            });
+        }
+        
+        function showFieldError(fieldName, message) {
+            const field = document.getElementById(fieldName);
+            const formGroup = field.closest('.form-group');
+            const errorElement = formGroup.querySelector('.form-error');
+            
+            formGroup.classList.add('error');
+            errorElement.textContent = message;
+        }
+        
+        function isValidEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+        
+        function setSubmitButtonLoading(loading) {
+            const btnText = submitBtn.querySelector('.btn-text');
+            const btnIcon = submitBtn.querySelector('i');
+            
+            if (loading) {
+                submitBtn.disabled = true;
+                btnText.textContent = 'Sending...';
+                btnIcon.className = 'loading-spinner';
+            } else {
+                submitBtn.disabled = false;
+                btnText.textContent = 'Send Message';
+                btnIcon.className = 'bi bi-send';
+            }
+        }
+        
+        // Real-time validation
+        const formFields = ['name', 'email', 'subject', 'message'];
+        formFields.forEach(fieldName => {
+            const field = document.getElementById(fieldName);
+            field.addEventListener('blur', function() {
+                const formGroup = this.closest('.form-group');
+                const errorElement = formGroup.querySelector('.form-error');
+                
+                if (this.value.trim() === '') {
+                    formGroup.classList.add('error');
+                    errorElement.textContent = `Please enter ${this.previousElementSibling.textContent.replace(' *', '').toLowerCase()}`;
+                } else if (fieldName === 'email' && !isValidEmail(this.value.trim())) {
+                    formGroup.classList.add('error');
+                    errorElement.textContent = 'Please enter a valid email address';
+                } else {
+                    formGroup.classList.remove('error');
+                }
+            });
+            
+            field.addEventListener('input', function() {
+                const formGroup = this.closest('.form-group');
+                if (formGroup.classList.contains('error') && this.value.trim() !== '') {
+                    if (fieldName === 'email') {
+                        if (isValidEmail(this.value.trim())) {
+                            formGroup.classList.remove('error');
+                        }
+                    } else {
+                        formGroup.classList.remove('error');
+                    }
+                }
+            });
+        });
+        
+        // Add staggered animation delay for contact items
+        document.querySelectorAll('.contact-item').forEach((item, index) => {
+            item.style.transitionDelay = `${index * 0.1}s`;
+        });
+
+        // Add staggered animation delay for FAQ items
+        document.querySelectorAll('.faq-item').forEach((item, index) => {
+            item.style.transitionDelay = `${index * 0.1}s`;
+        });
+
+        // Add staggered animation delay for map info items
+        document.querySelectorAll('.map-info-item').forEach((item, index) => {
+            item.style.transitionDelay = `${index * 0.1}s`;
+        });
+    });
+
+    // FAQ Toggle Function
+    function toggleFAQ(button) {
+        const faqItem = button.parentElement;
+        const answer = faqItem.querySelector('.faq-answer');
+        const isActive = button.classList.contains('active');
+
+        // Close all other FAQ items
+        document.querySelectorAll('.faq-question').forEach(q => {
+            q.classList.remove('active');
+            q.parentElement.querySelector('.faq-answer').classList.remove('active');
+        });
+
+        // Toggle current FAQ item
+        if (!isActive) {
+            button.classList.add('active');
+            answer.classList.add('active');
+        }
+    }
+</script>

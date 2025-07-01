@@ -190,5 +190,9 @@ router.get("/referrals", isUserAuthenticated, preventCache, addUserContext, chec
 // Coupon page route
 router.get("/coupon", isUserAuthenticated, preventCache, addUserContext, checkUserBlocked, userController.loadCouponPage);
 
+// About and Contact page routes
+router.get("/about", validateSession, addUserContext, checkUserBlocked, userController.loadAbout);
+router.get("/contact", validateSession, addUserContext, checkUserBlocked, userController.loadContact);
+router.post("/contact", validateSession, addUserContext, checkUserBlocked, userController.submitContact);
 
 module.exports = router;

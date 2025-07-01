@@ -2212,6 +2212,91 @@ const loadReferrals = async (req, res) => {
 
 
 
+// Load About page
+const loadAbout = async (req, res) => {
+  try {
+    // User context is automatically added by middleware
+    res.render('about', {
+      title: 'About Us - ARVENCLAIRE'
+    });
+  } catch (error) {
+    console.error('Error loading about page:', error);
+    res.status(500).render('error', { 
+      message: 'Error loading about page' 
+    });
+  }
+};
+
+
+
+// Load Contact page
+const loadContact = async (req, res) => {
+  try {
+    // User context is automatically added by middleware
+    res.render('contact', {
+      title: 'Contact Us - ARVENCLAIRE'
+    });
+  } catch (error) {
+    console.error('Error loading contact page:', error);
+    res.status(500).render('error', { 
+      message: 'Error loading contact page' 
+    });
+  }
+};
+
+
+
+// Submit Contact form
+const submitContact = async (req, res) => {
+  try {
+    const { name, email, subject, message } = req.body;
+
+    // Validate input
+    if (!name || !email || !subject || !message) {
+      return res.status(400).json({
+        success: false,
+        message: 'All fields are required'
+      });
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please enter a valid email address'
+      });
+    }
+
+    // Here you could save the contact form data to database
+    // For now, we'll just log it and send a success response
+    console.log('Contact form submission:', {
+      name: name.trim(),
+      email: email.trim(),
+      subject: subject.trim(),
+      message: message.trim(),
+      timestamp: new Date()
+    });
+
+    // You could also send an email notification to admin here
+    // await sendEmail(process.env.ADMIN_EMAIL, `New contact form submission from ${name}`);
+
+    res.json({
+      success: true,
+      message: 'Thank you for your message! We will get back to you soon.'
+    });
+
+  } catch (error) {
+    console.error('Error submitting contact form:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to submit your message. Please try again later.'
+    });
+  }
+};
+
+
+
 module.exports = {
   loadLanding,
   loadSignup,
@@ -2254,4 +2339,7 @@ module.exports = {
   loadCouponPage,
   validateReferralCode,
   loadReferrals,
+  loadAbout,
+  loadContact,
+  submitContact,
 };
