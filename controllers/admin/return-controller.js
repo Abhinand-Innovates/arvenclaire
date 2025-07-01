@@ -400,21 +400,6 @@ const rejectReturnRequest = async (req, res) => {
       order.returnRejectedAt = new Date();
       order.rejectionReason = rejectionReason;
       
-      // Calculate refund amount using same logic as order details page Total Amount
-      const activeItems = order.orderedItems.filter(item => item.status === 'Active');
-      const returnRequestItems = order.orderedItems.filter(item => item.status === 'Return Request');
-      const includedItems = [...activeItems, ...returnRequestItems];
-      
-      let amountAfterDiscount = 0;
-      includedItems.forEach(item => {
-        amountAfterDiscount += item.totalPrice;
-      });
-      
-      let entireOrderRefundAmount = amountAfterDiscount;
-      if (includedItems.length > 0) {
-        entireOrderRefundAmount += order.shippingCharges;
-      }
-      
       for (const item of order.orderedItems) {
         if (item.status === 'Return Request') {
           item.status = 'Active'; // Reset to active status
@@ -424,32 +409,16 @@ const rejectReturnRequest = async (req, res) => {
         }
       }
       
-      // Add refund to wallet for rejected entire order
-      try {
-        const wallet = await Wallet.getOrCreateWallet(order.userId._id);
-        await wallet.addMoney(
-          entireOrderRefundAmount,
-          `Refund for rejected entire order return (Order: ${order.orderId})`,
-          order.orderId
-        );
-      } catch (walletError) {
-        console.error('Error adding entire order rejection refund to wallet:', walletError);
-      }
+      // No refund for rejected returns - wallet credit removed
       
       rejectedItemsDescription = 'Entire order';
     } else {
       // Individual item return rejection
-      let rejectionRefundAmount = 0;
-      
       for (const item of returnRequestItems) {
         item.status = 'Active'; // Reset to active status
         item.returnRejectedAt = new Date();
         item.rejectionReason = rejectionReason;
         // Keep returnAttempted as true to prevent future return attempts
-        
-        // Calculate refund amount for rejected item (if business logic requires refund on rejection)
-        const itemRefundAmount = item.totalPrice || (item.price * item.quantity);
-        rejectionRefundAmount += itemRefundAmount;
         
         if (rejectedItemsDescription) {
           rejectedItemsDescription += ', ';
@@ -461,18 +430,7 @@ const rejectReturnRequest = async (req, res) => {
       order.returnRejectedAt = new Date();
       order.rejectionReason = rejectionReason;
       
-      // Add refund to wallet for rejected items
-      // Note: This implements the business logic where rejections also result in refunds
-      try {
-        const wallet = await Wallet.getOrCreateWallet(order.userId._id);
-        await wallet.addMoney(
-          rejectionRefundAmount,
-          `Refund for rejected return items: ${rejectedItemsDescription} (Order: ${order.orderId})`,
-          order.orderId
-        );
-      } catch (walletError) {
-        console.error('Error adding rejection refund to wallet:', walletError);
-      }
+      // No refund for rejected returns - wallet credit removed
     }
 
     // Add to timeline

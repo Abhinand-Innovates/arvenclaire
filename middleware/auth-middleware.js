@@ -1,4 +1,3 @@
-
 const User = require('../models/user-schema');
 
 
@@ -85,6 +84,33 @@ redirectIfAuthenticated : async (req, res, next) => {
   } catch (error) {
     console.error('Redirect Auth Middleware Error:', error);
     next(); // Continue to login/signup page on error
+  }
+},
+
+
+
+// Middleware to redirect authenticated admins away from admin login page
+redirectIfAdminAuthenticated : async (req, res, next) => {
+  try {
+    if (req.session && req.session.admin_id) {
+      const admin = await User.findById(req.session.admin_id);
+      
+      // If admin exists, is admin, and is not blocked, redirect to admin dashboard
+      if (admin && admin.isAdmin && !admin.isBlocked) {
+        return res.redirect('/admin-dashboard');
+      }
+      
+      // If admin is blocked or doesn't exist, clear session and continue
+      req.session.destroy((err) => {
+        if (err) console.error('Error destroying admin session:', err);
+      });
+      res.clearCookie('connect.sid');
+    }
+    
+    next();
+  } catch (error) {
+    console.error('Redirect Admin Auth Middleware Error:', error);
+    next(); // Continue to admin login page on error
   }
 },
 

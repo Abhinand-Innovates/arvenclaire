@@ -54,22 +54,22 @@ router.get(
 // Public routes - redirect authenticated users away from login/signup
 router.get("/signup", preventCache, redirectIfAuthenticated, validateSession, userController.loadSignup);
 router.get("/login", preventCache, redirectIfAuthenticated, validateSession, userController.loadLogin);
-router.post("/signup", userController.signup);
-router.post("/validate-referral-code", userController.validateReferralCode);
+router.post("/signup", redirectIfAuthenticated, userController.signup);
+router.post("/validate-referral-code", redirectIfAuthenticated, userController.validateReferralCode);
 
-router.get("/verify-otp", preventCache, userController.loadOtpPage);
-router.post("/verify-otp", userController.verifyOtp);
-router.post("/resend-otp", userController.resendOtp);
-router.post("/login", userController.login);
+router.get("/verify-otp", preventCache, redirectIfAuthenticated, userController.loadOtpPage);
+router.post("/verify-otp", redirectIfAuthenticated, userController.verifyOtp);
+router.post("/resend-otp", redirectIfAuthenticated, userController.resendOtp);
+router.post("/login", redirectIfAuthenticated, userController.login);
 
 // Forgot password routes - redirect authenticated users
 router.get("/forgot-password", preventCache, redirectIfAuthenticated, validateSession, userController.loadForgotPassword);
-router.post("/forgot-password", userController.verifyForgotPasswordEmail);
+router.post("/forgot-password", redirectIfAuthenticated, userController.verifyForgotPasswordEmail);
 router.get("/forgot-verify-otp", preventCache, redirectIfAuthenticated, validateSession, userController.loadForgotVerifyOtp);
-router.post("/forgot-verify-otp", userController.verifyForgotPasswordOtp);
-router.post("/resend-forgot-verify-otp", userController.resendForgotPasswordOtp);
+router.post("/forgot-verify-otp", redirectIfAuthenticated, userController.verifyForgotPasswordOtp);
+router.post("/resend-forgot-verify-otp", redirectIfAuthenticated, userController.resendForgotPasswordOtp);
 router.get("/new-password", preventCache, redirectIfAuthenticated, validateSession, userController.loadNewPassword);
-router.post("/reset-password", userController.resetPassword);
+router.post("/reset-password", redirectIfAuthenticated, userController.resetPassword);
 
 // Routes that need user context for dropdown (apply middleware)
 router.get("/", validateSession, addUserContext, checkUserBlocked, userController.loadLanding);
@@ -123,32 +123,7 @@ router.get("/checkout/retry-payment/:orderId", isUserAuthenticated, preventCache
 router.get("/order-success/:orderId", isUserAuthenticated, preventCache, addUserContext, checkUserBlocked, checkoutController.loadOrderSuccess);
 router.get("/order-failure/:orderId", isUserAuthenticated, preventCache, addUserContext, checkUserBlocked, checkoutController.loadOrderFailure);
 
-// Test route to simulate payment failure (for development/testing)
-router.get("/test-payment-failure/:orderId", isUserAuthenticated, preventCache, checkUserBlocked, async (req, res) => {
-  try {
-    const { orderId } = req.params;
-    const userId = req.session.userId;
-    
-    // Find and update order to failed status for testing
-    const Order = require('../models/order-schema');
-    const order = await Order.findOne({ orderId, userId });
-    
-    if (order) {
-      order.paymentStatus = 'Failed';
-      order.orderTimeline.push({
-        status: 'Payment Failed',
-        description: 'Test payment failure simulation'
-      });
-      await order.save();
-    }
-    
-    // Redirect to failure page
-    res.redirect(`/order-failure/${orderId}`);
-  } catch (error) {
-    console.error('Error in test payment failure:', error);
-    res.redirect('/orders');
-  }
-});
+
 
 // Order-related routes
 router.get("/orders", isUserAuthenticated, preventCache, addUserContext, checkUserBlocked, orderController.loadOrderList);

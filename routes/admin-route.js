@@ -11,11 +11,11 @@ const { productUpload, handleMulterError } = require("../config/multer-config");
 
 const couponController = require("../controllers/admin/coupon-controller");
 const salesReportController = require("../controllers/admin/sales-report-controller");
-const { isAdminAuthenticated, preventCache } = require('../middleware/auth-middleware');
+const { isAdminAuthenticated, preventCache, redirectIfAdminAuthenticated } = require('../middleware/auth-middleware');
 
-//Admin Login - with cache prevention for proper session handling
-adminRoute.get("/admin-login", preventCache, adminController.getAdminLogin);
-adminRoute.post("/admin-login", adminController.postAdminLogin);
+//Admin Login - with cache prevention for proper session handling and redirect if already authenticated
+adminRoute.get("/admin-login", preventCache, redirectIfAdminAuthenticated, adminController.getAdminLogin);
+adminRoute.post("/admin-login", redirectIfAdminAuthenticated, adminController.postAdminLogin);
 
 
 //Admin Dashboard
@@ -62,43 +62,7 @@ adminRoute.get('/get-orders/:id/details', isAdminAuthenticated, preventCache, or
 adminRoute.get('/get-orders/:id', isAdminAuthenticated, preventCache, orderController.getOrderById);
 adminRoute.patch('/get-orders/:id/status', isAdminAuthenticated, preventCache, orderController.updateOrderStatus);
 
-// Return Request Routes
-// Debug route to check return requests
-adminRoute.get('/debug-returns', isAdminAuthenticated, preventCache, async (req, res) => {
-  try {
-    const Order = require('../models/order-schema');
-    
-    // Find all orders with individual item returns
-    const ordersWithReturns = await Order.find({
-      'orderedItems.status': 'Return Request'
-    }).populate('orderedItems.product', 'productName');
-    
-        
-    const returnData = [];
-    ordersWithReturns.forEach(order => {
-      const returnItems = order.orderedItems.filter(item => item.status === 'Return Request');
-      returnItems.forEach(item => {
-        returnData.push({
-          orderId: order.orderId,
-          itemId: item._id,
-          productName: item.product ? item.product.productName : 'Unknown',
-          status: item.status,
-          returnReason: item.returnReason,
-          returnRequestedAt: item.returnRequestedAt,
-          totalPrice: item.totalPrice
-        });
-      });
-    });
-    
-    res.json({
-      success: true,
-      count: returnData.length,
-      returns: returnData
-    });
-  } catch (error) {
-    res.json({ error: error.message });
-  }
-});
+
 
 adminRoute.get('/return-requests', isAdminAuthenticated, preventCache, returnController.getReturnRequests);
 adminRoute.get('/get-return-request-count', isAdminAuthenticated, preventCache, orderController.getReturnRequestCount);
