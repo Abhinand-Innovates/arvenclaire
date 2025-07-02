@@ -1,164 +1,340 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin Dashboard - ArvanClaire</title>
-<!-- Bootstrap CSS -->
-<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
-<!-- Font Awesome -->
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-<!-- Chart.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-<!-- SweetAlert2 -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - ArvanClaire</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/styles/admin/admin-dashboard.css">
 </head>
 <body>
-<!-- Include Admin Sidebar -->
-<%- include("../partials/admin/sidebar") %>
+    <!-- Include Admin Sidebar -->
+    <%- include("../partials/admin/sidebar") %>
 
-<!-- Main Content -->
+    <!-- Main Content -->
     <div class="main-content">
-        <!-- Header -->
-        <div class="header">
-            <div class="row align-items-center">
-                <div class="col-md-6">
-                    <h2 class="mb-0" style="font-family: 'Times New Roman', Times, serif;">Dashboard</h2>
+        <!-- Header Section -->
+        <div class="dashboard-header">
+            <div class="header-content">
+                <div class="header-left">
+                    <h1 class="dashboard-title">Dashboard Overview</h1>
+                    <p class="dashboard-subtitle">Welcome back! Here's what's happening with your store today.</p>
                 </div>
-                <div class="col-md-6">
-                    <div class="search-container ms-auto">
-                        <div class="input-group">
-                            <input type="text" class="form-control" placeholder="Search">
-                            <button class="btn btn-search" type="button">🔍</button>
+                <div class="header-right">
+                    <div class="date-display">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span id="currentDate"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card primary">
+                <div class="stat-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number">10,583</div>
+                    <div class="stat-label">Total Customers</div>
+                    <div class="stat-change positive">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>+12.5%</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card success">
+                <div class="stat-icon">
+                    <i class="fas fa-shopping-cart"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number">8,538</div>
+                    <div class="stat-label">Total Orders</div>
+                    <div class="stat-change positive">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>+8.2%</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card warning">
+                <div class="stat-icon">
+                    <i class="fas fa-rupee-sign"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number">₹65,805</div>
+                    <div class="stat-label">Total Revenue</div>
+                    <div class="stat-change positive">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>+15.3%</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card danger">
+                <div class="stat-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number">3,552</div>
+                    <div class="stat-label">Pending Orders</div>
+                    <div class="stat-change negative">
+                        <i class="fas fa-arrow-down"></i>
+                        <span>-2.1%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts and Analytics Section -->
+        <div class="analytics-section">
+            <div class="row g-4">
+                <!-- Sales Chart -->
+                <div class="col-lg-8">
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <div class="chart-title-section">
+                                <h3 class="chart-title">Sales Analytics</h3>
+                                <p class="chart-subtitle">Monthly sales performance overview</p>
+                            </div>
+                            <div class="chart-controls">
+                                <select class="form-select chart-dropdown" id="salesPeriod">
+                                    <option value="monthly">Monthly</option>
+                                    <option value="weekly">Weekly</option>
+                                    <option value="yearly">Yearly</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="salesChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Top Products -->
+                <div class="col-lg-4">
+                    <div class="top-products-card">
+                        <div class="card-header">
+                            <h3 class="card-title">Top Products</h3>
+                            <span class="card-subtitle">Best selling items</span>
+                        </div>
+                        <div class="products-list">
+                            <div class="product-item">
+                                <div class="product-info">
+                                    <div class="product-name">Swiss Heritage Watch</div>
+                                    <div class="product-sales">1,234 sold</div>
+                                </div>
+                                <div class="product-revenue">₹45,600</div>
+                            </div>
+                            <div class="product-item">
+                                <div class="product-info">
+                                    <div class="product-name">Classic Timepiece</div>
+                                    <div class="product-sales">987 sold</div>
+                                </div>
+                                <div class="product-revenue">₹32,100</div>
+                            </div>
+                            <div class="product-item">
+                                <div class="product-info">
+                                    <div class="product-name">Luxury Collection</div>
+                                    <div class="product-sales">756 sold</div>
+                                </div>
+                                <div class="product-revenue">₹28,900</div>
+                            </div>
+                            <div class="product-item">
+                                <div class="product-info">
+                                    <div class="product-name">Sport Edition</div>
+                                    <div class="product-sales">654 sold</div>
+                                </div>
+                                <div class="product-revenue">₹21,800</div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <!-- Dashboard Content -->
-        <div class="container-fluid px-0">
-            <!-- Stats Cards -->
-            <div class="stats-row">
-                <div class="stat-card">
-                    <div class="icon">👥</div>
-                    <div class="stat-label">Total Users</div>
-                    <div class="stat-number">10,583</div>
+
+        <!-- Recent Activity Section -->
+        <div class="activity-section">
+            <div class="row g-4">
+                <!-- Recent Orders -->
+                <div class="col-lg-6">
+                    <div class="activity-card">
+                        <div class="activity-header">
+                            <h3 class="activity-title">Recent Orders</h3>
+                            <a href="/get-orders" class="view-all-link">View All</a>
+                        </div>
+                        <div class="activity-list">
+                            <div class="activity-item">
+                                <div class="activity-icon order">
+                                    <i class="fas fa-shopping-bag"></i>
+                                </div>
+                                <div class="activity-content">
+                                    <div class="activity-text">New order #12345 received</div>
+                                    <div class="activity-time">2 minutes ago</div>
+                                </div>
+                                <div class="activity-amount">₹2,450</div>
+                            </div>
+                            <div class="activity-item">
+                                <div class="activity-icon order">
+                                    <i class="fas fa-shopping-bag"></i>
+                                </div>
+                                <div class="activity-content">
+                                    <div class="activity-text">Order #12344 shipped</div>
+                                    <div class="activity-time">15 minutes ago</div>
+                                </div>
+                                <div class="activity-amount">₹1,890</div>
+                            </div>
+                            <div class="activity-item">
+                                <div class="activity-icon order">
+                                    <i class="fas fa-shopping-bag"></i>
+                                </div>
+                                <div class="activity-content">
+                                    <div class="activity-text">Order #12343 delivered</div>
+                                    <div class="activity-time">1 hour ago</div>
+                                </div>
+                                <div class="activity-amount">₹3,200</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="stat-card">
-                    <div class="icon">🚚</div>
-                    <div class="stat-label">Total Orders</div>
-                    <div class="stat-number">8,538</div>
-                </div>
-                <div class="stat-card">
-                    <div class="icon">💰</div>
-                    <div class="stat-label">Total Sales</div>
-                    <div class="stat-number">₹65,805</div>
-                </div>
-                <div class="stat-card">
-                    <div class="icon">⏰</div>
-                    <div class="stat-label">Total Pending</div>
-                    <div class="stat-number">3,552</div>
+
+                <!-- Recent Customers -->
+                <div class="col-lg-6">
+                    <div class="activity-card">
+                        <div class="activity-header">
+                            <h3 class="activity-title">New Customers</h3>
+                            <a href="/get-user" class="view-all-link">View All</a>
+                        </div>
+                        <div class="activity-list">
+                            <div class="activity-item">
+                                <div class="customer-avatar">
+                                    <span>JD</span>
+                                </div>
+                                <div class="activity-content">
+                                    <div class="activity-text">John Doe registered</div>
+                                    <div class="activity-time">5 minutes ago</div>
+                                </div>
+                                <div class="customer-status new">New</div>
+                            </div>
+                            <div class="activity-item">
+                                <div class="customer-avatar">
+                                    <span>SM</span>
+                                </div>
+                                <div class="activity-content">
+                                    <div class="activity-text">Sarah Miller registered</div>
+                                    <div class="activity-time">20 minutes ago</div>
+                                </div>
+                                <div class="customer-status new">New</div>
+                            </div>
+                            <div class="activity-item">
+                                <div class="customer-avatar">
+                                    <span>RJ</span>
+                                </div>
+                                <div class="activity-content">
+                                    <div class="activity-text">Robert Johnson registered</div>
+                                    <div class="activity-time">45 minutes ago</div>
+                                </div>
+                                <div class="customer-status new">New</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Sales Chart -->
-            <div class="chart-container">
-                <div class="chart-header">
-                    <h3 class="chart-title">Sales Details</h3>
-                    <select class="chart-dropdown">
-                        <option>October</option>
-                        <option>November</option>
-                        <option>December</option>
-                    </select>
-                </div>
-                <div class="chart-canvas">
-                    <canvas id="salesChart"></canvas>
-                </div>
+        <!-- Quick Actions -->
+        <div class="quick-actions-section">
+            <div class="quick-actions-header">
+                <h3 class="section-title">Quick Actions</h3>
+                <p class="section-subtitle">Frequently used admin functions</p>
+            </div>
+            <div class="quick-actions-grid">
+                <a href="/new-product" class="quick-action-card">
+                    <div class="action-icon">
+                        <i class="fas fa-plus-circle"></i>
+                    </div>
+                    <div class="action-content">
+                        <h4 class="action-title">Add Product</h4>
+                        <p class="action-description">Add new products to your inventory</p>
+                    </div>
+                </a>
+                <a href="/coupons" class="quick-action-card">
+                    <div class="action-icon">
+                        <i class="fas fa-ticket-alt"></i>
+                    </div>
+                    <div class="action-content">
+                        <h4 class="action-title">Manage Coupons</h4>
+                        <p class="action-description">Create and manage discount coupons</p>
+                    </div>
+                </a>
+                <a href="/sales-report" class="quick-action-card">
+                    <div class="action-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="action-content">
+                        <h4 class="action-title">Sales Report</h4>
+                        <p class="action-description">View detailed sales analytics</p>
+                    </div>
+                </a>
+                <a href="/get-category" class="quick-action-card">
+                    <div class="action-icon">
+                        <i class="fas fa-tags"></i>
+                    </div>
+                    <div class="action-content">
+                        <h4 class="action-title">Categories</h4>
+                        <p class="action-description">Manage product categories</p>
+                    </div>
+                </a>
             </div>
         </div>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const navItems = document.querySelectorAll('.nav-item[data-route]');
-            const mobileToggle = document.getElementById('mobileToggle');
-            const sidebar = document.getElementById('sidebar');
-
-            // Set Dashboard as active by default
-            document.querySelector('[data-route="dashboard"]')?.classList.add('active');
-
-            // Handle sidebar navigation clicks
-            navItems.forEach(item => {
-                item.addEventListener('click', function (e) {
-
-
-                    // Remove active class from all nav items
-                    navItems.forEach(nav => nav.classList.remove('active'));
-
-                    // Add active class to clicked item
-                    this.classList.add('active');
-
-                    // Close mobile sidebar
-                    if (window.innerWidth <= 768) {
-                        sidebar.classList.remove('show');
-                    }
-                });
-            });
-
-            // Mobile toggle functionality
-            mobileToggle.addEventListener('click', function () {
-                sidebar.classList.toggle('show');
-            });
-
-            // Close sidebar when clicking outside on mobile
-            document.addEventListener('click', function (e) {
-                if (window.innerWidth <= 768) {
-                    if (!sidebar.contains(e.target) && !mobileToggle.contains(e.target)) {
-                        sidebar.classList.remove('show');
-                    }
-                }
-            });
+            // Set current date
+            const currentDate = new Date();
+            const options = { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            };
+            document.getElementById('currentDate').textContent = currentDate.toLocaleDateString('en-US', options);
 
             // Initialize Sales Chart
             const ctx = document.getElementById('salesChart').getContext('2d');
-
-            // Sample data similar to the screenshot
-            const salesData = [
-                { x: '5k', y: 20 },
-                { x: '10k', y: 35 },
-                { x: '15k', y: 45 },
-                { x: '20k', y: 30 },
-                { x: '25k', y: 52 },
-                { x: '30k', y: 48 },
-                { x: '35k', y: 58 },
-                { x: '40k', y: 25 },
-                { x: '45k', y: 42 },
-                { x: '50k', y: 38 },
-                { x: '55k', y: 45 },
-                { x: '60k', y: 50 }
-            ];
-
-            const peakPoint = { x: '22k', y: 85, value: '64,3564.77' }; // Peak point like in screenshot
+            
+            const salesData = {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                datasets: [{
+                    label: 'Sales',
+                    data: [12000, 19000, 15000, 25000, 22000, 30000, 28000, 35000, 32000, 40000, 38000, 45000],
+                    borderColor: '#000000',
+                    backgroundColor: 'rgba(0, 0, 0, 0.05)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: '#000000',
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 2,
+                    pointRadius: 6,
+                    pointHoverRadius: 8
+                }]
+            };
 
             new Chart(ctx, {
                 type: 'line',
-                data: {
-                    labels: salesData.map(d => d.x),
-                    datasets: [{
-                        label: 'Sales',
-                        data: salesData.map(d => d.y),
-                        borderColor: '#4CAF50',
-                        backgroundColor: 'rgba(76, 175, 80, 0.1)',
-                        borderWidth: 3,
-                        fill: true,
-                        tension: 0.4,
-                        pointBackgroundColor: '#4CAF50',
-                        pointBorderColor: '#4CAF50',
-                        pointBorderWidth: 2,
-                        pointRadius: 4,
-                        pointHoverRadius: 6
-                    }]
-                },
+                data: salesData,
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
@@ -167,18 +343,15 @@
                             display: false
                         },
                         tooltip: {
-                            backgroundColor: '#4CAF50',
+                            backgroundColor: '#000000',
                             titleColor: 'white',
                             bodyColor: 'white',
-                            borderColor: '#4CAF50',
+                            borderColor: '#000000',
                             borderWidth: 1,
                             displayColors: false,
                             callbacks: {
-                                label: function (context) {
-                                    if (context.dataIndex === 4) { // Peak point
-                                        return '64,3564.77';
-                                    }
-                                    return context.parsed.y + '%';
+                                label: function(context) {
+                                    return '₹' + context.parsed.y.toLocaleString();
                                 }
                             }
                         }
@@ -192,30 +365,30 @@
                                 display: false
                             },
                             ticks: {
-                                color: '#666',
+                                color: '#666666',
                                 font: {
-                                    size: 12
+                                    size: 12,
+                                    weight: '500'
                                 }
                             }
                         },
                         y: {
                             beginAtZero: true,
-                            max: 100,
                             grid: {
-                                color: 'rgba(0,0,0,0.05)',
+                                color: 'rgba(0, 0, 0, 0.08)',
                                 borderDash: [5, 5]
                             },
                             border: {
                                 display: false
                             },
                             ticks: {
-                                stepSize: 20,
-                                callback: function (value) {
-                                    return value + '%';
+                                callback: function(value) {
+                                    return '₹' + (value / 1000) + 'k';
                                 },
-                                color: '#666',
+                                color: '#666666',
                                 font: {
-                                    size: 12
+                                    size: 12,
+                                    weight: '500'
                                 }
                             }
                         }
@@ -227,27 +400,85 @@
                 }
             });
 
-            // Logout functionality
-            document.getElementById('logoutBtn').addEventListener('click', function (e) {
-                e.preventDefault();
+            // Animate stat numbers on load
+            const statNumbers = document.querySelectorAll('.stat-number');
+            statNumbers.forEach(stat => {
+                const finalValue = stat.textContent;
+                const numericValue = parseInt(finalValue.replace(/[^\d]/g, ''));
+                let currentValue = 0;
+                const increment = numericValue / 50;
+                
+                const timer = setInterval(() => {
+                    currentValue += increment;
+                    if (currentValue >= numericValue) {
+                        stat.textContent = finalValue;
+                        clearInterval(timer);
+                    } else {
+                        if (finalValue.includes('₹')) {
+                            stat.textContent = '₹' + Math.floor(currentValue).toLocaleString();
+                        } else {
+                            stat.textContent = Math.floor(currentValue).toLocaleString();
+                        }
+                    }
+                }, 20);
+            });
 
-                Swal.fire({
-                    title: 'Are you sure?',
-                    text: "",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#d33',
-                    cancelButtonColor: '#3085d6',
-                    confirmButtonText: 'Yes',
-                    cancelButtonText: 'No'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        window.location.href = '/admin-logout';
+            // Handle sidebar navigation
+            const navItems = document.querySelectorAll('.nav-item[data-route]');
+            const mobileToggle = document.getElementById('mobileToggle');
+            const sidebar = document.getElementById('sidebar');
+
+            // Set Dashboard as active
+            document.querySelector('[data-route="dashboard"]')?.classList.add('active');
+
+            navItems.forEach(item => {
+                item.addEventListener('click', function (e) {
+                    navItems.forEach(nav => nav.classList.remove('active'));
+                    this.classList.add('active');
+
+                    if (window.innerWidth <= 768) {
+                        sidebar.classList.remove('show');
                     }
                 });
             });
+
+            if (mobileToggle && sidebar) {
+                mobileToggle.addEventListener('click', function () {
+                    sidebar.classList.toggle('show');
+                });
+
+                document.addEventListener('click', function (e) {
+                    if (window.innerWidth <= 768) {
+                        if (!sidebar.contains(e.target) && !mobileToggle.contains(e.target)) {
+                            sidebar.classList.remove('show');
+                        }
+                    }
+                });
+            }
+
+            // Logout functionality
+            const logoutBtn = document.getElementById('logoutBtn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', function (e) {
+                    e.preventDefault();
+
+                    Swal.fire({
+                        title: 'Are you sure?',
+                        text: "You will be logged out of the admin panel",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#000000',
+                        cancelButtonColor: '#6c757d',
+                        confirmButtonText: 'Yes, logout',
+                        cancelButtonText: 'Cancel'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = '/admin-logout';
+                        }
+                    });
+                });
+            }
         });
     </script>
-    </body>
-
-    </html>
+</body>
+</html>

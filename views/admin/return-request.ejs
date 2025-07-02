@@ -3,274 +3,163 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Return Requests Management - ArvanClaire</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="/styles/admin/return-request.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <title>Return Requests</title>
+    
     <style>
+        /* Modern Return Request Styles - White Theme with Black Text */
+
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             background-color: #f8f9fa;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            color: #212529;
+            line-height: 1.6;
         }
+
+        /* Main Content Layout */
         .main-content {
             margin-left: 250px;
-            padding: 20px;
             min-height: 100vh;
-        }
-        .page-header {
-            background: white;
             padding: 2rem;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            background-color: #f8f9fa;
+        }
+
+        /* Breadcrumbs */
+        .breadcrumb {
+            background: none;
+            padding: 0;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+        }
+
+        .breadcrumb-item a {
+            color: #6c757d;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .breadcrumb-item a:hover {
+            color: #000000;
+        }
+
+        .breadcrumb-item.active {
+            color: #000000;
+            font-weight: 500;
+        }
+
+        .breadcrumb-item + .breadcrumb-item::before {
+            content: "/";
+            color: #6c757d;
+        }
+
+        /* Page Header */
+        .page-header {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            border-radius: 16px;
+            padding: 2rem;
             margin-bottom: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e9ecef;
         }
+
         .page-title {
-            color: #2c3e50;
-            font-weight: 600;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #000000;
             margin-bottom: 0.5rem;
+            letter-spacing: -0.02em;
         }
+
         .page-subtitle {
+            font-size: 1.1rem;
             color: #6c757d;
             margin: 0;
+            font-weight: 400;
         }
+
+        /* Statistics Cards */
         .stats-row {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
             margin-bottom: 2rem;
         }
+
         .stat-card {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e9ecef;
             text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        }
+
         .stat-card i {
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
         }
+
         .stat-card h3 {
             margin: 0;
-            font-size: 1.5rem;
-            font-weight: 600;
+            font-size: 2rem;
+            font-weight: 700;
+            color: #000000;
+            margin-bottom: 0.5rem;
         }
+
         .stat-card p {
             margin: 0;
             color: #6c757d;
-            font-size: 0.875rem;
+            font-size: 0.95rem;
+            font-weight: 500;
         }
+
         .pending { color: #f39c12; }
         .approved { color: #27ae60; }
         .rejected { color: #e74c3c; }
         .total { color: #3498db; }
-        
-        .table-container {
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-        .table-header {
-            padding: 1.5rem;
-            border-bottom: 1px solid #dee2e6;
-            background: #f8f9fa;
-        }
-        .controls-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 1rem;
-            flex-wrap: wrap;
-        }
-        .search-box {
-            position: relative;
-            max-width: 300px;
-            flex: 1;
-        }
-        .search-box input {
-            padding-left: 2.5rem;
-        }
-        .search-box i {
-            position: absolute;
-            left: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #6c757d;
-        }
-        .table-responsive {
-            max-height: 600px;
-            overflow-y: auto;
-        }
-        .return-table {
-            margin: 0;
-        }
-        .return-table th {
-            background: #f8f9fa;
-            border-bottom: 2px solid #dee2e6;
-            font-weight: 600;
-            color: #2c3e50;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-        .return-table td {
-            vertical-align: middle;
-            border-bottom: 1px solid #e9ecef;
-        }
-        .status-badge {
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-        .status-pending {
-            background: #fff3cd;
-            color: #856404;
-        }
-        .status-approved {
-            background: #d1edff;
-            color: #0c5460;
-        }
-        .status-rejected {
-            background: #f8d7da;
-            color: #721c24;
-        }
-        .status-returned {
-            background: #d4edda;
-            color: #155724;
-        }
-        .product-info {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-        .product-image {
-            width: 50px;
-            height: 50px;
-            object-fit: cover;
-            border-radius: 6px;
-        }
-        .product-placeholder {
-            width: 50px;
-            height: 50px;
-            background: #f8f9fa;
-            border: 2px dashed #dee2e6;
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #6c757d;
-            font-size: 1.2rem;
-        }
-        .product-details h6 {
-            margin: 0;
-            font-size: 0.875rem;
-            font-weight: 600;
-        }
-        .product-details small {
-            color: #6c757d;
-        }
-        .customer-info h6 {
-            margin: 0;
-            font-size: 0.875rem;
-            font-weight: 600;
-        }
-        .customer-info small {
-            color: #6c757d;
-        }
-        .amount-breakdown {
-            text-align: right;
-        }
-        .amount-breakdown .subtotal {
-            margin-bottom: 2px;
-        }
-        .amount-breakdown .total-price {
-            font-size: 1rem;
-        }
-        .amount-breakdown .text-muted {
-            font-size: 0.75rem;
-        }
-        .return-items-info {
-            margin-top: 4px;
-        }
-        .return-items-info .text-info {
-            font-size: 0.7rem;
-            color: #17a2b8 !important;
-        }
-        .action-buttons {
-            display: flex;
-            gap: 0.5rem;
-        }
-        .btn-sm {
-            padding: 0.375rem 0.75rem;
-            font-size: 0.75rem;
-        }
-        .empty-state {
-            text-align: center;
-            padding: 4rem 2rem;
-            color: #6c757d;
-        }
-        .empty-state i {
-            font-size: 4rem;
-            color: #dee2e6;
-            margin-bottom: 1.5rem;
-        }
-        .empty-state h4 {
-            color: #495057;
-            margin-bottom: 1rem;
-            font-weight: 600;
-        }
-        .empty-state p {
-            margin-bottom: 0.5rem;
-            font-size: 1rem;
-        }
-        .empty-state small {
-            color: #6c757d;
-            font-size: 0.875rem;
-        }
-        .pagination-container {
-            padding: 1.5rem;
-            border-top: 1px solid #dee2e6;
-            background: #f8f9fa;
-        }
 
-        /* Advanced Filters Styles */
-        .filters-container {
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        /* Filters Card */
+        .filters-card {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 2rem;
             margin-bottom: 2rem;
-            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e9ecef;
         }
 
         .filters-header {
-            background: #000000;
-            color: white;
-            padding: 1.5rem 2rem;
-            text-align: center;
+            margin-bottom: 1.5rem;
         }
 
         .filters-title {
             font-size: 1.25rem;
             font-weight: 600;
-            margin: 0 0 0.5rem 0;
+            color: #000000;
             display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 0.75rem;
-        }
-
-        .filters-subtitle {
+            gap: 0.5rem;
             margin: 0;
-            opacity: 0.9;
-            font-size: 0.875rem;
         }
 
-        .filters-form {
-            padding: 2rem;
+        .filters-title i {
+            color: #6c757d;
         }
 
         .filters-grid {
@@ -288,43 +177,19 @@
 
         .filter-label {
             font-weight: 600;
-            color: #374151;
-            font-size: 0.875rem;
+            color: #000000;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
             display: flex;
             align-items: center;
             gap: 0.5rem;
         }
 
         .filter-label i {
-            color: #000000;
+            color: #6c757d;
             width: 16px;
         }
 
-        .filter-input, .filter-select {
-            padding: 0.75rem 1rem;
-            border: 2px solid #e5e7eb;
-            border-radius: 8px;
-            font-size: 0.875rem;
-            transition: all 0.3s ease;
-            background: white;
-        }
-
-        .filter-input:focus, .filter-select:focus {
-            outline: none;
-            border-color: #000000;
-            box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
-        }
-
-        .filter-select {
-            cursor: pointer;
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
-            background-position: right 0.5rem center;
-            background-repeat: no-repeat;
-            background-size: 1.5em 1.5em;
-            padding-right: 2.5rem;
-        }
-
-        /* Search Container */
         .search-container {
             position: relative;
         }
@@ -334,8 +199,26 @@
             right: 1rem;
             top: 50%;
             transform: translateY(-50%);
-            color: #9ca3af;
+            color: #6c757d;
             pointer-events: none;
+        }
+
+        .form-control,
+        .form-select {
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            font-size: 0.95rem;
+            color: #000000;
+            background-color: #ffffff;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: #000000;
+            box-shadow: 0 0 0 0.2rem rgba(0, 0, 0, 0.1);
+            outline: none;
         }
 
         /* Date Range Container */
@@ -348,13 +231,9 @@
 
         .date-separator {
             text-align: center;
-            color: #6b7280;
+            color: #6c757d;
             font-weight: 500;
             font-size: 0.875rem;
-        }
-
-        .date-input {
-            padding: 0.75rem 1rem;
         }
 
         /* Amount Range Container */
@@ -374,7 +253,7 @@
             left: 1rem;
             top: 50%;
             transform: translateY(-50%);
-            color: #6b7280;
+            color: #6c757d;
             font-weight: 600;
             pointer-events: none;
         }
@@ -385,7 +264,7 @@
 
         .amount-separator {
             text-align: center;
-            color: #6b7280;
+            color: #6c757d;
             font-weight: 500;
             font-size: 0.875rem;
         }
@@ -398,103 +277,613 @@
             flex-wrap: wrap;
         }
 
-        .btn-filter {
+        .filter-btn {
             padding: 0.75rem 1.5rem;
+            border: 2px solid;
             border-radius: 8px;
             font-weight: 600;
-            font-size: 0.875rem;
+            font-size: 0.9rem;
             cursor: pointer;
             transition: all 0.3s ease;
-            border: none;
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            white-space: nowrap;
             min-width: 120px;
             justify-content: center;
         }
 
-        .btn-apply {
-            background: #000000;
-            color: white;
+        .filter-btn.primary {
+            background-color: #000000;
+            border-color: #000000;
+            color: #ffffff;
+        }
+
+        .filter-btn.primary:hover {
+            background-color: #333333;
+            border-color: #333333;
+            transform: translateY(-1px);
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
         }
 
-        .btn-apply:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
-            background: #333333;
+        .filter-btn.secondary {
+            background-color: #ffffff;
+            border-color: #6c757d;
+            color: #6c757d;
         }
 
-        .btn-clear {
-            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-            color: white;
-            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+        .filter-btn.secondary:hover {
+            background-color: #6c757d;
+            color: #ffffff;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
         }
 
-        .btn-clear:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+        .filter-btn.danger {
+            background-color: #ffffff;
+            border-color: #dc3545;
+            color: #dc3545;
         }
 
-        .btn-refresh {
-            background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
-            color: white;
-            box-shadow: 0 4px 15px rgba(107, 114, 128, 0.3);
+        .filter-btn.danger:hover {
+            background-color: #dc3545;
+            color: #ffffff;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
         }
 
-        .btn-refresh:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(107, 114, 128, 0.4);
+        /* Table Container */
+        .table-container {
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e9ecef;
+            overflow: hidden;
         }
 
-        /* Table Header Updates */
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem;
+            border-bottom: 2px solid #f8f9fa;
+            background: #f8f9fa;
+        }
+
         .results-info {
             font-weight: 500;
-            color: #374151;
+            color: #000000;
+            font-size: 0.95rem;
         }
 
         .results-count {
             font-weight: 700;
-            color: #111827;
+            color: #000000;
         }
 
-        .table-actions {
+        /* Table Styles */
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        .modern-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #ffffff;
+        }
+
+        .modern-table th {
+            background-color: #f8f9fa;
+            color: #000000;
+            font-weight: 700;
+            padding: 1.25rem 1rem;
+            text-align: left;
+            border-bottom: 2px solid #e9ecef;
+            font-size: 0.9rem;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .modern-table td {
+            padding: 1.25rem 1rem;
+            border-bottom: 1px solid #f1f3f4;
+            color: #000000;
+            font-size: 0.95rem;
+            vertical-align: middle;
+        }
+
+        .modern-table tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .modern-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Table Cell Styles */
+        .order-id-cell {
+            font-weight: 600;
+            color: #000000;
             display: flex;
+            align-items: center;
             gap: 0.5rem;
         }
 
+        .order-id-cell i {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .customer-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .customer-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background-color: #000000;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .customer-details {
+            flex: 1;
+        }
+
+        .customer-name {
+            font-weight: 600;
+            color: #000000;
+            font-size: 0.95rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .customer-email {
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+
+        .product-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .product-image {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+
+        .product-placeholder {
+            width: 50px;
+            height: 50px;
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6c757d;
+            font-size: 1.2rem;
+        }
+
+        .product-details h6 {
+            margin: 0;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #000000;
+            margin-bottom: 0.25rem;
+        }
+
+        .product-details small {
+            color: #6c757d;
+            font-size: 0.8rem;
+        }
+
+        .amount-cell {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+            color: #000000;
+            font-size: 1rem;
+        }
+
+        .amount-cell i {
+            color: #6c757d;
+            font-size: 0.85rem;
+        }
+
+        .date-cell {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #000000;
+        }
+
+        .date-cell i {
+            color: #6c757d;
+            font-size: 0.85rem;
+        }
+
+        .reason-cell {
+            max-width: 200px;
+        }
+
+        .reason-text {
+            font-size: 0.85rem;
+            color: #000000;
+            line-height: 1.4;
+        }
+
+        /* Status Badges */
+        .status-display {
+            display: flex;
+            justify-content: center;
+        }
+
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: capitalize;
+        }
+
+        .status-pending {
+            background-color: rgba(255, 193, 7, 0.1);
+            color: #ffc107;
+        }
+
+        .status-approved,
+        .status-returned {
+            background-color: rgba(40, 167, 69, 0.1);
+            color: #28a745;
+        }
+
+        .status-rejected {
+            background-color: rgba(220, 53, 69, 0.1);
+            color: #dc3545;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+        }
+
+        .btn-action {
+            padding: 0.5rem 0.75rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            text-decoration: none;
+        }
+
+        .btn-success {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: #218838;
+            color: white;
+            text-decoration: none;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(40, 167, 69, 0.3);
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #c82333;
+            color: white;
+            text-decoration: none;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(220, 53, 69, 0.3);
+        }
+
+        .btn-info {
+            background-color: #000000;
+            color: white;
+        }
+
+        .btn-info:hover {
+            background-color: #333333;
+            color: white;
+            text-decoration: none;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #6c757d;
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            color: #dee2e6;
+            margin-bottom: 1.5rem;
+        }
+
+        .empty-state h4 {
+            color: #000000;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .empty-state p {
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+            color: #6c757d;
+        }
+
+        .empty-state small {
+            color: #6c757d;
+            font-size: 0.875rem;
+        }
+
+        /* Pagination */
+        .pagination-wrapper {
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f8f9fa;
+            padding: 1.5rem;
+        }
+
+        .pagination-info {
+            color: #6c757d;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .pagination {
+            margin: 0;
+            display: flex;
+            gap: 0.25rem;
+        }
+
+        .page-link {
+            color: #000000;
+            border: 2px solid #e9ecef;
+            background: #ffffff;
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 40px;
+        }
+
+        .page-link:hover {
+            background-color: #f8f9fa;
+            border-color: #000000;
+            color: #000000;
+            text-decoration: none;
+        }
+
+        .page-item.active .page-link {
+            background-color: #000000;
+            border-color: #000000;
+            color: #ffffff;
+        }
+
+        .page-item.disabled .page-link {
+            color: #6c757d;
+            background-color: #ffffff;
+            border-color: #e9ecef;
+            cursor: not-allowed;
+        }
+
+        /* Animation Classes */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .filters-card,
+        .table-container {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .filters-card { animation-delay: 0.1s; }
+        .table-container { animation-delay: 0.2s; }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+
+        /* Responsive Design */
         @media (max-width: 768px) {
             .main-content {
                 margin-left: 0;
-                padding: 15px;
+                padding: 1rem;
+                padding-top: 80px;
             }
+
+            .page-header {
+                padding: 1.5rem;
+                margin-bottom: 1.5rem;
+            }
+
+            .page-title {
+                font-size: 2rem;
+            }
+
+            .stats-row {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 1rem;
+            }
+
+            .stat-card {
+                padding: 1.5rem;
+            }
+
             .filters-grid {
                 grid-template-columns: 1fr;
                 gap: 1rem;
             }
+
             .date-range-container,
             .amount-range-container {
                 grid-template-columns: 1fr;
                 gap: 0.5rem;
             }
+
             .date-separator,
             .amount-separator {
                 transform: rotate(90deg);
                 font-size: 1rem;
             }
+
             .filter-actions {
                 flex-direction: column;
             }
-            .btn-filter {
+
+            .filter-btn {
                 width: 100%;
             }
-            .action-buttons {
-                flex-direction: column;
+
+            .table-container {
+                padding: 1rem;
             }
+
             .table-header {
                 flex-direction: column;
                 gap: 1rem;
                 text-align: center;
+            }
+
+            .modern-table {
+                font-size: 0.85rem;
+            }
+
+            .modern-table th,
+            .modern-table td {
+                padding: 0.75rem 0.5rem;
+            }
+
+            .customer-info {
+                flex-direction: column;
+                gap: 0.5rem;
+                text-align: center;
+            }
+
+            .customer-avatar {
+                width: 40px;
+                height: 40px;
+                font-size: 1rem;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+                gap: 0.25rem;
+            }
+
+            .btn-action {
+                padding: 0.375rem 0.5rem;
+                font-size: 0.8rem;
+            }
+
+            .pagination-wrapper {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .page-header {
+                padding: 1rem;
+            }
+
+            .page-title {
+                font-size: 1.75rem;
+            }
+
+            .filters-card,
+            .table-container {
+                padding: 1rem;
+            }
+
+            .modern-table th,
+            .modern-table td {
+                padding: 0.5rem 0.25rem;
+            }
+
+            .customer-name {
+                font-size: 0.85rem;
+            }
+
+            .customer-email {
+                font-size: 0.75rem;
+            }
+
+            .status-badge {
+                font-size: 0.75rem;
+                padding: 0.375rem 0.75rem;
+            }
+
+            .btn-action {
+                padding: 0.25rem 0.5rem;
+                font-size: 0.75rem;
             }
         }
     </style>
@@ -553,29 +942,27 @@
             </div>
         </div>
 
-        <!-- Advanced Filters Section -->
-        <div class="filters-container">
+        <!-- Search and Filters -->
+        <div class="filters-card">
             <div class="filters-header">
                 <h3 class="filters-title">
-                    <i class="fas fa-filter"></i>
-                    Advanced Filters & Sorting
+                    <i class="fas fa-search"></i>
+                    Search & Filter Return Requests
                 </h3>
-                <p class="filters-subtitle">Refine your return requests view</p>
             </div>
-            
-            <form id="filtersForm" class="filters-form">
+            <form id="filtersForm">
                 <div class="filters-grid">
                     <!-- Search Filter -->
                     <div class="filter-group">
                         <label class="filter-label">
                             <i class="fas fa-search"></i>
-                            Search
+                            Search Return Requests
                         </label>
                         <div class="search-container">
                             <input type="text" 
                                    name="search" 
                                    id="searchInput" 
-                                   class="filter-input"
+                                   class="form-control"
                                    placeholder="Search by Order ID, Customer name, Email..."
                                    value="<%= searchTerm || '' %>">
                             <i class="fas fa-search search-icon"></i>
@@ -586,9 +973,9 @@
                     <div class="filter-group">
                         <label class="filter-label">
                             <i class="fas fa-flag"></i>
-                            Status
+                            Status Filter
                         </label>
-                        <select name="status" class="filter-select">
+                        <select name="status" class="form-select">
                             <option value="">All Status</option>
                             <option value="Pending" <%= statusFilter === 'Pending' ? 'selected' : '' %>>Pending</option>
                             <option value="Approved" <%= statusFilter === 'Approved' ? 'selected' : '' %>>Approved</option>
@@ -602,7 +989,7 @@
                             <i class="fas fa-layer-group"></i>
                             Return Type
                         </label>
-                        <select name="returnType" class="filter-select">
+                        <select name="returnType" class="form-select">
                             <option value="">All Types</option>
                             <option value="individual" <%= (typeof returnType !== 'undefined' && returnType === 'individual') ? 'selected' : '' %>>Individual Items</option>
                             <option value="entire" <%= (typeof returnType !== 'undefined' && returnType === 'entire') ? 'selected' : '' %>>Entire Order</option>
@@ -615,7 +1002,7 @@
                             <i class="fas fa-sort"></i>
                             Sort By
                         </label>
-                        <select name="sortBy" class="filter-select">
+                        <select name="sortBy" class="form-select">
                             <option value="newest" <%= (typeof sortBy !== 'undefined' && sortBy === 'newest') ? 'selected' : '' %>>Newest First</option>
                             <option value="oldest" <%= (typeof sortBy !== 'undefined' && sortBy === 'oldest') ? 'selected' : '' %>>Oldest First</option>
                             <option value="amount-high" <%= (typeof sortBy !== 'undefined' && sortBy === 'amount-high') ? 'selected' : '' %>>Amount: High to Low</option>
@@ -634,12 +1021,12 @@
                         <div class="date-range-container">
                             <input type="date" 
                                    name="dateFrom" 
-                                   class="filter-input date-input"
+                                   class="form-control"
                                    value="<%= (typeof dateFrom !== 'undefined') ? dateFrom : '' %>">
                             <span class="date-separator">to</span>
                             <input type="date" 
                                    name="dateTo" 
-                                   class="filter-input date-input"
+                                   class="form-control"
                                    value="<%= (typeof dateTo !== 'undefined') ? dateTo : '' %>">
                         </div>
                     </div>
@@ -655,7 +1042,7 @@
                                 <span class="currency-symbol">₹</span>
                                 <input type="number" 
                                        name="minAmount" 
-                                       class="filter-input amount-input"
+                                       class="form-control amount-input"
                                        placeholder="Min"
                                        min="0"
                                        step="100"
@@ -666,7 +1053,7 @@
                                 <span class="currency-symbol">₹</span>
                                 <input type="number" 
                                        name="maxAmount" 
-                                       class="filter-input amount-input"
+                                       class="form-control amount-input"
                                        placeholder="Max"
                                        min="0"
                                        step="100"
@@ -678,17 +1065,17 @@
 
                 <!-- Filter Action Buttons -->
                 <div class="filter-actions">
-                    <button type="submit" class="btn-filter btn-apply">
-                        <i class="fas fa-check"></i>
+                    <button type="submit" class="filter-btn primary">
+                        <i class="fas fa-filter"></i>
                         Apply Filters
                     </button>
-                    <button type="button" class="btn-filter btn-clear" onclick="clearAllFilters()">
+                    <button type="button" class="filter-btn secondary" onclick="resetFilters()">
+                        <i class="fas fa-refresh"></i>
+                        Reset
+                    </button>
+                    <button type="button" class="filter-btn danger" onclick="clearAllFilters()">
                         <i class="fas fa-times"></i>
                         Clear All
-                    </button>
-                    <button type="button" class="btn-filter btn-refresh" onclick="refreshData()">
-                        <i class="fas fa-sync-alt"></i>
-                        Refresh
                     </button>
                 </div>
             </form>
@@ -696,7 +1083,6 @@
 
         <!-- Table Container -->
         <div class="table-container">
-            <!-- Table Header with Results Info -->
             <div class="table-header">
                 <div class="results-info">
                     <% if (returnRequests && returnRequests.length > 0) { %>
@@ -706,26 +1092,20 @@
                         <span class="results-count">No return requests found</span>
                     <% } %>
                 </div>
-                <!-- <div class="table-actions">
-                    <button class="btn btn-outline-secondary btn-sm" onclick="exportData()">
-                        <i class="fas fa-download"></i> Export
-                    </button>
-                </div> -->
             </div>
 
-            <!-- Table -->
-            <div class="table-responsive">
-                <table class="table return-table">
+            <div class="table-wrapper">
+                <table class="modern-table">
                     <thead>
                         <tr>
-                            <th>Order ID</th>
-                            <th>Customer</th>
-                            <th>Products</th>
-                            <th>Amount</th>
-                            <th>Request Date</th>
-                            <th>Reason</th>
-                            <th>Status</th>
-                            <th>Actions</th>
+                            <th class="col-order-id">Order ID</th>
+                            <th class="col-customer">Customer</th>
+                            <th class="col-products">Products</th>
+                            <th class="col-amount">Amount</th>
+                            <th class="col-date">Request Date</th>
+                            <th class="col-reason">Reason</th>
+                            <th class="col-status">Status</th>
+                            <th class="col-actions">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -733,12 +1113,20 @@
                             <% returnRequests.forEach(order => { %>
                                 <tr>
                                     <td>
-                                        <strong><%= order.orderId %></strong>
+                                        <div class="order-id-cell">
+                                            <i class="fas fa-receipt"></i>
+                                            <span><%= order.orderId %></span>
+                                        </div>
                                     </td>
                                     <td>
                                         <div class="customer-info">
-                                            <h6><%= order.userId ? order.userId.fullname || 'Unknown Customer' : 'Unknown Customer' %></h6>
-                                            <small><%= order.userId ? order.userId.email || 'No email' : 'No email' %></small>
+                                            <div class="customer-avatar">
+                                                <%= order.userId?.fullname ? order.userId.fullname.charAt(0).toUpperCase() : 'U' %>
+                                            </div>
+                                            <div class="customer-details">
+                                                <div class="customer-name"><%= order.userId ? order.userId.fullname || 'Unknown Customer' : 'Unknown Customer' %></div>
+                                                <div class="customer-email"><%= order.userId ? order.userId.email || 'No email' : 'No email' %></div>
+                                            </div>
                                         </div>
                                     </td>
                                     <td>
@@ -824,68 +1212,66 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <div class="amount-breakdown">
-                                            <div class="subtotal">
-                                                <small class="text-muted">
-                                                    <% if (order.returnType === 'individual') { %>
-                                                        Return Amount
-                                                    <% } else { %>
-                                                        Total Amount
-                                                    <% } %>
-                                                </small>
-                                            </div>
-                                            <div class="total-price">
-                                                <strong>₹<%= order.returnAmount ? order.returnAmount.toFixed(2) : '0.00' %></strong>
+                                        <div class="amount-cell">
+                                            <i class="fas fa-rupee-sign"></i>
+                                            <span>₹<%= order.returnAmount ? order.returnAmount.toFixed(2) : '0.00' %></span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="date-cell">
+                                            <i class="fas fa-calendar-alt"></i>
+                                            <span><%= order.returnRequestedAt ? new Date(order.returnRequestedAt).toLocaleDateString('en-IN') : 'N/A' %></span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="reason-cell">
+                                            <div class="reason-text">
+                                                <% if (order.returnType === 'individual' && order.returnItems && order.returnItems.length > 0) { %>
+                                                    <%= order.returnItems[0].returnReason || 'No reason provided' %>
+                                                <% } else { %>
+                                                    <%= order.returnReason || 'No reason provided' %>
+                                                <% } %>
                                             </div>
                                         </div>
                                     </td>
                                     <td>
-                                        <%= order.returnRequestedAt ? new Date(order.returnRequestedAt).toLocaleDateString('en-IN') : 'N/A' %>
-                                    </td>
-                                    <td>
-                                        <small>
-                                            <% if (order.returnType === 'individual' && order.returnItems && order.returnItems.length > 0) { %>
-                                                <%= order.returnItems[0].returnReason || 'No reason provided' %>
-                                            <% } else { %>
-                                                <%= order.returnReason || 'No reason provided' %>
-                                            <% } %>
-                                        </small>
-                                    </td>
-                                    <td>
-                                        <% 
-                                        let statusClass = 'status-pending';
-                                        let statusText = 'Pending';
-                                        
-                                        if (order.returnType === 'individual') {
-                                            // Individual item return status
-                                            const hasReturnedItems = order.returnItems.some(item => item.status === 'Returned');
-                                            const hasPendingItems = order.returnItems.some(item => item.status === 'Return Request');
-                                            const hasRejectedItems = order.returnItems.some(item => item.returnRejectedAt && item.status === 'Active');
+                                        <div class="status-display">
+                                            <% 
+                                            let statusClass = 'status-pending';
+                                            let statusText = 'Pending';
                                             
-                                            if (hasReturnedItems && !hasPendingItems && !hasRejectedItems) {
-                                                statusClass = 'status-returned';
-                                                statusText = 'Approved';
-                                            } else if (hasRejectedItems && !hasPendingItems && !hasReturnedItems) {
-                                                statusClass = 'status-rejected';
-                                                statusText = 'Rejected';
-                                            } else if (hasPendingItems) {
-                                                statusClass = 'status-pending';
-                                                statusText = 'Pending';
+                                            if (order.returnType === 'individual') {
+                                                // Individual item return status
+                                                const hasReturnedItems = order.returnItems.some(item => item.status === 'Returned');
+                                                const hasPendingItems = order.returnItems.some(item => item.status === 'Return Request');
+                                                const hasRejectedItems = order.returnItems.some(item => item.returnRejectedAt && item.status === 'Active');
+                                                
+                                                if (hasReturnedItems && !hasPendingItems && !hasRejectedItems) {
+                                                    statusClass = 'status-approved';
+                                                    statusText = 'Approved';
+                                                } else if (hasRejectedItems && !hasPendingItems && !hasReturnedItems) {
+                                                    statusClass = 'status-rejected';
+                                                    statusText = 'Rejected';
+                                                } else if (hasPendingItems) {
+                                                    statusClass = 'status-pending';
+                                                    statusText = 'Pending';
+                                                }
+                                            } else {
+                                                // Entire order return status
+                                                if (order.status === 'Returned') {
+                                                    statusClass = 'status-approved';
+                                                    statusText = 'Approved';
+                                                } else if (order.returnRejectedAt) {
+                                                    statusClass = 'status-rejected';
+                                                    statusText = 'Rejected';
+                                                }
                                             }
-                                        } else {
-                                            // Entire order return status
-                                            if (order.status === 'Returned') {
-                                                statusClass = 'status-returned';
-                                                statusText = 'Approved';
-                                            } else if (order.returnRejectedAt) {
-                                                statusClass = 'status-rejected';
-                                                statusText = 'Rejected';
-                                            }
-                                        }
-                                        %>
-                                        <span class="status-badge <%= statusClass %>">
-                                            <%= statusText %>
-                                        </span>
+                                            %>
+                                            <span class="status-badge <%= statusClass %>">
+                                                <i class="fas fa-<%= statusClass === 'status-pending' ? 'clock' : statusClass === 'status-approved' ? 'check-circle' : 'times-circle' %>"></i>
+                                                <span><%= statusText %></span>
+                                            </span>
+                                        </div>
                                     </td>
                                     <td>
                                         <div class="action-buttons">
@@ -905,18 +1291,21 @@
                                             %>
                                             
                                             <% if (showApproveReject && !isRejected) { %>
-                                                <button class="btn btn-success btn-sm" 
-                                                        onclick="approveReturn('<%= order._id %>')">
-                                                    <i class="fas fa-check"></i> Approve
+                                                <button class="btn-action btn-success" 
+                                                        onclick="approveReturn('<%= order._id %>')"
+                                                        title="Approve Return">
+                                                    <i class="fas fa-check"></i>
                                                 </button>
-                                                <button class="btn btn-danger btn-sm" 
-                                                        onclick="rejectReturn('<%= order._id %>')">
-                                                    <i class="fas fa-times"></i> Reject
+                                                <button class="btn-action btn-danger" 
+                                                        onclick="rejectReturn('<%= order._id %>')"
+                                                        title="Reject Return">
+                                                    <i class="fas fa-times"></i>
                                                 </button>
                                             <% } %>
-                                            <button class="btn btn-info btn-sm" 
-                                                    onclick="viewReturnDetails('<%= order._id %>')">
-                                                <i class="fas fa-eye"></i> View
+                                            <button class="btn-action btn-info" 
+                                                    onclick="viewReturnDetails('<%= order._id %>')"
+                                                    title="View Details">
+                                                <i class="fas fa-eye"></i>
                                             </button>
                                         </div>
                                     </td>
@@ -940,16 +1329,17 @@
 
             <!-- Pagination -->
             <% if (returnRequests && returnRequests.length > 0) { %>
-                <div class="pagination-container">
+                <div class="pagination-wrapper">
+                    <div class="pagination-info">
+                        Showing <span><%= startIdx + 1 %></span> to <span><%= endIdx %></span> of <span><%= totalRequests %></span> return requests
+                    </div>
                     <nav aria-label="Return requests pagination">
-                        <ul class="pagination justify-content-center mb-0">
-                            <% if (currentPage > 1) { %>
-                                <li class="page-item">
-                                    <a class="page-link" href="?page=<%= currentPage - 1 %>&search=<%= searchTerm || '' %>&status=<%= statusFilter || '' %>">
-                                        <i class="fas fa-chevron-left"></i>
-                                    </a>
-                                </li>
-                            <% } %>
+                        <ul class="pagination">
+                            <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>">
+                                <a class="page-link" href="?page=<%= currentPage - 1 %>&search=<%= searchTerm || '' %>&status=<%= statusFilter || '' %>" aria-label="Previous">
+                                    <i class="fas fa-chevron-left"></i>
+                                </a>
+                            </li>
                             
                             <% for (let i = Math.max(1, currentPage - 2); i <= Math.min(totalPages, currentPage + 2); i++) { %>
                                 <li class="page-item <%= i === currentPage ? 'active' : '' %>">
@@ -959,13 +1349,11 @@
                                 </li>
                             <% } %>
                             
-                            <% if (currentPage < totalPages) { %>
-                                <li class="page-item">
-                                    <a class="page-link" href="?page=<%= currentPage + 1 %>&search=<%= searchTerm || '' %>&status=<%= statusFilter || '' %>">
-                                        <i class="fas fa-chevron-right"></i>
-                                    </a>
-                                </li>
-                            <% } %>
+                            <li class="page-item <%= currentPage === totalPages ? 'disabled' : '' %>">
+                                <a class="page-link" href="?page=<%= currentPage + 1 %>&search=<%= searchTerm || '' %>&status=<%= statusFilter || '' %>" aria-label="Next">
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                            </li>
                         </ul>
                     </nav>
                 </div>
@@ -1064,6 +1452,14 @@
             
             // Navigate to filtered URL
             window.location.href = url.toString();
+        }
+
+        function resetFilters() {
+            // Reset form
+            document.getElementById('filtersForm').reset();
+            
+            // Navigate to base URL without parameters
+            window.location.href = window.location.pathname;
         }
 
         function clearAllFilters() {

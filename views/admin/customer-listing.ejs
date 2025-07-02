@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Management - ArvanClaire</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/styles/admin/customer-listing.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <title>Customer Management</title>
 </head>
 <body>
+    <!-- Include Admin Sidebar -->
     <%- include("../partials/admin/sidebar") %>
 
     <!-- Main Content -->
@@ -24,38 +25,79 @@
 
         <!-- Page Header -->
         <div class="page-header">
-            <h1 class="page-title">Customer Management</h1>
-            <p class="page-subtitle">Manage and view all registered customers</p>
+            <div class="header-content">
+                <div class="header-left">
+                    <h1 class="page-title">Customer Management</h1>
+                    <p class="page-subtitle">Manage and view all registered customers</p>
+                </div>
+                <div class="header-right">
+                </div>
+            </div>
         </div>
 
-        <!-- Customer Table Container -->
-        <div class="customer-table-container">
-            <!-- Table Controls -->
-            <div class="table-controls">
-                <div class="search-box">
+        <!-- Search and Filters -->
+        <div class="filters-card">
+            <div class="filters-header">
+                <h3 class="filters-title">
                     <i class="fas fa-search"></i>
-                    <input type="text" class="form-control" id="customerSearch" placeholder="Search customers..." value="<%= searchTerm %>">
+                    Search & Filter Customers
+                </h3>
+            </div>
+            <div class="filters-grid">
+                <div class="filter-group">
+                    <label class="filter-label">Search Customers</label>
+                    <div class="search-input-wrapper">
+                        <input type="text" class="form-control search-input" id="customerSearch" placeholder="Search by name or email..." value="<%= searchTerm %>">
+                    </div>
                 </div>
-                <div class="filter-controls">
-                    <select class="form-select" id="statusFilter" style="width: auto;">
+                <div class="filter-group">
+                    <label class="filter-label">Status Filter</label>
+                    <select class="form-select" id="statusFilter">
                         <option value="" <%= statusFilter === '' ? 'selected' : '' %>>All Status</option>
                         <option value="active" <%= statusFilter === 'active' ? 'selected' : '' %>>Active</option>
                         <option value="blocked" <%= statusFilter === 'blocked' ? 'selected' : '' %>>Blocked</option>
                     </select>
                 </div>
+                <div class="filter-group filter-actions">
+                    <button type="button" class="filter-btn primary" onclick="applyFilters()">
+                        <i class="fas fa-filter"></i>
+                        Apply Filters
+                    </button>
+                    <button type="button" class="filter-btn secondary" onclick="resetFilters()">
+                        <i class="fas fa-refresh"></i>
+                        Reset
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Customers Table Section -->
+        <div class="customers-card">
+            <div class="card-header">
+                <div class="header-left">
+                    <h3 class="card-title">
+                        <i class="fas fa-list"></i>
+                        Customer Directory
+                    </h3>
+                    <p class="card-subtitle">Complete list of registered customers</p>
+                </div>
+                <div class="header-right">
+                    <div class="customer-count">
+                        <span class="count-badge" id="filteredCustomerCount"><%= users.length %> customers</span>
+                    </div>
+                </div>
             </div>
 
-            <!-- Customers Table -->
-            <div class="table-responsive">
-                <table class="customers-table">
+            <div class="table-wrapper">
+                <table class="modern-table">
                     <thead>
                         <tr>
-                            <th>Customer</th>
-                            <th>Email</th>
-                            <th>Phone</th>
-                            <th>Join Date</th>
-                            <th>Status</th>
-                            <th>Actions</th>
+                            <th class="col-customer">Customer</th>
+                            <th class="col-email">Email</th>
+                            <th class="col-phone">Phone</th>
+                            <th class="col-date">Join Date</th>
+                            <th class="col-status">Status</th>
+                            <th class="col-actions">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="customersTableBody">
@@ -67,22 +109,47 @@
                                             <%= user.fullName ? user.fullName.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase() %>
                                         </div>
                                         <div class="customer-details">
-                                            <%= user.fullName || 'Unnamed User' %>
+                                            <div class="customer-name"><%= user.fullName || 'Unnamed User' %></div>
+                                            <div class="customer-id">ID: <%= user._id.toString().slice(-6) %></div>
                                         </div>
                                     </div>
                                 </td>
-                                <td><%= user.email %></td>
-                                <td><%= user.phone || 'N/A' %></td>
-                                <td><%= new Date(user.createdAt).toLocaleDateString() %></td>
                                 <td>
-                                    <span class="status-badge status-<%= user.isBlocked ? 'blocked' : 'active' %>">
-                                        <%= user.isBlocked ? 'blocked' : 'active' %>
-                                    </span>
+                                    <div class="email-cell">
+                                        <i class="fas fa-envelope"></i>
+                                        <span><%= user.email %></span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="phone-cell">
+                                        <% if (user.phone) { %>
+                                            <i class="fas fa-phone"></i>
+                                            <span><%= user.phone %></span>
+                                        <% } else { %>
+                                            <span class="no-data">Not provided</span>
+                                        <% } %>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="date-cell">
+                                        <i class="fas fa-calendar-alt"></i>
+                                        <span><%= new Date(user.createdAt).toLocaleDateString() %></span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="status-display">
+                                        <span class="status-badge status-<%= user.isBlocked ? 'blocked' : 'active' %>">
+                                            <i class="fas fa-<%= user.isBlocked ? 'ban' : 'check-circle' %>"></i>
+                                            <span><%= user.isBlocked ? 'Blocked' : 'Active' %></span>
+                                        </span>
+                                    </div>
                                 </td>
                                 <td>
                                     <div class="action-buttons">
-                                        <button class="btn-action btn-toggle <%= user.isBlocked ? 'blocked' : '' %>" onclick="toggleCustomerStatus('<%= user._id %>', <%= user.isBlocked %>)">
-                                            <%= user.isBlocked ? 'Activate' : 'Block' %>
+                                        <button class="btn btn-sm <%= user.isBlocked ? 'btn-success' : 'btn-warning' %>" 
+                                                onclick="toggleCustomerStatus('<%= user._id %>', <%= user.isBlocked %>)"
+                                                title="<%= user.isBlocked ? 'Activate Customer' : 'Block Customer' %>">
+                                            <i class="fas fa-<%= user.isBlocked ? 'check' : 'ban' %>"></i>
                                         </button>
                                     </div>
                                 </td>
@@ -93,15 +160,15 @@
             </div>
 
             <!-- Pagination -->
-            <div class="pagination-container">
+            <div class="pagination-wrapper">
                 <div class="pagination-info">
                     Showing <span id="showingStart"><%= startIdx + 1 %></span> to <span id="showingEnd"><%= endIdx %></span> of <span id="totalCustomers"><%= totalUsers %></span> customers
                 </div>
                 <nav aria-label="Customer pagination">
-                    <ul class="pagination pagination-sm mb-0" id="pagination">
+                    <ul class="pagination" id="pagination">
                         <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>" id="prevPage">
                             <a class="page-link" href="#" aria-label="Previous">
-                                <span aria-hidden="true">«</span>
+                                <i class="fas fa-chevron-left"></i>
                             </a>
                         </li>
                         <% for(let i = 1; i <= totalPages; i++) { %>
@@ -111,7 +178,7 @@
                         <% } %>
                         <li class="page-item <%= currentPage === totalPages ? 'disabled' : '' %>" id="nextPage">
                             <a class="page-link" href="#" aria-label="Next">
-                                <span aria-hidden="true">»</span>
+                                <i class="fas fa-chevron-right"></i>
                             </a>
                         </li>
                     </ul>
@@ -164,6 +231,20 @@
             fetchUsers();
         });
 
+        // Apply filters function
+        function applyFilters() {
+            currentPage = 1;
+            fetchUsers();
+        }
+
+        // Reset filters function
+        function resetFilters() {
+            document.getElementById('customerSearch').value = '';
+            document.getElementById('statusFilter').value = '';
+            currentPage = 1;
+            fetchUsers();
+        }
+
         // Debounce function
         function debounce(func, wait) {
             let timeout;
@@ -214,7 +295,10 @@
                     title: 'Error',
                     text: 'Failed to load customers. Please try again.',
                     icon: 'error',
-                    confirmButtonColor: '#000000'
+                    confirmButtonColor: '#000000',
+                    customClass: {
+                        popup: 'modern-swal'
+                    }
                 });
             }
         }
@@ -222,24 +306,29 @@
         // Render customers table
         function renderCustomersTable(users, paginationData) {
             const tableBody = document.getElementById('customersTableBody');
+            const filteredCount = document.getElementById('filteredCustomerCount');
+            
             tableBody.innerHTML = '';
 
-            if (users.length > 0) {
-                console.log('Sample user data:', users[0]);
-                users.forEach((user, index) => {
-                    console.log(`User ${index + 1} - fullName: ${user.fullName}, email: ${user.email}`);
-                });
-            } else {
-                console.warn('No users received in renderCustomersTable');
+            if (users.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="empty-state">
+                            <div class="empty-content">
+                                <i class="fas fa-users"></i>
+                                <h5>No customers found</h5>
+                                <p>Try adjusting your search or filter criteria.</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                if (filteredCount) filteredCount.textContent = '0 customers';
+                return;
             }
 
             users.forEach(user => {
                 const displayName = user.fullName && user.fullName.trim() !== '' ? user.fullName : 'Unnamed User';
                 const avatarChar = displayName.charAt(0).toUpperCase();
-
-                if (!user.fullName || user.fullName.trim() === '') {
-                    console.warn(`Missing or empty fullName for user ID: ${user._id}, email: ${user.email}`);
-                }
 
                 const row = document.createElement('tr');
                 row.innerHTML = `
@@ -249,22 +338,45 @@
                                 ${avatarChar}
                             </div>
                             <div class="customer-details">
-                                <h6>${displayName}</h6>
+                                <div class="customer-name">${displayName}</div>
+                                <div class="customer-id">ID: ${user._id.toString().slice(-6)}</div>
                             </div>
                         </div>
                     </td>
-                    <td>${user.email}</td>
-                    <td>${user.phone || 'N/A'}</td>
-                    <td>${new Date(user.createdAt).toLocaleDateString()}</td>
                     <td>
-                        <span class="status-badge status-${user.isBlocked ? 'blocked' : 'active'}">
-                            ${user.isBlocked ? 'blocked' : 'active'}
-                        </span>
+                        <div class="email-cell">
+                            <i class="fas fa-envelope"></i>
+                            <span>${user.email}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="phone-cell">
+                            ${user.phone ? 
+                                `<i class="fas fa-phone"></i><span>${user.phone}</span>` : 
+                                `<span class="no-data">Not provided</span>`
+                            }
+                        </div>
+                    </td>
+                    <td>
+                        <div class="date-cell">
+                            <i class="fas fa-calendar-alt"></i>
+                            <span>${new Date(user.createdAt).toLocaleDateString()}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="status-display">
+                            <span class="status-badge status-${user.isBlocked ? 'blocked' : 'active'}">
+                                <i class="fas fa-${user.isBlocked ? 'ban' : 'check-circle'}"></i>
+                                <span>${user.isBlocked ? 'Blocked' : 'Active'}</span>
+                            </span>
+                        </div>
                     </td>
                     <td>
                         <div class="action-buttons">
-                            <button class="btn-action btn-toggle ${user.isBlocked ? 'blocked' : ''}" onclick="toggleCustomerStatus('${user._id}', ${user.isBlocked})">
-                                ${user.isBlocked ? 'Activate' : 'Block'}
+                            <button class="btn btn-sm ${user.isBlocked ? 'btn-success' : 'btn-warning'}" 
+                                    onclick="toggleCustomerStatus('${user._id}', ${user.isBlocked})"
+                                    title="${user.isBlocked ? 'Activate Customer' : 'Block Customer'}">
+                                <i class="fas fa-${user.isBlocked ? 'check' : 'ban'}"></i>
                             </button>
                         </div>
                     </td>
@@ -272,9 +384,11 @@
                 tableBody.appendChild(row);
             });
 
+            // Update pagination info
             document.getElementById('showingStart').textContent = paginationData.startIdx + 1 || 0;
             document.getElementById('showingEnd').textContent = paginationData.endIdx || 0;
             document.getElementById('totalCustomers').textContent = paginationData.totalUsers || 0;
+            if (filteredCount) filteredCount.textContent = `${users.length} customers`;
             totalPages = paginationData.totalPages || 1;
 
             updatePagination();
@@ -310,7 +424,10 @@
                 confirmButtonColor: '#000000',
                 cancelButtonColor: '#6c757d',
                 confirmButtonText: `Yes, ${actionText.charAt(0).toUpperCase() + actionText.slice(1)}`,
-                cancelButtonText: 'Cancel'
+                cancelButtonText: 'Cancel',
+                customClass: {
+                    popup: 'modern-swal'
+                }
             }).then(async (result) => {
                 if (result.isConfirmed) {
                     try {
@@ -331,7 +448,10 @@
                                 title: 'Success!',
                                 text: `Customer has been ${actionText}ed.`,
                                 icon: 'success',
-                                confirmButtonColor: '#000000'
+                                confirmButtonColor: '#000000',
+                                customClass: {
+                                    popup: 'modern-swal'
+                                }
                             });
                             fetchUsers();
                         } else {
@@ -343,7 +463,10 @@
                             title: 'Error',
                             text: `Failed to ${actionText} customer. Please try again.`,
                             icon: 'error',
-                            confirmButtonColor: '#000000'
+                            confirmButtonColor: '#000000',
+                            customClass: {
+                                popup: 'modern-swal'
+                            }
                         });
                     }
                 }
@@ -352,4 +475,3 @@
     </script>
 </body>
 </html>
-```

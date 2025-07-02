@@ -3,371 +3,169 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Products - Admin Dashboard</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.10.5/sweetalert2.all.min.js"></script>
+    <title>Product Management - ArvanClaire</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <%- include("../partials/admin/sidebar") %>
     <style>
+        /* Modern Product Management Styles - White Theme with Black Text */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #f8f9fa;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            color: #212529;
+            line-height: 1.6;
+        }
+
+        /* Main Content Layout */
         .main-content {
             margin-left: 250px;
+            min-height: 100vh;
             padding: 2rem;
             background-color: #f8f9fa;
-            min-height: 100vh;
         }
-        
+
+        /* Breadcrumbs */
+        .breadcrumb {
+            background: transparent;
+            padding: 0;
+            margin-bottom: 1.5rem;
+        }
+
+        .breadcrumb-item a {
+            color: #000000;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .breadcrumb-item a:hover {
+            color: #333333;
+        }
+
+        .breadcrumb-item.active {
+            color: #6c757d;
+        }
+
+        /* Page Header */
         .page-header {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e9ecef;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 2rem;
-            background: white;
-            padding: 1.5rem;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        
-        .search-filters {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            margin-bottom: 2rem;
-        }
-        
-        .products-table {
-            background: white;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
 
-        .table {
-            margin-bottom: 0;
-        }
-
-        .table th {
-            background: #f8f9fa;
-            border-top: none;
-            font-weight: 600;
-            color: #2c3e50;
-            padding: 1rem;
-            vertical-align: middle;
-        }
-
-        .table td {
-            padding: 1rem;
-            vertical-align: middle;
-            border-top: 1px solid #e9ecef;
-        }
-
-        .product-image {
-            width: 60px;
-            height: 60px;
-            object-fit: cover;
-            border-radius: 8px;
-            background: #f8f9fa;
-        }
-
-        .product-name {
-            font-weight: 600;
-            color: #2c3e50;
-            margin-bottom: 0.25rem;
-        }
-
-        .product-brand {
-            color: #7f8c8d;
-            font-size: 0.9rem;
-        }
-
-        .product-category {
-            background: #e3f2fd;
-            color: #1976d2;
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            display: inline-block;
-        }
-
-        .price-info {
-            display: flex;
-            flex-direction: column;
-            gap: 0.25rem;
-        }
-
-        .sale-price {
+        .page-header h1 {
+            font-size: 2rem;
             font-weight: 700;
-            color: #27ae60;
+            color: #000000;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.02em;
         }
 
-        .regular-price {
-            font-size: 0.9rem;
-            color: #95a5a6;
-            text-decoration: line-through;
-        }
-
-        .stock-info {
-            font-weight: 500;
-        }
-
-        .stock-low {
-            color: #e74c3c;
-        }
-
-        .stock-medium {
-            color: #f39c12;
-        }
-
-        .stock-good {
-            color: #27ae60;
-        }
-
-        .product-actions {
-            display: flex;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-        }
-        
-        .btn-sm {
-            padding: 0.375rem 0.75rem;
-            font-size: 0.875rem;
-            border-radius: 6px;
-            border: none;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .btn-primary {
-            background: #3498db;
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            background: #2980b9;
-        }
-        
-        .btn-danger {
-            background: #e74c3c;
-            color: white;
-        }
-        
-        .btn-danger:hover {
-            background: #c0392b;
-        }
-        
-        .btn-warning {
-            background: #f39c12;
-            color: white;
-        }
-        
-        .btn-warning:hover {
-            background: #e67e22;
-        }
-        
-        .btn-success {
-            background: #27ae60;
-            color: white;
-        }
-        
-        .btn-success:hover {
-            background: #229954;
-        }
-        
-        .no-products {
-            text-align: center;
-            padding: 3rem;
-            color: #7f8c8d;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-        
-        .pagination-info {
-            font-size: 0.9rem;
+        .page-header p {
             color: #6c757d;
+            margin: 0;
+            font-size: 1.1rem;
         }
 
-        .pagination-controls {
-            display: flex;
+        .btn-dark {
+            background-color: #000000;
+            border-color: #000000;
+            color: #ffffff;
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-            background: white;
-            padding: 1rem;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .btn-dark:hover {
+            background-color: #333333;
+            border-color: #333333;
+            color: #ffffff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Search and Filters Card */
+        .search-filters {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
             border: 1px solid #e9ecef;
         }
 
-        .pagination-btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            text-decoration: none;
+        .form-control, .form-select {
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            font-size: 0.95rem;
+            color: #000000;
+            background-color: #ffffff;
             transition: all 0.3s ease;
-            position: relative;
-            border: 2px solid transparent;
         }
 
-        .pagination-btn i {
-            font-size: 14px;
+        .form-control:focus, .form-select:focus {
+            border-color: #000000;
+            box-shadow: 0 0 0 0.2rem rgba(0, 0, 0, 0.1);
+            background-color: #ffffff;
+            color: #000000;
         }
 
-        .pagination-btn-first,
-        .pagination-btn-last {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-color: #667eea;
-        }
-
-        .pagination-btn-first:hover,
-        .pagination-btn-last:hover {
-            transform: scale(1.1);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-            color: white;
-        }
-
-        .pagination-btn-prev,
-        .pagination-btn-next {
-            background: #f8f9fa;
-            color: #495057;
-            border-color: #dee2e6;
-        }
-
-        .pagination-btn-prev:hover,
-        .pagination-btn-next:hover {
-            background: #e9ecef;
-            color: #0056b3;
-            transform: translateX(-2px);
-        }
-
-        .pagination-btn-next:hover {
-            transform: translateX(2px);
-        }
-
-        .pagination-btn-disabled {
-            background: #f8f9fa;
-            color: #6c757d;
-            cursor: not-allowed;
-            opacity: 0.5;
-        }
-
-        .page-numbers {
-            display: flex;
-            align-items: center;
-            gap: 0.25rem;
-            margin: 0 1rem;
-        }
-
-        .pagination-btn-page {
-            background: #f8f9fa;
-            color: #6c757d;
-            border-color: #dee2e6;
-            position: relative;
-        }
-
-        .pagination-btn-page:hover {
-            background: #e3f2fd;
-            color: #1976d2;
-            border-color: #1976d2;
-            transform: scale(1.1);
-        }
-
-        .pagination-btn-current {
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-            color: white;
-            border-color: #28a745;
-            transform: scale(1.1);
-            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
-        }
-
-        .page-number {
-            position: absolute;
-            font-size: 10px;
+        .btn-outline-primary {
+            color: #000000;
+            border-color: #000000;
+            background-color: transparent;
             font-weight: 600;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            transition: all 0.3s ease;
         }
 
-        .pagination-btn-page .page-number,
-        .pagination-btn-current .page-number {
-            color: inherit;
+        .btn-outline-primary:hover {
+            color: #ffffff;
+            background-color: #000000;
+            border-color: #000000;
         }
 
-        /* Hover animations */
-        .pagination-btn:not(.pagination-btn-disabled):hover {
-            animation: pulse 0.3s ease-in-out;
+        .btn-outline-secondary {
+            color: #6c757d;
+            border-color: #6c757d;
+            background-color: transparent;
+            font-weight: 600;
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            transition: all 0.3s ease;
         }
 
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1.1); }
+        .btn-outline-secondary:hover {
+            color: #ffffff;
+            background-color: #6c757d;
+            border-color: #6c757d;
         }
 
-        /* Active state animation */
-        .pagination-btn-current {
-            animation: glow 2s ease-in-out infinite alternate;
-        }
-
-        @keyframes glow {
-            from { box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4); }
-            to { box-shadow: 0 6px 20px rgba(40, 167, 69, 0.6); }
-        }
-
-        /* Tooltip-like effect */
-        .pagination-btn:not(.pagination-btn-disabled):hover::after {
-            content: attr(title);
-            position: absolute;
-            bottom: -35px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 11px;
-            white-space: nowrap;
-            z-index: 1000;
-            opacity: 0;
-            animation: fadeIn 0.3s ease-in-out forwards;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateX(-50%) translateY(5px); }
-            to { opacity: 1; transform: translateX(-50%) translateY(0); }
-        }
-
-        .items-per-page .form-select {
-            font-size: 0.875rem;
-            padding: 0.375rem 1.75rem 0.375rem 0.75rem;
-        }
-        
-        .status-badge {
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 500;
-        }
-        
-        .status-active {
-            background: #d4edda;
-            color: #155724;
-        }
-        
-        .status-blocked {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
+        /* Filter Summary */
         .filter-summary {
             background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
             border: 1px solid #bbdefb;
-            border-radius: 10px;
-            margin-bottom: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
         }
 
         .filter-badge {
@@ -378,52 +176,300 @@
             border-radius: 20px;
             font-size: 0.875rem;
             margin: 0 0.25rem;
+            font-weight: 500;
         }
 
-        /* Modern Pagination Styles */
-        .pagination-container {
-            background: #f8f9fa;
-            padding: 1rem;
-            border-radius: 8px;
+        /* Products Table */
+        .products-table {
+            background: #ffffff;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
             border: 1px solid #e9ecef;
         }
 
-        .pagination-info {
+        .table {
+            margin-bottom: 0;
+            color: #000000;
+        }
+
+        .table th {
+            background: #f8f9fa;
+            border-top: none;
+            border-bottom: 2px solid #e9ecef;
+            font-weight: 700;
+            color: #000000;
+            padding: 1.25rem 1rem;
+            vertical-align: middle;
+            font-size: 0.95rem;
+            letter-spacing: 0.02em;
+        }
+
+        .table td {
+            padding: 1.25rem 1rem;
+            vertical-align: middle;
+            border-top: 1px solid #e9ecef;
+            color: #000000;
+        }
+
+        .table tbody tr:hover {
+            background-color: #f8f9fa;
+            transition: background-color 0.3s ease;
+        }
+
+        /* Product Image */
+        .product-image {
+            width: 70px;
+            height: 70px;
+            object-fit: cover;
+            border-radius: 12px;
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            transition: transform 0.3s ease;
+        }
+
+        .product-image:hover {
+            transform: scale(1.1);
+        }
+
+        /* Product Details */
+        .product-name {
+            font-weight: 700;
+            color: #000000;
+            margin-bottom: 0.25rem;
+            font-size: 1rem;
+        }
+
+        .product-brand {
+            color: #6c757d;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .product-category {
+            background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+            color: #1976d2;
+            padding: 0.375rem 0.875rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-block;
+            border: 1px solid #bbdefb;
+        }
+
+        /* Price Information */
+        .price-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .sale-price {
+            font-weight: 800;
+            color: #000000;
+            font-size: 1.1rem;
+        }
+
+        .regular-price {
             font-size: 0.9rem;
+            color: #6c757d;
+            text-decoration: line-through;
+            font-weight: 500;
+        }
+
+        .badge {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            font-weight: 600;
+        }
+
+        /* Stock Information */
+        .stock-info {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .stock-low {
+            color: #dc3545;
+        }
+
+        .stock-medium {
+            color: #fd7e14;
+        }
+
+        .stock-good {
+            color: #198754;
+        }
+
+        /* Status Badges */
+        .status-badge {
+            padding: 0.375rem 0.875rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .status-active {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status-blocked {
+            background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        /* Action Buttons */
+        .product-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-sm {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.875rem;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: white;
+            border: 1px solid #007bff;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            color: white;
+            border: 1px solid #dc3545;
+        }
+
+        .btn-danger:hover {
+            background: linear-gradient(135deg, #c82333 0%, #a71e2a 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #fd7e14 0%, #e55a00 100%);
+            color: white;
+            border: 1px solid #fd7e14;
+        }
+
+        .btn-warning:hover {
+            background: linear-gradient(135deg, #e55a00 0%, #cc4d00 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(253, 126, 20, 0.3);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #198754 0%, #146c43 100%);
+            color: white;
+            border: 1px solid #198754;
+        }
+
+        .btn-success:hover {
+            background: linear-gradient(135deg, #146c43 0%, #0f5132 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(25, 135, 84, 0.3);
+        }
+
+        /* No Products State */
+        .no-products {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #6c757d;
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e9ecef;
+        }
+
+        .no-products i {
+            font-size: 4rem;
+            color: #dee2e6;
+            margin-bottom: 1.5rem;
+        }
+
+        .no-products h3 {
+            color: #000000;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .no-products p {
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Modern Pagination */
+        .pagination-container {
+            background: #ffffff;
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid #e9ecef;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            margin-top: 2rem;
+        }
+
+        .pagination-info {
+            font-size: 0.95rem;
             color: #6c757d;
             font-weight: 500;
         }
 
+        .pagination {
+            margin-bottom: 0;
+        }
+
         .pagination .page-link {
-            color: #495057;
-            background-color: #fff;
-            border: 1px solid #dee2e6;
-            padding: 0.375rem 0.75rem;
-            margin: 0 2px;
-            border-radius: 6px;
-            font-weight: 500;
+            color: #000000;
+            background-color: #ffffff;
+            border: 2px solid #e9ecef;
+            padding: 0.5rem 0.875rem;
+            margin: 0 0.125rem;
+            border-radius: 8px;
+            font-weight: 600;
             transition: all 0.3s ease;
         }
 
         .pagination .page-link:hover {
-            color: #fff;
-            background-color: #000;
-            border-color: #000;
-            transform: translateY(-1px);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            color: #ffffff;
+            background-color: #000000;
+            border-color: #000000;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
 
         .pagination .page-item.active .page-link {
-            color: #fff;
-            background-color: #000;
-            border-color: #000;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            color: #ffffff;
+            background-color: #000000;
+            border-color: #000000;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
 
         .pagination .page-item.disabled .page-link {
             color: #6c757d;
-            background-color: #fff;
-            border-color: #dee2e6;
+            background-color: #ffffff;
+            border-color: #e9ecef;
             cursor: not-allowed;
         }
 
@@ -431,22 +477,31 @@
             transform: none;
             box-shadow: none;
             color: #6c757d;
-            background-color: #fff;
-            border-color: #dee2e6;
+            background-color: #ffffff;
+            border-color: #e9ecef;
         }
 
-
-
+        /* Responsive Design */
         @media (max-width: 768px) {
             .main-content {
                 margin-left: 0;
                 padding: 1rem;
+                padding-top: 80px;
             }
 
             .page-header {
                 flex-direction: column;
-                gap: 1rem;
+                gap: 1.5rem;
                 text-align: center;
+                padding: 1.5rem;
+            }
+
+            .page-header h1 {
+                font-size: 1.75rem;
+            }
+
+            .search-filters {
+                padding: 1.5rem;
             }
 
             .products-table {
@@ -455,13 +510,13 @@
 
             .table th,
             .table td {
-                padding: 0.5rem;
-                font-size: 0.9rem;
+                padding: 0.75rem 0.5rem;
+                font-size: 0.875rem;
             }
 
             .product-image {
-                width: 40px;
-                height: 40px;
+                width: 50px;
+                height: 50px;
             }
 
             .product-actions {
@@ -470,7 +525,7 @@
             }
 
             .product-actions .btn {
-                padding: 0.25rem 0.5rem;
+                padding: 0.375rem 0.5rem;
                 font-size: 0.8rem;
             }
 
@@ -478,10 +533,11 @@
                 flex-direction: column;
                 gap: 1rem;
                 text-align: center;
+                padding: 1rem;
             }
 
             .pagination-info {
-                font-size: 0.8rem;
+                font-size: 0.875rem;
             }
 
             .pagination {
@@ -489,40 +545,151 @@
             }
 
             .pagination .page-link {
-                padding: 0.25rem 0.5rem;
-                font-size: 0.8rem;
-                margin: 0 1px;
+                padding: 0.375rem 0.625rem;
+                font-size: 0.875rem;
+                margin: 0 0.0625rem;
             }
+        }
+
+        @media (max-width: 576px) {
+            .main-content {
+                padding: 0.75rem;
+                padding-top: 80px;
+            }
+
+            .page-header {
+                padding: 1rem;
+            }
+
+            .page-header h1 {
+                font-size: 1.5rem;
+            }
+
+            .search-filters {
+                padding: 1rem;
+            }
+
+            .table th,
+            .table td {
+                padding: 0.5rem 0.25rem;
+                font-size: 0.8rem;
+            }
+
+            .product-image {
+                width: 40px;
+                height: 40px;
+            }
+
+            .product-name {
+                font-size: 0.875rem;
+            }
+
+            .product-brand {
+                font-size: 0.75rem;
+            }
+
+            .sale-price {
+                font-size: 1rem;
+            }
+
+            .btn-sm {
+                padding: 0.25rem 0.5rem;
+                font-size: 0.75rem;
+            }
+        }
+
+        /* Animation Classes */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .page-header,
+        .search-filters,
+        .filter-summary,
+        .products-table,
+        .no-products,
+        .pagination-container {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .page-header { animation-delay: 0.1s; }
+        .search-filters { animation-delay: 0.2s; }
+        .filter-summary { animation-delay: 0.3s; }
+        .products-table { animation-delay: 0.4s; }
+        .pagination-container { animation-delay: 0.5s; }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
         }
     </style>
 </head>
 <body>
     <div class="main-content">
-        <nav aria-label="breadcrumb">
+        <!-- Breadcrumbs -->
+        <nav aria-label="breadcrumb" class="mb-3">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/admin-dashboard"><i class="fas fa-home"></i> Dashboard</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Products</li>
+                <li class="breadcrumb-item active" aria-current="page">Product Management</li>
             </ol>
         </nav>
         
+        <!-- Page Header -->
         <div class="page-header">
-            <div>
-                <h1 class="mb-0">Product Management</h1>
-                <p class="text-muted mb-0">Manage your product inventory</p>
+            <div class="d-flex justify-content-between align-items-center w-100">
+                <div class="header-left">
+                    <h1 class="mb-0">Product Management</h1>
+                    <p class="mb-0">Manage and organize your product inventory</p>
+                </div>
+                <div class="header-right">
+                    <a href="/add-product" class="btn btn-dark">
+                        <i class="fas fa-plus me-2"></i>Add New Product
+                    </a>
+                </div>
             </div>
-            <a href="/add-product" class="btn btn-dark">
-                <i class="fas fa-plus"></i> Add New Product
-            </a>
         </div>
 
         <!-- Search and Filters -->
         <div class="search-filters">
+            <div class="filters-header mb-3">
+                <h3 class="mb-0">
+                    <i class="fas fa-search me-2"></i>
+                    Search & Filter Products
+                </h3>
+            </div>
             <form method="GET" action="/get-product">
                 <div class="row g-3">
                     <div class="col-md-4">
-                        <input type="text" class="form-control" name="search" placeholder="Search products..." value="<%= search || '' %>">
+                        <label class="form-label fw-semibold">Search Products</label>
+                        <div class="position-relative">
+                            <i class="fas fa-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
+                            <input type="text" class="form-control ps-5" name="search" placeholder="Search by name, brand..." value="<%= search || '' %>">
+                        </div>
                     </div>
                     <div class="col-md-3">
+                        <label class="form-label fw-semibold">Category Filter</label>
                         <select class="form-select" name="category">
                             <option value="">All Categories</option>
                             <% if (categories && categories.length > 0) { %>
@@ -535,13 +702,15 @@
                         </select>
                     </div>
                     <div class="col-md-2">
-                        <button type="submit" class="btn btn-outline-primary w-100">
-                            <i class="fas fa-search"></i> Search
+                        <label class="form-label">&nbsp;</label>
+                        <button type="submit" class="btn btn-outline-primary w-100 d-block">
+                            <i class="fas fa-search"></i> Apply Filters
                         </button>
                     </div>
                     <div class="col-md-2">
-                        <a href="/get-product" class="btn btn-outline-secondary w-100">
-                            <i class="fas fa-refresh"></i> Reset
+                        <label class="form-label">&nbsp;</label>
+                        <a href="/get-product" class="btn btn-outline-secondary w-100 d-block">
+                            <i class="fas fa-refresh"></i> Reset All
                         </a>
                     </div>
                 </div>
@@ -552,175 +721,289 @@
         <% if (search || selectedCategory) { %>
             <div class="filter-summary p-3 d-flex justify-content-between align-items-center">
                 <div>
-                    <i class="fas fa-filter text-primary"></i>
-                    <strong class="text-primary">Active Filters:</strong>
+                    <i class="fas fa-filter me-2" style="color: #1976d2;"></i>
+                    <strong style="color: #1976d2;">Active Filters:</strong>
                     <% if (search) { %>
                         <span class="filter-badge ms-2">
-                            <i class="fas fa-search"></i> Search: "<%= search %>"
+                            <i class="fas fa-search me-1"></i> Search: "<%= search %>"
                         </span>
                     <% } %>
                     <% if (selectedCategory) { %>
                         <% const selectedCat = categories.find(cat => cat._id.toString() === selectedCategory) %>
                         <% if (selectedCat) { %>
                             <span class="filter-badge ms-2">
-                                <i class="fas fa-tag"></i> Category: <%= selectedCat.name %>
+                                <i class="fas fa-tag me-1"></i> Category: <%= selectedCat.name %>
                             </span>
                         <% } %>
                     <% } %>
                 </div>
                 <a href="/get-product" class="btn btn-sm btn-outline-primary">
-                    <i class="fas fa-times"></i> Clear All Filters
+                    <i class="fas fa-times me-1"></i> Clear All Filters
                 </a>
             </div>
         <% } %>
 
-        <!-- Products Table -->
-        <% if (products && Array.isArray(products) && products.length > 0) { %>
-            <div class="products-table">
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th>Image</th>
-                            <th>Product Details</th>
-                            <th>Category</th>
-                            <th>Price</th>
-                            <th>Stock</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <% products.forEach(product => { %>
-                            <tr>
-                                <td>
-                                    <img src="/uploads/products/<%= product.mainImage %>"
-                                         alt="<%= product.productName %>"
-                                         class="product-image"
-                                         onerror="this.src='/assets/placeholder.jpg'">
-                                </td>
-                                <td>
-                                    <div class="product-name"><%= product.productName %></div>
-                                    <div class="product-brand"><%= product.brand %></div>
-                                </td>
-                                <td>
-                                    <span class="product-category">
-                                        <%= product.category ? product.category.name : 'Category Deleted' %>
-                                    </span>
-                                </td>
-                                <td>
-                                    <div class="price-info">
-                                        <span class="sale-price">₹<%= product.salePrice.toFixed(2) %></span>
-                                        <% if (product.regularPrice > product.salePrice) { %>
-                                            <span class="regular-price">₹<%= product.regularPrice.toFixed(2) %></span>
-                                        <% } %>
-                                        <% if (product.productOffer > 0) { %>
-                                            <span class="badge bg-danger"><%= product.productOffer %>% OFF</span>
-                                        <% } %>
-                                    </div>
-                                </td>
-                                <td>
-                                    <span class="stock-info <%= product.quantity <= 5 ? 'stock-low' : product.quantity <= 20 ? 'stock-medium' : 'stock-good' %>">
-                                        <%= product.quantity %> units
-                                    </span>
-                                </td>
-                                <td>
-                                    <span class="status-badge <%= product.isBlocked ? 'status-blocked' : 'status-active' %>">
-                                        <%= product.isBlocked ? 'Blocked' : 'Active' %>
-                                    </span>
-                                </td>
-                                <td>
-                                    <div class="product-actions">
-                                        <button class="btn btn-sm btn-primary" onclick="editProduct('<%= product._id %>')" title="Edit Product">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button class="btn btn-sm <%= product.isBlocked ? 'btn-success' : 'btn-warning' %>"
-                                                onclick="toggleProductStatus('<%= product._id %>', '<%= product.productName %>', <%= product.isBlocked %>)"
-                                                title="<%= product.isBlocked ? 'Unblock' : 'Block' %> Product">
-                                            <i class="fas fa-<%= product.isBlocked ? 'check' : 'ban' %>"></i>
-                                        </button>
-                                        <button class="btn btn-sm btn-danger" onclick="deleteProduct('<%= product._id %>', '<%= product.productName %>')" title="Delete Product">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        <% }) %>
-                    </tbody>
-                </table>
+        <!-- Products Table Section -->
+        <div class="products-card">
+            <div class="card-header p-3 border-bottom">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="header-left">
+                        <h3 class="mb-1 fw-bold">
+                            <i class="fas fa-list me-2"></i>
+                            Product Directory
+                        </h3>
+                        <p class="mb-0 text-muted">Complete inventory of all products</p>
+                    </div>
+                    <div class="header-right">
+                        <div class="product-count">
+                            <span class="badge bg-dark fs-6 px-3 py-2">
+                                <%= products && products.length || 0 %> products
+                            </span>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <!-- Modern Pagination -->
-            <% if (totalPages > 1) { %>
-                <div class="pagination-container d-flex justify-content-between align-items-center mt-4">
-                    <div class="pagination-info">
-                        Showing <%= startResult %> to <%= endResult %> of <%= totalProducts %> products
-                    </div>
-                    <nav aria-label="Product pagination">
-                        <ul class="pagination pagination-sm mb-0">
-                            <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>">
-                                <a class="page-link" href="?page=<%= currentPage - 1 %><%= baseQuery ? '&' + baseQuery : '' %>" aria-label="Previous">
-                                    <span aria-hidden="true">«</span>
-                                </a>
-                            </li>
-                            <% for(let i = 1; i <= totalPages; i++) { %>
-                                <li class="page-item <%= i === currentPage ? 'active' : '' %>">
-                                    <a class="page-link" href="?page=<%= i %><%= baseQuery ? '&' + baseQuery : '' %>"><%= i %></a>
-                                </li>
-                            <% } %>
-                            <li class="page-item <%= currentPage === totalPages ? 'disabled' : '' %>">
-                                <a class="page-link" href="?page=<%= currentPage + 1 %><%= baseQuery ? '&' + baseQuery : '' %>" aria-label="Next">
-                                    <span aria-hidden="true">»</span>
-                                </a>
-                            </li>
-                        </ul>
-                    </nav>
+            <% if (products && Array.isArray(products) && products.length > 0) { %>
+                <div class="products-table">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th><i class="fas fa-image me-2"></i>Image</th>
+                                <th><i class="fas fa-info-circle me-2"></i>Product Details</th>
+                                <th><i class="fas fa-tags me-2"></i>Category</th>
+                                <th><i class="fas fa-rupee-sign me-2"></i>Price</th>
+                                <th><i class="fas fa-boxes me-2"></i>Stock</th>
+                                <th><i class="fas fa-toggle-on me-2"></i>Status</th>
+                                <th><i class="fas fa-cogs me-2"></i>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% products.forEach(product => { %>
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <img src="/uploads/products/<%= product.mainImage %>"
+                                                 alt="<%= product.productName %>"
+                                                 class="product-image"
+                                                 onerror="this.src='/assets/placeholder.jpg'">
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="product-details">
+                                            <div class="product-name"><%= product.productName %></div>
+                                            <div class="product-brand">
+                                                <i class="fas fa-copyright me-1"></i><%= product.brand %>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="product-category">
+                                            <i class="fas fa-tag me-1"></i>
+                                            <%= product.category ? product.category.name : 'Category Deleted' %>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="price-info">
+                                            <div class="sale-price">₹<%= product.salePrice.toFixed(2) %></div>
+                                            <% if (product.regularPrice > product.salePrice) { %>
+                                                <div class="regular-price">₹<%= product.regularPrice.toFixed(2) %></div>
+                                            <% } %>
+                                            <% if (product.productOffer > 0) { %>
+                                                <span class="badge bg-danger mt-1"><%= product.productOffer %>% OFF</span>
+                                            <% } %>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="stock-display">
+                                            <span class="stock-info <%= product.quantity <= 5 ? 'stock-low' : product.quantity <= 20 ? 'stock-medium' : 'stock-good' %>">
+                                                <i class="fas fa-cube me-1"></i>
+                                                <%= product.quantity %> units
+                                            </span>
+                                            <% if (product.quantity <= 5) { %>
+                                                <div class="text-danger small mt-1">
+                                                    <i class="fas fa-exclamation-triangle me-1"></i>Low Stock
+                                                </div>
+                                            <% } %>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="status-badge <%= product.isBlocked ? 'status-blocked' : 'status-active' %>">
+                                            <i class="fas fa-<%= product.isBlocked ? 'ban' : 'check-circle' %> me-1"></i>
+                                            <%= product.isBlocked ? 'Blocked' : 'Active' %>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="product-actions">
+                                            <button class="btn btn-sm btn-primary" 
+                                                    onclick="editProduct('<%= product._id %>')" 
+                                                    title="Edit Product"
+                                                    data-bs-toggle="tooltip">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="btn btn-sm <%= product.isBlocked ? 'btn-success' : 'btn-warning' %>"
+                                                    onclick="toggleProductStatus('<%= product._id %>', '<%= product.productName %>', <%= product.isBlocked %>)"
+                                                    title="<%= product.isBlocked ? 'Activate Product' : 'Block Product' %>"
+                                                    data-bs-toggle="tooltip">
+                                                <i class="fas fa-<%= product.isBlocked ? 'check' : 'ban' %>"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-danger" 
+                                                    onclick="deleteProduct('<%= product._id %>', '<%= product.productName %>')" 
+                                                    title="Delete Product"
+                                                    data-bs-toggle="tooltip">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
                 </div>
-            <% } else if (totalProducts > 0) { %>
-                <div class="pagination-container d-flex justify-content-center align-items-center mt-4">
-                    <div class="pagination-info">
-                        Showing all <%= totalProducts %> products
+
+                <!-- Modern Pagination -->
+                <% if (totalPages > 1) { %>
+                    <div class="pagination-container d-flex justify-content-between align-items-center">
+                        <div class="pagination-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Showing <strong><%= startResult %></strong> to <strong><%= endResult %></strong> of <strong><%= totalProducts %></strong> products
+                        </div>
+                        <nav aria-label="Product pagination">
+                            <ul class="pagination mb-0">
+                                <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>">
+                                    <a class="page-link" href="?page=<%= currentPage - 1 %><%= baseQuery ? '&' + baseQuery : '' %>" aria-label="Previous">
+                                        <i class="fas fa-chevron-left"></i>
+                                    </a>
+                                </li>
+                                <% for(let i = 1; i <= totalPages; i++) { %>
+                                    <li class="page-item <%= i === currentPage ? 'active' : '' %>">
+                                        <a class="page-link" href="?page=<%= i %><%= baseQuery ? '&' + baseQuery : '' %>"><%= i %></a>
+                                    </li>
+                                <% } %>
+                                <li class="page-item <%= currentPage === totalPages ? 'disabled' : '' %>">
+                                    <a class="page-link" href="?page=<%= currentPage + 1 %><%= baseQuery ? '&' + baseQuery : '' %>" aria-label="Next">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                <% } else if (totalProducts > 0) { %>
+                    <div class="pagination-container d-flex justify-content-center align-items-center">
+                        <div class="pagination-info">
+                            <i class="fas fa-check-circle me-2 text-success"></i>
+                            Showing all <strong><%= totalProducts %></strong> products
+                        </div>
+                    </div>
+                <% } %>
+            <% } else { %>
+                <div class="no-products">
+                    <i class="fas fa-box-open"></i>
+                    <h3>No Products Found</h3>
+                    <p>
+                        <% if (search || selectedCategory) { %>
+                            No products match your current search criteria. Try adjusting your filters or search terms.
+                        <% } else { %>
+                            Your product inventory is empty. Start by adding your first product to get started.
+                        <% } %>
+                    </p>
+                    <div class="mt-3">
+                        <% if (search || selectedCategory) { %>
+                            <a href="/get-product" class="btn btn-outline-primary me-2">
+                                <i class="fas fa-refresh me-1"></i> Clear Filters
+                            </a>
+                        <% } %>
+                        <a href="/add-product" class="btn btn-dark">
+                            <i class="fas fa-plus me-1"></i> Add Your First Product
+                        </a>
                     </div>
                 </div>
             <% } %>
-        <% } else { %>
-            <div class="no-products">
-                <i class="fas fa-box-open" style="font-size: 3rem; color: #bdc3c7; margin-bottom: 1rem;"></i>
-                <h3>No Products Found</h3>
-                <p>Start by adding your first product to the inventory.</p>
-                <a href="/add-product" class="btn btn-primary">
-                    <i class="fas fa-plus"></i> Add Your First Product
-                </a>
-            </div>
-        <% } %>
+        </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script>
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize tooltips
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+
+            // Add loading states to buttons
+            const buttons = document.querySelectorAll('.btn');
+            buttons.forEach(button => {
+                button.addEventListener('click', function() {
+                    if (!this.disabled) {
+                        this.style.transform = 'scale(0.98)';
+                        setTimeout(() => {
+                            this.style.transform = '';
+                        }, 150);
+                    }
+                });
+            });
+
+            // Animate table rows on load
+            const tableRows = document.querySelectorAll('tbody tr');
+            tableRows.forEach((row, index) => {
+                row.style.opacity = '0';
+                row.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    row.style.transition = 'all 0.3s ease';
+                    row.style.opacity = '1';
+                    row.style.transform = 'translateY(0)';
+                }, index * 50);
+            });
+        });
+
         // Edit product function
         function editProduct(productId) {
-            window.location.href = `/edit-product/${productId}`;
+            // Add loading state
+            const button = event.target.closest('button');
+            const originalContent = button.innerHTML;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            button.disabled = true;
+            
+            setTimeout(() => {
+                window.location.href = `/edit-product/${productId}`;
+            }, 300);
         }
 
         // Toggle product status (block/unblock)
         function toggleProductStatus(productId, productName, isBlocked) {
             const action = isBlocked ? 'unblock' : 'block';
-            const actionText = isBlocked ? 'Unblock' : 'Block';
+            const actionText = isBlocked ? 'Activate' : 'Block';
+            const actionColor = isBlocked ? '#198754' : '#fd7e14';
 
             Swal.fire({
                 title: `${actionText} Product?`,
                 text: `Are you sure you want to ${action} "${productName}"?`,
-                icon: 'warning',
+                icon: 'question',
                 showCancelButton: true,
-                confirmButtonColor: isBlocked ? '#27ae60' : '#f39c12',
-                cancelButtonColor: '#95a5a6',
+                confirmButtonColor: actionColor,
+                cancelButtonColor: '#6c757d',
                 confirmButtonText: `Yes, ${actionText} It!`,
-                cancelButtonText: 'Cancel'
+                cancelButtonText: 'Cancel',
+                customClass: {
+                    popup: 'modern-swal',
+                    confirmButton: 'modern-swal-confirm',
+                    cancelButton: 'modern-swal-cancel'
+                },
+                buttonsStyling: false
             }).then(async (result) => {
                 if (result.isConfirmed) {
                     try {
                         Swal.fire({
                             title: `${actionText}ing Product...`,
+                            text: 'Please wait while we process your request.',
                             allowOutsideClick: false,
+                            allowEscapeKey: false,
+                            showConfirmButton: false,
+                            customClass: {
+                                popup: 'modern-swal'
+                            },
                             didOpen: () => Swal.showLoading()
                         });
 
@@ -734,9 +1017,15 @@
                         if (response.ok && result.success) {
                             Swal.fire({
                                 title: 'Success!',
-                                text: result.message,
+                                text: `Product has been ${action}ed successfully.`,
                                 icon: 'success',
-                                confirmButtonText: 'OK'
+                                confirmButtonColor: '#000000',
+                                confirmButtonText: 'OK',
+                                customClass: {
+                                    popup: 'modern-swal',
+                                    confirmButton: 'modern-swal-confirm'
+                                },
+                                buttonsStyling: false
                             }).then(() => window.location.reload());
                         } else {
                             throw new Error(result.message || `Failed to ${action} product`);
@@ -747,7 +1036,13 @@
                             title: 'Error!',
                             text: `Failed to ${action} product: ${error.message}`,
                             icon: 'error',
-                            confirmButtonText: 'OK'
+                            confirmButtonColor: '#dc3545',
+                            confirmButtonText: 'OK',
+                            customClass: {
+                                popup: 'modern-swal',
+                                confirmButton: 'modern-swal-confirm'
+                            },
+                            buttonsStyling: false
                         });
                     }
                 }
@@ -761,16 +1056,28 @@
                 text: `Are you sure you want to delete "${productName}"? This action cannot be undone.`,
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#e74c3c',
-                cancelButtonColor: '#95a5a6',
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
                 confirmButtonText: 'Yes, Delete It!',
-                cancelButtonText: 'Cancel'
+                cancelButtonText: 'Cancel',
+                customClass: {
+                    popup: 'modern-swal',
+                    confirmButton: 'modern-swal-confirm',
+                    cancelButton: 'modern-swal-cancel'
+                },
+                buttonsStyling: false
             }).then(async (result) => {
                 if (result.isConfirmed) {
                     try {
                         Swal.fire({
                             title: 'Deleting Product...',
+                            text: 'Please wait while we delete the product.',
                             allowOutsideClick: false,
+                            allowEscapeKey: false,
+                            showConfirmButton: false,
+                            customClass: {
+                                popup: 'modern-swal'
+                            },
                             didOpen: () => Swal.showLoading()
                         });
 
@@ -786,7 +1093,13 @@
                                 title: 'Deleted!',
                                 text: 'Product has been deleted successfully.',
                                 icon: 'success',
-                                confirmButtonText: 'OK'
+                                confirmButtonColor: '#000000',
+                                confirmButtonText: 'OK',
+                                customClass: {
+                                    popup: 'modern-swal',
+                                    confirmButton: 'modern-swal-confirm'
+                                },
+                                buttonsStyling: false
                             }).then(() => window.location.reload());
                         } else {
                             throw new Error(result.message || 'Failed to delete product');
@@ -797,19 +1110,72 @@
                             title: 'Error!',
                             text: `Failed to delete product: ${error.message}`,
                             icon: 'error',
-                            confirmButtonText: 'OK'
+                            confirmButtonColor: '#dc3545',
+                            confirmButtonText: 'OK',
+                            customClass: {
+                                popup: 'modern-swal',
+                                confirmButton: 'modern-swal-confirm'
+                            },
+                            buttonsStyling: false
                         });
                     }
                 }
             });
         }
-
-
-
-        // Initialize page
-        document.addEventListener('DOMContentLoaded', function() {
-            // Page initialization complete
-        });
     </script>
+
+    <style>
+        /* Custom SweetAlert2 Styles */
+        .modern-swal {
+            border-radius: 16px !important;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
+        }
+
+        .modern-swal-confirm {
+            background-color: #000000 !important;
+            color: #ffffff !important;
+            border: none !important;
+            border-radius: 8px !important;
+            padding: 0.75rem 1.5rem !important;
+            font-weight: 600 !important;
+            transition: all 0.3s ease !important;
+        }
+
+        .modern-swal-confirm:hover {
+            background-color: #333333 !important;
+            transform: translateY(-2px) !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+        }
+
+        .modern-swal-cancel {
+            background-color: #6c757d !important;
+            color: #ffffff !important;
+            border: none !important;
+            border-radius: 8px !important;
+            padding: 0.75rem 1.5rem !important;
+            font-weight: 600 !important;
+            transition: all 0.3s ease !important;
+        }
+
+        .modern-swal-cancel:hover {
+            background-color: #5a6268 !important;
+            transform: translateY(-2px) !important;
+            box-shadow: 0 4px 12px rgba(108, 117, 125, 0.2) !important;
+        }
+
+        /* Additional card styling for products-card */
+        .products-card {
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e9ecef;
+            overflow: hidden;
+        }
+
+        .products-card .card-header {
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            border-bottom: 2px solid #e9ecef;
+        }
+    </style>
 </body>
 </html>

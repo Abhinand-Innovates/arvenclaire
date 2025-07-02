@@ -38,9 +38,9 @@
 
         .logo {
             text-align: center;
-            padding: 20px;
+            padding: 25px 20px;
             border-bottom: 1px solid #e9ecef;
-            margin-bottom: 20px;
+            margin-bottom: 30px;
         }
 
         .logo h2 {
@@ -53,7 +53,7 @@
 
         .logo p {
             font-size: 10px;
-            margin-top: 5px;
+            margin-top: 8px;
             font-family: 'Times New Roman', Times, serif;
             color: #666;
         }
@@ -72,6 +72,11 @@
             border: none;
             background: none;
             width: 100%;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            margin-left: 10px;
+            margin-right: 10px;
+            width: calc(100% - 20px);
         }
 
         .nav-item:hover {
@@ -88,6 +93,10 @@
         .nav-item.active:hover {
             background-color: #333333;
             color: #ffffff;
+        }
+
+        .nav-item.dashboard-item {
+            margin-top: 15px;
         }
 
         /* Return Request Badge Styles */
@@ -135,9 +144,9 @@
             font-size: 14px;
             font-weight: bold;
             cursor: pointer;
-            width: 90%;
+            width: calc(100% - 40px);
             max-width: 200px;
-            margin: 20px auto;
+            margin: 30px auto 20px auto;
             display: block;
             transition: all 0.3s ease;
             text-align: center;
@@ -363,14 +372,13 @@
             <h6 style="font-family: 'Times New Roman', Times, serif;">Swiss Legacy</h6>
         </div>
 
-        <a href="/admin-dashboard" class="nav-item" data-route="dashboard">Dashboard</a>
+        <a href="/admin-dashboard" class="nav-item dashboard-item" data-route="dashboard">Dashboard</a>
         <a href="/get-product" class="nav-item" data-route="products">Products</a>
         <a href="/get-orders" class="nav-item" data-route="orders">Order Lists <span class="return-request-badge" id="returnRequestBadge" style="display: none;"><i class="fas fa-bell"></i> <span class="badge-count" id="returnRequestCount">0</span></span></a>
         <a href="/get-user" class="nav-item" data-route="users">Users</a>
         <a href="/sales-report" class="nav-item" data-route="sales">Sales Report</a>
         <a href="/coupons" class="nav-item" data-route="coupons">Coupons</a>
         <a href="/get-category" class="nav-item" data-route="categories">Categories</a>
-        <a href="#" class="nav-item" data-route="banner">Banner</a>
 
 
         <a href="/admin-logout" id="logoutBtn">Logout</a>
