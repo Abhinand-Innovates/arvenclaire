@@ -1,0 +1,443 @@
+
+    :root {
+        --bg-primary: #ffffff;
+        --bg-secondary: #ffffff;
+        --bg-tertiary: #f8f9fa;
+        --border-color: #e5e7eb;
+        --text-primary: #000000;
+        --text-secondary: #374151;
+        --text-muted: #6b7280;
+        --hover-color: #f9fafb;
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --radius-sm: 6px;
+        --radius-md: 8px;
+        --radius-lg: 12px;
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        background-color: var(--bg-primary);
+        color: var(--text-primary);
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        min-height: 100vh;
+        line-height: 1.6;
+    }
+
+    .main-content {
+        margin-left: 280px;
+        padding: 2rem 3rem;
+        min-height: 100vh;
+        background-color: var(--bg-primary);
+    }
+
+    .breadcrumb {
+        background: none;
+        padding: 0;
+        margin-bottom: 2rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+
+    .breadcrumb-item + .breadcrumb-item::before {
+        content: ">";
+        color: var(--text-muted);
+        margin: 0 0.75rem;
+    }
+
+    .breadcrumb-item a {
+        color: var(--text-secondary);
+        text-decoration: none;
+        transition: color 0.2s ease;
+    }
+
+    .breadcrumb-item a:hover {
+        color: var(--text-primary);
+    }
+
+    .breadcrumb-item.active {
+        color: var(--text-primary);
+        font-weight: 600;
+    }
+
+    .edit-profile-container {
+        background: var(--bg-primary);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-lg);
+        overflow: hidden;
+        border: 1px solid var(--border-color);
+    }
+
+    .edit-profile-header {
+        background: var(--bg-primary);
+        padding: 2rem 2.5rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .edit-profile-header h2 {
+        color: var(--text-primary);
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin: 0;
+        letter-spacing: -0.025em;
+    }
+
+    .edit-profile-body {
+        padding: 2.5rem;
+    }
+
+    .form-group {
+        margin-bottom: 2rem;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 0.75rem;
+        color: var(--text-primary);
+        font-weight: 600;
+        font-size: 0.9rem;
+        letter-spacing: -0.01em;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 1rem 1.25rem;
+        border: 2px solid var(--border-color);
+        border-radius: var(--radius-md);
+        font-size: 0.95rem;
+        color: var(--text-primary);
+        background-color: var(--bg-primary);
+        transition: all 0.2s ease;
+        font-weight: 500;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: var(--text-primary);
+        box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.08);
+        transform: translateY(-1px);
+    }
+
+    .form-control:disabled {
+        background-color: var(--bg-tertiary);
+        color: var(--text-muted);
+        cursor: not-allowed;
+        border-color: var(--border-color);
+    }
+
+    .email-field-container {
+        position: relative;
+    }
+
+    .email-change-btn {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: var(--text-primary);
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-sm);
+        font-size: 0.8rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .email-change-btn:hover {
+        background: #1f2937;
+        transform: translateY(-50%) translateY(-1px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .error-message {
+        color: #dc2626;
+        font-size: 0.8rem;
+        margin-top: 0.5rem;
+        display: none;
+        font-weight: 500;
+    }
+
+    .error-message.show {
+        display: block;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 1.25rem;
+        margin-top: 3rem;
+        padding-top: 2rem;
+        border-top: 1px solid var(--border-color);
+    }
+
+    .btn {
+        padding: 1rem 2rem;
+        border: none;
+        border-radius: var(--radius-md);
+        font-size: 0.95rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        letter-spacing: -0.01em;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .btn-primary {
+        background: var(--text-primary);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #1f2937;
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .btn-secondary {
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        border: 2px solid var(--border-color);
+    }
+
+    .btn-secondary:hover {
+        background: var(--bg-tertiary);
+        border-color: var(--text-primary);
+        transform: translateY(-1px);
+    }
+
+    .btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    /* Enhanced Modal Styles */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.65);
+        backdrop-filter: blur(6px);
+        animation: modalFadeIn 0.3s ease-out;
+    }
+
+    @keyframes modalFadeIn {
+        from {
+            opacity: 0;
+            backdrop-filter: blur(0px);
+        }
+        to {
+            opacity: 1;
+            backdrop-filter: blur(6px);
+        }
+    }
+
+    @keyframes modalSlideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-30px) scale(0.95);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    /* Email Verification Modal - Larger Size */
+    .modal-content {
+        background-color: var(--bg-primary);
+        margin: 6% auto;
+        padding: 0;
+        border-radius: 16px;
+        width: 90%;
+        max-width: 650px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05);
+        border: none;
+        animation: modalSlideIn 0.3s ease-out;
+        overflow: hidden;
+    }
+
+    /* New Email Modal - Even Larger Size */
+    #newEmailModal .modal-content {
+        max-width: 750px;
+        margin: 5% auto;
+    }
+
+    .modal-header {
+        padding: 2.5rem 3rem 2rem 3rem;
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: linear-gradient(135deg, var(--bg-primary) 0%, #fafafa 100%);
+    }
+
+    .modal-title {
+        margin: 0;
+        color: var(--text-primary);
+        font-size: 1.625rem;
+        font-weight: 700;
+        letter-spacing: -0.025em;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .modal-title::before {
+        content: "✉";
+        font-size: 1.5rem;
+        opacity: 0.8;
+    }
+
+    .close {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: var(--text-muted);
+        padding: 0.75rem;
+        width: 44px;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: all 0.2s ease;
+        position: relative;
+    }
+
+    .close:hover {
+        color: var(--text-primary);
+        background-color: var(--bg-tertiary);
+        transform: scale(1.1);
+    }
+
+    .close:active {
+        transform: scale(0.95);
+    }
+
+    .modal-body {
+        padding: 2.5rem 3rem;
+        background-color: var(--bg-primary);
+    }
+
+    .modal-body p {
+        color: var(--text-secondary);
+        font-size: 1rem;
+        line-height: 1.6;
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+
+    .modal-footer {
+        padding: 2rem 3rem 2.5rem 3rem;
+        border-top: 1px solid var(--border-color);
+        display: flex;
+        gap: 1.25rem;
+        justify-content: flex-end;
+        background: linear-gradient(135deg, #fafafa 0%, var(--bg-primary) 100%);
+    }
+
+    /* Enhanced Responsive Design */
+    @media (max-width: 768px) {
+        .main-content {
+            margin-left: 0;
+            padding: 1.5rem;
+        }
+
+        .edit-profile-header {
+            padding: 1.5rem;
+        }
+
+        .edit-profile-body {
+            padding: 1.5rem;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        /* Mobile Modal Adjustments */
+        .modal-content {
+            margin: 3% auto;
+            width: 95%;
+            max-width: 90vw;
+            border-radius: 12px;
+        }
+
+        #newEmailModal .modal-content {
+            max-width: 95vw;
+            margin: 2% auto;
+        }
+
+        .modal-header {
+            padding: 2rem 1.5rem 1.5rem 1.5rem;
+        }
+
+        .modal-title {
+            font-size: 1.375rem;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .modal-footer {
+            padding: 1.5rem;
+            flex-direction: column;
+        }
+
+        .modal-footer .btn {
+            width: 100%;
+            margin: 0;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .modal-content {
+            margin: 2% auto;
+            width: 98%;
+            max-width: 98vw;
+        }
+
+        #newEmailModal .modal-content {
+            max-width: 98vw;
+        }
+
+        .modal-header {
+            padding: 1.5rem 1rem;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+        }
+
+        .modal-body {
+            padding: 1rem;
+        }
+
+        .modal-footer {
+            padding: 1rem;
+        }
+    }
