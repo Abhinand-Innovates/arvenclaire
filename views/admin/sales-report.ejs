@@ -112,58 +112,30 @@
         <div class="stats-section">
             <div class="stats-grid">
                 <div class="stat-card revenue-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-rupee-sign"></i>
-                    </div>
                     <div class="stat-content">
                         <div class="stat-value">₹<%= salesStats.totalRevenue ? salesStats.totalRevenue.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : '0.00' %></div>
                         <div class="stat-label">Total Revenue</div>
-                        <div class="stat-trend positive">
-                            <i class="fas fa-arrow-up"></i>
-                            <span>+12.5%</span>
-                        </div>
                     </div>
                 </div>
 
                 <div class="stat-card orders-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-shopping-cart"></i>
-                    </div>
                     <div class="stat-content">
                         <div class="stat-value"><%= salesStats.totalOrders || 0 %></div>
                         <div class="stat-label">Total Orders</div>
-                        <div class="stat-trend positive">
-                            <i class="fas fa-arrow-up"></i>
-                            <span>+8.3%</span>
-                        </div>
                     </div>
                 </div>
 
                 <div class="stat-card average-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-chart-line"></i>
-                    </div>
                     <div class="stat-content">
                         <div class="stat-value">₹<%= salesStats.averageOrder ? salesStats.averageOrder.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : '0.00' %></div>
                         <div class="stat-label">Average Order Value</div>
-                        <div class="stat-trend positive">
-                            <i class="fas fa-arrow-up"></i>
-                            <span>+5.7%</span>
-                        </div>
                     </div>
                 </div>
 
                 <div class="stat-card discount-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-tags"></i>
-                    </div>
                     <div class="stat-content">
                         <div class="stat-value">₹<%= salesStats.totalDiscount ? salesStats.totalDiscount.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : '0.00' %></div>
                         <div class="stat-label">Total Discounts</div>
-                        <div class="stat-trend negative">
-                            <i class="fas fa-arrow-down"></i>
-                            <span>-3.2%</span>
-                        </div>
                     </div>
                 </div>
             </div>

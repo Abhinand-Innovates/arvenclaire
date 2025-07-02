@@ -409,8 +409,8 @@ body {
 }
 
 input:checked + .toggle-slider {
-    background-color: #000000;
-    border-color: #000000;
+    background-color: #28a745;
+    border-color: #28a745;
 }
 
 input:checked + .toggle-slider:before {
@@ -419,7 +419,7 @@ input:checked + .toggle-slider:before {
 }
 
 .toggle-slider:hover {
-    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1);
 }
 
 /* Action Buttons - Product Page Style */
