@@ -122,6 +122,9 @@ const loadCheckout = async (req, res) => {
     const shippingCharges = amountAfterDiscount >= 500 ? 0 : 50; // Free shipping based on amount after discount
     const finalAmount = amountAfterDiscount + shippingCharges; // Final amount = amount after discount + shipping
 
+    // Check if COD should be available (hide COD if order amount exceeds ₹4000)
+    const isCODAvailable = finalAmount <= 4000;
+
     // Check for address success message from session
     const addressSuccess = req.session.addressSuccess;
     if (addressSuccess) {
@@ -166,6 +169,9 @@ const loadCheckout = async (req, res) => {
     if (appliedCoupon) {
       finalAmountWithCoupon = finalAmount - appliedCoupon.discount;
     }
+
+    // Update COD availability based on final amount with coupon
+    const isCODAvailableWithCoupon = finalAmountWithCoupon <= 4000;
 
     // Get user-specific coupons and global coupons
     const UserCoupon = require('../../models/user-coupon-schema');
@@ -235,6 +241,7 @@ const loadCheckout = async (req, res) => {
       coupons: availableCoupons,
       appliedCoupon: appliedCoupon,
       couponRemovedMessage: couponRemovedMessage,
+      isCODAvailable: isCODAvailableWithCoupon,
       title: 'Checkout'
     });
 
@@ -374,6 +381,14 @@ const placeOrder = async (req, res) => {
     }
     
     const finalAmount = amountAfterDiscount + shippingCharges - couponDiscount; // Final amount = amount after discount + shipping - coupon discount
+
+    // Validate COD for orders above ₹4000
+    if (paymentMethod === 'Cash on Delivery' && finalAmount > 4000) {
+      return res.status(400).json({
+        success: false,
+        message: 'Cash on Delivery is not available for orders above ₹4000. Please select Online Payment or Wallet Payment.'
+      });
+    }
 
     // If wallet payment, check if sufficient balance
     if (paymentMethod === 'Wallet') {
@@ -632,6 +647,14 @@ const createRazorpayOrder = async (req, res) => {
     }
     
     const finalAmount = amountAfterDiscount + shippingCharges - couponDiscount;
+
+    // Validate COD for orders above ₹4000 (though this shouldn't happen for Razorpay orders)
+    if (paymentMethod === 'Cash on Delivery' && finalAmount > 4000) {
+      return res.status(400).json({
+        success: false,
+        message: 'Cash on Delivery is not available for orders above ₹4000. Please select Online Payment or Wallet Payment.'
+      });
+    }
 
     // Create order first (with pending payment status)
     const order = new Order({
