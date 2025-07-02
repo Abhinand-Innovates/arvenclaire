@@ -42,11 +42,11 @@ const companyConfig = {
   
   // Colors for PDF styling
   colors: {
-    primary: "#000000",      // Black
-    secondary: "#666666",    // Gray
-    accent: "#f8f9fa",      // Light gray background
-    success: "#28a745",     // Green for positive amounts
-    danger: "#dc3545"       // Red for negative amounts
+    primary: "#000000",   
+    secondary: "#666666",   
+    accent: "#f8f9fa",     
+    success: "#28a745",     
+    danger: "#dc3545"   
   }
 };
 
