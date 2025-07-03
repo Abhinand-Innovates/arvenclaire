@@ -47,7 +47,7 @@ adminRoute.get('/edit-product/:id', isAdminAuthenticated, preventCache, productC
 
 
 // Product API Routes
-adminRoute.post('/api/products', isAdminAuthenticated, preventCache, productUpload.array('productImages', 10), handleMulterError, productController.addProduct);
+adminRoute.post('/api/products', isAdminAuthenticated, preventCache, productController.addProduct);
 adminRoute.get('/api/products/:id', isAdminAuthenticated, preventCache, productController.getProductById);
 adminRoute.put('/api/products/:id', isAdminAuthenticated, preventCache, productUpload.array('productImages', 10), handleMulterError, productController.updateProduct);
 adminRoute.delete('/api/products/:id', isAdminAuthenticated, preventCache, productController.deleteProduct);

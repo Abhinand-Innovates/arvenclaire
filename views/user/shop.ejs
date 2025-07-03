@@ -232,10 +232,10 @@
 
                                     <div class="product-price">
                                         <% if (product.offerDetails && product.offerDetails.hasOffer) { %>
-                                            <span class="current-price">₹<%= product.offerDetails.finalPrice.toFixed(2) %></span>
-                                            <span class="original-price">₹<%= product.offerDetails.originalPrice.toFixed(2) %></span>
+                                            <span class="current-price">₹<%= Math.round(product.offerDetails.finalPrice) %></span>
+                                            <span class="original-price">₹<%= Math.round(product.offerDetails.originalPrice) %></span>
                                         <% } else { %>
-                                            <span class="current-price">₹<%= product.salePrice.toFixed(2) %></span>
+                                            <span class="current-price">₹<%= Math.round(product.salePrice) %></span>
                                         <% } %>
                                     </div>
 

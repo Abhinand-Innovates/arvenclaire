@@ -328,10 +328,10 @@
                                         <h5 class="product-title">${product.productName}</h5>
                                         <div class="product-price">
                                             ${product.offerDetails && product.offerDetails.hasOffer ? `
-                                                <span class="original-price">₹${product.offerDetails.originalPrice.toFixed(2)}</span>
-                                                ₹${product.offerDetails.finalPrice.toFixed(2)}
+                                                <span class="original-price">₹${Math.round(product.offerDetails.originalPrice)}</span>
+                                                ₹${Math.round(product.offerDetails.finalPrice)}
                                             ` : `
-                                                ₹${product.salePrice.toFixed(2)}
+                                                ₹${Math.round(product.salePrice)}
                                             `}
                                         </div>
                                         ${product.totalReviews > 0 ? `

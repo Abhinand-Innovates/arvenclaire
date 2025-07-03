@@ -153,16 +153,16 @@
                                 <div class="product-name"><%= item.productId.productName %></div>
                                 <div class="product-brand">Brand: <%= item.productId.brand %></div>
                                 <div class="product-price">
-                                    <span class="current-price">₹<%= finalPrice.toFixed(2) %></span>
+                                    <span class="current-price">₹<%= Math.round(finalPrice) %></span>
                                     <% if (discountPerItem > 0) { %>
-                                        <span class="original-price">₹<%= originalPrice.toFixed(2) %></span>
+                                        <span class="original-price">₹<%= Math.round(originalPrice) %></span>
                                         <span class="discount-badge"><%= discountPercentage %>% OFF</span>
                                     <% } %>
                                 </div>
                                 <div class="quantity-info">
-                                    Quantity: <%= quantity %> | Total: ₹<%= itemTotal.toFixed(2) %>
+                                    Quantity: <%= quantity %> | Total: ₹<%= Math.round(itemTotal) %>
                                     <% if (totalDiscountForItem > 0) { %>
-                                        <br><small style="color: var(--success-color);">You save: ₹<%= totalDiscountForItem.toFixed(2) %> on this item</small>
+                                        <br><small style="color: var(--success-color);">You save: ₹<%= Math.round(totalDiscountForItem) %> on this item</small>
                                     <% } %>
                                 </div>
                             </div>
@@ -216,13 +216,13 @@
 
                 <div class="summary-row">
                     <span class="summary-label">Subtotal</span>
-                    <span class="summary-value">₹<%= orderSummary.subtotal.toFixed(2) %></span>
+                    <span class="summary-value">₹<%= Math.round(orderSummary.subtotal) %></span>
                 </div>
 
                 <% if (orderSummary.totalDiscount > 0) { %>
                 <div class="summary-row">
                     <span class="summary-label">Discount</span>
-                    <span class="summary-value" style="color: var(--success-color);">-₹<%= orderSummary.totalDiscount.toFixed(2) %></span>
+                    <span class="summary-value" style="color: var(--success-color);">-₹<%= Math.round(orderSummary.totalDiscount) %></span>
                 </div>
                 <% } %>
 
@@ -232,7 +232,7 @@
                         <% if (orderSummary.shippingCharges === 0) { %>
                             <span style="color: var(--success-color);">FREE</span>
                         <% } else { %>
-                            ₹<%= orderSummary.shippingCharges.toFixed(2) %>
+                            ₹<%= Math.round(orderSummary.shippingCharges) %>
                         <% } %>
                     </span>
                 </div>
@@ -244,7 +244,7 @@
 
                 <div class="summary-row">
                     <span class="summary-label">Total</span>
-                    <span class="summary-value" id="finalTotal">₹<%= orderSummary.finalAmount.toFixed(2) %></span>
+                    <span class="summary-value" id="finalTotal">₹<%= Math.round(orderSummary.finalAmount) %></span>
                 </div>
 
                 <!-- Payment Method Section -->
@@ -265,7 +265,7 @@
                                 <div class="payment-title">Wallet Payment</div>
                             </div>
                             <div class="payment-description">Pay using your wallet balance</div>
-                            <div class="payment-balance">Balance: ₹<%= (user.walletBalance || 0).toFixed(2) %></div>
+                            <div class="payment-balance">Balance: ₹<%= Math.round(user.walletBalance || 0) %></div>
                             <% if (!user.walletBalance || user.walletBalance < orderSummary.finalAmount) { %>
                                 <div class="payment-insufficient">Insufficient balance</div>
                             <% } %>
@@ -525,7 +525,7 @@
                 applyBtn.className = 'btn-remove-coupon';
                 applyBtn.onclick = removeCoupon;
                 
-                showCouponSuccess(`Coupon applied! You saved ₹${appliedCoupon.discount.toFixed(2)}`);
+                showCouponSuccess(`Coupon applied! You saved ₹${Math.round(appliedCoupon.discount)}`);
             }
 
             // Add Enter key support for coupon input
@@ -800,12 +800,12 @@
             
             if (appliedCoupon && appliedCoupon.discount > 0) {
                 couponRow.style.display = 'flex';
-                couponAmount.textContent = `-₹${appliedCoupon.discount.toFixed(2)}`;
+                couponAmount.textContent = `-₹${Math.round(appliedCoupon.discount)}`;
             } else {
                 couponRow.style.display = 'none';
             }
             
-            finalTotal.textContent = `₹${currentTotal.toFixed(2)}`;
+            finalTotal.textContent = `₹${Math.round(currentTotal)}`;
             
             // Update COD availability based on new total
             updateCODAvailability();

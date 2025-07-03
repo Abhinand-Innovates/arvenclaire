@@ -97,7 +97,7 @@
                             <div class="item-details">
                                 <div class="item-brand"><%= item.productId.brand %></div>
                                 <h3 class="item-name"><%= item.productId.productName %></h3>
-                                <div class="item-price">₹<%= item.price.toFixed(2) %></div>
+                                <div class="item-price">₹<%= Math.round(item.price) %></div>
                                 <div class="item-stock <%= stockClass %>">
                                     <% if (isOutOfStock) { %>
                                         <i class="bi bi-x-circle"></i> Out of Stock
@@ -142,7 +142,7 @@
                             </div>
 
                             <!-- Item Total -->
-                            <div class="item-total">₹<%= item.totalPrice.toFixed(2) %></div>
+                            <div class="item-total">₹<%= Math.round(item.totalPrice) %></div>
 
                             <!-- Remove Button -->
                             <button class="remove-btn" onclick="removeFromCart('<%= item.productId._id %>')" title="Remove item">
@@ -209,14 +209,14 @@
 
                     <div class="summary-row">
                         <span class="summary-label">Subtotal (<%= totalItemCount %> items)</span>
-                        <span class="summary-value">₹<%= subtotal.toFixed(2) %></span>
+                        <span class="summary-value">₹<%= Math.round(subtotal) %></span>
                     </div>
 
                     <div class="summary-row">
                         <span class="summary-label">Discount</span>
                         <span class="summary-value" style="color: #059669;">
                             <% if (totalDiscount > 0) { %>
-                                -₹<%= totalDiscount.toFixed(2) %>
+                                -₹<%= Math.round(totalDiscount) %>
                             <% } else { %>
                                 ₹0.00
                             <% } %>
@@ -229,14 +229,14 @@
                             <% if (shipping === 0) { %>
                                 <span style="color: #059669;">FREE</span>
                             <% } else { %>
-                                ₹<%= shipping.toFixed(2) %>
+                                ₹<%= Math.round(shipping) %>
                             <% } %>
                         </span>
                     </div>
 
                     <div class="summary-row">
                         <span class="summary-label">Total</span>
-                        <span class="summary-value">₹<%= total.toFixed(2) %></span>
+                        <span class="summary-value">₹<%= Math.round(total) %></span>
                     </div>
 
                     <!-- Action Buttons -->
@@ -359,7 +359,7 @@
                 const itemTotal = cartItem.querySelector('.item-total');
 
                 qtyInput.value = newQuantity;
-                itemTotal.textContent = `₹${result.itemTotal.toFixed(2)}`;
+                itemTotal.textContent = `₹${Math.round(result.itemTotal)}`;
 
                 // Update cart counter
                 updateCartCounter(result.cartCount);
@@ -895,13 +895,13 @@
         const summaryRows = document.querySelectorAll('.summary-row');
         if (summaryRows.length >= 4) {
             // Update subtotal with correct item count (total quantity)
-            summaryRows[0].querySelector('.summary-value').textContent = `₹${subtotal.toFixed(2)}`;
+            summaryRows[0].querySelector('.summary-value').textContent = `₹${Math.round(subtotal)}`;
             summaryRows[0].querySelector('.summary-label').textContent = `Subtotal (${totalItemCount} items)`;
 
             // Update discount with calculated amount (proportional to quantity)
             const discountValue = summaryRows[1].querySelector('.summary-value');
             if (totalDiscount > 0) {
-                discountValue.innerHTML = `<span style="color: #059669;">-₹${totalDiscount.toFixed(2)}</span>`;
+                discountValue.innerHTML = `<span style="color: #059669;">-₹${Math.round(totalDiscount)}</span>`;
             } else {
                 discountValue.innerHTML = '<span style="color: #059669;">₹0.00</span>';
             }
@@ -911,11 +911,11 @@
             if (shipping === 0) {
                 shippingValue.innerHTML = '<span style="color: #059669;">FREE</span>';
             } else {
-                shippingValue.textContent = `₹${shipping.toFixed(2)}`;
+                shippingValue.textContent = `₹${Math.round(shipping)}`;
             }
 
             // Update total
-            summaryRows[3].querySelector('.summary-value').textContent = `₹${total.toFixed(2)}`;
+            summaryRows[3].querySelector('.summary-value').textContent = `₹${Math.round(total)}`;
         }
 
         // Update checkout button with enhanced logic
@@ -980,7 +980,7 @@
             const discountPercentage = Math.round((discountPerItem / regularPrice) * 100);
             discountDisplay.innerHTML = `
                 <i class="bi bi-tag-fill"></i>
-                You save ₹${totalItemDiscount.toFixed(2)} (${discountPercentage}% off × ${quantity})
+                You save ₹${Math.round(totalItemDiscount)} (${discountPercentage}% off × ${quantity})
             `;
         } else if (discountDisplay) {
             // Remove discount display if no discount

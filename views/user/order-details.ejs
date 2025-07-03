@@ -144,16 +144,16 @@
                                 <div class="item-name"><%= item.product.productName %></div>
                                 <div class="item-brand">Brand: <%= item.product.brand %></div>
                                 <div class="item-price">
-                                    <span class="current-price">₹<%= salePrice.toFixed(2) %></span>
+                                    <span class="current-price">₹<%= Math.round(salePrice) %></span>
                                     <% if (discountPerItem > 0) { %>
-                                        <span class="original-price" style="text-decoration: line-through; color: #6c757d; margin-left: 0.5rem;">₹<%= regularPrice.toFixed(2) %></span>
+                                        <span class="original-price" style="text-decoration: line-through; color: #6c757d; margin-left: 0.5rem;">₹<%= Math.round(regularPrice) %></span>
                                         <span class="discount-badge" style="background: #10b981; color: white; padding: 0.125rem 0.5rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600; margin-left: 0.5rem;"><%= discountPercentage %>% OFF</span>
                                     <% } %>
                                 </div>
                                 <div class="quantity-info">
-                                    Quantity: <%= quantity %> | Total: ₹<%= item.totalPrice.toFixed(2) %>
+                                    Quantity: <%= quantity %> | Total: ₹<%= Math.round(item.totalPrice) %>
                                     <% if (totalItemDiscount > 0) { %>
-                                        <br><small style="color: #10b981; font-weight: 600;">You saved: ₹<%= totalItemDiscount.toFixed(2) %> on this item</small>
+                                        <br><small style="color: #10b981; font-weight: 600;">You saved: ₹<%= Math.round(totalItemDiscount) %> on this item</small>
                                     <% } %>
                                 </div>
                                 <% if (item.status === 'Active') { %>
@@ -339,13 +339,13 @@
                             Subtotal
                         <% } %>
                     </span>
-                    <span class="summary-value">₹<%= currentSubtotal.toFixed(2) %></span>
+                    <span class="summary-value">₹<%= Math.round(currentSubtotal) %></span>
                 </div>
 
                 <% if (cancelledSubtotal > 0) { %>
                 <div class="summary-row" style="color: #ef4444;">
                     <span class="summary-label">Cancelled Items (Regular Price)</span>
-                    <span class="summary-value">-₹<%= cancelledSubtotal.toFixed(2) %></span>
+                    <span class="summary-value">-₹<%= Math.round(cancelledSubtotal) %></span>
                 </div>
                 <% } %>
 
@@ -362,14 +362,14 @@
                             Discount
                         <% } %>
                     </span>
-                    <span class="summary-value" style="color: var(--success-color);">-₹<%= totalDiscount.toFixed(2) %></span>
+                    <span class="summary-value" style="color: var(--success-color);">-₹<%= Math.round(totalDiscount) %></span>
                 </div>
                 <% } %>
 
                 <% if (cancelledDiscount > 0) { %>
                 <div class="summary-row" style="color: #6c757d;">
                     <span class="summary-label">Discount on Cancelled Items</span>
-                    <span class="summary-value">+₹<%= cancelledDiscount.toFixed(2) %></span>
+                    <span class="summary-value">+₹<%= Math.round(cancelledDiscount) %></span>
                 </div>
                 <% } %>
 
@@ -382,7 +382,7 @@
                             <% if (order.shippingCharges === 0) { %>
                                 <span style="color: var(--success-color);">FREE</span>
                             <% } else { %>
-                                ₹<%= order.shippingCharges.toFixed(2) %>
+                                ₹<%= Math.round(order.shippingCharges) %>
                             <% } %>
                         <% } else { %>
                             ₹0.00
@@ -397,7 +397,7 @@
                         <% if (isEntireOrderCancelled) { %>
                             -₹0.00
                         <% } else { %>
-                            -₹<%= order.couponDiscount.toFixed(2) %>
+                            -₹<%= Math.round(order.couponDiscount) %>
                         <% } %>
                     </span>
                 </div>
@@ -411,7 +411,7 @@
                             Total
                         <% } %>
                     </span>
-                    <span class="summary-value">₹<%= currentTotal.toFixed(2) %></span>
+                    <span class="summary-value">₹<%= Math.round(currentTotal) %></span>
                 </div>
 
                 <% if (isEntireOrderCancelled) { %>
@@ -670,8 +670,8 @@
                                 <div class="product-details">
                                     <div class="product-name"><%= item.product.productName %></div>
                                     <div class="product-brand">Brand: <%= item.product.brand %></div>
-                                    <div class="product-price">₹<%= item.price.toFixed(2) %></div>
-                                    <div class="product-quantity">Quantity: <%= item.quantity %> | Total: ₹<%= item.totalPrice.toFixed(2) %></div>
+                                    <div class="product-price">₹<%= Math.round(item.price) %></div>
+                                    <div class="product-quantity">Quantity: <%= item.quantity %> | Total: ₹<%= Math.round(item.totalPrice) %></div>
                                 </div>
                             </div>
 

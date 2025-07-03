@@ -103,13 +103,13 @@
 
                     <div class="product-price">
                         <% if (product.offerDetails && product.offerDetails.hasOffer) { %>
-                            <span class="current-price">₹<%= product.offerDetails.finalPrice.toFixed(2) %></span>
-                            <span class="original-price">₹<%= product.offerDetails.originalPrice.toFixed(2) %></span>
+                            <span class="current-price">₹<%= Math.round(product.offerDetails.finalPrice) %></span>
+                            <span class="original-price">₹<%= Math.round(product.offerDetails.originalPrice) %></span>
                             <span class="discount-badge">
                                 <%= product.offerDetails.bestOfferPercentage %>% OFF
                             </span>
                         <% } else { %>
-                            <span class="current-price">₹<%= product.salePrice.toFixed(2) %></span>
+                            <span class="current-price">₹<%= Math.round(product.salePrice) %></span>
                         <% } %>
                     </div>
 
@@ -392,10 +392,10 @@
 
                                 <div class="related-product-price">
                                     <% if (relatedProduct.offerDetails && relatedProduct.offerDetails.hasOffer) { %>
-                                        <span class="related-current-price">₹<%= relatedProduct.offerDetails.finalPrice.toFixed(2) %></span>
-                                        <span class="related-original-price">₹<%= relatedProduct.offerDetails.originalPrice.toFixed(2) %></span>
+                                        <span class="related-current-price">₹<%= Math.round(relatedProduct.offerDetails.finalPrice) %></span>
+                                        <span class="related-original-price">₹<%= Math.round(relatedProduct.offerDetails.originalPrice) %></span>
                                     <% } else { %>
-                                        <span class="related-current-price">₹<%= relatedProduct.salePrice.toFixed(2) %></span>
+                                        <span class="related-current-price">₹<%= Math.round(relatedProduct.salePrice) %></span>
                                     <% } %>
                                 </div>
 
