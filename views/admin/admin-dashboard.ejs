@@ -44,11 +44,11 @@
                     <i class="fas fa-users"></i>
                 </div>
                 <div class="stat-content">
-                    <div class="stat-number">10,583</div>
+                    <div class="stat-number" id="totalCustomers">0</div>
                     <div class="stat-label">Total Customers</div>
-                    <div class="stat-change positive">
-                        <i class="fas fa-arrow-up"></i>
-                        <span>+12.5%</span>
+                    <div class="stat-change">
+                        <i class="fas fa-info-circle"></i>
+                        <span>Live Data</span>
                     </div>
                 </div>
             </div>
@@ -58,11 +58,11 @@
                     <i class="fas fa-shopping-cart"></i>
                 </div>
                 <div class="stat-content">
-                    <div class="stat-number">8,538</div>
+                    <div class="stat-number" id="totalOrders">0</div>
                     <div class="stat-label">Total Orders</div>
-                    <div class="stat-change positive">
-                        <i class="fas fa-arrow-up"></i>
-                        <span>+8.2%</span>
+                    <div class="stat-change">
+                        <i class="fas fa-info-circle"></i>
+                        <span>Live Data</span>
                     </div>
                 </div>
             </div>
@@ -72,11 +72,11 @@
                     <i class="fas fa-rupee-sign"></i>
                 </div>
                 <div class="stat-content">
-                    <div class="stat-number">₹65,805</div>
+                    <div class="stat-number" id="totalRevenue">₹0</div>
                     <div class="stat-label">Total Revenue</div>
-                    <div class="stat-change positive">
-                        <i class="fas fa-arrow-up"></i>
-                        <span>+15.3%</span>
+                    <div class="stat-change">
+                        <i class="fas fa-info-circle"></i>
+                        <span>Live Data</span>
                     </div>
                 </div>
             </div>
@@ -86,11 +86,11 @@
                     <i class="fas fa-clock"></i>
                 </div>
                 <div class="stat-content">
-                    <div class="stat-number">3,552</div>
+                    <div class="stat-number" id="pendingOrders">0</div>
                     <div class="stat-label">Pending Orders</div>
-                    <div class="stat-change negative">
-                        <i class="fas fa-arrow-down"></i>
-                        <span>-2.1%</span>
+                    <div class="stat-change">
+                        <i class="fas fa-info-circle"></i>
+                        <span>Live Data</span>
                     </div>
                 </div>
             </div>
@@ -128,34 +128,11 @@
                             <h3 class="card-title">Top Products</h3>
                             <span class="card-subtitle">Best selling items</span>
                         </div>
-                        <div class="products-list">
-                            <div class="product-item">
-                                <div class="product-info">
-                                    <div class="product-name">Swiss Heritage Watch</div>
-                                    <div class="product-sales">1,234 sold</div>
-                                </div>
-                                <div class="product-revenue">₹45,600</div>
-                            </div>
-                            <div class="product-item">
-                                <div class="product-info">
-                                    <div class="product-name">Classic Timepiece</div>
-                                    <div class="product-sales">987 sold</div>
-                                </div>
-                                <div class="product-revenue">₹32,100</div>
-                            </div>
-                            <div class="product-item">
-                                <div class="product-info">
-                                    <div class="product-name">Luxury Collection</div>
-                                    <div class="product-sales">756 sold</div>
-                                </div>
-                                <div class="product-revenue">₹28,900</div>
-                            </div>
-                            <div class="product-item">
-                                <div class="product-info">
-                                    <div class="product-name">Sport Edition</div>
-                                    <div class="product-sales">654 sold</div>
-                                </div>
-                                <div class="product-revenue">₹21,800</div>
+                        <div class="products-list" id="topProductsList">
+                            <div class="no-data-message" style="text-align: center; padding: 2rem; color: #6c757d;">
+                                <i class="fas fa-chart-bar" style="font-size: 2rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+                                <p>No product data available yet</p>
+                                <small>Top selling products will appear here once you have sales data</small>
                             </div>
                         </div>
                     </div>
@@ -173,36 +150,11 @@
                             <h3 class="activity-title">Recent Orders</h3>
                             <a href="/get-orders" class="view-all-link">View All</a>
                         </div>
-                        <div class="activity-list">
-                            <div class="activity-item">
-                                <div class="activity-icon order">
-                                    <i class="fas fa-shopping-bag"></i>
-                                </div>
-                                <div class="activity-content">
-                                    <div class="activity-text">New order #12345 received</div>
-                                    <div class="activity-time">2 minutes ago</div>
-                                </div>
-                                <div class="activity-amount">₹2,450</div>
-                            </div>
-                            <div class="activity-item">
-                                <div class="activity-icon order">
-                                    <i class="fas fa-shopping-bag"></i>
-                                </div>
-                                <div class="activity-content">
-                                    <div class="activity-text">Order #12344 shipped</div>
-                                    <div class="activity-time">15 minutes ago</div>
-                                </div>
-                                <div class="activity-amount">₹1,890</div>
-                            </div>
-                            <div class="activity-item">
-                                <div class="activity-icon order">
-                                    <i class="fas fa-shopping-bag"></i>
-                                </div>
-                                <div class="activity-content">
-                                    <div class="activity-text">Order #12343 delivered</div>
-                                    <div class="activity-time">1 hour ago</div>
-                                </div>
-                                <div class="activity-amount">₹3,200</div>
+                        <div class="activity-list" id="recentOrdersList">
+                            <div class="no-data-message" style="text-align: center; padding: 2rem; color: #6c757d;">
+                                <i class="fas fa-shopping-bag" style="font-size: 2rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+                                <p>No recent orders</p>
+                                <small>Recent order activity will appear here</small>
                             </div>
                         </div>
                     </div>
@@ -215,36 +167,11 @@
                             <h3 class="activity-title">New Customers</h3>
                             <a href="/get-user" class="view-all-link">View All</a>
                         </div>
-                        <div class="activity-list">
-                            <div class="activity-item">
-                                <div class="customer-avatar">
-                                    <span>JD</span>
-                                </div>
-                                <div class="activity-content">
-                                    <div class="activity-text">John Doe registered</div>
-                                    <div class="activity-time">5 minutes ago</div>
-                                </div>
-                                <div class="customer-status new">New</div>
-                            </div>
-                            <div class="activity-item">
-                                <div class="customer-avatar">
-                                    <span>SM</span>
-                                </div>
-                                <div class="activity-content">
-                                    <div class="activity-text">Sarah Miller registered</div>
-                                    <div class="activity-time">20 minutes ago</div>
-                                </div>
-                                <div class="customer-status new">New</div>
-                            </div>
-                            <div class="activity-item">
-                                <div class="customer-avatar">
-                                    <span>RJ</span>
-                                </div>
-                                <div class="activity-content">
-                                    <div class="activity-text">Robert Johnson registered</div>
-                                    <div class="activity-time">45 minutes ago</div>
-                                </div>
-                                <div class="customer-status new">New</div>
+                        <div class="activity-list" id="newCustomersList">
+                            <div class="no-data-message" style="text-align: center; padding: 2rem; color: #6c757d;">
+                                <i class="fas fa-user-plus" style="font-size: 2rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+                                <p>No new customers</p>
+                                <small>New customer registrations will appear here</small>
                             </div>
                         </div>
                     </div>
@@ -318,17 +245,17 @@
                 labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
                 datasets: [{
                     label: 'Sales',
-                    data: [12000, 19000, 15000, 25000, 22000, 30000, 28000, 35000, 32000, 40000, 38000, 45000],
-                    borderColor: '#000000',
-                    backgroundColor: 'rgba(0, 0, 0, 0.05)',
-                    borderWidth: 3,
+                    data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    borderColor: '#cccccc',
+                    backgroundColor: 'rgba(204, 204, 204, 0.05)',
+                    borderWidth: 2,
                     fill: true,
                     tension: 0.4,
-                    pointBackgroundColor: '#000000',
+                    pointBackgroundColor: '#cccccc',
                     pointBorderColor: '#ffffff',
                     pointBorderWidth: 2,
-                    pointRadius: 6,
-                    pointHoverRadius: 8
+                    pointRadius: 4,
+                    pointHoverRadius: 6
                 }]
             };
 
@@ -400,85 +327,350 @@
                 }
             });
 
-            // Animate stat numbers on load
-            const statNumbers = document.querySelectorAll('.stat-number');
-            statNumbers.forEach(stat => {
-                const finalValue = stat.textContent;
-                const numericValue = parseInt(finalValue.replace(/[^\d]/g, ''));
-                let currentValue = 0;
-                const increment = numericValue / 50;
-                
-                const timer = setInterval(() => {
-                    currentValue += increment;
-                    if (currentValue >= numericValue) {
-                        stat.textContent = finalValue;
-                        clearInterval(timer);
-                    } else {
-                        if (finalValue.includes('₹')) {
-                            stat.textContent = '₹' + Math.floor(currentValue).toLocaleString();
-                        } else {
-                            stat.textContent = Math.floor(currentValue).toLocaleString();
-                        }
-                    }
-                }, 20);
+            // Load real dashboard data
+            loadDashboardData();
+
+            // Handle sales period change
+            document.getElementById('salesPeriod').addEventListener('change', function(e) {
+                loadSalesChart(e.target.value);
             });
+        });
+
+        // Function to load real dashboard data
+        async function loadDashboardData() {
+            try {
+                console.log('Loading dashboard data...');
+                
+                // Test API first
+                try {
+                    const testResponse = await fetch('/api/dashboard/test');
+                    const testData = await testResponse.json();
+                    console.log('Test API response:', testData);
+                } catch (testError) {
+                    console.error('Test API failed:', testError);
+                }
+                
+                // Load dashboard statistics
+                const statsResponse = await fetch('/api/dashboard/stats');
+                console.log('Stats response status:', statsResponse.status);
+                
+                if (statsResponse.ok) {
+                    const statsData = await statsResponse.json();
+                    console.log('Stats data:', statsData);
+                    
+                    if (statsData.success) {
+                        document.getElementById('totalCustomers').textContent = statsData.data.totalCustomers.toLocaleString();
+                        document.getElementById('totalOrders').textContent = statsData.data.totalOrders.toLocaleString();
+                        document.getElementById('totalRevenue').textContent = '₹' + statsData.data.totalRevenue.toLocaleString();
+                        document.getElementById('pendingOrders').textContent = statsData.data.pendingOrders.toLocaleString();
+                        console.log('Dashboard stats updated successfully');
+                    } else {
+                        console.error('Stats API returned error:', statsData.message);
+                    }
+                } else {
+                    console.error('Failed to fetch stats:', statsResponse.status, statsResponse.statusText);
+                }
+
+                // Load sales data for chart
+                await loadSalesChart('monthly');
+
+                // Load top products
+                await loadTopProducts();
+
+                // Load recent orders
+                await loadRecentOrders();
+
+                // Load new customers
+                await loadNewCustomers();
+                
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+                showErrorMessage('Failed to load dashboard data: ' + error.message);
+            }
+        }
+
+        // Function to load sales chart data
+        async function loadSalesChart(period = 'monthly') {
+            try {
+                const response = await fetch(`/api/dashboard/sales?period=${period}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    updateSalesChart(data.data.labels, data.data.salesData);
+                }
+            } catch (error) {
+                console.error('Error loading sales chart:', error);
+            }
+        }
+
+        // Function to update sales chart
+        function updateSalesChart(labels, salesData) {
+            const ctx = document.getElementById('salesChart').getContext('2d');
+            
+            // Destroy existing chart if it exists
+            if (window.salesChart) {
+                window.salesChart.destroy();
+            }
+
+            const chartData = {
+                labels: labels,
+                datasets: [{
+                    label: 'Sales',
+                    data: salesData,
+                    borderColor: '#000000',
+                    backgroundColor: 'rgba(0, 0, 0, 0.05)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: '#000000',
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                }]
+            };
+
+            window.salesChart = new Chart(ctx, {
+                type: 'line',
+                data: chartData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: '#000000',
+                            titleColor: 'white',
+                            bodyColor: 'white',
+                            borderColor: '#000000',
+                            borderWidth: 1,
+                            displayColors: false,
+                            callbacks: {
+                                label: function(context) {
+                                    return '₹' + context.parsed.y.toLocaleString();
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            border: {
+                                display: false
+                            },
+                            ticks: {
+                                color: '#666666',
+                                font: {
+                                    size: 12,
+                                    weight: '500'
+                                }
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.08)',
+                                borderDash: [5, 5]
+                            },
+                            border: {
+                                display: false
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return '₹' + (value / 1000) + 'k';
+                                },
+                                color: '#666666',
+                                font: {
+                                    size: 12,
+                                    weight: '500'
+                                }
+                            }
+                        }
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    }
+                }
+            });
+        }
+
+        // Function to load top products
+        async function loadTopProducts() {
+            try {
+                const response = await fetch('/api/dashboard/top-products');
+                const data = await response.json();
+                
+                if (data.success && data.data.length > 0) {
+                    const topProductsList = document.getElementById('topProductsList');
+                    topProductsList.innerHTML = '';
+                    
+                    data.data.forEach((product, index) => {
+                        const productItem = document.createElement('div');
+                        productItem.className = 'product-item';
+                        productItem.innerHTML = `
+                            <div class="product-rank">#${index + 1}</div>
+                            <div class="product-info">
+                                <div class="product-name">${product.productName}</div>
+                                <div class="product-stats">
+                                    <span class="product-sales">${product.totalQuantity} sold</span>
+                                    <span class="product-revenue">₹${product.totalRevenue.toLocaleString()}</span>
+                                </div>
+                            </div>
+                        `;
+                        topProductsList.appendChild(productItem);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading top products:', error);
+            }
+        }
+
+        // Function to load recent orders
+        async function loadRecentOrders() {
+            try {
+                const response = await fetch('/api/dashboard/recent-orders');
+                const data = await response.json();
+                
+                if (data.success && data.data.length > 0) {
+                    const recentOrdersList = document.getElementById('recentOrdersList');
+                    recentOrdersList.innerHTML = '';
+                    
+                    data.data.forEach(order => {
+                        const orderItem = document.createElement('div');
+                        orderItem.className = 'activity-item';
+                        orderItem.innerHTML = `
+                            <div class="activity-icon">
+                                <i class="fas fa-shopping-bag"></i>
+                            </div>
+                            <div class="activity-content">
+                                <div class="activity-title">${order.orderId}</div>
+                                <div class="activity-subtitle">${order.userId.fullname}</div>
+                                <div class="activity-meta">
+                                    <span class="activity-amount">₹${order.finalAmount.toLocaleString()}</span>
+                                    <span class="activity-status status-${order.status.toLowerCase().replace(' ', '-')}">${order.status}</span>
+                                </div>
+                            </div>
+                            <div class="activity-time">${formatTimeAgo(order.createdAt)}</div>
+                        `;
+                        recentOrdersList.appendChild(orderItem);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading recent orders:', error);
+            }
+        }
+
+        // Function to load new customers
+        async function loadNewCustomers() {
+            try {
+                const response = await fetch('/api/dashboard/new-customers');
+                const data = await response.json();
+                
+                if (data.success && data.data.length > 0) {
+                    const newCustomersList = document.getElementById('newCustomersList');
+                    newCustomersList.innerHTML = '';
+                    
+                    data.data.forEach(customer => {
+                        const customerItem = document.createElement('div');
+                        customerItem.className = 'activity-item';
+                        customerItem.innerHTML = `
+                            <div class="activity-icon">
+                                <i class="fas fa-user-plus"></i>
+                            </div>
+                            <div class="activity-content">
+                                <div class="activity-title">${customer.fullname}</div>
+                                <div class="activity-subtitle">${customer.email}</div>
+                            </div>
+                            <div class="activity-time">${formatTimeAgo(customer.createdAt)}</div>
+                        `;
+                        newCustomersList.appendChild(customerItem);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading new customers:', error);
+            }
+        }
+
+        // Utility function to format time ago
+        function formatTimeAgo(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffInSeconds = Math.floor((now - date) / 1000);
+            
+            if (diffInSeconds < 60) return 'Just now';
+            if (diffInSeconds < 3600) return Math.floor(diffInSeconds / 60) + 'm ago';
+            if (diffInSeconds < 86400) return Math.floor(diffInSeconds / 3600) + 'h ago';
+            if (diffInSeconds < 2592000) return Math.floor(diffInSeconds / 86400) + 'd ago';
+            return date.toLocaleDateString();
+        }
+
+        // Function to show error messages
+        function showErrorMessage(message) {
+            console.error(message);
+            // You can implement a toast notification here if needed
+        }
 
             // Handle sidebar navigation
-            const navItems = document.querySelectorAll('.nav-item[data-route]');
-            const mobileToggle = document.getElementById('mobileToggle');
-            const sidebar = document.getElementById('sidebar');
+        const navItems = document.querySelectorAll('.nav-item[data-route]');
+        const mobileToggle = document.getElementById('mobileToggle');
+        const sidebar = document.getElementById('sidebar');
 
-            // Set Dashboard as active
-            document.querySelector('[data-route="dashboard"]')?.classList.add('active');
+        // Set Dashboard as active
+        document.querySelector('[data-route="dashboard"]')?.classList.add('active');
 
-            navItems.forEach(item => {
-                item.addEventListener('click', function (e) {
-                    navItems.forEach(nav => nav.classList.remove('active'));
-                    this.classList.add('active');
+        navItems.forEach(item => {
+            item.addEventListener('click', function (e) {
+                navItems.forEach(nav => nav.classList.remove('active'));
+                this.classList.add('active');
 
-                    if (window.innerWidth <= 768) {
+                if (window.innerWidth <= 768) {
+                    sidebar.classList.remove('show');
+                }
+            });
+        });
+
+        if (mobileToggle && sidebar) {
+            mobileToggle.addEventListener('click', function () {
+                sidebar.classList.toggle('show');
+            });
+
+            document.addEventListener('click', function (e) {
+                if (window.innerWidth <= 768) {
+                    if (!sidebar.contains(e.target) && !mobileToggle.contains(e.target)) {
                         sidebar.classList.remove('show');
+                    }
+                }
+            });
+        }
+
+        // Logout functionality
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "You will be logged out of the admin panel",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#000000',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Yes, logout',
+                    cancelButtonText: 'Cancel'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = '/admin-logout';
                     }
                 });
             });
-
-            if (mobileToggle && sidebar) {
-                mobileToggle.addEventListener('click', function () {
-                    sidebar.classList.toggle('show');
-                });
-
-                document.addEventListener('click', function (e) {
-                    if (window.innerWidth <= 768) {
-                        if (!sidebar.contains(e.target) && !mobileToggle.contains(e.target)) {
-                            sidebar.classList.remove('show');
-                        }
-                    }
-                });
-            }
-
-            // Logout functionality
-            const logoutBtn = document.getElementById('logoutBtn');
-            if (logoutBtn) {
-                logoutBtn.addEventListener('click', function (e) {
-                    e.preventDefault();
-
-                    Swal.fire({
-                        title: 'Are you sure?',
-                        text: "You will be logged out of the admin panel",
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonColor: '#000000',
-                        cancelButtonColor: '#6c757d',
-                        confirmButtonText: 'Yes, logout',
-                        cancelButtonText: 'Cancel'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            window.location.href = '/admin-logout';
-                        }
-                    });
-                });
-            }
-        });
+        }
+    });
     </script>
 </body>
 </html>

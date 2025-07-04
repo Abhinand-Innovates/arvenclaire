@@ -8,6 +8,7 @@ const productController = require("../controllers/admin/product-controller");
 const orderController = require("../controllers/admin/order-controller");
 const returnController = require("../controllers/admin/return-controller");
 const { productUpload, handleMulterError } = require("../config/multer-config");
+const dashboardController = require("../controllers/admin/dashboard-controller");
 
 const couponController = require("../controllers/admin/coupon-controller");
 const salesReportController = require("../controllers/admin/sales-report-controller");
@@ -21,6 +22,14 @@ adminRoute.post("/admin-login", redirectIfAdminAuthenticated, adminController.po
 //Admin Dashboard
 adminRoute.get("/admin-dashboard", isAdminAuthenticated, preventCache, adminController.getAdminDashboard);
 adminRoute.get("/admin-logout", isAdminAuthenticated, preventCache, adminController.logoutAdminDashboard);
+
+// Dashboard API Routes (temporarily removing auth for testing)
+adminRoute.get("/api/dashboard/test", dashboardController.testAPI);
+adminRoute.get("/api/dashboard/stats", dashboardController.getDashboardStats);
+adminRoute.get("/api/dashboard/sales", dashboardController.getSalesData);
+adminRoute.get("/api/dashboard/top-products", dashboardController.getTopProducts);
+adminRoute.get("/api/dashboard/recent-orders", dashboardController.getRecentOrders);
+adminRoute.get("/api/dashboard/new-customers", dashboardController.getNewCustomers);
 
 
 //User Management

@@ -40,29 +40,25 @@ const calculateBestOffer = async (product) => {
         // Calculate discounted price based on offer type
         let originalPrice, discountAmount, finalPrice;
         
-        if (offerType === 'category') {
-            // Category offers are calculated based on regular price
-            originalPrice = product.regularPrice;
-            discountAmount = (originalPrice * bestOfferPercentage) / 100;
-            finalPrice = originalPrice - discountAmount;
-        } else if (offerType === 'product') {
-            // Product offers are calculated based on sale price
-            originalPrice = product.salePrice || product.regularPrice;
+        // Always use regular price as the base for offer calculations
+        originalPrice = product.regularPrice;
+        
+        if (bestOfferPercentage > 0) {
+            // Apply the best offer on regular price
             discountAmount = (originalPrice * bestOfferPercentage) / 100;
             finalPrice = originalPrice - discountAmount;
         } else {
-            // No offer
-            originalPrice = product.salePrice || product.regularPrice;
+            // No offer - use sale price if available, otherwise regular price
             discountAmount = 0;
-            finalPrice = originalPrice;
+            finalPrice = product.salePrice || product.regularPrice;
         }
 
         return {
             originalPrice,
             bestOfferPercentage,
             offerType,
-            discountAmount: Math.round(discountAmount * 100) / 100, // Round to 2 decimal places
-            finalPrice: Math.round(finalPrice * 100) / 100, // Round to 2 decimal places
+            discountAmount: Math.round(discountAmount), // Round to nearest whole number
+            finalPrice: Math.round(finalPrice), // Round to nearest whole number
             productOffer,
             categoryOffer,
             hasOffer: bestOfferPercentage > 0
@@ -71,7 +67,7 @@ const calculateBestOffer = async (product) => {
         console.error('Error calculating best offer:', error);
         const fallbackPrice = product.salePrice || product.regularPrice;
         return {
-            originalPrice: fallbackPrice,
+            originalPrice: product.regularPrice || fallbackPrice,
             bestOfferPercentage: 0,
             offerType: 'none',
             discountAmount: 0,
@@ -109,7 +105,7 @@ const applyBestOffersToProducts = async (products) => {
             return {
                 ...product.toObject ? product.toObject() : product,
                 offerDetails: {
-                    originalPrice: fallbackPrice,
+                    originalPrice: product.regularPrice || fallbackPrice,
                     bestOfferPercentage: 0,
                     offerType: 'none',
                     discountAmount: 0,

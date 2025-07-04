@@ -122,12 +122,12 @@ const calculateCartSummary = (cartItems) => {
   const finalAmount = finalAmountBeforeShipping + shippingCharges;
 
   return {
-    subtotal: Math.round(subtotal * 100) / 100, // Subtotal based on sale prices
-    totalDiscount: Math.round(totalDiscount * 100) / 100, // Total discount from offers
+    subtotal: Math.round(subtotal), // Subtotal based on sale prices
+    totalDiscount: Math.round(totalDiscount), // Total discount from offers
     shippingCharges,
-    finalAmount: Math.round(finalAmount * 100) / 100, // Final amount to pay (after offers + shipping)
+    finalAmount: Math.round(finalAmount), // Final amount to pay (after offers + shipping)
     totalItems,
-    amountAfterDiscount: Math.round(finalAmountBeforeShipping * 100) / 100 // Amount after offers but before shipping
+    amountAfterDiscount: Math.round(finalAmountBeforeShipping) // Amount after offers but before shipping
   };
 };
 
