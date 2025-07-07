@@ -5,6 +5,9 @@ const path = require('path');
 const PDFDocument = require('pdfkit');
 const ExcelJS = require('exceljs');
 
+
+
+
 const ledgerController = {
     // Helper function to get ledger data
     getLedgerData: async (filters) => {
@@ -273,16 +276,9 @@ const ledgerController = {
             ];
             const headers = ['Date', 'Order ID', 'Customer', 'Description', 'Debit', 'Credit', 'Balance', 'Status', 'Payment'];
             
-            // Add header background and borders
-            doc.rect(leftMargin - 5, tableY - 3, usableWidth + 10, 18)
-               .fillColor('#000000')
-               .fill();
-            
-            doc.fillColor('#ffffff'); // White text for headers
             headers.forEach((header, i) => {
                 doc.text(header, colX[i], tableY, { width: colWidths[i], align: 'center' });
             });
-            doc.fillColor('#333333'); // Reset to dark text
             
             doc.y = tableY + 15;
             
@@ -319,11 +315,10 @@ const ledgerController = {
                 doc.text(`Note: Showing first ${maxRows} entries. Total: ${entries.length}`, { align: 'center' });
             }
 
-            // Footer - optimized for landscape layout
+            // Footer - adjusted for landscape layout
             doc.fontSize(8).fillColor('#666666');
-            const footerY = pageHeight - bottomMargin - 20;
-            doc.text(`ArvenClaire Ledger Report - Generated on ${new Date().toLocaleDateString('en-GB')}`, leftMargin, footerY, { align: 'center', width: usableWidth });
-            doc.text('* All amounts in Indian Rupees (₹). Credits represent sales revenue.', leftMargin, footerY + 10, { align: 'center', width: usableWidth });
+            doc.text(`ArvenClaire Ledger Report - Generated on ${new Date().toLocaleDateString('en-GB')}`, 30, 550, { align: 'center', width: usableWidth });
+            doc.text('* All amounts in Indian Rupees (₹). Credits represent sales revenue.', 30, 560, { align: 'center', width: usableWidth });
 
             // Finalize the PDF
             doc.end();
@@ -580,5 +575,8 @@ const ledgerController = {
         }
     }
 };
+
+
+
 
 module.exports = ledgerController;

@@ -436,6 +436,14 @@
             color: #ffffff;
         }
 
+        /* Form Text */
+        .form-text {
+            font-size: 0.8rem;
+            color: #6c757d;
+            margin-top: 0.5rem;
+            font-style: italic;
+        }
+
         /* Animation Classes */
         @keyframes fadeInUp {
             from {

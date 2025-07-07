@@ -7,6 +7,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.10.5/sweetalert2.all.min.js"></script>
 
     <link rel="stylesheet" href="../../styles/admin/edit-coupon.css">
 </head>
@@ -30,9 +31,9 @@
                         <p>Update the details of your coupon</p>
                     </div>
                     <div class="form-body">
-                        <% if (typeof error !== 'undefined' && error) { %>
+                        <% if (typeof errors !== 'undefined' && errors.general) { %>
                             <div class="alert alert-danger" role="alert">
-                                <i class="fas fa-exclamation-triangle"></i> <%= error %>
+                                <i class="fas fa-exclamation-triangle"></i> <%= errors.general %>
                             </div>
                         <% } %>
                         <form id="couponForm" method="POST" action="/edit-coupon/<%= coupon._id %>">
@@ -40,28 +41,32 @@
                                 <h3 class="section-title"><i class="fas fa-ticket-alt"></i> Coupon Details</h3>
                                 <div class="form-row">
                                     <div class="form-group">
-                                        <label for="code" class="form-label">Coupon Code</label>
+                                        <label for="code" class="form-label">Coupon Code <span class="required">*</span></label>
                                         <div class="input-group">
                                             <input type="text" class="form-control" id="code" name="code" value="<%= coupon.code %>" required>
                                             <button class="btn btn-outline-secondary" type="button" id="generateCode">Generate</button>
                                         </div>
+                                        <div class="error-message">Coupon code is required</div>
                                     </div>
                                     <div class="form-group">
-                                        <label for="description" class="form-label">Description</label>
+                                        <label for="description" class="form-label">Description <span class="required">*</span></label>
                                         <input type="text" class="form-control" id="description" name="description" value="<%= coupon.description %>" required>
+                                        <div class="error-message">Description is required</div>
                                     </div>
                                 </div>
                                 <div class="form-row">
                                     <div class="form-group">
-                                        <label for="discountType" class="form-label">Discount Type</label>
+                                        <label for="discountType" class="form-label">Discount Type <span class="required">*</span></label>
                                         <select class="form-select" id="discountType" name="discountType">
                                             <option value="percentage" <%= coupon.discountType === 'percentage' ? 'selected' : '' %>>Percentage</option>
                                             <option value="flat" <%= coupon.discountType === 'flat' ? 'selected' : '' %>>Flat</option>
                                         </select>
+                                        <div class="error-message">Please select a discount type</div>
                                     </div>
                                     <div class="form-group">
-                                        <label for="discountValue" class="form-label">Discount Value</label>
+                                        <label for="discountValue" class="form-label">Discount Value <span class="required">*</span></label>
                                         <input type="number" class="form-control" id="discount" name="discount" step="0.01" min="0" value="<%= coupon.discount %>" required>
+                                        <div class="error-message">Discount value is required</div>
                                     </div>
                                 </div>
                                 <div class="form-group mt-3">
@@ -76,8 +81,9 @@
                                 </div>
                                 <div class="form-row">
                                     <div class="form-group">
-                                        <label for="minPurchaseAmount" class="form-label">Minimum Purchase Amount</label>
+                                        <label for="minPurchaseAmount" class="form-label">Minimum Purchase Amount <span class="required">*</span></label>
                                         <input type="number" class="form-control" id="minPurchase" name="minPurchase" step="0.01" min="0" value="<%= coupon.minPurchase %>" required>
+                                        <div class="error-message">Minimum purchase amount is required</div>
                                     </div>
                                      <div class="form-group">
                                         <label for="isActive" class="form-label">Status</label>
@@ -93,12 +99,14 @@
                                 <h3 class="section-title"><i class="fas fa-calendar-alt"></i> Validity</h3>
                                 <div class="form-row">
                                     <div class="form-group">
-                                        <label for="startDate" class="form-label">Start Date</label>
+                                        <label for="startDate" class="form-label">Start Date <span class="required">*</span></label>
                                         <input type="date" class="form-control" id="startDate" name="startDate" value="<%= coupon.startDate.toISOString().split('T')[0] %>" required>
+                                        <div class="error-message">Start date is required</div>
                                     </div>
                                     <div class="form-group">
-                                        <label for="endDate" class="form-label">End Date</label>
+                                        <label for="endDate" class="form-label">End Date <span class="required">*</span></label>
                                         <input type="date" class="form-control" id="expiry" name="expiry" value="<%= coupon.expiry.toISOString().split('T')[0] %>" required>
+                                        <div class="error-message">End date is required</div>
                                     </div>
                                 </div>
                             </div>
@@ -107,12 +115,14 @@
                                 <h3 class="section-title"><i class="fas fa-users"></i> Usage Limits</h3>
                                 <div class="form-row">
                                     <div class="form-group">
-                                        <label for="globalUsageLimit" class="form-label">Global Usage Limit</label>
+                                        <label for="globalUsageLimit" class="form-label">Global Usage Limit <span class="required">*</span></label>
                                         <input type="number" class="form-control" id="usageLimit" name="usageLimit" min="1" value="<%= coupon.usageLimit %>" required>
+                                        <div class="error-message">Global usage limit is required</div>
                                     </div>
                                     <div class="form-group">
-                                        <label for="perUserLimit" class="form-label">Per User Limit</label>
+                                        <label for="perUserLimit" class="form-label">Per User Limit <span class="required">*</span></label>
                                         <input type="number" class="form-control" id="userUsageLimit" name="userUsageLimit" min="1" value="<%= coupon.userUsageLimit %>" required>
+                                        <div class="error-message">Per user limit is required</div>
                                     </div>
                                 </div>
                             </div>
@@ -133,6 +143,7 @@
                                     <div class="form-group">
                                         <label for="maxDiscount" class="form-label">Maximum Discount Amount <span class="required">*</span></label>
                                         <input type="number" class="form-control" id="maxDiscount" name="maxDiscount" step="0.01" min="0" value="<%= coupon.maxDiscount %>" required>
+                                        <div class="error-message">Maximum discount amount is required</div>
                                     </div>
                                 </div>
                                 <div class="form-group">
@@ -164,6 +175,8 @@
         $(document).ready(function() {
             $('#applicableProducts').select2();
             $('#applicableCategories').select2();
+            setupFieldValidation();
+            updatePreview();
         });
 
         document.getElementById('generateCode').addEventListener('click', () => {
@@ -173,57 +186,396 @@
                 result += chars.charAt(Math.floor(Math.random() * chars.length));
             }
             document.getElementById('code').value = result;
+            updatePreview();
         });
 
-        // Form validation
-        document.getElementById('couponForm').addEventListener('submit', function(e) {
-            let isValid = true;
-            const errors = [];
+        // Setup real-time validation for all form fields
+        function setupFieldValidation() {
+            // Coupon Code validation
+            const code = document.getElementById('code');
+            if (code) {
+                code.addEventListener('input', validateCouponCode);
+                code.addEventListener('blur', validateCouponCode);
+            }
 
-            // Get form values
-            const startDate = new Date(document.getElementById('startDate').value);
-            const endDate = new Date(document.getElementById('expiry').value);
+            // Description validation
+            const description = document.getElementById('description');
+            if (description) {
+                description.addEventListener('input', validateDescription);
+                description.addEventListener('blur', validateDescription);
+            }
+
+            // Discount Type validation
+            const discountType = document.getElementById('discountType');
+            if (discountType) {
+                discountType.addEventListener('change', validateDiscountType);
+                discountType.addEventListener('blur', validateDiscountType);
+            }
+
+            // Discount Value validation
+            const discount = document.getElementById('discount');
+            if (discount) {
+                discount.addEventListener('input', validateDiscountValue);
+                discount.addEventListener('blur', validateDiscountValue);
+            }
+
+            // Min Purchase validation
+            const minPurchase = document.getElementById('minPurchase');
+            if (minPurchase) {
+                minPurchase.addEventListener('input', validateMinPurchase);
+                minPurchase.addEventListener('blur', validateMinPurchase);
+            }
+
+            // Max Discount validation
+            const maxDiscount = document.getElementById('maxDiscount');
+            if (maxDiscount) {
+                maxDiscount.addEventListener('input', validateMaxDiscount);
+                maxDiscount.addEventListener('blur', validateMaxDiscount);
+            }
+
+            // Start Date validation
+            const startDate = document.getElementById('startDate');
+            if (startDate) {
+                startDate.addEventListener('change', validateStartDate);
+                startDate.addEventListener('blur', validateStartDate);
+            }
+
+            // End Date validation
+            const expiry = document.getElementById('expiry');
+            if (expiry) {
+                expiry.addEventListener('change', validateEndDate);
+                expiry.addEventListener('blur', validateEndDate);
+            }
+
+            // Usage Limit validation
+            const usageLimit = document.getElementById('usageLimit');
+            if (usageLimit) {
+                usageLimit.addEventListener('input', validateUsageLimit);
+                usageLimit.addEventListener('blur', validateUsageLimit);
+            }
+
+            // User Usage Limit validation
+            const userUsageLimit = document.getElementById('userUsageLimit');
+            if (userUsageLimit) {
+                userUsageLimit.addEventListener('input', validateUserUsageLimit);
+                userUsageLimit.addEventListener('blur', validateUserUsageLimit);
+            }
+        }
+
+        // Individual field validation functions (same as add coupon)
+        function validateCouponCode() {
+            const code = document.getElementById('code');
+            const codeGroup = code.closest('.form-group');
+            const errorMsg = codeGroup.querySelector('.error-message');
+            const value = code.value.trim();
+
+            if (!value) {
+                showFieldError(codeGroup, errorMsg, 'Coupon code is required');
+                return false;
+            } else if (value.length < 3) {
+                showFieldError(codeGroup, errorMsg, 'Coupon code must be at least 3 characters long');
+                return false;
+            } else if (value.length > 20) {
+                showFieldError(codeGroup, errorMsg, 'Coupon code cannot exceed 20 characters');
+                return false;
+            } else if (!/^[A-Z0-9]+$/.test(value)) {
+                showFieldError(codeGroup, errorMsg, 'Coupon code can only contain uppercase letters and numbers');
+                return false;
+            } else {
+                hideFieldError(codeGroup, errorMsg);
+                return true;
+            }
+        }
+
+        function validateDescription() {
+            const description = document.getElementById('description');
+            const descriptionGroup = description.closest('.form-group');
+            const errorMsg = descriptionGroup.querySelector('.error-message');
+            const value = description.value.trim();
+
+            if (!value) {
+                showFieldError(descriptionGroup, errorMsg, 'Description is required');
+                return false;
+            } else if (value.length < 5) {
+                showFieldError(descriptionGroup, errorMsg, 'Description must be at least 5 characters long');
+                return false;
+            } else if (value.length > 100) {
+                showFieldError(descriptionGroup, errorMsg, 'Description cannot exceed 100 characters');
+                return false;
+            } else {
+                hideFieldError(descriptionGroup, errorMsg);
+                return true;
+            }
+        }
+
+        function validateDiscountType() {
+            const discountType = document.getElementById('discountType');
+            const discountTypeGroup = discountType.closest('.form-group');
+            const errorMsg = discountTypeGroup.querySelector('.error-message');
+
+            if (!discountType.value.trim()) {
+                showFieldError(discountTypeGroup, errorMsg, 'Please select a discount type');
+                return false;
+            } else {
+                hideFieldError(discountTypeGroup, errorMsg);
+                return true;
+            }
+        }
+
+        function validateDiscountValue() {
+            const discount = document.getElementById('discount');
+            const discountGroup = discount.closest('.form-group');
+            const errorMsg = discountGroup.querySelector('.error-message');
             const discountType = document.getElementById('discountType').value;
-            const discount = parseFloat(document.getElementById('discount').value);
-            const minPurchase = parseFloat(document.getElementById('minPurchase').value);
-            const maxDiscount = parseFloat(document.getElementById('maxDiscount').value);
+            const value = discount.value.trim();
 
-            // Validate dates
-            if (startDate >= endDate) {
-                errors.push('End date must be after start date');
-                isValid = false;
+            if (!value) {
+                showFieldError(discountGroup, errorMsg, 'Discount value is required');
+                return false;
             }
 
-            // Validate discount based on type
-            if (discountType === 'percentage' && (discount <= 0 || discount > 100)) {
-                errors.push('Percentage discount must be between 1 and 100');
-                isValid = false;
-            } else if (discountType === 'flat' && discount <= 0) {
-                errors.push('Flat discount must be greater than 0');
-                isValid = false;
+            const discountValue = parseFloat(value);
+            if (isNaN(discountValue)) {
+                showFieldError(discountGroup, errorMsg, 'Please enter a valid discount value');
+                return false;
+            } else if (discountValue <= 0) {
+                showFieldError(discountGroup, errorMsg, 'Discount value must be greater than 0');
+                return false;
+            } else if (discountType === 'percentage' && discountValue > 100) {
+                showFieldError(discountGroup, errorMsg, 'Percentage discount cannot exceed 100%');
+                return false;
+            } else if (discountType === 'flat' && discountValue > 100000) {
+                showFieldError(discountGroup, errorMsg, 'Flat discount cannot exceed ₹1,00,000');
+                return false;
+            } else {
+                hideFieldError(discountGroup, errorMsg);
+                return true;
+            }
+        }
+
+        function validateMinPurchase() {
+            const minPurchase = document.getElementById('minPurchase');
+            const minPurchaseGroup = minPurchase.closest('.form-group');
+            const errorMsg = minPurchaseGroup.querySelector('.error-message');
+            const value = minPurchase.value.trim();
+
+            if (!value) {
+                showFieldError(minPurchaseGroup, errorMsg, 'Minimum purchase amount is required');
+                return false;
             }
 
-            // Validate minimum purchase
-            if (minPurchase < 0) {
-                errors.push('Minimum purchase amount cannot be negative');
-                isValid = false;
+            const minPurchaseValue = parseFloat(value);
+            if (isNaN(minPurchaseValue)) {
+                showFieldError(minPurchaseGroup, errorMsg, 'Please enter a valid amount');
+                return false;
+            } else if (minPurchaseValue < 0) {
+                showFieldError(minPurchaseGroup, errorMsg, 'Minimum purchase amount cannot be negative');
+                return false;
+            } else if (minPurchaseValue > 1000000) {
+                showFieldError(minPurchaseGroup, errorMsg, 'Minimum purchase amount cannot exceed ₹10,00,000');
+                return false;
+            } else {
+                hideFieldError(minPurchaseGroup, errorMsg);
+                return true;
+            }
+        }
+
+        function validateMaxDiscount() {
+            const maxDiscount = document.getElementById('maxDiscount');
+            const maxDiscountGroup = maxDiscount.closest('.form-group');
+            const errorMsg = maxDiscountGroup.querySelector('.error-message');
+            const value = maxDiscount.value.trim();
+
+            if (!value) {
+                showFieldError(maxDiscountGroup, errorMsg, 'Maximum discount amount is required');
+                return false;
             }
 
-            // Validate max discount
-            if (maxDiscount <= 0) {
-                errors.push('Maximum discount amount must be greater than 0');
-                isValid = false;
+            const maxDiscountValue = parseFloat(value);
+            if (isNaN(maxDiscountValue)) {
+                showFieldError(maxDiscountGroup, errorMsg, 'Please enter a valid amount');
+                return false;
+            } else if (maxDiscountValue <= 0) {
+                showFieldError(maxDiscountGroup, errorMsg, 'Maximum discount amount must be greater than 0');
+                return false;
+            } else if (maxDiscountValue > 100000) {
+                showFieldError(maxDiscountGroup, errorMsg, 'Maximum discount amount cannot exceed ₹1,00,000');
+                return false;
+            } else {
+                hideFieldError(maxDiscountGroup, errorMsg);
+                return true;
+            }
+        }
+
+        function validateStartDate() {
+            const startDate = document.getElementById('startDate');
+            const startDateGroup = startDate.closest('.form-group');
+            const errorMsg = startDateGroup.querySelector('.error-message');
+
+            if (!startDate.value) {
+                showFieldError(startDateGroup, errorMsg, 'Start date is required');
+                return false;
+            } else {
+                hideFieldError(startDateGroup, errorMsg);
+                validateEndDate(); // Re-validate end date when start date changes
+                return true;
+            }
+        }
+
+        function validateEndDate() {
+            const startDate = document.getElementById('startDate');
+            const expiry = document.getElementById('expiry');
+            const expiryGroup = expiry.closest('.form-group');
+            const errorMsg = expiryGroup.querySelector('.error-message');
+
+            if (!expiry.value) {
+                showFieldError(expiryGroup, errorMsg, 'End date is required');
+                return false;
+            } else if (startDate.value && expiry.value) {
+                const start = new Date(startDate.value);
+                const end = new Date(expiry.value);
+                if (start >= end) {
+                    showFieldError(expiryGroup, errorMsg, 'End date must be after start date');
+                    return false;
+                } else {
+                    hideFieldError(expiryGroup, errorMsg);
+                    return true;
+                }
+            } else {
+                hideFieldError(expiryGroup, errorMsg);
+                return true;
+            }
+        }
+
+        function validateUsageLimit() {
+            const usageLimit = document.getElementById('usageLimit');
+            const usageLimitGroup = usageLimit.closest('.form-group');
+            const errorMsg = usageLimitGroup.querySelector('.error-message');
+            const value = usageLimit.value.trim();
+
+            if (!value) {
+                showFieldError(usageLimitGroup, errorMsg, 'Global usage limit is required');
+                return false;
             }
 
-            // For percentage discounts, ensure max discount makes sense
-            if (discountType === 'percentage' && maxDiscount > (minPurchase * discount / 100)) {
-                // This is actually okay, just a warning
+            const usageLimitValue = parseInt(value);
+            if (isNaN(usageLimitValue)) {
+                showFieldError(usageLimitGroup, errorMsg, 'Please enter a valid number');
+                return false;
+            } else if (usageLimitValue <= 0) {
+                showFieldError(usageLimitGroup, errorMsg, 'Usage limit must be greater than 0');
+                return false;
+            } else if (usageLimitValue > 100000) {
+                showFieldError(usageLimitGroup, errorMsg, 'Usage limit cannot exceed 1,00,000');
+                return false;
+            } else {
+                hideFieldError(usageLimitGroup, errorMsg);
+                return true;
+            }
+        }
+
+        function validateUserUsageLimit() {
+            const userUsageLimit = document.getElementById('userUsageLimit');
+            const userUsageLimitGroup = userUsageLimit.closest('.form-group');
+            const errorMsg = userUsageLimitGroup.querySelector('.error-message');
+            const value = userUsageLimit.value.trim();
+
+            if (!value) {
+                showFieldError(userUsageLimitGroup, errorMsg, 'Per user limit is required');
+                return false;
             }
 
-            if (!isValid) {
-                e.preventDefault();
-                alert('Please fix the following errors:\n' + errors.join('\n'));
+            const userUsageLimitValue = parseInt(value);
+            if (isNaN(userUsageLimitValue)) {
+                showFieldError(userUsageLimitGroup, errorMsg, 'Please enter a valid number');
+                return false;
+            } else if (userUsageLimitValue <= 0) {
+                showFieldError(userUsageLimitGroup, errorMsg, 'Per user limit must be greater than 0');
+                return false;
+            } else if (userUsageLimitValue > 1000) {
+                showFieldError(userUsageLimitGroup, errorMsg, 'Per user limit cannot exceed 1,000');
+                return false;
+            } else {
+                hideFieldError(userUsageLimitGroup, errorMsg);
+                return true;
             }
+        }
+
+        // Helper functions for showing/hiding field errors
+        function showFieldError(fieldGroup, errorElement, message) {
+            fieldGroup.classList.add('error');
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+        }
+
+        function hideFieldError(fieldGroup, errorElement) {
+            fieldGroup.classList.remove('error');
+            errorElement.style.display = 'none';
+        }
+
+        // Validate entire form
+        function validateForm() {
+            let isValid = true;
+
+            if (!validateCouponCode()) isValid = false;
+            if (!validateDescription()) isValid = false;
+            if (!validateDiscountType()) isValid = false;
+            if (!validateDiscountValue()) isValid = false;
+            if (!validateMinPurchase()) isValid = false;
+            if (!validateMaxDiscount()) isValid = false;
+            if (!validateStartDate()) isValid = false;
+            if (!validateEndDate()) isValid = false;
+            if (!validateUsageLimit()) isValid = false;
+            if (!validateUserUsageLimit()) isValid = false;
+
+            return isValid;
+        }
+
+        // Form validation - enhanced with client-side validation
+        document.getElementById('couponForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            if (!validateForm()) {
+                // Scroll to first error
+                const firstError = document.querySelector('.form-group.error');
+                if (firstError) {
+                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+                
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Validation Errors',
+                    text: 'Please fix all validation errors before submitting.',
+                    confirmButtonColor: '#2c3e50'
+                });
+                return;
+            }
+
+            // Show confirmation dialog
+            Swal.fire({
+                title: 'Update Coupon?',
+                text: 'Are you sure you want to update this coupon?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#2c3e50',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, update it!',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Show loading
+                    Swal.fire({
+                        title: 'Updating Coupon...',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+                    
+                    // Submit the form
+                    this.submit();
+                }
+            });
         });
 
         // Real-time discount validation

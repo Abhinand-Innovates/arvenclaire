@@ -24,7 +24,7 @@ const getAddCouponPage = async (req, res) => {
         res.render('add-coupons', { 
             categories, 
             products,
-            error: null,
+            errors: {},
             formData: {}
         });
     } catch (error) {
@@ -32,7 +32,7 @@ const getAddCouponPage = async (req, res) => {
         res.status(500).render('add-coupons', {
             categories: [],
             products: [],
-            error: 'Error loading page. Please try again.',
+            errors: { general: 'Error loading page. Please try again.' },
             formData: {}
         });
     }
@@ -60,55 +60,91 @@ const addCoupon = async (req, res) => {
             applicableProducts
         } = req.body;
 
+        const errors = {};
+
         // Validate required fields
-        if (!code || !description || !discountType || !discount || !minPurchase || !maxDiscount || !startDate || !expiry || !usageLimit || !userUsageLimit) {
-            return res.status(400).render('add-coupons', {
-                categories: await Category.find({}),
-                products: await require('../../models/product-schema').find({}),
-                error: 'All required fields must be filled',
-                formData: req.body
-            });
+        if (!code || code.trim() === '') {
+            errors.code = 'Coupon code is required';
+        }
+        if (!description || description.trim() === '') {
+            errors.description = 'Description is required';
+        }
+        if (!discountType) {
+            errors.discountType = 'Please select a discount type';
+        }
+        if (!discount || discount === '') {
+            errors.discount = 'Discount value is required';
+        }
+        if (!minPurchase || minPurchase === '') {
+            errors.minPurchase = 'Minimum purchase amount is required';
+        }
+        if (!maxDiscount || maxDiscount === '') {
+            errors.maxDiscount = 'Maximum discount amount is required';
+        }
+        if (!startDate) {
+            errors.startDate = 'Start date is required';
+        }
+        if (!expiry) {
+            errors.expiry = 'End date is required';
+        }
+        if (!usageLimit || usageLimit === '') {
+            errors.usageLimit = 'Global usage limit is required';
+        }
+        if (!userUsageLimit || userUsageLimit === '') {
+            errors.userUsageLimit = 'Per user limit is required';
         }
 
         // Validate dates
-        const start = new Date(startDate);
-        const end = new Date(expiry);
-        if (start >= end) {
-            return res.status(400).render('add-coupons', {
-                categories: await Category.find({}),
-                products: await require('../../models/product-schema').find({}),
-                error: 'End date must be after start date',
-                formData: req.body
-            });
+        if (startDate && expiry) {
+            const start = new Date(startDate);
+            const end = new Date(expiry);
+            if (start >= end) {
+                errors.expiry = 'End date must be after start date';
+            }
         }
 
         // Validate discount value based on type
-        const discountValue = parseFloat(discount);
-        if (discountType === 'percentage' && (discountValue <= 0 || discountValue > 100)) {
-            return res.status(400).render('add-coupons', {
-                categories: await Category.find({}),
-                products: await require('../../models/product-schema').find({}),
-                error: 'Percentage discount must be between 1 and 100',
-                formData: req.body
-            });
+        if (discount && discountType) {
+            const discountValue = parseFloat(discount);
+            if (isNaN(discountValue) || discountValue <= 0) {
+                errors.discount = 'Discount value must be greater than 0';
+            } else if (discountType === 'percentage' && discountValue > 100) {
+                errors.discount = 'Percentage discount must be between 1 and 100';
+            }
         }
 
-        if (discountValue <= 0) {
-            return res.status(400).render('add-coupons', {
-                categories: await Category.find({}),
-                products: await require('../../models/product-schema').find({}),
-                error: 'Discount value must be greater than 0',
-                formData: req.body
-            });
+        // Validate numeric fields
+        if (minPurchase && (isNaN(parseFloat(minPurchase)) || parseFloat(minPurchase) < 0)) {
+            errors.minPurchase = 'Minimum purchase amount must be a valid positive number';
+        }
+        if (maxDiscount && (isNaN(parseFloat(maxDiscount)) || parseFloat(maxDiscount) <= 0)) {
+            errors.maxDiscount = 'Maximum discount amount must be greater than 0';
+        }
+        if (usageLimit && (isNaN(parseInt(usageLimit)) || parseInt(usageLimit) <= 0)) {
+            errors.usageLimit = 'Global usage limit must be a positive number';
+        }
+        if (userUsageLimit && (isNaN(parseInt(userUsageLimit)) || parseInt(userUsageLimit) <= 0)) {
+            errors.userUsageLimit = 'Per user limit must be a positive number';
         }
 
         // Check if coupon code already exists
-        const existingCoupon = await Coupon.findOne({ code: code.toUpperCase() });
-        if (existingCoupon) {
+        if (code && code.trim() !== '') {
+            const existingCoupon = await Coupon.findOne({ code: code.toUpperCase().trim() });
+            if (existingCoupon) {
+                errors.code = 'Coupon code already exists';
+            }
+        }
+
+        // If there are validation errors, return to form
+        if (Object.keys(errors).length > 0) {
+            const categories = await Category.find({});
+            const Product = require('../../models/product-schema');
+            const products = await Product.find({});
+            
             return res.status(400).render('add-coupons', {
-                categories: await Category.find({}),
-                products: await require('../../models/product-schema').find({}),
-                error: 'Coupon code already exists',
+                categories,
+                products,
+                errors,
                 formData: req.body
             });
         }
@@ -139,11 +175,14 @@ const addCoupon = async (req, res) => {
         
         // Handle validation errors
         if (error.name === 'ValidationError') {
-            const errorMessages = Object.values(error.errors).map(err => err.message);
+            const errors = {};
+            Object.keys(error.errors).forEach(key => {
+                errors[key] = error.errors[key].message;
+            });
             return res.status(400).render('add-coupons', {
                 categories: await Category.find({}),
                 products: await require('../../models/product-schema').find({}),
-                error: errorMessages.join(', '),
+                errors,
                 formData: req.body
             });
         }
@@ -151,7 +190,7 @@ const addCoupon = async (req, res) => {
         res.status(500).render('add-coupons', {
             categories: await Category.find({}),
             products: await require('../../models/product-schema').find({}),
-            error: 'Error adding coupon. Please try again.',
+            errors: { general: 'Error adding coupon. Please try again.' },
             formData: req.body
         });
     }
@@ -177,7 +216,7 @@ const getEditCouponPage = async (req, res) => {
             coupon,
             categories, 
             products,
-            error: null
+            errors: {}
         });
     } catch (error) {
         console.error('Error fetching coupon for edit:', error);
@@ -207,75 +246,87 @@ const updateCoupon = async (req, res) => {
             applicableProducts
         } = req.body;
 
+        const errors = {};
+
         // Validate required fields
-        if (!code || !description || !discountType || !discount || !minPurchase || !maxDiscount || !startDate || !expiry || !usageLimit || !userUsageLimit) {
-            const categories = await Category.find({});
-            const Product = require('../../models/product-schema');
-            const products = await Product.find({});
-            const coupon = await Coupon.findById(couponId);
-            
-            return res.status(400).render('edit-coupon', {
-                coupon,
-                categories,
-                products,
-                error: 'All required fields must be filled'
-            });
+        if (!code || code.trim() === '') {
+            errors.code = 'Coupon code is required';
+        }
+        if (!description || description.trim() === '') {
+            errors.description = 'Description is required';
+        }
+        if (!discountType) {
+            errors.discountType = 'Please select a discount type';
+        }
+        if (!discount || discount === '') {
+            errors.discount = 'Discount value is required';
+        }
+        if (!minPurchase || minPurchase === '') {
+            errors.minPurchase = 'Minimum purchase amount is required';
+        }
+        if (!maxDiscount || maxDiscount === '') {
+            errors.maxDiscount = 'Maximum discount amount is required';
+        }
+        if (!startDate) {
+            errors.startDate = 'Start date is required';
+        }
+        if (!expiry) {
+            errors.expiry = 'End date is required';
+        }
+        if (!usageLimit || usageLimit === '') {
+            errors.usageLimit = 'Global usage limit is required';
+        }
+        if (!userUsageLimit || userUsageLimit === '') {
+            errors.userUsageLimit = 'Per user limit is required';
         }
 
         // Validate dates
-        const start = new Date(startDate);
-        const end = new Date(expiry);
-        if (start >= end) {
-            const categories = await Category.find({});
-            const Product = require('../../models/product-schema');
-            const products = await Product.find({});
-            const coupon = await Coupon.findById(couponId);
-            
-            return res.status(400).render('edit-coupon', {
-                coupon,
-                categories,
-                products,
-                error: 'End date must be after start date'
-            });
+        if (startDate && expiry) {
+            const start = new Date(startDate);
+            const end = new Date(expiry);
+            if (start >= end) {
+                errors.expiry = 'End date must be after start date';
+            }
         }
 
         // Validate discount value based on type
-        const discountValue = parseFloat(discount);
-        if (discountType === 'percentage' && (discountValue <= 0 || discountValue > 100)) {
-            const categories = await Category.find({});
-            const Product = require('../../models/product-schema');
-            const products = await Product.find({});
-            const coupon = await Coupon.findById(couponId);
-            
-            return res.status(400).render('edit-coupon', {
-                coupon,
-                categories,
-                products,
-                error: 'Percentage discount must be between 1 and 100'
-            });
+        if (discount && discountType) {
+            const discountValue = parseFloat(discount);
+            if (isNaN(discountValue) || discountValue <= 0) {
+                errors.discount = 'Discount value must be greater than 0';
+            } else if (discountType === 'percentage' && discountValue > 100) {
+                errors.discount = 'Percentage discount must be between 1 and 100';
+            }
         }
 
-        if (discountValue <= 0) {
-            const categories = await Category.find({});
-            const Product = require('../../models/product-schema');
-            const products = await Product.find({});
-            const coupon = await Coupon.findById(couponId);
-            
-            return res.status(400).render('edit-coupon', {
-                coupon,
-                categories,
-                products,
-                error: 'Discount value must be greater than 0'
-            });
+        // Validate numeric fields
+        if (minPurchase && (isNaN(parseFloat(minPurchase)) || parseFloat(minPurchase) < 0)) {
+            errors.minPurchase = 'Minimum purchase amount must be a valid positive number';
+        }
+        if (maxDiscount && (isNaN(parseFloat(maxDiscount)) || parseFloat(maxDiscount) <= 0)) {
+            errors.maxDiscount = 'Maximum discount amount must be greater than 0';
+        }
+        if (usageLimit && (isNaN(parseInt(usageLimit)) || parseInt(usageLimit) <= 0)) {
+            errors.usageLimit = 'Global usage limit must be a positive number';
+        }
+        if (userUsageLimit && (isNaN(parseInt(userUsageLimit)) || parseInt(userUsageLimit) <= 0)) {
+            errors.userUsageLimit = 'Per user limit must be a positive number';
         }
 
         // Check if coupon code already exists (excluding current coupon)
-        const existingCoupon = await Coupon.findOne({ 
-            code: code.toUpperCase(),
-            _id: { $ne: couponId }
-        });
-        
-        if (existingCoupon) {
+        if (code && code.trim() !== '') {
+            const existingCoupon = await Coupon.findOne({ 
+                code: code.toUpperCase().trim(),
+                _id: { $ne: couponId }
+            });
+            
+            if (existingCoupon) {
+                errors.code = 'Coupon code already exists';
+            }
+        }
+
+        // If there are validation errors, return to form
+        if (Object.keys(errors).length > 0) {
             const categories = await Category.find({});
             const Product = require('../../models/product-schema');
             const products = await Product.find({});
@@ -285,7 +336,7 @@ const updateCoupon = async (req, res) => {
                 coupon,
                 categories,
                 products,
-                error: 'Coupon code already exists'
+                errors
             });
         }
 
@@ -318,7 +369,7 @@ const updateCoupon = async (req, res) => {
                 coupon,
                 categories,
                 products,
-                error: 'Coupon not found'
+                errors: { general: 'Coupon not found' }
             });
         }
 
@@ -333,12 +384,15 @@ const updateCoupon = async (req, res) => {
             const coupon = await Coupon.findById(req.params.id);
             
             if (error.name === 'ValidationError') {
-                const errorMessages = Object.values(error.errors).map(err => err.message);
+                const errors = {};
+                Object.keys(error.errors).forEach(key => {
+                    errors[key] = error.errors[key].message;
+                });
                 return res.status(400).render('edit-coupon', {
                     coupon,
                     categories,
                     products,
-                    error: errorMessages.join(', ')
+                    errors
                 });
             }
 
@@ -346,7 +400,7 @@ const updateCoupon = async (req, res) => {
                 coupon,
                 categories,
                 products,
-                error: 'Error updating coupon. Please try again.'
+                errors: { general: 'Error updating coupon. Please try again.' }
             });
         } catch (renderError) {
             console.error('Error rendering error page:', renderError);
