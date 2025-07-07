@@ -204,7 +204,7 @@
                                 <td><span class="order-badge total"><%= salesStats.totalOrders || 0 %></span></td>
                                 <td><div class="amount-cell total">₹<%= salesStats.totalRevenue ? salesStats.totalRevenue.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : '0.00' %></div></td>
                                 <td><div class="amount-cell total">₹<%= salesStats.totalDiscount ? salesStats.totalDiscount.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : '0.00' %></div></td>
-                                <td><div class="amount-cell total">₹<%= (salesStats.totalRevenue - salesStats.totalDiscount) ? (salesStats.totalRevenue - salesStats.totalDiscount).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : '0.00' %></div></td>
+                                <td><div class="amount-cell total">₹<%= salesStats.netRevenue ? salesStats.netRevenue.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : '0.00' %></div></td>
                             </tr>
                         <% } else { %>
                             <tr>

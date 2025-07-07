@@ -59,62 +59,112 @@ const salesReportController = {
             .populate('userId', 'fullname')
             .sort({ createdAt: -1 });
 
-        // Calculate statistics
-        const stats = await Order.aggregate([
-            { $match: matchQuery },
-            {
-                $group: {
-                    _id: null,
-                    totalRevenue: { $sum: '$totalPrice' },
-                    totalOrders: { $sum: 1 },
-                    totalDiscount: { $sum: '$discount' },
-                    averageOrder: { $avg: '$totalPrice' }
+        // Format data with correct calculations
+        const formattedOrders = await Promise.all(orders.map(async (order) => {
+            // Calculate regular price total (before any discounts)
+            let regularPriceTotal = 0;
+            let totalDiscountAmount = 0;
+            
+            // Check if order is cancelled - if so, no discounts should be applied
+            const isCancelled = order.status && order.status.toLowerCase().includes('cancelled');
+            
+            // Populate product details for each ordered item to get regular prices
+            await order.populate({
+                path: 'orderedItems.product',
+                select: 'regularPrice salePrice productOffer'
+            });
+            
+            // Calculate totals based on regular prices and actual discounts
+            for (const item of order.orderedItems) {
+                if (item.product && item.status === 'Active') {
+                    const regularPrice = item.product.regularPrice || 0;
+                    const quantity = item.quantity || 0;
+                    const itemRegularTotal = regularPrice * quantity;
+                    const itemFinalTotal = item.totalPrice || 0;
+                    
+                    regularPriceTotal += itemRegularTotal;
+                    
+                    // Only calculate discount if order is not cancelled
+                    if (!isCancelled) {
+                        // Calculate discount for this item (difference between regular price total and final total)
+                        totalDiscountAmount += Math.max(0, itemRegularTotal - itemFinalTotal);
+                    }
                 }
             }
-        ]);
+            
+            // Add coupon discount to total discount only if order is not cancelled
+            if (!isCancelled) {
+                const couponDiscount = order.couponDiscount || 0;
+                totalDiscountAmount += couponDiscount;
+            }
+            
+            // Final amount should be regular price total minus total discounts
+            const finalAmount = regularPriceTotal - totalDiscountAmount;
+            
+            return {
+                orderId: order.orderId || 'N/A',
+                date: order.createdAt ? order.createdAt.toLocaleDateString('en-GB') : 'N/A',
+                customer: order.userId ? order.userId.fullname : 'Guest',
+                paymentMethod: order.paymentMethod || 'N/A',
+                status: order.status || 'Pending',
+                amount: regularPriceTotal, // Total of regular prices (before discounts)
+                discount: totalDiscountAmount, // Total discount (product offers + coupon) - zero if cancelled
+                finalAmount: finalAmount // Net amount after discounts
+            };
+        }));
 
-        const salesStats = stats[0] || {
-            totalRevenue: 0,
-            totalOrders: 0,
-            totalDiscount: 0,
-            averageOrder: 0
+        // Calculate statistics based on the corrected values from formatted orders
+        let totalRegularPriceRevenue = 0;
+        let totalDiscountAmount = 0;
+        let totalFinalAmount = 0;
+        
+        for (const order of formattedOrders) {
+            totalRegularPriceRevenue += order.amount;
+            totalDiscountAmount += order.discount;
+            totalFinalAmount += order.finalAmount;
+        }
+        
+        const salesStats = {
+            totalRevenue: totalRegularPriceRevenue, // Total of Amount column (sum of "Amount" column from Order Details)
+            totalOrders: formattedOrders.length,
+            totalDiscount: totalDiscountAmount, // Total discount amount
+            averageOrder: formattedOrders.length > 0 ? totalFinalAmount / formattedOrders.length : 0,
+            netRevenue: totalFinalAmount, // Total of Final Amount column (sum of "Final Amount" column from Order Details)
+            regularPriceTotal: totalRegularPriceRevenue // Keep regular price total for reference
         };
 
-        // Get daily sales analysis
-        const dailyAnalysis = await Order.aggregate([
-            { $match: matchQuery },
-            {
-                $group: {
-                    _id: {
-                        $dateToString: { format: "%Y-%m-%d", date: "$createdAt" }
-                    },
-                    orders: { $sum: 1 },
-                    revenue: { $sum: '$totalPrice' },
-                    discount: { $sum: '$discount' }
-                }
-            },
-            { $sort: { _id: -1 } }
-        ]);
-
-        // Format data
-        const formattedOrders = orders.map(order => ({
-            orderId: order.orderId || 'N/A',
-            date: order.createdAt ? order.createdAt.toLocaleDateString('en-GB') : 'N/A',
-            customer: order.userId ? order.userId.fullname : 'Guest',
-            paymentMethod: order.paymentMethod || 'N/A',
-            status: order.status || 'Pending',
-            amount: order.totalPrice || 0,
-            discount: order.discount || 0,
-            finalAmount: (order.totalPrice || 0) - (order.discount || 0)
-        }));
-
-        const formattedAnalysis = dailyAnalysis.map(item => ({
-            date: item._id,
-            orders: item.orders,
-            revenue: item.revenue,
-            discount: item.discount,
-            netRevenue: item.revenue - item.discount
-        }));
+        // Get daily sales analysis with corrected calculations
+        const dailyAnalysisMap = new Map();
+        
+        // Group orders by date and calculate corrected totals
+        for (const order of formattedOrders) {
+            const dateKey = order.date;
+            if (!dailyAnalysisMap.has(dateKey)) {
+                dailyAnalysisMap.set(dateKey, {
+                    orders: 0,
+                    revenue: 0,
+                    discount: 0,
+                    netRevenue: 0
+                });
+            }
+            
+            const dayData = dailyAnalysisMap.get(dateKey);
+            dayData.orders += 1;
+            dayData.revenue += order.amount; // Regular price total
+            dayData.discount += order.discount; // Total discount
+            dayData.netRevenue += order.finalAmount; // Final amount
+        }
+        
+        // Convert map to array and sort by date
+        const formattedAnalysis = Array.from(dailyAnalysisMap.entries())
+            .map(([date, data]) => ({
+                date,
+                orders: data.orders,
+                revenue: data.revenue,
+                discount: data.discount,
+                netRevenue: data.netRevenue
+            }))
+            .sort((a, b) => new Date(b.date) - new Date(a.date));
 
         return {
             orders: formattedOrders,
@@ -207,11 +257,11 @@ const salesReportController = {
             doc.fontSize(16).text('Summary Statistics', { underline: true });
             doc.moveDown();
             doc.fontSize(12);
-            doc.text(`Total Revenue: ₹${salesStats.totalRevenue.toLocaleString('en-IN')}`);
+            doc.text(`Total Revenue (Amount): ₹${salesStats.totalRevenue.toLocaleString('en-IN')}`);
+            doc.text(`Net Revenue (Final Amount): ₹${salesStats.netRevenue.toLocaleString('en-IN')}`);
             doc.text(`Total Orders: ${salesStats.totalOrders}`);
             doc.text(`Average Order Value: ₹${salesStats.averageOrder.toLocaleString('en-IN')}`);
             doc.text(`Total Discount: ₹${salesStats.totalDiscount.toLocaleString('en-IN')}`);
-            doc.text(`Net Revenue: ₹${(salesStats.totalRevenue - salesStats.totalDiscount).toLocaleString('en-IN')}`);
             doc.moveDown(2);
 
             // Add daily analysis section
@@ -353,20 +403,20 @@ const salesReportController = {
             summarySheet.getCell('B6').value = 'Value';
             summarySheet.getRow(6).font = { bold: true };
 
-            summarySheet.getCell('A7').value = 'Total Revenue';
+            summarySheet.getCell('A7').value = 'Total Revenue (Amount)';
             summarySheet.getCell('B7').value = `₹${salesStats.totalRevenue.toLocaleString('en-IN')}`;
             
-            summarySheet.getCell('A8').value = 'Total Orders';
-            summarySheet.getCell('B8').value = salesStats.totalOrders;
+            summarySheet.getCell('A8').value = 'Net Revenue (Final Amount)';
+            summarySheet.getCell('B8').value = `₹${salesStats.netRevenue.toLocaleString('en-IN')}`;
             
-            summarySheet.getCell('A9').value = 'Average Order Value';
-            summarySheet.getCell('B9').value = `₹${salesStats.averageOrder.toLocaleString('en-IN')}`;
+            summarySheet.getCell('A9').value = 'Total Orders';
+            summarySheet.getCell('B9').value = salesStats.totalOrders;
             
-            summarySheet.getCell('A10').value = 'Total Discount';
-            summarySheet.getCell('B10').value = `₹${salesStats.totalDiscount.toLocaleString('en-IN')}`;
+            summarySheet.getCell('A10').value = 'Average Order Value';
+            summarySheet.getCell('B10').value = `₹${salesStats.averageOrder.toLocaleString('en-IN')}`;
             
-            summarySheet.getCell('A11').value = 'Net Revenue';
-            summarySheet.getCell('B11').value = `₹${(salesStats.totalRevenue - salesStats.totalDiscount).toLocaleString('en-IN')}`;
+            summarySheet.getCell('A11').value = 'Total Discount';
+            summarySheet.getCell('B11').value = `₹${salesStats.totalDiscount.toLocaleString('en-IN')}`;
 
             // Style the summary sheet
             summarySheet.columns = [
@@ -412,7 +462,7 @@ const salesReportController = {
             dailySheet.getCell(totalRow, 3).font = { bold: true };
             dailySheet.getCell(totalRow, 4).value = `₹${salesStats.totalDiscount.toLocaleString('en-IN')}`;
             dailySheet.getCell(totalRow, 4).font = { bold: true };
-            dailySheet.getCell(totalRow, 5).value = `₹${(salesStats.totalRevenue - salesStats.totalDiscount).toLocaleString('en-IN')}`;
+            dailySheet.getCell(totalRow, 5).value = `₹${salesStats.netRevenue.toLocaleString('en-IN')}`;
             dailySheet.getCell(totalRow, 5).font = { bold: true };
 
             // Style daily analysis sheet

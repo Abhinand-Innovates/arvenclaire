@@ -188,23 +188,37 @@ const cancelOrderItem = async (req, res) => {
       timestamp: new Date()
     });
 
-    // Credit wallet for ALL cancelled items (regardless of payment method)
+    // Credit wallet for cancelled item (regardless of payment method)
     let walletCreditAmount = 0;
     
-    // For COD orders, credit only if payment was made (status is Completed)
-    // For online payments, credit if payment was completed
-    // For pending payments, still credit to wallet as a refund
+    // Calculate refund amount - deduct coupon discount if this is the last item in a partially cancelled order
+    let refundAmount = orderItem.totalPrice;
+    
+    // Check if this is the last item being cancelled and there were previous individual cancellations
+    const previouslyCancelledItems = order.orderedItems.filter(item => 
+      item.status === 'Cancelled' && item._id.toString() !== itemId
+    );
+    
+    if (activeItems.length === 0 && previouslyCancelledItems.length > 0 && order.couponDiscount > 0) {
+      // This is the last item being cancelled after previous partial cancellations
+      // Deduct the coupon discount from the refund amount
+      refundAmount = Math.max(0, orderItem.totalPrice - order.couponDiscount);
+      console.log(`Last item cancellation after partial cancellations - Coupon discount (₹${order.couponDiscount}) deducted from refund`);
+      console.log(`Original item price: ₹${orderItem.totalPrice}, Final refund amount: ₹${refundAmount}`);
+    }
+    
+    // Apply payment method logic to the calculated refund amount
     if (order.paymentMethod === 'Cash on Delivery') {
       // For COD, only credit if payment was actually collected (status Completed)
       if (order.paymentStatus === 'Completed') {
-        walletCreditAmount = orderItem.totalPrice;
+        walletCreditAmount = refundAmount;
         console.log(`COD order with completed payment - crediting ₹${walletCreditAmount} to wallet`);
       } else {
         console.log(`COD order with pending payment - no wallet credit needed`);
       }
     } else {
       // For online payments (including pending ones), always credit to wallet
-      walletCreditAmount = orderItem.totalPrice;
+      walletCreditAmount = refundAmount;
       console.log(`Online payment order - crediting ₹${walletCreditAmount} to wallet`);
     }
     
