@@ -44,6 +44,15 @@
             </div>
         </div>
 
+        <!-- Error Display -->
+        <% if (typeof error !== 'undefined' && error) { %>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-triangle"></i>
+                <strong>Error:</strong> <%= error %>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        <% } %>
+
         <!-- Filters Section -->
         <div class="filters-card">
             <div class="filters-header">
@@ -398,7 +407,12 @@
             const endDate = document.getElementById('endDate').value;
             const applyBtn = document.querySelector('.apply-filters-btn');
             
-            if (timePeriod === 'custom') {
+            // Auto-set timePeriod to custom if custom dates are provided
+            if ((startDate || endDate) && timePeriod !== 'custom') {
+                document.getElementById('timePeriod').value = 'custom';
+            }
+            
+            if (timePeriod === 'custom' || startDate || endDate) {
                 if (!startDate || !endDate) {
                     e.preventDefault();
                     alert('Please select both start and end dates for custom date range.');
@@ -438,9 +452,30 @@
                 } else {
                     group.style.display = 'none';
                     const dateInputs = group.querySelectorAll('input[type="date"]');
-                    dateInputs.forEach(input => input.required = false);
+                    dateInputs.forEach(input => {
+                        input.required = false;
+                        // Clear date values when switching away from custom
+                        if (!isCustom) {
+                            input.value = '';
+                        }
+                    });
                 }
             });
+        });
+
+        // Auto-show custom date fields when dates are manually entered
+        document.getElementById('startDate').addEventListener('input', function() {
+            if (this.value && document.getElementById('timePeriod').value !== 'custom') {
+                document.getElementById('timePeriod').value = 'custom';
+                document.getElementById('timePeriod').dispatchEvent(new Event('change'));
+            }
+        });
+
+        document.getElementById('endDate').addEventListener('input', function() {
+            if (this.value && document.getElementById('timePeriod').value !== 'custom') {
+                document.getElementById('timePeriod').value = 'custom';
+                document.getElementById('timePeriod').dispatchEvent(new Event('change'));
+            }
         });
 
         // Date validation

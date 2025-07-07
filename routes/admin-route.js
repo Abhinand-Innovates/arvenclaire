@@ -30,6 +30,10 @@ adminRoute.get("/api/dashboard/sales", dashboardController.getSalesData);
 adminRoute.get("/api/dashboard/top-products", dashboardController.getTopProducts);
 adminRoute.get("/api/dashboard/recent-orders", dashboardController.getRecentOrders);
 adminRoute.get("/api/dashboard/new-customers", dashboardController.getNewCustomers);
+adminRoute.get("/api/dashboard/best-selling-products", dashboardController.getBestSellingProducts);
+adminRoute.get("/api/dashboard/best-selling-category", dashboardController.getBestSellingCategory);
+adminRoute.get("/api/dashboard/best-selling-brand", dashboardController.getBestSellingBrand);
+adminRoute.get("/api/dashboard/revenue-distribution", dashboardController.getRevenueDistribution);
 
 
 //User Management

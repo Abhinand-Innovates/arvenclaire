@@ -1,11 +1,11 @@
 const User = require("../../models/user-schema");
 const Order = require("../../models/order-schema");
 const Product = require("../../models/product-schema");
+const Category = require("../../models/category-schema");
 
 // Test endpoint
 const testAPI = async (req, res) => {
   try {
-    console.log('Test API called');
     res.json({
       success: true,
       message: 'Dashboard API is working!',
@@ -24,37 +24,79 @@ const testAPI = async (req, res) => {
 // Get dashboard statistics
 const getDashboardStats = async (req, res) => {
   try {
-    console.log('Dashboard stats API called');
-    
     // Get total customers (non-admin users)
     const totalCustomers = await User.countDocuments({ 
       isAdmin: false, 
       isBlocked: false 
     });
-    console.log('Total customers:', totalCustomers);
 
     // Get total orders
     const totalOrders = await Order.countDocuments();
-    console.log('Total orders:', totalOrders);
 
-    // Get total revenue (sum of finalAmount from all orders, not just completed ones for now)
-    const revenueResult = await Order.aggregate([
-      {
-        $group: {
-          _id: null,
-          totalRevenue: { $sum: '$finalAmount' }
+    // Get net revenue using the same logic as sales report (active items only)
+    const orders = await Order.find()
+      .populate({
+        path: 'orderedItems.product',
+        select: 'regularPrice salePrice productOffer'
+      });
+
+    let totalNetRevenue = 0;
+
+    for (const order of orders) {
+      // Calculate totals for active items only
+      let activeTotalRegularPrice = 0;
+      let activeTotalProductDiscount = 0;
+      let activeTotalFinalPrice = 0;
+      
+      // Process each item in the order
+      for (const item of order.orderedItems) {
+        if (item.product && item.status === 'Active') {
+          const regularPrice = item.product.regularPrice || 0;
+          const salePrice = item.product.salePrice || regularPrice;
+          const quantity = item.quantity || 0;
+          const itemRegularTotal = regularPrice * quantity;
+          const itemFinalTotal = item.totalPrice || 0;
+          
+          activeTotalRegularPrice += itemRegularTotal;
+          activeTotalFinalPrice += itemFinalTotal;
+          
+          // Calculate product-level discount for this active item
+          const itemProductDiscount = Math.max(0, itemRegularTotal - itemFinalTotal);
+          activeTotalProductDiscount += itemProductDiscount;
         }
       }
-    ]);
+      
+      // Calculate coupon discount - add the full coupon amount if coupon was applied
+      let activeCouponDiscount = 0;
+      const originalCouponDiscount = order.couponDiscount || 0;
+      
+      // If there are active items and a coupon was applied, include the full coupon discount
+      if (originalCouponDiscount > 0 && activeTotalRegularPrice > 0) {
+        activeCouponDiscount = originalCouponDiscount;
+      }
+      
+      // Total discount for active items = product discounts + coupon discount (if applicable)
+      const totalActiveDiscount = activeTotalProductDiscount + activeCouponDiscount;
+      
+      // Calculate final amount for active items
+      const calculatedFinalAmount = activeTotalRegularPrice - totalActiveDiscount;
+      
+      // Handle entirely cancelled orders
+      const isEntireCancelled = order.status && order.status.toLowerCase().includes('cancelled') && 
+                               !order.status.toLowerCase().includes('partially');
+      
+      // For entirely cancelled orders, show zero values
+      const displayFinalAmount = isEntireCancelled ? 0 : Math.max(0, calculatedFinalAmount);
+      
+      totalNetRevenue += displayFinalAmount;
+    }
 
-    const totalRevenue = revenueResult.length > 0 ? revenueResult[0].totalRevenue : 0;
-    console.log('Total revenue:', totalRevenue);
+    const totalRevenue = totalNetRevenue;
 
     // Get pending orders
     const pendingOrders = await Order.countDocuments({
       status: { $in: ['Pending', 'Processing'] }
     });
-    console.log('Pending orders:', pendingOrders);
 
     const responseData = {
       success: true,
@@ -66,7 +108,6 @@ const getDashboardStats = async (req, res) => {
       }
     };
 
-    console.log('Sending response:', responseData);
     res.json(responseData);
 
   } catch (error) {
@@ -82,7 +123,6 @@ const getDashboardStats = async (req, res) => {
 // Get sales data for chart
 const getSalesData = async (req, res) => {
   try {
-    console.log('Sales data API called with period:', req.query.period);
     const { period = 'monthly' } = req.query;
     let groupBy, dateFormat, labels;
 
@@ -149,8 +189,6 @@ const getSalesData = async (req, res) => {
       }
     ]);
 
-    console.log('Raw sales data:', salesData);
-
     // Create a map for easy lookup
     const salesMap = {};
     salesData.forEach(item => {
@@ -185,7 +223,6 @@ const getSalesData = async (req, res) => {
       }
     };
 
-    console.log('Sales response:', responseData);
     res.json(responseData);
 
   } catch (error) {
@@ -201,8 +238,6 @@ const getSalesData = async (req, res) => {
 // Get top products
 const getTopProducts = async (req, res) => {
   try {
-    console.log('Top products API called');
-    
     // Simplified query - get all orders and products
     const topProducts = await Order.aggregate([
       {
@@ -242,8 +277,6 @@ const getTopProducts = async (req, res) => {
       }
     ]);
 
-    console.log('Top products data:', topProducts);
-
     res.json({
       success: true,
       data: topProducts
@@ -262,15 +295,11 @@ const getTopProducts = async (req, res) => {
 // Get recent orders
 const getRecentOrders = async (req, res) => {
   try {
-    console.log('Recent orders API called');
-    
     const recentOrders = await Order.find()
       .populate('userId', 'fullname email')
       .sort({ createdAt: -1 })
       .limit(5)
       .select('orderId userId finalAmount status createdAt paymentMethod');
-
-    console.log('Recent orders data:', recentOrders);
 
     res.json({
       success: true,
@@ -290,8 +319,6 @@ const getRecentOrders = async (req, res) => {
 // Get new customers
 const getNewCustomers = async (req, res) => {
   try {
-    console.log('New customers API called');
-    
     const newCustomers = await User.find({ 
       isAdmin: false,
       isBlocked: false 
@@ -299,8 +326,6 @@ const getNewCustomers = async (req, res) => {
       .sort({ createdAt: -1 })
       .limit(5)
       .select('fullname email createdAt profilePhoto');
-
-    console.log('New customers data:', newCustomers);
 
     res.json({
       success: true,
@@ -317,11 +342,258 @@ const getNewCustomers = async (req, res) => {
   }
 };
 
+// Get best selling products (top 5)
+const getBestSellingProducts = async (req, res) => {
+  try {
+    const bestSellingProducts = await Order.aggregate([
+      {
+        $unwind: '$orderedItems'
+      },
+      {
+        $match: {
+          'orderedItems.status': { $ne: 'Cancelled' }
+        }
+      },
+      {
+        $group: {
+          _id: '$orderedItems.product',
+          totalQuantity: { $sum: '$orderedItems.quantity' },
+          totalRevenue: { $sum: '$orderedItems.totalPrice' }
+        }
+      },
+      {
+        $lookup: {
+          from: 'products',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'product'
+        }
+      },
+      {
+        $unwind: '$product'
+      },
+      {
+        $project: {
+          productName: '$product.productName',
+          brand: '$product.brand',
+          totalQuantity: 1,
+          totalRevenue: 1,
+          mainImage: '$product.mainImage'
+        }
+      },
+      {
+        $sort: { totalQuantity: -1 }
+      },
+      {
+        $limit: 5
+      }
+    ]);
+
+    res.json({
+      success: true,
+      data: bestSellingProducts
+    });
+
+  } catch (error) {
+    console.error('Error fetching best selling products:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch best selling products',
+      error: error.message
+    });
+  }
+};
+
+// Get best selling category
+const getBestSellingCategory = async (req, res) => {
+  try {
+    const bestSellingCategory = await Order.aggregate([
+      {
+        $unwind: '$orderedItems'
+      },
+      {
+        $match: {
+          'orderedItems.status': { $ne: 'Cancelled' }
+        }
+      },
+      {
+        $lookup: {
+          from: 'products',
+          localField: 'orderedItems.product',
+          foreignField: '_id',
+          as: 'product'
+        }
+      },
+      {
+        $unwind: '$product'
+      },
+      {
+        $lookup: {
+          from: 'categories',
+          localField: 'product.category',
+          foreignField: '_id',
+          as: 'category'
+        }
+      },
+      {
+        $unwind: '$category'
+      },
+      {
+        $group: {
+          _id: '$category._id',
+          categoryName: { $first: '$category.name' },
+          totalQuantity: { $sum: '$orderedItems.quantity' },
+          totalRevenue: { $sum: '$orderedItems.totalPrice' },
+          totalOrders: { $sum: 1 }
+        }
+      },
+      {
+        $sort: { totalRevenue: -1 }
+      },
+      {
+        $limit: 1
+      }
+    ]);
+
+    const result = bestSellingCategory.length > 0 ? bestSellingCategory[0] : null;
+
+    res.json({
+      success: true,
+      data: result
+    });
+
+  } catch (error) {
+    console.error('Error fetching best selling category:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch best selling category',
+      error: error.message
+    });
+  }
+};
+
+// Get best selling brand
+const getBestSellingBrand = async (req, res) => {
+  try {
+    const bestSellingBrand = await Order.aggregate([
+      {
+        $unwind: '$orderedItems'
+      },
+      {
+        $match: {
+          'orderedItems.status': { $ne: 'Cancelled' }
+        }
+      },
+      {
+        $lookup: {
+          from: 'products',
+          localField: 'orderedItems.product',
+          foreignField: '_id',
+          as: 'product'
+        }
+      },
+      {
+        $unwind: '$product'
+      },
+      {
+        $group: {
+          _id: '$product.brand',
+          brandName: { $first: '$product.brand' },
+          totalQuantity: { $sum: '$orderedItems.quantity' },
+          totalRevenue: { $sum: '$orderedItems.totalPrice' },
+          totalProducts: { $addToSet: '$product._id' }
+        }
+      },
+      {
+        $project: {
+          brandName: 1,
+          totalQuantity: 1,
+          totalRevenue: 1,
+          totalProducts: { $size: '$totalProducts' }
+        }
+      },
+      {
+        $sort: { totalQuantity: -1 }
+      },
+      {
+        $limit: 1
+      }
+    ]);
+
+    const result = bestSellingBrand.length > 0 ? bestSellingBrand[0] : null;
+
+    res.json({
+      success: true,
+      data: result
+    });
+
+  } catch (error) {
+    console.error('Error fetching best selling brand:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch best selling brand',
+      error: error.message
+    });
+  }
+};
+
+// Get revenue distribution by payment method
+const getRevenueDistribution = async (req, res) => {
+  try {
+    const revenueDistribution = await Order.aggregate([
+      {
+        $match: {
+          status: { $ne: 'Cancelled' }
+        }
+      },
+      {
+        $group: {
+          _id: '$paymentMethod',
+          totalRevenue: { $sum: '$finalAmount' },
+          orderCount: { $sum: 1 }
+        }
+      },
+      {
+        $sort: { totalRevenue: -1 }
+      }
+    ]);
+
+    // Calculate total revenue for percentage calculation
+    const totalRevenue = revenueDistribution.reduce((sum, item) => sum + item.totalRevenue, 0);
+
+    // Format data with percentages
+    const formattedData = revenueDistribution.map(item => ({
+      paymentMethod: item._id || 'Unknown',
+      revenue: item.totalRevenue,
+      orderCount: item.orderCount,
+      percentage: totalRevenue > 0 ? ((item.totalRevenue / totalRevenue) * 100).toFixed(1) : 0
+    }));
+
+    res.json({
+      success: true,
+      data: formattedData,
+      totalRevenue: totalRevenue
+    });
+
+  } catch (error) {
+    console.error('Error fetching revenue distribution:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch revenue distribution',
+      error: error.message
+    });
+  }
+};
+
 module.exports = {
   testAPI,
   getDashboardStats,
   getSalesData,
   getTopProducts,
   getRecentOrders,
-  getNewCustomers
+  getNewCustomers,
+  getBestSellingProducts,
+  getBestSellingCategory,
+  getBestSellingBrand,
+  getRevenueDistribution
 };

@@ -48,7 +48,6 @@ const createWelcomeCoupon = async (userId) => {
         });
         
         await userCoupon.save();
-        console.log(`Welcome coupon created: ${couponCode} for user ${userId}`);
         return welcomeCoupon;
         
     } catch (error) {
@@ -105,7 +104,6 @@ const createReferralRewardCoupon = async (referrerId, referredUserName) => {
         });
         
         await userCoupon.save();
-        console.log(`Referral reward coupon created: ${couponCode} for referrer ${referrerId}`);
         return referralCoupon;
         
     } catch (error) {

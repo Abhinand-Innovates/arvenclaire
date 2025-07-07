@@ -203,15 +203,7 @@ async function executeApproval(requestId, adminNote) {
             body: JSON.stringify({ adminNote })
         });
 
-        console.log('Response status:', response.status);
-        console.log('Response headers:', response.headers);
-        
-        if (!response.ok) {
-            console.error('HTTP error:', response.status, response.statusText);
-        }
-
         const result = await response.json();
-        console.log('Server result:', result);
 
         if (result.success) {
             Swal.fire({
@@ -239,19 +231,12 @@ async function executeApproval(requestId, adminNote) {
                 window.location.reload();
             });
         } else {
-            console.error('Server response:', result);
             throw new Error(result.message || 'Failed to approve return request');
         }
     } catch (error) {
         console.error('Error approving return:', error);
-        console.error('Full error details:', error);
         
         let errorMessage = error.message || 'Failed to approve return request. Please try again.';
-        
-        // If there's additional error information from the server, include it
-        if (error.response) {
-            console.error('Response error:', error.response);
-        }
         
         Swal.fire({
             icon: 'error',

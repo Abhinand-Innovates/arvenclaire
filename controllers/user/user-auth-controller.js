@@ -2270,13 +2270,6 @@ const submitContact = async (req, res) => {
 
     // Here you could save the contact form data to database
     // For now, we'll just log it and send a success response
-    console.log('Contact form submission:', {
-      name: name.trim(),
-      email: email.trim(),
-      subject: subject.trim(),
-      message: message.trim(),
-      timestamp: new Date()
-    });
 
     // You could also send an email notification to admin here
     // await sendEmail(process.env.ADMIN_EMAIL, `New contact form submission from ${name}`);
