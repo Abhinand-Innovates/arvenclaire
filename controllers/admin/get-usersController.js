@@ -1,5 +1,8 @@
 const User = require("../../models/user-schema");
 
+
+
+
 const getUsers = async (req, res) => {
   try {
     const searchTerm = req.query.search || '';
@@ -54,6 +57,9 @@ const getUsers = async (req, res) => {
   }
 };
 
+
+
+
 const getUsersApi = async (req, res) => {
   try {
     const searchTerm = req.query.search || '';
@@ -107,6 +113,9 @@ const getUsersApi = async (req, res) => {
   }
 };
 
+
+
+
 const getUserById = async (req, res) => {
   try {
     const userId = req.params.id;
@@ -127,6 +136,9 @@ const getUserById = async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error' });
   }
 };
+
+
+
 
 const blockUser = async (req, res) => {
   try {
@@ -156,6 +168,9 @@ const blockUser = async (req, res) => {
   }
 };
 
+
+
+
 const unblockUser = async (req, res) => {
   try {
     const userId = req.params.id;
@@ -183,5 +198,8 @@ const unblockUser = async (req, res) => {
     });
   }
 };
+
+
+
 
 module.exports = { getUsers, getUsersApi, getUserById, blockUser, unblockUser };

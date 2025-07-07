@@ -1,6 +1,9 @@
 const Category = require('../../models/category-schema');
 const mongoose = require('mongoose');
 
+
+
+
 // Render the category management page
 const renderCategoryManagementPage = async (req, res) => {
     try {
@@ -12,6 +15,8 @@ const renderCategoryManagementPage = async (req, res) => {
         res.status(500).send("Error loading the page.");
     }
 };
+
+
 
 
 // API: Get all categories (excluding soft deleted)
@@ -39,6 +44,8 @@ const getAllCategoriesAPI = async (req, res) => {
         res.status(500).json({ message: 'Error fetching categories', error: error.message });
     }
 };
+
+
 
 
 // API: Add a new category
@@ -80,6 +87,8 @@ const addCategoryAPI = async (req, res) => {
         res.status(500).json({ message: 'Error adding category', error: error.message });
     }
 };
+
+
 
 
 // API: Update an existing category
@@ -147,6 +156,8 @@ const updateCategoryAPI = async (req, res) => {
 };
 
 
+
+
 // API: Toggle category status
 const toggleCategoryStatusAPI = async (req, res) => {
     try {
@@ -180,6 +191,8 @@ const toggleCategoryStatusAPI = async (req, res) => {
         res.status(500).json({ message: 'Error toggling category status', error: error.message });
     }
 };
+
+
 
 
 // API: Update category offer
@@ -226,6 +239,9 @@ const updateCategoryOfferAPI = async (req, res) => {
         res.status(500).json({ message: 'Error updating category offer', error: error.message });
     }
 };
+
+
+
 
 // API: Soft delete a category
 const deleteCategoryAPI = async (req, res) => {

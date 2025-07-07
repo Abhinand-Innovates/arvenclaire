@@ -3,6 +3,8 @@ const User = require('../../models/user-schema');
 const Product = require('../../models/product-schema');
 const Wallet = require('../../models/wallet-schema');
 
+
+
 // Get all orders for admin with pagination and search
 const getOrders = async (req, res) => {
   try {
@@ -89,6 +91,8 @@ const getOrders = async (req, res) => {
 };
 
 
+
+
 // Get single order details (API)
 const getOrderById = async (req, res) => {
   try {
@@ -118,6 +122,8 @@ const getOrderById = async (req, res) => {
     });
   }
 };
+
+
 
 
 // Get order details page
@@ -175,6 +181,9 @@ const getOrderDetailsPage = async (req, res) => {
     });
   }
 };
+
+
+
 
 
 // Update order status
@@ -264,6 +273,8 @@ const updateOrderStatus = async (req, res) => {
 };
 
 
+
+
 // Note: approveReturnRequest function moved to return-controller.js to avoid duplication
 // This function was causing double wallet credits
 
@@ -328,6 +339,8 @@ const rejectReturnRequest = async (req, res) => {
 };
 
 
+
+
 // Get return request count (including individual item returns)
 const getReturnRequestCount = async (req, res) => {
   try {
@@ -368,6 +381,9 @@ const getReturnRequestCount = async (req, res) => {
     });
   }
 };
+
+
+
 
 // Get return requests page
 const getReturnRequests = async (req, res) => {
@@ -491,6 +507,8 @@ const getReturnRequests = async (req, res) => {
     });
   }
 };
+
+
 
 module.exports = {
   getOrders,

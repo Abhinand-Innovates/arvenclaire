@@ -3,6 +3,9 @@ const Order = require("../../models/order-schema");
 const Product = require("../../models/product-schema");
 const Category = require("../../models/category-schema");
 
+
+
+
 // Test endpoint
 const testAPI = async (req, res) => {
   try {
@@ -20,6 +23,9 @@ const testAPI = async (req, res) => {
     });
   }
 };
+
+
+
 
 // Get dashboard statistics
 const getDashboardStats = async (req, res) => {
@@ -119,6 +125,9 @@ const getDashboardStats = async (req, res) => {
     });
   }
 };
+
+
+
 
 // Get sales data for chart
 const getSalesData = async (req, res) => {
@@ -235,6 +244,9 @@ const getSalesData = async (req, res) => {
   }
 };
 
+
+
+
 // Get top products
 const getTopProducts = async (req, res) => {
   try {
@@ -292,6 +304,9 @@ const getTopProducts = async (req, res) => {
   }
 };
 
+
+
+
 // Get recent orders
 const getRecentOrders = async (req, res) => {
   try {
@@ -315,6 +330,9 @@ const getRecentOrders = async (req, res) => {
     });
   }
 };
+
+
+
 
 // Get new customers
 const getNewCustomers = async (req, res) => {
@@ -341,6 +359,9 @@ const getNewCustomers = async (req, res) => {
     });
   }
 };
+
+
+
 
 // Get best selling products (top 5)
 const getBestSellingProducts = async (req, res) => {
@@ -403,6 +424,9 @@ const getBestSellingProducts = async (req, res) => {
     });
   }
 };
+
+
+
 
 // Get best selling category
 const getBestSellingCategory = async (req, res) => {
@@ -472,6 +496,9 @@ const getBestSellingCategory = async (req, res) => {
   }
 };
 
+
+
+
 // Get best selling brand
 const getBestSellingBrand = async (req, res) => {
   try {
@@ -537,6 +564,9 @@ const getBestSellingBrand = async (req, res) => {
   }
 };
 
+
+
+
 // Get revenue distribution by payment method
 const getRevenueDistribution = async (req, res) => {
   try {
@@ -584,6 +614,9 @@ const getRevenueDistribution = async (req, res) => {
     });
   }
 };
+
+
+
 
 module.exports = {
   testAPI,

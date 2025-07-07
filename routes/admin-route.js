@@ -12,6 +12,7 @@ const dashboardController = require("../controllers/admin/dashboard-controller")
 
 const couponController = require("../controllers/admin/coupon-controller");
 const salesReportController = require("../controllers/admin/sales-report-controller");
+const ledgerController = require("../controllers/admin/ledger-controller");
 const { isAdminAuthenticated, preventCache, redirectIfAdminAuthenticated } = require('../middleware/auth-middleware');
 
 //Admin Login - with cache prevention for proper session handling and redirect if already authenticated
@@ -97,5 +98,9 @@ adminRoute.delete("/delete-coupon/:id", isAdminAuthenticated, preventCache, coup
 adminRoute.get("/sales-report", isAdminAuthenticated, preventCache, salesReportController.getSalesReport);
 adminRoute.get("/sales-report/export-pdf", isAdminAuthenticated, preventCache, salesReportController.exportPDF);
 adminRoute.get("/sales-report/export-excel", isAdminAuthenticated, preventCache, salesReportController.exportExcel);
+
+// Ledger Report Management
+adminRoute.get("/ledger-report/export-pdf", isAdminAuthenticated, preventCache, ledgerController.exportLedgerPDF);
+adminRoute.get("/ledger-report/export-excel", isAdminAuthenticated, preventCache, ledgerController.exportLedgerExcel);
 
 module.exports = adminRoute;

@@ -1,3 +1,8 @@
+const Coupon = require('../../models/coupon-schema');
+const Category = require('../../models/category-schema');
+
+
+
 const getCouponsPage = async (req, res) => {
     try {
         const coupons = await Coupon.find({});
@@ -8,7 +13,8 @@ const getCouponsPage = async (req, res) => {
     }
 };
 
-const Category = require('../../models/category-schema');
+
+
 
 const getAddCouponPage = async (req, res) => {
     try {
@@ -32,7 +38,8 @@ const getAddCouponPage = async (req, res) => {
     }
 };
 
-const Coupon = require('../../models/coupon-schema');
+
+
 
 const addCoupon = async (req, res) => {
     try {
@@ -150,6 +157,9 @@ const addCoupon = async (req, res) => {
     }
 };
 
+
+
+
 const getEditCouponPage = async (req, res) => {
     try {
         const couponId = req.params.id;
@@ -174,6 +184,9 @@ const getEditCouponPage = async (req, res) => {
         res.status(500).render('error', { message: 'Error loading coupon for editing' });
     }
 };
+
+
+
 
 const updateCoupon = async (req, res) => {
     try {
@@ -342,6 +355,9 @@ const updateCoupon = async (req, res) => {
     }
 };
 
+
+
+
 const toggleCouponStatus = async (req, res) => {
     try {
         const couponId = req.params.id;
@@ -370,6 +386,9 @@ const toggleCouponStatus = async (req, res) => {
         });
     }
 };
+
+
+
 
 const deleteCoupon = async (req, res) => {
     try {
@@ -405,6 +424,9 @@ const deleteCoupon = async (req, res) => {
         });
     }
 };
+
+
+
 
 module.exports = {
     getCouponsPage,

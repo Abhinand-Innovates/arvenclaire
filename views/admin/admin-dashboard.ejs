@@ -37,6 +37,10 @@
                     <p class="mb-0">Real-time business insights and analytics</p>
                 </div>
                 <div class="header-right">
+                    <button class="ledger-btn-header" onclick="downloadLedgerReportDirect()" title="Download Ledger Report">
+                        <i class="fas fa-file-download"></i>
+                        Ledger Report
+                    </button>
                     <div class="date-display">
                         <i class="fas fa-calendar-alt"></i>
                         <span id="currentDate"></span>
@@ -798,6 +802,24 @@
                 },
                 buttonsStyling: false
             });
+        }
+
+        // Direct Ledger Report PDF Download Function - No Modals
+        function downloadLedgerReportDirect() {
+            try {
+                // Create download link and trigger immediately
+                const downloadUrl = '/ledger-report/export-pdf?timePeriod=monthly&paymentMethod=all&orderStatus=all';
+                const link = document.createElement('a');
+                link.href = downloadUrl;
+                link.download = `ArvenClaire-Ledger-Report-${new Date().toISOString().split('T')[0]}.pdf`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+            } catch (error) {
+                console.error('Error downloading PDF:', error);
+                // Silent error handling - no modal popup
+            }
         }
     </script>
 </body>

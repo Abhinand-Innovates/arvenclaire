@@ -6,6 +6,9 @@ const fs = require('fs');
 const { uploadDir } = require('../../config/multer-config');
 const { getProductsWithBestOffers } = require('../../utils/offer-utils');
 
+
+
+
 // Helper function to save base64 image
 const saveBase64Image = async (base64Data, filename) => {
     try {
@@ -31,6 +34,9 @@ const saveBase64Image = async (base64Data, filename) => {
     }
 };
 
+
+
+
 // Helper function to delete image file
 const deleteImageFile = (filename) => {
     try {
@@ -42,6 +48,9 @@ const deleteImageFile = (filename) => {
         console.error('Error deleting image file:', error);
     }
 };
+
+
+
 
 // Render product listing page
 const getProducts = async (req, res) => {
@@ -171,6 +180,9 @@ const getProducts = async (req, res) => {
     }
 };
 
+
+
+
 // Render add product page
 const getAddProduct = async (req, res) => {
     try {
@@ -187,6 +199,9 @@ const getAddProduct = async (req, res) => {
         res.status(500).send('Server Error');
     }
 };
+
+
+
 
 // Render edit product page
 const getEditProduct = async (req, res) => {
@@ -211,6 +226,9 @@ const getEditProduct = async (req, res) => {
         res.status(500).send('Server Error');
     }
 };
+
+
+
 
 // Add new product
 const addProduct = async (req, res) => {
@@ -315,6 +333,9 @@ const addProduct = async (req, res) => {
     }
 };
 
+
+
+
 // Get product by ID for editing
 const getProductById = async (req, res) => {
     try {
@@ -334,6 +355,9 @@ const getProductById = async (req, res) => {
         });
     }
 };
+
+
+
 
 // Update product
 const updateProduct = async (req, res) => {
@@ -465,6 +489,9 @@ const updateProduct = async (req, res) => {
     }
 };
 
+
+
+
 // Soft delete product
 const deleteProduct = async (req, res) => {
     try {
@@ -500,6 +527,9 @@ const deleteProduct = async (req, res) => {
     }
 };
 
+
+
+
 // Toggle product status (block/unblock)
 const toggleProductStatus = async (req, res) => {
     try {
@@ -532,6 +562,9 @@ const toggleProductStatus = async (req, res) => {
     }
 };
 
+
+
+
 // Get products for user dashboard with best offers applied
 const getProductsForUser = async (req, res) => {
     try {
@@ -563,6 +596,9 @@ const getProductsForUser = async (req, res) => {
         });
     }
 };
+
+
+
 
 module.exports = {
     getProducts,

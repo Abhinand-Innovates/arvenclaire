@@ -4,6 +4,9 @@ const User = require('../../models/user-schema');
 const Product = require('../../models/product-schema');
 const Wallet = require('../../models/wallet-schema');
 
+
+
+
 // Get return requests with proper individual item support
 const getReturnRequests = async (req, res) => {
   try {
@@ -179,6 +182,9 @@ const getReturnRequests = async (req, res) => {
     });
   }
 };
+
+
+
 
 // Approve return request with individual item support
 const approveReturnRequest = async (req, res) => {
@@ -357,6 +363,9 @@ const approveReturnRequest = async (req, res) => {
   }
 };
 
+
+
+
 // Reject return request
 const rejectReturnRequest = async (req, res) => {
   try {
@@ -456,6 +465,9 @@ const rejectReturnRequest = async (req, res) => {
     });
   }
 };
+
+
+
 
 module.exports = {
   getReturnRequests,
