@@ -217,10 +217,10 @@
                                                     <%= (product.quantity === 0 || product.status === 'Out of Stock') ? 'disabled' : '' %>>
                                                 <i class="bi bi-cart-plus"></i>
                                             </button>
-                                            <button class="product-action-btn wishlist-btn"
-                                                    onclick="event.stopPropagation(); addToWishlistFromShop('<%= product._id %>', this)"
-                                                    title="Add to Wishlist">
-                                                <i class="bi bi-heart"></i>
+                                            <button class="product-action-btn wishlist-btn <%= userWishlistProductIds.includes(product._id.toString()) ? 'in-wishlist' : '' %>"
+                                                    onclick="event.stopPropagation(); toggleWishlistFromShop('<%= product._id %>', this)"
+                                                    title="<%= userWishlistProductIds.includes(product._id.toString()) ? 'Remove from Wishlist' : 'Add to Wishlist' %>">
+                                                <i class="bi bi-heart<%= userWishlistProductIds.includes(product._id.toString()) ? '-fill' : '' %>"></i>
                                             </button>
                                         </div>
                                     </div>
@@ -230,6 +230,26 @@
                                     <div class="product-brand"><%= product.brand %></div>
                                     <h3 class="product-name"><%= product.productName %></h3>
 
+                                    <!-- Star Rating System -->
+                                    <% if (product.totalReviews > 0) { %>
+                                        <div class="product-rating">
+                                            <div class="stars">
+                                                <% for (let i = 1; i <= 5; i++) { %>
+                                                    <i class="bi bi-star-fill star <%= product.averageRating >= i ? '' : 'empty' %>"></i>
+                                                <% } %>
+                                            </div>
+                                            <span class="rating-count">(<%= product.averageRating.toFixed(1) %>)</span>
+                                        </div>
+                                    <% } else { %>
+                                        <div class="product-rating">
+                                            <div class="stars">
+                                                <% for (let i = 1; i <= 5; i++) { %>
+                                                    <i class="bi bi-star-fill star empty"></i>
+                                                <% } %>
+                                            </div>
+                                        </div>
+                                    <% } %>
+
                                     <div class="product-price">
                                         <% if (product.offerDetails && product.offerDetails.hasOffer) { %>
                                             <span class="current-price">₹<%= Math.round(product.offerDetails.finalPrice) %></span>
@@ -238,17 +258,6 @@
                                             <span class="current-price">₹<%= Math.round(product.salePrice) %></span>
                                         <% } %>
                                     </div>
-
-                                    <% if (product.totalReviews > 0) { %>
-                                        <div class="product-rating">
-                                            <div class="stars">
-                                                <% for (let i = 1; i <= 5; i++) { %>
-                                                    <i class="bi bi-star-fill star <%= product.averageRating >= i ? '' : 'empty' %>"></i>
-                                                <% } %>
-                                            </div>
-                                            <span class="rating-count">(<%= product.averageRating.toFixed(1) %>) - <%= product.totalReviews %> <%= product.totalReviews === 1 ? 'review' : 'reviews' %></span>
-                                        </div>
-                                    <% } %>
                                 </div>
                             </div>
                         <% }) %>
@@ -378,9 +387,12 @@
         }
     }
 
-    async function addToWishlistFromShop(productId, buttonElement) {
+    async function toggleWishlistFromShop(productId, buttonElement) {
         try {
-            const response = await fetch('/wishlist/add', {
+            const isInWishlist = buttonElement.classList.contains('in-wishlist');
+            const endpoint = isInWishlist ? '/wishlist/remove' : '/wishlist/add';
+            
+            const response = await fetch(endpoint, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -394,23 +406,31 @@
                 // Update wishlist counter if it exists
                 updateWishlistCounter(result.wishlistCount);
 
-                // Change button appearance to indicate it's in wishlist
+                // Toggle button appearance
                 const heartIcon = buttonElement.querySelector('i');
                 if (heartIcon) {
-                    heartIcon.classList.remove('bi-heart');
-                    heartIcon.classList.add('bi-heart-fill');
-                    buttonElement.classList.add('in-wishlist');
-                    buttonElement.disabled = true;
-                    buttonElement.title = 'Already in wishlist';
+                    if (isInWishlist) {
+                        // Remove from wishlist
+                        heartIcon.classList.remove('bi-heart-fill');
+                        heartIcon.classList.add('bi-heart');
+                        buttonElement.classList.remove('in-wishlist');
+                        buttonElement.title = 'Add to Wishlist';
+                        showSweetAlert('Removed from wishlist!', 'success');
+                    } else {
+                        // Add to wishlist
+                        heartIcon.classList.remove('bi-heart');
+                        heartIcon.classList.add('bi-heart-fill');
+                        buttonElement.classList.add('in-wishlist');
+                        buttonElement.title = 'Remove from Wishlist';
+                        showSweetAlert('Added to wishlist!', 'success');
+                    }
                 }
-
-                showSweetAlert('Added to wishlist!', 'success');
             } else {
-                showSweetAlert(result.message || 'Failed to add to wishlist.', 'error');
+                showSweetAlert(result.message || 'Failed to update wishlist.', 'error');
             }
         } catch (error) {
             console.error('Wishlist error:', error);
-            showSweetAlert('Please login to add items to wishlist.', 'error');
+            showSweetAlert('Please login to manage wishlist.', 'error');
         }
     }
 

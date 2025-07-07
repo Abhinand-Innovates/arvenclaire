@@ -1107,6 +1107,33 @@
         color: #ffffff;
     }
 
+    .related-product-action-btn.wishlist-btn.in-wishlist i {
+        color: #ffffff !important;
+    }
+
+    .related-product-action-btn.wishlist-btn.in-wishlist:hover {
+        background: #c0392b !important;
+        border-color: #c0392b !important;
+        color: #ffffff !important;
+    }
+
+    /* Main product wishlist button styles */
+    .btn-action.btn-secondary.in-wishlist {
+        background: #e74c3c !important;
+        border-color: #e74c3c !important;
+        color: #ffffff !important;
+    }
+
+    .btn-action.btn-secondary.in-wishlist i {
+        color: #ffffff !important;
+    }
+
+    .btn-action.btn-secondary.in-wishlist:hover {
+        background: #c0392b !important;
+        border-color: #c0392b !important;
+        color: #ffffff !important;
+    }
+
     /* Disabled button styles for related products */
     .related-product-action-btn:disabled {
         opacity: 0.5;

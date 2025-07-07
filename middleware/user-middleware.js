@@ -74,11 +74,18 @@ const addUserContext = async (req, res, next) => {
       // Get user data from database
       const userData = await User.findById(req.session.userId);
 
-      // Add user to res.locals so it's available in all views
+      // Get user's wishlist to determine which products are in wishlist
+      const Wishlist = require("../models/wishlist-schema");
+      const wishlist = await Wishlist.findOne({ userId: req.session.userId });
+      const wishlistProductIds = wishlist ? wishlist.products.map(item => item.productId.toString()) : [];
+
+      // Add user and wishlist data to res.locals so it's available in all views
       res.locals.user = userData;
+      res.locals.userWishlistProductIds = wishlistProductIds;
     } else {
       // No user logged in
       res.locals.user = null;
+      res.locals.userWishlistProductIds = [];
     }
 
     next();
@@ -86,6 +93,7 @@ const addUserContext = async (req, res, next) => {
     console.error('Error in addUserContext middleware:', error);
     // Don't block the request, just set user to null
     res.locals.user = null;
+    res.locals.userWishlistProductIds = [];
     next();
   }
 };

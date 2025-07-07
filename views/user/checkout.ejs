@@ -209,118 +209,175 @@
 
                 <!-- Order Summary -->
                 <div class="order-summary fade-in">
-                <h3 class="section-title mb-3">
-                    <i class="fas fa-receipt"></i>
-                    Order Summary
-                </h3>
+                    <h3 class="section-title mb-3">
+                        <i class="fas fa-receipt"></i>
+                        Order Summary
+                    </h3>
 
-                <div class="summary-row">
-                    <span class="summary-label">Subtotal</span>
-                    <span class="summary-value">₹<%= Math.round(orderSummary.subtotal) %></span>
-                </div>
+                    <%
+                        // Calculate totals similar to cart page
+                        let totalItemCount = 0;
+                        let availableItemsCount = 0;
+                        let outOfStockItemsCount = 0;
+                        let availableQuantity = 0;
+                        let outOfStockQuantity = 0;
+                        let subtotalFromRegularPrice = 0;
+                        let totalDiscountAmount = 0;
 
-                <% if (orderSummary.totalDiscount > 0) { %>
-                <div class="summary-row">
-                    <span class="summary-label">Discount</span>
-                    <span class="summary-value" style="color: var(--success-color);">-₹<%= Math.round(orderSummary.totalDiscount) %></span>
-                </div>
-                <% } %>
+                        cartItems.forEach(item => {
+                            totalItemCount += item.quantity;
+                            
+                            // Check if item is out of stock (assuming we have this info)
+                            const isOutOfStock = item.productId.quantity === 0;
+                            
+                            if (isOutOfStock) {
+                                outOfStockItemsCount++;
+                                outOfStockQuantity += item.quantity;
+                            } else {
+                                availableItemsCount++;
+                                availableQuantity += item.quantity;
+                                
+                                // Calculate discount based on regular price vs final price
+                                const regularPrice = item.productId.regularPrice;
+                                const finalPrice = item.price || item.productId.salePrice;
+                                const quantity = item.quantity;
+                                
+                                // Subtotal based on regular prices
+                                subtotalFromRegularPrice += regularPrice * quantity;
+                                
+                                // Calculate discount per item and total discount
+                                const discountPerItem = regularPrice - finalPrice;
+                                totalDiscountAmount += discountPerItem * quantity;
+                            }
+                        });
+                    %>
 
-                <div class="summary-row">
-                    <span class="summary-label">Shipping</span>
-                    <span class="summary-value">
-                        <% if (orderSummary.shippingCharges === 0) { %>
-                            <span style="color: var(--success-color);">FREE</span>
-                        <% } else { %>
-                            ₹<%= Math.round(orderSummary.shippingCharges) %>
-                        <% } %>
-                    </span>
-                </div>
-
-                <div id="couponDiscountRow" class="summary-row" style="display: none;">
-                    <span class="summary-label">Coupon Discount</span>
-                    <span class="summary-value" style="color: var(--success-color);" id="couponDiscountAmount">-₹0.00</span>
-                </div>
-
-                <div class="summary-row">
-                    <span class="summary-label">Total</span>
-                    <span class="summary-value" id="finalTotal">₹<%= Math.round(orderSummary.finalAmount) %></span>
-                </div>
-
-                <!-- Payment Method Section -->
-                <div class="mt-3 pt-3" style="border-top: 2px solid var(--border-color);">
-                    <h5 class="mb-3" style="font-size: 1rem; font-weight: 600; color: var(--text-primary); display: flex; align-items: center; gap: 0.5rem;">
-                        <i class="fas fa-credit-card"></i>
-                        Payment Method
-                    </h5>
-                    
-                    <div class="payment-methods">
-                        <!-- Wallet Payment -->
-                        <div class="payment-option <%= (user.walletBalance && user.walletBalance >= orderSummary.finalAmount) ? '' : 'disabled' %>" 
-                             data-payment="Wallet" onclick="selectPaymentMethod(this)">
-                            <div class="payment-header">
-                                <div class="payment-icon">
-                                    <i class="fas fa-wallet"></i>
-                                </div>
-                                <div class="payment-title">Wallet Payment</div>
+                    <!-- Availability Breakdown (show only if there are out-of-stock items) -->
+                    <% if (outOfStockItemsCount > 0) { %>
+                        <div class="availability-breakdown">
+                            <div class="breakdown-title">Cart Breakdown</div>
+                            <div class="breakdown-item available">
+                                <span><i class="bi bi-check-circle"></i> Available Items</span>
+                                <span class="count"><%= availableItemsCount %> (<%= availableQuantity %> items)</span>
                             </div>
-                            <div class="payment-description">Pay using your wallet balance</div>
-                            <div class="payment-balance">Balance: ₹<%= Math.round(user.walletBalance || 0) %></div>
-                            <% if (!user.walletBalance || user.walletBalance < orderSummary.finalAmount) { %>
-                                <div class="payment-insufficient">Insufficient balance</div>
-                            <% } %>
-                            <div class="payment-selected-indicator">
-                                <i class="fas fa-check"></i>
+                            <div class="breakdown-item unavailable">
+                                <span><i class="bi bi-x-circle"></i> Out of Stock</span>
+                                <span class="count"><%= outOfStockItemsCount %> (<%= outOfStockQuantity %> items)</span>
                             </div>
                         </div>
+                    <% } %>
 
-                        <!-- Online Payment -->
-                        <div class="payment-option" data-payment="Online Payment" onclick="selectPaymentMethod(this)">
-                            <div class="payment-header">
-                                <div class="payment-icon">
-                                    <i class="fas fa-credit-card"></i>
-                                </div>
-                                <div class="payment-title">Online Payment</div>
-                            </div>
-                            <div class="payment-description">UPI, Cards, Net Banking & More</div>
-                            <div class="payment-selected-indicator">
-                                <i class="fas fa-check"></i>
-                            </div>
-                        </div>
-
-                        <!-- Cash on Delivery -->
-                        <% if (isCODAvailable) { %>
-                        <div class="payment-option selected" data-payment="Cash on Delivery" onclick="selectPaymentMethod(this)">
-                            <div class="payment-header">
-                                <div class="payment-icon">
-                                    <i class="fas fa-money-bill-wave"></i>
-                                </div>
-                                <div class="payment-title">Cash on Delivery</div>
-                            </div>
-                            <div class="payment-description">Pay when your order is delivered</div>
-                            <div class="payment-selected-indicator">
-                                <i class="fas fa-check"></i>
-                            </div>
-                        </div>
-                        <% } else { %>
-                        <div class="payment-option disabled" data-payment="Cash on Delivery">
-                            <div class="payment-header">
-                                <div class="payment-icon">
-                                    <i class="fas fa-money-bill-wave"></i>
-                                </div>
-                                <div class="payment-title">Cash on Delivery</div>
-                            </div>
-                            <div class="payment-insufficient">Cash on delivery is not available for orders above ₹4000</div>
-                        </div>
-                        <% } %>
+                    <div class="summary-row">
+                        <span class="summary-label">Subtotal (<%= totalItemCount %> items)</span>
+                        <span class="summary-value">₹<%= Math.round(subtotalFromRegularPrice) %></span>
                     </div>
-                </div>
 
-                <button class="btn-place-order" onclick="placeOrder()"
-                        <%= addresses.length === 0 ? 'disabled' : '' %>>
-                    <i class="fas fa-check-circle"></i>
-                    Place Order
-                </button>
+                    <div class="summary-row">
+                        <span class="summary-label">Discount</span>
+                        <span class="summary-value" style="color: var(--success-color);">
+                            <% if (totalDiscountAmount > 0) { %>
+                                -₹<%= Math.round(totalDiscountAmount) %>
+                            <% } else { %>
+                                ₹0.00
+                            <% } %>
+                        </span>
+                    </div>
+
+                    <div class="summary-row">
+                        <span class="summary-label">Shipping</span>
+                        <span class="summary-value">
+                            <% if (orderSummary.shippingCharges === 0) { %>
+                                <span style="color: var(--success-color);">FREE</span>
+                            <% } else { %>
+                                ₹<%= Math.round(orderSummary.shippingCharges) %>
+                            <% } %>
+                        </span>
+                    </div>
+
+                    <div id="couponDiscountRow" class="summary-row" style="display: none;">
+                        <span class="summary-label">Coupon Discount</span>
+                        <span class="summary-value" style="color: var(--success-color);" id="couponDiscountAmount">-₹0.00</span>
+                    </div>
+
+                    <div class="summary-row">
+                        <span class="summary-label">Total</span>
+                        <span class="summary-value" id="finalTotal">₹<%= Math.round(orderSummary.finalAmount) %></span>
+                    </div>
+
+                    <!-- Payment Method Section -->
+                    <div class="mt-3 pt-3" style="border-top: 2px solid var(--border-color);">
+                        <h5 class="mb-3" style="font-size: 1rem; font-weight: 600; color: var(--text-primary); display: flex; align-items: center; gap: 0.5rem;">
+                            <i class="fas fa-credit-card"></i>
+                            Payment Method
+                        </h5>
+                        
+                        <div class="payment-methods">
+                            <!-- Wallet Payment -->
+                            <div class="payment-option <%= (user.walletBalance && user.walletBalance >= orderSummary.finalAmount) ? '' : 'disabled' %>" 
+                                 data-payment="Wallet" onclick="selectPaymentMethod(this)">
+                                <div class="payment-header">
+                                    <div class="payment-icon">
+                                        <i class="fas fa-wallet"></i>
+                                    </div>
+                                    <div class="payment-title">Wallet Payment</div>
+                                </div>
+                                <div class="payment-description">Pay using your wallet balance</div>
+                                <div class="payment-balance">Balance: ₹<%= Math.round(user.walletBalance || 0) %></div>
+                                <% if (!user.walletBalance || user.walletBalance < orderSummary.finalAmount) { %>
+                                    <div class="payment-insufficient">Insufficient balance</div>
+                                <% } %>
+                                <div class="payment-selected-indicator">
+                                    <i class="fas fa-check"></i>
+                                </div>
+                            </div>
+
+                            <!-- Online Payment -->
+                            <div class="payment-option" data-payment="Online Payment" onclick="selectPaymentMethod(this)">
+                                <div class="payment-header">
+                                    <div class="payment-icon">
+                                        <i class="fas fa-credit-card"></i>
+                                    </div>
+                                    <div class="payment-title">Online Payment</div>
+                                </div>
+                                <div class="payment-description">UPI, Cards, Net Banking & More</div>
+                                <div class="payment-selected-indicator">
+                                    <i class="fas fa-check"></i>
+                                </div>
+                            </div>
+
+                            <!-- Cash on Delivery -->
+                            <% if (isCODAvailable) { %>
+                            <div class="payment-option selected" data-payment="Cash on Delivery" onclick="selectPaymentMethod(this)">
+                                <div class="payment-header">
+                                    <div class="payment-icon">
+                                        <i class="fas fa-money-bill-wave"></i>
+                                    </div>
+                                    <div class="payment-title">Cash on Delivery</div>
+                                </div>
+                                <div class="payment-description">Pay when your order is delivered</div>
+                                <div class="payment-selected-indicator">
+                                    <i class="fas fa-check"></i>
+                                </div>
+                            </div>
+                            <% } else { %>
+                            <div class="payment-option disabled" data-payment="Cash on Delivery">
+                                <div class="payment-header">
+                                    <div class="payment-icon">
+                                        <i class="fas fa-money-bill-wave"></i>
+                                    </div>
+                                    <div class="payment-title">Cash on Delivery</div>
+                                </div>
+                                <div class="payment-insufficient">Cash on delivery is not available for orders above ₹4000</div>
+                            </div>
+                            <% } %>
+                        </div>
+                    </div>
+
+                    <button class="btn-place-order" onclick="placeOrder()"
+                            <%= addresses.length === 0 ? 'disabled' : '' %>>
+                        <i class="fas fa-check-circle"></i>
+                        Place Order
+                    </button>
                 </div>
             </div>
         </div>
@@ -1126,3 +1183,5 @@
             </script>
 
     <%- include("../partials/user/footer") %>
+</body>
+</html>

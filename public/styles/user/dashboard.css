@@ -145,15 +145,15 @@
             transform: translateY(-8px) scale(1.02);
         }
 
-        /* Hover Action Icons Overlay */
+        /* Hover Action Icons Overlay - Repositioned to Top */
         .product-hover-overlay {
             position: absolute;
-            bottom: 0;
+            top: 0;
             left: 0;
             right: 0;
-            background: linear-gradient(to top, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.3), transparent);
-            padding: 20px 15px 15px;
-            transform: translateY(100%);
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.3), transparent);
+            padding: 15px 15px 20px;
+            transform: translateY(-100%);
             opacity: 0;
             transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             z-index: 10;
@@ -188,7 +188,7 @@
             transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             backdrop-filter: blur(10px);
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            transform: translateY(10px);
+            transform: translateY(-10px);
             opacity: 0;
         }
 
@@ -227,6 +227,16 @@
             background: #e74c3c;
             border-color: #e74c3c;
             color: #ffffff;
+        }
+
+        .product-action-btn.wishlist-btn.in-wishlist i {
+            color: #ffffff !important;
+        }
+
+        .product-action-btn.wishlist-btn.in-wishlist:hover {
+            background: #c0392b !important;
+            border-color: #c0392b !important;
+            color: #ffffff !important;
         }
 
         /* Disabled button styles */
@@ -346,15 +356,16 @@
             line-height: 1.4;
             margin-bottom: 0.75rem;
             color: #111827;
-            transition: color 0.2s ease;
+            transition: color 0.3s ease;
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
+            text-align: center;
         }
 
         .product-card:hover .product-title {
-            color: #000000;
+            color: #e74c3c;
         }
 
         .product-brand {
@@ -364,13 +375,20 @@
             margin-bottom: 0.5rem;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            text-align: center;
         }
 
         .product-price {
             font-size: 1.125rem;
             font-weight: 600;
             color: #111827;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.75rem;
+            text-align: center;
+            transition: color 0.3s ease;
+        }
+
+        .product-card:hover .product-price {
+            color: #e74c3c;
         }
 
         .original-price {
@@ -381,12 +399,18 @@
             font-weight: 400;
         }
 
+        .product-card:hover .original-price {
+            color: #9ca3af;
+        }
+
         .rating {
             color: #fbbf24;
             font-size: 0.875rem;
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 0.25rem;
+            margin-bottom: 0.5rem;
         }
 
         .rating .empty {
@@ -397,6 +421,31 @@
             color: #6b7280;
             font-size: 0.75rem;
             margin-left: 0.25rem;
+        }
+
+        /* Star Rating Styles */
+        .product-rating {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.25rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .product-rating .star {
+            color: #fbbf24;
+            font-size: 0.875rem;
+        }
+
+        .product-rating .star.empty {
+            color: #e5e7eb;
+        }
+
+        .product-rating .rating-value {
+            color: #6b7280;
+            font-size: 0.75rem;
+            margin-left: 0.25rem;
+            font-weight: 500;
         }
 
         .discount-badge {
@@ -417,6 +466,11 @@
             padding: 1.25rem !important;
             position: relative;
             z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
         }
 
         /* Static Image Section - Full Width */

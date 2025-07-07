@@ -68,6 +68,11 @@
                 <%- JSON.stringify(products) %>
             </script>
 
+                    <!-- Hidden wishlist data for JavaScript -->
+                    <script type="application/json" id="userWishlistData">
+                <%- JSON.stringify(userWishlistProductIds || []) %>
+            </script>
+
                     <% } else { %>
                         <div class="col-12 text-center py-5">
                             <div class="no-products-message">
@@ -178,6 +183,11 @@
                     <!-- Hidden products data for JavaScript -->
                     <script type="application/json" id="bestSellingData">
                 <%- JSON.stringify(products) %>
+            </script>
+
+                    <!-- Hidden wishlist data for JavaScript (duplicate for best selling) -->
+                    <script type="application/json" id="userWishlistDataBestSelling">
+                <%- JSON.stringify(userWishlistProductIds || []) %>
             </script>
 
                     <% } else { %>
@@ -315,10 +325,10 @@
                                                     ${(product.quantity === 0 || product.status === 'Out of Stock') ? 'disabled' : ''}>
                                                 <i class="bi bi-cart-plus"></i>
                                             </button>
-                                            <button class="product-action-btn wishlist-btn"
-                                                    onclick="event.stopPropagation(); addToWishlistFromDashboard('${product._id}', this)"
-                                                    title="Add to Wishlist">
-                                                <i class="bi bi-heart"></i>
+                                            <button class="product-action-btn wishlist-btn ${window.userWishlistProductIds && window.userWishlistProductIds.includes(product._id) ? 'in-wishlist' : ''}"
+                                                    onclick="event.stopPropagation(); toggleWishlistFromDashboard('${product._id}', this)"
+                                                    title="${window.userWishlistProductIds && window.userWishlistProductIds.includes(product._id) ? 'Remove from Wishlist' : 'Add to Wishlist'}">
+                                                <i class="bi bi-heart${window.userWishlistProductIds && window.userWishlistProductIds.includes(product._id) ? '-fill' : ''}"></i>
                                             </button>
                                         </div>
                                     </div>
@@ -326,6 +336,23 @@
                                     <div class="card-body">
                                         <div class="product-brand">${product.brand}</div>
                                         <h5 class="product-title">${product.productName}</h5>
+                                        
+                                        <!-- Star Rating System -->
+                                        ${product.totalReviews > 0 ? `
+                                            <div class="product-rating">
+                                                ${Array.from({ length: 5 }, (_, i) => 
+                                                    `<i class="bi bi-star-fill star ${product.averageRating >= (i + 1) ? '' : 'empty'}"></i>`
+                                                ).join('')}
+                                                <span class="rating-value">(${product.averageRating.toFixed(1)})</span>
+                                            </div>
+                                        ` : `
+                                            <div class="product-rating">
+                                                ${Array.from({ length: 5 }, (_, i) => 
+                                                    `<i class="bi bi-star-fill star empty"></i>`
+                                                ).join('')}
+                                            </div>
+                                        `}
+                                        
                                         <div class="product-price">
                                             ${product.offerDetails && product.offerDetails.hasOffer ? `
                                                 <span class="original-price">₹${Math.round(product.offerDetails.originalPrice)}</span>
@@ -334,14 +361,6 @@
                                                 ₹${Math.round(product.salePrice)}
                                             `}
                                         </div>
-                                        ${product.totalReviews > 0 ? `
-                                            <div class="rating">
-                                                ${Array.from({ length: 5 }, (_, i) =>
-                            `<i class="bi bi-star-fill ${product.averageRating >= (i + 1) ? '' : 'empty'}"></i>`
-                        ).join('')}
-                                                <span class="rating-text">(${product.averageRating.toFixed(1)})</span>
-                                            </div>
-                                        ` : ''}
                                     </div>
                                 </div>
                             </div>
@@ -556,6 +575,18 @@
         }
 
 
+        // Initialize wishlist data globally
+        window.userWishlistProductIds = [];
+        try {
+            const wishlistDataScript = document.getElementById('userWishlistData');
+            if (wishlistDataScript) {
+                window.userWishlistProductIds = JSON.parse(wishlistDataScript.textContent);
+            }
+        } catch (error) {
+            console.error('Error loading wishlist data:', error);
+            window.userWishlistProductIds = [];
+        }
+
         // Initialize everything when DOM is loaded
         document.addEventListener('DOMContentLoaded', function () {
             // Show redirect message if product was blocked/unavailable
@@ -639,9 +670,12 @@
             }
         }
 
-        async function addToWishlistFromDashboard(productId, buttonElement) {
+        async function toggleWishlistFromDashboard(productId, buttonElement) {
             try {
-                const response = await fetch('/wishlist/add', {
+                const isInWishlist = buttonElement.classList.contains('in-wishlist');
+                const endpoint = isInWishlist ? '/wishlist/remove' : '/wishlist/add';
+                
+                const response = await fetch(endpoint, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -655,23 +689,31 @@
                     // Update wishlist counter if it exists
                     updateWishlistCounter(result.wishlistCount);
 
-                    // Change button appearance to indicate it's in wishlist
+                    // Toggle button appearance
                     const heartIcon = buttonElement.querySelector('i');
                     if (heartIcon) {
-                        heartIcon.classList.remove('bi-heart');
-                        heartIcon.classList.add('bi-heart-fill');
-                        buttonElement.classList.add('in-wishlist');
-                        buttonElement.disabled = true;
-                        buttonElement.title = 'Already in wishlist';
+                        if (isInWishlist) {
+                            // Remove from wishlist
+                            heartIcon.classList.remove('bi-heart-fill');
+                            heartIcon.classList.add('bi-heart');
+                            buttonElement.classList.remove('in-wishlist');
+                            buttonElement.title = 'Add to Wishlist';
+                            showSweetAlert('Removed from wishlist!', 'success');
+                        } else {
+                            // Add to wishlist
+                            heartIcon.classList.remove('bi-heart');
+                            heartIcon.classList.add('bi-heart-fill');
+                            buttonElement.classList.add('in-wishlist');
+                            buttonElement.title = 'Remove from Wishlist';
+                            showSweetAlert('Added to wishlist!', 'success');
+                        }
                     }
-
-                    showSweetAlert('Added to wishlist!', 'success');
                 } else {
-                    showSweetAlert(result.message || 'Failed to add to wishlist.', 'error');
+                    showSweetAlert(result.message || 'Failed to update wishlist.', 'error');
                 }
             } catch (error) {
                 console.error('Wishlist error:', error);
-                showSweetAlert('Please login to add items to wishlist.', 'error');
+                showSweetAlert('Please login to manage wishlist.', 'error');
             }
         }
 
