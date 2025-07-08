@@ -1,3 +1,4 @@
+// ARVENCLAIRE E-commerce Application Server
 const express = require("express");
 const app = express();
 const bodyParser = require('body-parser');
@@ -17,14 +18,14 @@ const session = require('express-session');
 app.use(session({
   secret: 'your_secret_key', 
   resave: false,
-  saveUninitialized: false, // Changed to false for better security
+  saveUninitialized: false,
   cookie: {
     httpOnly: true,
-    secure: false, // Set to true if using HTTPS
-    maxAge: 24 * 60 * 60 * 1000,  // 24 hours
-    sameSite: 'lax' // Added for better security
+    secure: false,
+    maxAge: 24 * 60 * 60 * 1000,
+    sameSite: 'lax'
   },
-  name: 'arvenclaire_session' // More specific session name
+  name: 'arvenclaire_session'
 }));
 
 app.use(passport.initialize());
@@ -39,12 +40,9 @@ app.use(express.static(path.join(__dirname, "public")));
 app.set("view engine","ejs");
 app.set("views",[path.join(__dirname,"views/user"),path.join(__dirname,"views/admin")])
 
-
 app.use("/",adminRoute);
 app.use("/",userRoute);
 
-
-// Catch 404 and render error page
 app.use((req, res, next) => {
   res.status(404).render('error', {
     status: 404,
@@ -52,8 +50,6 @@ app.use((req, res, next) => {
     error: {}
   });
 }); 
-
-
 
 app.listen(port,() => {
     console.log("server is running http://localhost:3001")

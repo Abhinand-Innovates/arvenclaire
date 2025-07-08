@@ -3,43 +3,16 @@ const Order = require("../../models/order-schema");
 const Product = require("../../models/product-schema");
 const Category = require("../../models/category-schema");
 
-
-
-
-// Test endpoint
-const testAPI = async (req, res) => {
-  try {
-    res.json({
-      success: true,
-      message: 'Dashboard API is working!',
-      timestamp: new Date()
-    });
-  } catch (error) {
-    console.error('Test API error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Test API failed',
-      error: error.message
-    });
-  }
-};
-
-
-
-
-// Get dashboard statistics
+// Admin dashboard controller - handles all dashboard-related operations
 const getDashboardStats = async (req, res) => {
   try {
-    // Get total customers (non-admin users)
     const totalCustomers = await User.countDocuments({ 
       isAdmin: false, 
       isBlocked: false 
     });
 
-    // Get total orders
     const totalOrders = await Order.countDocuments();
 
-    // Get net revenue using the same logic as sales report (active items only)
     const orders = await Order.find()
       .populate({
         path: 'orderedItems.product',
@@ -49,12 +22,10 @@ const getDashboardStats = async (req, res) => {
     let totalNetRevenue = 0;
 
     for (const order of orders) {
-      // Calculate totals for active items only
       let activeTotalRegularPrice = 0;
       let activeTotalProductDiscount = 0;
       let activeTotalFinalPrice = 0;
       
-      // Process each item in the order
       for (const item of order.orderedItems) {
         if (item.product && item.status === 'Active') {
           const regularPrice = item.product.regularPrice || 0;
@@ -66,32 +37,24 @@ const getDashboardStats = async (req, res) => {
           activeTotalRegularPrice += itemRegularTotal;
           activeTotalFinalPrice += itemFinalTotal;
           
-          // Calculate product-level discount for this active item
           const itemProductDiscount = Math.max(0, itemRegularTotal - itemFinalTotal);
           activeTotalProductDiscount += itemProductDiscount;
         }
       }
       
-      // Calculate coupon discount - add the full coupon amount if coupon was applied
       let activeCouponDiscount = 0;
       const originalCouponDiscount = order.couponDiscount || 0;
       
-      // If there are active items and a coupon was applied, include the full coupon discount
       if (originalCouponDiscount > 0 && activeTotalRegularPrice > 0) {
         activeCouponDiscount = originalCouponDiscount;
       }
       
-      // Total discount for active items = product discounts + coupon discount (if applicable)
       const totalActiveDiscount = activeTotalProductDiscount + activeCouponDiscount;
-      
-      // Calculate final amount for active items
       const calculatedFinalAmount = activeTotalRegularPrice - totalActiveDiscount;
       
-      // Handle entirely cancelled orders
       const isEntireCancelled = order.status && order.status.toLowerCase().includes('cancelled') && 
                                !order.status.toLowerCase().includes('partially');
       
-      // For entirely cancelled orders, show zero values
       const displayFinalAmount = isEntireCancelled ? 0 : Math.max(0, calculatedFinalAmount);
       
       totalNetRevenue += displayFinalAmount;
@@ -99,7 +62,6 @@ const getDashboardStats = async (req, res) => {
 
     const totalRevenue = totalNetRevenue;
 
-    // Get pending orders
     const pendingOrders = await Order.countDocuments({
       status: { $in: ['Pending', 'Processing'] }
     });
@@ -129,7 +91,6 @@ const getDashboardStats = async (req, res) => {
 
 
 
-// Get sales data for chart
 const getSalesData = async (req, res) => {
   try {
     const { period = 'monthly' } = req.query;
@@ -140,7 +101,6 @@ const getSalesData = async (req, res) => {
 
     switch (period) {
       case 'weekly':
-        // Get last 7 days
         groupBy = {
           $dateToString: {
             format: "%Y-%m-%d",
@@ -156,7 +116,6 @@ const getSalesData = async (req, res) => {
         break;
       
       case 'yearly':
-        // Get last 5 years
         groupBy = {
           $dateToString: {
             format: "%Y",
@@ -169,7 +128,7 @@ const getSalesData = async (req, res) => {
         }
         break;
       
-      default: // monthly
+      default:
         groupBy = {
           $dateToString: {
             format: "%Y-%m",
@@ -184,7 +143,6 @@ const getSalesData = async (req, res) => {
         break;
     }
 
-    // Simplified query - get all orders for now
     const salesData = await Order.aggregate([
       {
         $group: {
@@ -198,16 +156,13 @@ const getSalesData = async (req, res) => {
       }
     ]);
 
-    // Create a map for easy lookup
     const salesMap = {};
     salesData.forEach(item => {
       salesMap[item._id] = item.totalSales;
     });
 
-    // Fill in the data array with 0 for missing periods
     const data = labels.map(label => salesMap[label] || 0);
 
-    // Format labels for display
     let displayLabels;
     switch (period) {
       case 'weekly':
@@ -219,7 +174,7 @@ const getSalesData = async (req, res) => {
       case 'yearly':
         displayLabels = labels;
         break;
-      default: // monthly
+      default:
         displayLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
         break;
     }
@@ -247,10 +202,8 @@ const getSalesData = async (req, res) => {
 
 
 
-// Get top products
 const getTopProducts = async (req, res) => {
   try {
-    // Simplified query - get all orders and products
     const topProducts = await Order.aggregate([
       {
         $unwind: '$orderedItems'
@@ -307,7 +260,6 @@ const getTopProducts = async (req, res) => {
 
 
 
-// Get recent orders
 const getRecentOrders = async (req, res) => {
   try {
     const recentOrders = await Order.find()
@@ -334,7 +286,6 @@ const getRecentOrders = async (req, res) => {
 
 
 
-// Get new customers
 const getNewCustomers = async (req, res) => {
   try {
     const newCustomers = await User.find({ 
@@ -363,7 +314,6 @@ const getNewCustomers = async (req, res) => {
 
 
 
-// Get best selling products (top 5)
 const getBestSellingProducts = async (req, res) => {
   try {
     const bestSellingProducts = await Order.aggregate([
@@ -428,7 +378,6 @@ const getBestSellingProducts = async (req, res) => {
 
 
 
-// Get best selling category
 const getBestSellingCategory = async (req, res) => {
   try {
     const bestSellingCategory = await Order.aggregate([
@@ -499,7 +448,6 @@ const getBestSellingCategory = async (req, res) => {
 
 
 
-// Get best selling brand
 const getBestSellingBrand = async (req, res) => {
   try {
     const bestSellingBrand = await Order.aggregate([
@@ -567,7 +515,6 @@ const getBestSellingBrand = async (req, res) => {
 
 
 
-// Get revenue distribution by payment method
 const getRevenueDistribution = async (req, res) => {
   try {
     const revenueDistribution = await Order.aggregate([
@@ -588,10 +535,8 @@ const getRevenueDistribution = async (req, res) => {
       }
     ]);
 
-    // Calculate total revenue for percentage calculation
     const totalRevenue = revenueDistribution.reduce((sum, item) => sum + item.totalRevenue, 0);
 
-    // Format data with percentages
     const formattedData = revenueDistribution.map(item => ({
       paymentMethod: item._id || 'Unknown',
       revenue: item.totalRevenue,
@@ -619,7 +564,6 @@ const getRevenueDistribution = async (req, res) => {
 
 
 module.exports = {
-  testAPI,
   getDashboardStats,
   getSalesData,
   getTopProducts,

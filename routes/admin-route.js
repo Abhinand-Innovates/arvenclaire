@@ -24,8 +24,7 @@ adminRoute.post("/admin-login", redirectIfAdminAuthenticated, adminController.po
 adminRoute.get("/admin-dashboard", isAdminAuthenticated, preventCache, adminController.getAdminDashboard);
 adminRoute.get("/admin-logout", isAdminAuthenticated, preventCache, adminController.logoutAdminDashboard);
 
-// Dashboard API Routes (temporarily removing auth for testing)
-adminRoute.get("/api/dashboard/test", dashboardController.testAPI);
+// Dashboard API Routes
 adminRoute.get("/api/dashboard/stats", dashboardController.getDashboardStats);
 adminRoute.get("/api/dashboard/sales", dashboardController.getSalesData);
 adminRoute.get("/api/dashboard/top-products", dashboardController.getTopProducts);
@@ -67,8 +66,6 @@ adminRoute.put('/api/products/:id', isAdminAuthenticated, preventCache, productU
 adminRoute.delete('/api/products/:id', isAdminAuthenticated, preventCache, productController.deleteProduct);
 adminRoute.patch('/api/products/:id/status', isAdminAuthenticated, preventCache, productController.toggleProductStatus);
 
-// API for user dashboard
-adminRoute.get('/api/products-for-user', isAdminAuthenticated, preventCache, productController.getProductsForUser);
 
 // Order Management Routes
 adminRoute.get('/get-orders', isAdminAuthenticated, preventCache, orderController.getOrders);
@@ -89,7 +86,6 @@ adminRoute.get("/coupons", isAdminAuthenticated, preventCache, couponController.
 adminRoute.get("/add-coupon", isAdminAuthenticated, preventCache, couponController.getAddCouponPage);
 adminRoute.post("/add-coupon", isAdminAuthenticated, preventCache, couponController.addCoupon);
 adminRoute.get("/edit-coupon/:id", isAdminAuthenticated, preventCache, couponController.getEditCouponPage);
-adminRoute.post("/edit-coupon/:id", isAdminAuthenticated, preventCache, couponController.updateCoupon);
 adminRoute.put("/edit-coupon/:id", isAdminAuthenticated, preventCache, couponController.updateCoupon);
 adminRoute.patch("/coupon/:id/status", isAdminAuthenticated, preventCache, couponController.toggleCouponStatus);
 adminRoute.delete("/delete-coupon/:id", isAdminAuthenticated, preventCache, couponController.deleteCoupon);

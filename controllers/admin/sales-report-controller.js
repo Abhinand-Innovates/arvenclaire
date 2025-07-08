@@ -1,3 +1,4 @@
+// Sales report controller - handles sales analytics, PDF/Excel exports, and comprehensive reporting
 const Order = require('../../models/order-schema');
 const User = require('../../models/user-schema');
 const fs = require('fs');
@@ -5,11 +6,7 @@ const path = require('path');
 const PDFDocument = require('pdfkit');
 const ExcelJS = require('exceljs');
 
-
-
-
 const salesReportController = {
-    // Helper function to get filtered data
     getFilteredData: async (filters) => {
         const { 
             timePeriod = 'monthly', 
@@ -19,41 +16,23 @@ const salesReportController = {
             endDate
         } = filters;
 
-        // Calculate date range based on time period or custom dates
         const now = new Date();
         let startDateObj, endDateObj;
         
         if (startDate && endDate) {
-            // Parse custom dates and set proper time boundaries
             startDateObj = new Date(startDate);
             endDateObj = new Date(endDate);
             
-            // Validate that dates are valid
             if (isNaN(startDateObj.getTime()) || isNaN(endDateObj.getTime())) {
                 throw new Error('Invalid date format provided');
             }
             
-            // Validate that start date is not after end date
             if (startDateObj > endDateObj) {
                 throw new Error('Start date cannot be after end date');
             }
             
-            // Set start date to beginning of day (00:00:00)
             startDateObj.setHours(0, 0, 0, 0);
-            
-            // Set end date to end of day (23:59:59)
             endDateObj.setHours(23, 59, 59, 999);
-            
-            // Log for debugging (remove in production)
-            if (process.env.NODE_ENV === 'development') {
-                console.log('Custom date filtering:', {
-                    originalStart: startDate,
-                    originalEnd: endDate,
-                    parsedStart: startDateObj,
-                    parsedEnd: endDateObj,
-                    timePeriod: timePeriod
-                });
-            }
         } else {
             switch (timePeriod) {
                 case 'weekly':

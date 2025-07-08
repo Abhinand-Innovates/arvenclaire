@@ -70,7 +70,6 @@ router.post("/reset-password", redirectIfAuthenticated, userController.resetPass
 // Dashboard - requires authentication
 router.get("/dashboard", isUserAuthenticated, preventCache, addUserContext, checkUserBlocked, userController.loadDashboard);
 router.get("/shop", validateSession, addUserContext, checkUserBlocked, userShopController.loadShop);
-router.get("/products", validateSession, addUserContext, checkUserBlocked, userShopController.loadShop);
 router.get("/product/:id", validateSession, addUserContext, checkUserBlocked, checkProductAvailabilityForPage, userShopController.loadProductDetails);
 router.get("/profile", isUserAuthenticated, preventCache, addUserContext, checkUserBlocked, userProfileController.loadProfile);
 router.get("/logout", isUserAuthenticated, preventCache, checkUserBlocked, userProfileController.logout);
@@ -93,7 +92,6 @@ router.post("/profile/verify-current-email", isUserAuthenticated, preventCache, 
 router.get("/profile/email-change-otp", isUserAuthenticated, preventCache, addUserContext, checkUserBlocked, userProfileController.loadEmailChangeOtp);
 router.post("/profile/email-change-otp", isUserAuthenticated, preventCache, checkUserBlocked, userProfileController.verifyEmailChangeOtp);
 router.post("/profile/change-email", isUserAuthenticated, preventCache, checkUserBlocked, userProfileController.changeEmail);
-router.post("/profile/update", isUserAuthenticated, preventCache, checkUserBlocked, userProfileController.updateProfile);
 router.post("/profile/photo", isUserAuthenticated, preventCache, checkUserBlocked, profileUpload.single('profilePhoto'), handleMulterError, userProfileController.uploadProfilePhoto);
 router.delete("/profile/photo", isUserAuthenticated, preventCache, checkUserBlocked, userProfileController.deleteProfilePhoto);
 // Address-related routes

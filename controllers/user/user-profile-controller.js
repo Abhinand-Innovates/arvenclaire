@@ -1,3 +1,4 @@
+// User profile controller - handles profile management, email changes, password updates, and photo uploads
 const User = require("../../models/user-schema");
 const generateOtp = require("../../utils/generateOtp");
 const sendEmail = require("../../utils/sendEmail");
@@ -9,7 +10,6 @@ const sharp = require("sharp");
 const path = require("path");
 const fs = require("fs");
 
-// Load profile page
 const loadProfile = async (req, res) => {
   try {
     const userId = req.session.userId;
@@ -17,24 +17,16 @@ const loadProfile = async (req, res) => {
       return res.redirect('/login');
     }
 
-    // Get user data
     const user = await User.findById(userId).select('-password').lean();
 
     if (!user) {
       return res.redirect('/login');
     }
 
-    // Get total orders count
     const totalOrders = await Order.countDocuments({ userId: userId });
-
-    // Get wishlist items count
     const wishlistCount = await Wishlist.countDocuments({ userId: userId });
-
-    // Get wallet balance from Wallet model
     const wallet = await Wallet.getOrCreateWallet(userId);
     const walletBalance = wallet.balance || 0;
-
-    // Available coupons (placeholder for now)
     const availableCoupons = 0;
 
     res.render('profile', {
@@ -53,7 +45,6 @@ const loadProfile = async (req, res) => {
   }
 };
 
-// Load edit profile page
 const loadEditProfile = async (req, res) => {
   try {
     const userId = req.session.userId;
@@ -61,7 +52,6 @@ const loadEditProfile = async (req, res) => {
       return res.redirect('/login');
     }
 
-    // Get user data
     const user = await User.findById(userId).select('-password').lean();
 
     if (!user) {
@@ -78,7 +68,6 @@ const loadEditProfile = async (req, res) => {
   }
 };
 
-// Load change password page
 const loadChangePassword = async (req, res) => {
   try {
     const userId = req.session.userId;
@@ -86,7 +75,6 @@ const loadChangePassword = async (req, res) => {
       return res.redirect('/login');
     }
 
-    // Get user data for sidebar
     const user = await User.findById(userId).select('fullname email profilePhoto');
     if (!user) {
       return res.redirect('/login');
@@ -102,7 +90,6 @@ const loadChangePassword = async (req, res) => {
   }
 };
 
-// Load wallet page
 const loadWallet = async (req, res) => {
   try {
     const userId = req.session.userId;
@@ -110,17 +97,14 @@ const loadWallet = async (req, res) => {
       return res.redirect('/login');
     }
 
-    // Get user data for sidebar
     const user = await User.findById(userId).select('fullname email profilePhoto');
     if (!user) {
       return res.redirect('/login');
     }
 
-    // Get wallet data
     const Wallet = require('../../models/wallet-schema');
     const wallet = await Wallet.getOrCreateWallet(userId);
 
-    // Calculate wallet statistics
     const totalAdded = wallet.transactions
       .filter(t => t.type === 'credit')
       .reduce((sum, t) => sum + t.amount, 0);
@@ -129,7 +113,6 @@ const loadWallet = async (req, res) => {
       .filter(t => t.type === 'debit')
       .reduce((sum, t) => sum + t.amount, 0);
 
-    // Get recent transactions (last 10)
     const recentTransactions = wallet.transactions
       .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
       .slice(0, 10);
@@ -150,97 +133,6 @@ const loadWallet = async (req, res) => {
   }
 };
 
-// Update profile
-const updateProfile = async (req, res) => {
-  try {
-    const userId = req.session.userId;
-    if (!userId) {
-      return res.status(401).json({
-        success: false,
-        message: 'Please login to update profile'
-      });
-    }
-
-    const { fullname, phone } = req.body;
-    const errors = {};
-
-    // Validate fullname
-    if (!fullname || fullname.trim().length < 4) {
-      errors.fullname = 'Full name must be at least 4 characters long';
-    } else if (/\d/.test(fullname.trim())) {
-      errors.fullname = 'Full name should not contain numbers';
-    }
-
-    // Validate phone (optional)
-    if (phone && phone.trim() && !/^[6-9]\d{9}$/.test(phone.trim())) {
-      errors.phone = 'Phone number must be 10 digits and start with 6, 7, 8, or 9';
-    }
-
-    // If there are validation errors, return them
-    if (Object.keys(errors).length > 0) {
-      return res.status(400).json({
-        success: false,
-        message: 'Validation failed',
-        errors: errors
-      });
-    }
-
-    // Check if user exists
-    const currentUser = await User.findById(userId);
-    if (!currentUser) {
-      return res.status(404).json({
-        success: false,
-        message: 'User not found'
-      });
-    }
-
-    // Update user profile
-    const updateData = {
-      fullname: fullname.trim()
-    };
-
-    // Only update phone if provided
-    if (phone && phone.trim()) {
-      updateData.phone = phone.trim();
-    } else if (phone === '') {
-      // If empty string is sent, remove phone number
-      updateData.phone = null;
-    }
-
-    const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      updateData,
-      { new: true, runValidators: true }
-    ).select('-password');
-
-    res.json({
-      success: true,
-      message: 'Profile updated successfully',
-      user: updatedUser
-    });
-
-  } catch (error) {
-    console.error('Error updating profile:', error);
-
-    // Handle mongoose validation errors
-    if (error.name === 'ValidationError') {
-      const errors = {};
-      Object.keys(error.errors).forEach(key => {
-        errors[key] = error.errors[key].message;
-      });
-      return res.status(400).json({
-        success: false,
-        message: 'Validation failed',
-        errors: errors
-      });
-    }
-
-    res.status(500).json({
-      success: false,
-      message: 'Failed to update profile'
-    });
-  }
-};
 
 // Update profile data (excluding email)
 const updateProfileData = async (req, res) => {
@@ -800,7 +692,6 @@ module.exports = {
   loadEditProfile,
   loadChangePassword,
   loadWallet,
-  updateProfile,
   updateProfileData,
   verifyCurrentEmail,
   loadEmailChangeOtp,

@@ -565,37 +565,6 @@ const toggleProductStatus = async (req, res) => {
 
 
 
-// Get products for user dashboard with best offers applied
-const getProductsForUser = async (req, res) => {
-    try {
-        const filter = {
-            isDeleted: false,
-            isBlocked: false,
-            isListed: true
-        };
-
-        const options = {
-            sort: { createdAt: -1 },
-            limit: 12
-        };
-
-        // Get products with best offers calculated
-        const productsWithOffers = await getProductsWithBestOffers(filter, options);
-
-        // Filter out products with unlisted categories
-        const filteredProducts = productsWithOffers.filter(product => 
-            product.category && product.category.name
-        );
-
-        res.json({ success: true, products: filteredProducts });
-    } catch (error) {
-        console.error('Error fetching products for user:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Failed to fetch products'
-        });
-    }
-};
 
 
 
@@ -608,6 +577,5 @@ module.exports = {
     getProductById,
     updateProduct,
     deleteProduct,
-    toggleProductStatus,
-    getProductsForUser
+    toggleProductStatus
 };
