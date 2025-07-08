@@ -117,11 +117,8 @@ const checkProductAvailability = async (req, res, next) => {
 
 
 
-/**
- * Middleware specifically for product detail page access
- * Redirects to shop page instead of returning JSON
- * Provides user-friendly error messages via session
- */
+
+ /**Middleware specifically for product detail page access, Redirects to shop page instead of returning JSON*/
 const checkProductAvailabilityForPage = async (req, res, next) => {
   try {
     const productId = req.params.id;
@@ -231,10 +228,8 @@ const checkProductAvailabilityForPage = async (req, res, next) => {
 
 
 
-/**
- * Utility function to check multiple products availability
- * Useful for cart, wishlist, and bulk operations
- */
+
+ /**Utility function to check multiple products availability, Useful for cart, wishlist, and bulk operations*/
 const checkMultipleProductsAvailability = async (productIds) => {
   try {
     const products = await Product.find({

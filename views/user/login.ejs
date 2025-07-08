@@ -70,6 +70,22 @@
     .password-wrapper .form-control {
       padding-right: 60px;
     }
+    
+    /* Custom styling for blocked user modal */
+    .blocked-user-modal {
+      border-radius: 16px !important;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+    }
+    
+    .blocked-user-modal .swal2-title {
+      color: #dc3545 !important;
+      font-weight: 700 !important;
+    }
+    
+    .blocked-user-modal .swal2-content {
+      font-size: 16px !important;
+      color: #374151 !important;
+    }
   </style>
 </head>
 
@@ -140,16 +156,22 @@
       // Check if user was redirected due to being blocked
       const urlParams = new URLSearchParams(window.location.search);
       if (urlParams.get('blocked') === 'true') {
+        // Show the blocked account modal immediately
         Swal.fire({
           icon: 'warning',
           title: 'Account Blocked',
           text: 'Your account has been blocked by the administrator. Please contact support for assistance.',
           confirmButtonColor: '#dc3545',
-          confirmButtonText: 'Understood'
+          confirmButtonText: 'Understood',
+          allowOutsideClick: false,
+          allowEscapeKey: false,
+          customClass: {
+            popup: 'blocked-user-modal'
+          }
+        }).then(() => {
+          // Clean up the URL after user acknowledges
+          window.history.replaceState({}, document.title, window.location.pathname);
         });
-
-        // Clean up the URL
-        window.history.replaceState({}, document.title, window.location.pathname);
       }
       const loginForm = document.getElementById('loginForm');
       const fields = [

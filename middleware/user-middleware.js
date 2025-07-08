@@ -17,13 +17,25 @@ const checkUserBlocked = async (req, res, next) => {
 
     // If user doesn't exist or is blocked
     if (!user || user.isBlocked) {
-      // Destroy session
-      req.session.destroy((err) => {
-        if (err) console.error('Error destroying session:', err);
-      });
+      // Only clear user-specific session data, not the entire session
+      // This prevents affecting admin sessions
+      if (req.session.userId) {
+        delete req.session.userId;
+      }
+      if (req.session.googleUserId) {
+        delete req.session.googleUserId;
+      }
+      if (req.session.email) {
+        delete req.session.email;
+      }
+      if (req.session.loginTime) {
+        delete req.session.loginTime;
+      }
 
-      // Clear session cookie
-      res.clearCookie('connect.sid');
+      // Save the session to persist the changes
+      req.session.save((err) => {
+        if (err) console.error('Error saving session after user logout:', err);
+      });
 
       // AJAX request handling
       if (req.xhr || req.headers.accept.indexOf('json') > -1) {
@@ -31,12 +43,11 @@ const checkUserBlocked = async (req, res, next) => {
           success: false,
           blocked: true,
           message: 'Your account has been blocked. Please contact support.',
-          redirect: '/login'
+          redirect: '/login?blocked=true'
         });
       }
 
-      // Regular redirect
-      req.flash = req.flash || function() {}; // fallback
+      // Regular redirect with blocked flag
       return res.redirect('/login?blocked=true');
     }
 
@@ -46,10 +57,13 @@ const checkUserBlocked = async (req, res, next) => {
   } catch (error) {
     console.error('Error checking user blocked status:', error);
 
-    // Destroy session on error
-    req.session.destroy((err) => {
-      if (err) console.error('Error destroying session:', err);
-    });
+    // Only clear user-specific session data on error, not the entire session
+    if (req.session.userId) {
+      delete req.session.userId;
+    }
+    if (req.session.googleUserId) {
+      delete req.session.googleUserId;
+    }
 
     if (req.xhr || req.headers.accept.indexOf('json') > -1) {
       return res.status(500).json({

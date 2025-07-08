@@ -46,11 +46,25 @@ isUserAuthenticated : async (req, res, next) => {
       return next();
     }
 
-    // Blocked or invalid user - clear session and redirect
-    req.session.destroy((err) => {
-      if (err) console.error('Error destroying session:', err);
+    // Blocked or invalid user - clear only user session data
+    if (req.session.userId) {
+      delete req.session.userId;
+    }
+    if (req.session.googleUserId) {
+      delete req.session.googleUserId;
+    }
+    if (req.session.email) {
+      delete req.session.email;
+    }
+    if (req.session.loginTime) {
+      delete req.session.loginTime;
+    }
+    
+    // Save the session to persist the changes
+    req.session.save((err) => {
+      if (err) console.error('Error saving session after user logout:', err);
     });
-    res.clearCookie('connect.sid');
+    
     return res.redirect('/login?blocked=true');
   } catch (error) {
     console.error('User Auth Middleware Error:', error);
@@ -73,11 +87,19 @@ redirectIfAuthenticated : async (req, res, next) => {
         return res.redirect('/dashboard');
       }
       
-      // If user is blocked or doesn't exist, clear session and continue
-      req.session.destroy((err) => {
-        if (err) console.error('Error destroying session:', err);
-      });
-      res.clearCookie('connect.sid');
+      // If user is blocked or doesn't exist, clear only user session data
+      if (req.session.userId) {
+        delete req.session.userId;
+      }
+      if (req.session.googleUserId) {
+        delete req.session.googleUserId;
+      }
+      if (req.session.email) {
+        delete req.session.email;
+      }
+      if (req.session.loginTime) {
+        delete req.session.loginTime;
+      }
     }
     
     next();
@@ -124,12 +146,20 @@ validateSession : async (req, res, next) => {
     if (userId) {
       const user = await User.findById(userId);
       
-      // If user doesn't exist or is blocked, clear session
+      // If user doesn't exist or is blocked, clear only user session data
       if (!user || user.isBlocked) {
-        req.session.destroy((err) => {
-          if (err) console.error('Error destroying session:', err);
-        });
-        res.clearCookie('connect.sid');
+        if (req.session.userId) {
+          delete req.session.userId;
+        }
+        if (req.session.googleUserId) {
+          delete req.session.googleUserId;
+        }
+        if (req.session.email) {
+          delete req.session.email;
+        }
+        if (req.session.loginTime) {
+          delete req.session.loginTime;
+        }
         
         // Set user context to null for views
         res.locals.user = null;
