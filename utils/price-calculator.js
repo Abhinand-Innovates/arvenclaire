@@ -199,6 +199,9 @@ const calculateEffectivePrice = async (product, productOffer = 0) => {
   }
 };
 
+
+
+
 module.exports = {
   calculateFinalPrice,
   calculateFinalPriceSync,

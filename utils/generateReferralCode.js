@@ -1,5 +1,6 @@
 const crypto = require('crypto');
 
+
 /**
  * Generate a unique referral code
  * @param {number} length - Length of the referral code (default: 8)
