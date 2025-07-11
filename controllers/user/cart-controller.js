@@ -297,26 +297,6 @@ const updateCartQuantity = async (req, res) => {
       });
     }
 
-    // Enhanced stock validation
-    if (product.quantity === 0) {
-      return res.status(403).json({
-        success: false,
-        message: 'This product is currently out of stock',
-        code: 'OUT_OF_STOCK',
-        availableStock: 0
-      });
-    }
-
-    if (product.quantity < parsedQuantity) {
-      return res.status(403).json({
-        success: false,
-        message: `Only ${product.quantity} items available in stock. Cannot update to ${parsedQuantity} items.`,
-        code: 'INSUFFICIENT_STOCK',
-        availableStock: product.quantity,
-        requestedQuantity: parsedQuantity
-      });
-    }
-
     // Find user's cart
     const cart = await Cart.findOne({ userId });
     if (!cart) {
@@ -335,6 +315,30 @@ const updateCartQuantity = async (req, res) => {
       return res.status(404).json({
         success: false,
         message: 'Product not found in cart'
+      });
+    }
+
+    const currentQuantity = cart.items[itemIndex].quantity;
+
+    // Enhanced stock validation - only check when increasing quantity
+    if (product.quantity === 0) {
+      return res.status(403).json({
+        success: false,
+        message: 'This product is currently out of stock',
+        code: 'OUT_OF_STOCK',
+        availableStock: 0
+      });
+    }
+
+    // Only validate stock limits when increasing quantity
+    if (parsedQuantity > currentQuantity && product.quantity < parsedQuantity) {
+      return res.status(403).json({
+        success: false,
+        message: `Only ${product.quantity} items available in stock. Cannot increase to ${parsedQuantity} items.`,
+        code: 'INSUFFICIENT_STOCK',
+        availableStock: product.quantity,
+        requestedQuantity: parsedQuantity,
+        currentQuantity: currentQuantity
       });
     }
 

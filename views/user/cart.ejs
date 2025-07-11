@@ -319,6 +319,7 @@
         // Frontend stock validation before API call
         const productStock = parseInt(cartItem.dataset.productStock || 0);
         const isOutOfStock = cartItem.classList.contains('out-of-stock');
+        const currentQuantity = parseInt(cartItem.querySelector('.qty-input').value);
 
         // Check if product is out of stock
         if (isOutOfStock || productStock === 0) {
@@ -326,9 +327,9 @@
             return;
         }
 
-        // Check if requested quantity exceeds available stock
-        if (newQuantity > productStock) {
-            showSweetAlert(`Only ${productStock} items available in stock. Cannot add more than available quantity.`, 'error');
+        // Only check stock limits when increasing quantity
+        if (newQuantity > currentQuantity && newQuantity > productStock) {
+            showSweetAlert(`Only ${productStock} items available in stock. Cannot increase beyond available quantity.`, 'error');
             return;
         }
 
