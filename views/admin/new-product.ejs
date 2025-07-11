@@ -428,6 +428,25 @@
             }
         }
 
+        // Check for duplicate product name
+        async function checkDuplicateProductName(productName) {
+            try {
+                const response = await fetch('/api/check-product-name', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ productName: productName.trim() })
+                });
+
+                const result = await response.json();
+                return result.exists;
+            } catch (error) {
+                console.error('Error checking duplicate product name:', error);
+                return false; // Don't block submission on API error
+            }
+        }
+
         function validateBrand() {
             const brand = document.getElementById('brand');
             const brandGroup = brand.closest('.form-group');
@@ -1138,7 +1157,22 @@
                             confirmButtonText: 'Go to Products'
                         }).then(() => window.location.href = '/get-product');
                     } else {
-                        throw new Error(result.message || 'Failed to save product');
+                        // Handle specific field errors (like duplicate product name)
+                        if (result.field === 'productName') {
+                            const productNameGroup = document.getElementById('productName').closest('.form-group');
+                            const errorMsg = productNameGroup.querySelector('.error-message');
+                            showFieldError(productNameGroup, errorMsg, result.message);
+                            
+                            // Scroll to the product name field
+                            document.getElementById('productName').scrollIntoView({ 
+                                behavior: 'smooth', 
+                                block: 'center' 
+                            });
+                            
+                            Swal.fire('Validation Error!', result.message, 'error');
+                        } else {
+                            throw new Error(result.message || 'Failed to save product');
+                        }
                     }
                 } else {
                     // If not JSON, get text to see what we're receiving

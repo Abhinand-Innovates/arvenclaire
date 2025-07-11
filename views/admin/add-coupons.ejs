@@ -196,6 +196,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             setupFieldValidation();
             updatePreview();
+            toggleMaxDiscountVisibility(); // Initialize visibility on page load
         });
 
         // Generate coupon code with enhanced feedback
@@ -239,7 +240,10 @@
             // Discount Type validation
             const discountType = document.getElementById('discountType');
             if (discountType) {
-                discountType.addEventListener('change', validateDiscountType);
+                discountType.addEventListener('change', function() {
+                    validateDiscountType();
+                    toggleMaxDiscountVisibility(); // Toggle visibility when discount type changes
+                });
                 discountType.addEventListener('blur', validateDiscountType);
             }
 
@@ -290,6 +294,28 @@
             if (userUsageLimit) {
                 userUsageLimit.addEventListener('input', validateUserUsageLimit);
                 userUsageLimit.addEventListener('blur', validateUserUsageLimit);
+            }
+        }
+
+        // Function to toggle Maximum Discount field visibility based on Discount Type
+        function toggleMaxDiscountVisibility() {
+            const discountType = document.getElementById('discountType').value;
+            const maxDiscountGroup = document.getElementById('maxDiscount').closest('.form-group');
+            
+            if (discountType === 'flat') {
+                // Hide Maximum Discount field for Flat discount type
+                maxDiscountGroup.style.display = 'none';
+                // Remove required validation for hidden field
+                document.getElementById('maxDiscount').removeAttribute('required');
+            } else if (discountType === 'percentage') {
+                // Show Maximum Discount field for Percentage discount type
+                maxDiscountGroup.style.display = 'block';
+                // Add required validation for visible field
+                document.getElementById('maxDiscount').setAttribute('required', 'required');
+            } else {
+                // Default behavior - hide when no discount type is selected
+                maxDiscountGroup.style.display = 'none';
+                document.getElementById('maxDiscount').removeAttribute('required');
             }
         }
 
@@ -416,6 +442,11 @@
             const maxDiscountGroup = maxDiscount.closest('.form-group');
             const errorMsg = maxDiscountGroup.querySelector('.error-message');
             const value = maxDiscount.value.trim();
+
+            // Only validate if the field is visible (for percentage discount type)
+            if (maxDiscountGroup.style.display === 'none') {
+                return true; // Skip validation for hidden field
+            }
 
             if (!value) {
                 showFieldError(maxDiscountGroup, errorMsg, 'Maximum discount amount is required');

@@ -255,6 +255,20 @@ const addProduct = async (req, res) => {
             });
         }
 
+        // Check if product with same name already exists (case-sensitive)
+        const existingProduct = await Product.findOne({ 
+            productName: productName.trim(),
+            isDeleted: false 
+        });
+
+        if (existingProduct) {
+            return res.status(400).json({
+                success: false,
+                message: 'A product with this name already exists',
+                field: 'productName'
+            });
+        }
+
         // Parse cropped images
         let imageData = [];
         try {
