@@ -128,6 +128,17 @@ const addCoupon = async (req, res) => {
             errors.userUsageLimit = 'Per user limit must be a positive number';
         }
 
+        // Validate flat discount type: minimum purchase must be greater than coupon value
+        if (discountType === 'flat' && discount && minPurchase) {
+            const discountValue = parseFloat(discount);
+            const minPurchaseValue = parseFloat(minPurchase);
+            
+            if (!isNaN(discountValue) && !isNaN(minPurchaseValue) && minPurchaseValue <= discountValue) {
+                errors.minPurchase = 'Minimum purchase amount must be greater than the flat discount amount';
+                errors.discount = 'For flat discount, coupon value must be less than minimum purchase amount';
+            }
+        }
+
         // Check if coupon code already exists
         if (code && code.trim() !== '') {
             const existingCoupon = await Coupon.findOne({ code: code.toUpperCase().trim() });
@@ -312,6 +323,17 @@ const updateCoupon = async (req, res) => {
         }
         if (userUsageLimit && (isNaN(parseInt(userUsageLimit)) || parseInt(userUsageLimit) <= 0)) {
             errors.userUsageLimit = 'Per user limit must be a positive number';
+        }
+
+        // Validate flat discount type: minimum purchase must be greater than coupon value
+        if (discountType === 'flat' && discount && minPurchase) {
+            const discountValue = parseFloat(discount);
+            const minPurchaseValue = parseFloat(minPurchase);
+            
+            if (!isNaN(discountValue) && !isNaN(minPurchaseValue) && minPurchaseValue <= discountValue) {
+                errors.minPurchase = 'Minimum purchase amount must be greater than the flat discount amount';
+                errors.discount = 'For flat discount, coupon value must be less than minimum purchase amount';
+            }
         }
 
         // Check if coupon code already exists (excluding current coupon)
