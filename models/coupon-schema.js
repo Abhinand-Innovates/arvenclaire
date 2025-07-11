@@ -53,6 +53,14 @@ const couponSchema = new mongoose.Schema({
         type: Boolean,
         default: true,
     },
+    isDeleted: {
+        type: Boolean,
+        default: false,
+    },
+    deletedAt: {
+        type: Date,
+        default: null,
+    },
     applicableCategories: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Category',

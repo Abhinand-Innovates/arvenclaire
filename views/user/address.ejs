@@ -9,6 +9,46 @@
     <%- include("../partials/user/account-sidebar") %>
 
     <link rel="stylesheet" href="../../styles/user/address.css">
+    <style>
+        .error-message {
+            color: #dc3545;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+            display: none;
+        }
+
+        .is-invalid~.error-message {
+            display: block;
+        }
+
+        .is-invalid {
+            border-color: #dc3545;
+            background-image: none !important;
+            background-repeat: no-repeat;
+            background-position: right calc(0.375em + 0.1875rem) center;
+            background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+        }
+
+        .is-valid {
+            border-color: #28a745;
+            background-image: none !important;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #000;
+            box-shadow: 0 0 0 0.2rem rgba(0, 0, 0, 0.25);
+        }
+
+        .form-control.is-invalid:focus, .form-select.is-invalid:focus {
+            border-color: #dc3545;
+            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+        }
+
+        .form-control.is-valid:focus, .form-select.is-valid:focus {
+            border-color: #28a745;
+            box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+        }
+    </style>
 </head>
 <body>
     <!-- Main Content -->
@@ -44,10 +84,17 @@
                         <div class="col-md-6 mb-3">
                             <label for="fullName" class="form-label">Full Name *</label>
                             <input type="text" class="form-control" id="fullName" name="fullName" value="<%= address ? address.name : '' %>" required>
+                            <div class="error-message" id="fullName-error">Full name must be at least 4 characters long</div>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="mobileNumber" class="form-label">Mobile Number *</label>
                             <input type="tel" class="form-control" id="mobileNumber" name="mobileNumber" value="<%= address ? address.phone : '' %>" required>
+                            <div class="error-message" id="mobileNumber-error">Please enter a valid phone number</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="altPhone" class="form-label">Alternative Phone (Optional)</label>
+                            <input type="tel" class="form-control" id="altPhone" name="altPhone" value="<%= address ? address.altPhone : '' %>">
+                            <div class="error-message" id="altPhone-error">Please enter a valid alternative phone number</div>
                         </div>
                     </div>
                 </div>
@@ -59,39 +106,31 @@
                         <div class="col-12 mb-3">
                             <label for="addressDetails" class="form-label">Address Details *</label>
                             <textarea class="form-control" id="addressDetails" name="addressDetails" rows="3" placeholder="House/Flat No., Building Name, Street Name" required><%= address ? address.landMark : '' %></textarea>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="district" class="form-label">District *</label>
-                            <input type="text" class="form-control" id="district" name="district" value="<%= address ? address.landMark : '' %>" required>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="city" class="form-label">City *</label>
-                            <input type="text" class="form-control" id="city" name="city" value="<%= address ? address.city : '' %>" required>
+                            <div class="error-message" id="addressDetails-error">Address details are required</div>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="state" class="form-label">State *</label>
                             <select class="form-select" id="state" name="state" required>
                                 <option value="">Select State</option>
-                                <option value="kerala" <%= address && address.state === 'kerala' ? 'selected' : '' %>>Kerala</option>
-                                <option value="tamil-nadu" <%= address && address.state === 'tamil-nadu' ? 'selected' : '' %>>Tamil Nadu</option>
-                                <option value="karnataka" <%= address && address.state === 'karnataka' ? 'selected' : '' %>>Karnataka</option>
-                                <option value="andhra-pradesh" <%= address && address.state === 'andhra-pradesh' ? 'selected' : '' %>>Andhra Pradesh</option>
-                                <option value="telangana" <%= address && address.state === 'telangana' ? 'selected' : '' %>>Telangana</option>
-                                <option value="maharashtra" <%= address && address.state === 'maharashtra' ? 'selected' : '' %>>Maharashtra</option>
-                                <option value="gujarat" <%= address && address.state === 'gujarat' ? 'selected' : '' %>>Gujarat</option>
-                                <option value="rajasthan" <%= address && address.state === 'rajasthan' ? 'selected' : '' %>>Rajasthan</option>
-                                <option value="punjab" <%= address && address.state === 'punjab' ? 'selected' : '' %>>Punjab</option>
-                                <option value="haryana" <%= address && address.state === 'haryana' ? 'selected' : '' %>>Haryana</option>
-                                <option value="uttar-pradesh" <%= address && address.state === 'uttar-pradesh' ? 'selected' : '' %>>Uttar Pradesh</option>
-                                <option value="bihar" <%= address && address.state === 'bihar' ? 'selected' : '' %>>Bihar</option>
-                                <option value="west-bengal" <%= address && address.state === 'west-bengal' ? 'selected' : '' %>>West Bengal</option>
-                                <option value="delhi" <%= address && address.state === 'delhi' ? 'selected' : '' %>>Delhi</option>
-                                <option value="mumbai" <%= address && address.state === 'mumbai' ? 'selected' : '' %>>Mumbai</option>
                             </select>
+                            <div class="error-message" id="state-error">Please select a state</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="district" class="form-label">District *</label>
+                            <select class="form-select" id="district" name="district" required disabled>
+                                <option value="">Select District</option>
+                            </select>
+                            <div class="error-message" id="district-error">Please select a district</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="city" class="form-label">City *</label>
+                            <input type="text" class="form-control" id="city" name="city" value="<%= address ? address.city : '' %>" required>
+                            <div class="error-message" id="city-error">City is required</div>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="pincode" class="form-label">Pincode *</label>
-                            <input type="text" class="form-control" id="pincode" name="pincode" pattern="[0-9]{6}" maxlength="6" value="<%= address ? address.pincode : '' %>" required>
+                            <input type="text" class="form-control" id="pincode" name="pincode" pattern="[1-9][0-9]{5}" maxlength="6" value="<%= address ? address.pincode : '' %>" required>
+                            <div class="error-message" id="pincode-error">Please enter a valid 6-digit pincode</div>
                         </div>
                         <div class="col-12 mb-3">
                             <label for="landmark" class="form-label">Landmark (Optional)</label>
@@ -159,136 +198,374 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script>
+    <script src="../../js/state-district-data.js"></script>
     
     <script>
+        // Validation fields configuration
+        const validationFields = [
+            {
+                id: "fullName",
+                validate: (value) => {
+                    // Check if starts with whitespace
+                    if (value.startsWith(' ')) return false;
+                    
+                    const trimmed = value.trim();
+                    // Check minimum length
+                    if (trimmed.length < 4) return false;
+                    
+                    // Check if contains only alphabets and whitespaces (no numbers or special characters)
+                    return /^[a-zA-Z\s]+$/.test(trimmed);
+                },
+                errorElement: "fullName-error",
+                getErrorMessage: (value) => {
+                    if (value.length === 0) return "Full name is required";
+                    if (value.startsWith(' ')) return "Full name cannot start with whitespace";
+                    
+                    const trimmed = value.trim();
+                    if (trimmed.length < 4) return "Full name must be at least 4 characters";
+                    if (!/^[a-zA-Z\s]+$/.test(trimmed)) return "Full name can only contain alphabets and spaces";
+                    return "";
+                }
+            },
+            {
+                id: "mobileNumber",
+                validate: (value) => /^[6-9]\d{9}$/.test(value.trim()),
+                errorElement: "mobileNumber-error",
+                getErrorMessage: (value) => {
+                    const trimmed = value.trim();
+                    if (trimmed.length === 0) return "Mobile number is required";
+                    if (!/^[6-9]/.test(trimmed)) return "Mobile number must start with 6, 7, 8, or 9";
+                    if (trimmed.length !== 10) return "Mobile number must be exactly 10 digits";
+                    if (!/^\d+$/.test(trimmed)) return "Mobile number can only contain digits";
+                    return "Please enter a valid 10-digit mobile number";
+                }
+            },
+            {
+                id: "altPhone",
+                validate: (value) => {
+                    if (!value || value.trim() === '') return true; // Optional field
+                    return /^[6-9]\d{9}$/.test(value.trim());
+                },
+                errorElement: "altPhone-error",
+                getErrorMessage: (value) => {
+                    const trimmed = value.trim();
+                    if (trimmed.length === 0) return ""; // Optional field
+                    if (!/^[6-9]/.test(trimmed)) return "Alternative phone must start with 6, 7, 8, or 9";
+                    if (trimmed.length !== 10) return "Alternative phone must be exactly 10 digits";
+                    if (!/^\d+$/.test(trimmed)) return "Alternative phone can only contain digits";
+                    return "Please enter a valid 10-digit alternative phone number";
+                }
+            },
+            {
+                id: "addressDetails",
+                validate: (value) => value.trim().length >= 10,
+                errorElement: "addressDetails-error",
+                getErrorMessage: (value) => {
+                    if (value.trim().length === 0) return "Address details are required";
+                    if (value.trim().length < 10) return "Address details must be at least 10 characters";
+                    return "";
+                }
+            },
+            {
+                id: "state",
+                validate: (value) => value.trim() !== '',
+                errorElement: "state-error",
+                getErrorMessage: (value) => {
+                    if (value.trim() === '') return "Please select a state";
+                    return "";
+                }
+            },
+            {
+                id: "district",
+                validate: (value) => value.trim() !== '',
+                errorElement: "district-error",
+                getErrorMessage: (value) => {
+                    if (value.trim() === '') return "Please select a district";
+                    return "";
+                }
+            },
+            {
+                id: "city",
+                validate: (value) => {
+                    const trimmed = value.trim();
+                    if (trimmed.length < 2) return false;
+                    return /^[a-zA-Z\s]+$/.test(trimmed);
+                },
+                errorElement: "city-error",
+                getErrorMessage: (value) => {
+                    const trimmed = value.trim();
+                    if (trimmed.length === 0) return "City is required";
+                    if (trimmed.length < 2) return "City must be at least 2 characters";
+                    if (!/^[a-zA-Z\s]+$/.test(trimmed)) return "City can only contain alphabets and spaces";
+                    return "";
+                }
+            },
+            {
+                id: "pincode",
+                validate: (value) => {
+                    const trimmed = value.trim();
+                    // Must be exactly 6 digits and not start with 0
+                    return /^[1-9]\d{5}$/.test(trimmed);
+                },
+                errorElement: "pincode-error",
+                getErrorMessage: (value) => {
+                    const trimmed = value.trim();
+                    if (trimmed.length === 0) return "Pincode is required";
+                    if (!/^\d+$/.test(trimmed)) return "Pincode can only contain numbers";
+                    if (trimmed.length !== 6) return "Pincode must be exactly 6 digits";
+                    if (trimmed.startsWith('0')) return "Pincode cannot start with 0";
+                    return "Please enter a valid 6-digit pincode";
+                }
+            }
+        ];
+
+        // Initialize state and district dropdowns
+        function initializeStateDistrict() {
+            const stateSelect = document.getElementById('state');
+            const districtSelect = document.getElementById('district');
+            
+            // Populate states
+            Object.keys(stateDistrictData).forEach(stateKey => {
+                const option = document.createElement('option');
+                option.value = stateKey;
+                option.textContent = stateDistrictData[stateKey].name;
+                stateSelect.appendChild(option);
+            });
+
+            // Set existing values if editing
+            const existingState = '<%= address ? address.state : "" %>';
+            const existingDistrict = '<%= address ? address.landMark : "" %>'; // Note: This seems to be wrong in original, should be district field
+            
+            if (existingState) {
+                stateSelect.value = existingState;
+                updateDistricts(existingState, existingDistrict);
+            }
+        }
+
+        // Update districts based on selected state
+        function updateDistricts(selectedState, selectedDistrict = '') {
+            const districtSelect = document.getElementById('district');
+            
+            // Clear existing options
+            districtSelect.innerHTML = '<option value="">Select District</option>';
+            
+            if (selectedState && stateDistrictData[selectedState]) {
+                districtSelect.disabled = false;
+                
+                // Populate districts
+                stateDistrictData[selectedState].districts.forEach(district => {
+                    const option = document.createElement('option');
+                    option.value = district.toLowerCase().replace(/\s+/g, '-');
+                    option.textContent = district;
+                    districtSelect.appendChild(option);
+                });
+                
+                // Set selected district if provided
+                if (selectedDistrict) {
+                    districtSelect.value = selectedDistrict;
+                }
+            } else {
+                districtSelect.disabled = true;
+            }
+        }
+
+        // State change handler
+        document.getElementById('state').addEventListener('change', function() {
+            const selectedState = this.value;
+            updateDistricts(selectedState);
+            
+            // Clear district validation error when state changes
+            const districtField = validationFields.find(f => f.id === 'district');
+            if (districtField) {
+                clearFieldError('district');
+            }
+        });
+
+        // Validation function for individual fields
+        function validateField(field) {
+            const input = document.getElementById(field.id);
+            const errorElement = document.getElementById(field.errorElement);
+            const isValid = field.validate(input.value);
+
+            if (isValid) {
+                input.classList.remove("is-invalid");
+                input.classList.add("is-valid");
+                errorElement.style.display = "none";
+            } else {
+                input.classList.add("is-invalid");
+                input.classList.remove("is-valid");
+                if (field.getErrorMessage) {
+                    errorElement.textContent = field.getErrorMessage(input.value);
+                }
+                errorElement.style.display = "block";
+            }
+
+            return isValid;
+        }
+
+        // Clear field error
+        function clearFieldError(fieldId) {
+            const input = document.getElementById(fieldId);
+            const errorElement = document.getElementById(fieldId + '-error');
+            
+            if (input && errorElement) {
+                input.classList.remove("is-invalid", "is-valid");
+                errorElement.style.display = "none";
+            }
+        }
+
+        // Real-time validation on input
+        validationFields.forEach(field => {
+            const input = document.getElementById(field.id);
+            if (input) {
+                input.addEventListener("input", () => {
+                    // Clear error state when user starts typing
+                    clearFieldError(field.id);
+                    
+                    // Run validation after a short delay
+                    setTimeout(() => {
+                        validateField(field);
+                    }, 300);
+                });
+
+                input.addEventListener("blur", () => {
+                    validateField(field);
+                });
+            }
+        });
+
+        // Input formatting
+        document.getElementById('mobileNumber').addEventListener('input', function(e) {
+            // Remove non-digits and limit to 10 characters
+            this.value = this.value.replace(/\D/g, '').substring(0, 10);
+        });
+
+        document.getElementById('altPhone').addEventListener('input', function(e) {
+            // Remove non-digits and limit to 10 characters
+            this.value = this.value.replace(/\D/g, '').substring(0, 10);
+        });
+
+        document.getElementById('pincode').addEventListener('input', function(e) {
+            // Remove non-digits and limit to 6 characters
+            this.value = this.value.replace(/\D/g, '').substring(0, 6);
+        });
+
+        document.getElementById('fullName').addEventListener('input', function(e) {
+            // Remove numbers and special characters, allow only letters and spaces
+            this.value = this.value.replace(/[^a-zA-Z\s]/g, '');
+        });
+
+        document.getElementById('city').addEventListener('input', function(e) {
+            // Remove numbers and special characters, allow only letters and spaces
+            this.value = this.value.replace(/[^a-zA-Z\s]/g, '');
+        });
+
         // Form submission handler
         document.getElementById('addressForm').addEventListener('submit', function(e) {
             e.preventDefault();
+
+            let isFormValid = true;
+            let firstInvalidField = null;
+
+            // Validate all fields
+            validationFields.forEach(field => {
+                if (!validateField(field)) {
+                    isFormValid = false;
+                    if (!firstInvalidField) {
+                        firstInvalidField = field;
+                    }
+                }
+            });
+
+            if (!isFormValid) {
+                // Focus on the first invalid field
+                if (firstInvalidField) {
+                    document.getElementById(firstInvalidField.id).focus();
+                }
+                return;
+            }
 
             // Get form data
             const formData = new FormData(this);
             const makeDefaultCheckbox = document.getElementById('makeDefault');
             const addressData = {
-                fullName: formData.get('fullName'),
-                mobileNumber: formData.get('mobileNumber'),
-                addressDetails: formData.get('addressDetails'),
-                district: formData.get('district'),
-                city: formData.get('city'),
+                fullName: formData.get('fullName').trim(),
+                mobileNumber: formData.get('mobileNumber').trim(),
+                altPhone: formData.get('altPhone') ? formData.get('altPhone').trim() : '',
+                addressDetails: formData.get('addressDetails').trim(),
                 state: formData.get('state'),
-                pincode: formData.get('pincode'),
-                landmark: formData.get('landmark'),
+                district: formData.get('district'),
+                city: formData.get('city').trim(),
+                pincode: formData.get('pincode').trim(),
+                landmark: formData.get('landmark') ? formData.get('landmark').trim() : '',
                 addressType: formData.get('addressType'),
-                altPhone: formData.get('altPhone') || '',
                 makeDefault: makeDefaultCheckbox ? makeDefaultCheckbox.checked : false
             };
 
-            // Validate form
-            if (validateForm(addressData)) {
-                const isEdit = <%= isEdit ? 'true' : 'false' %>;
-                const addressId = '<%= address ? address._id : '' %>';
-                const returnTo = '<%= returnTo || '' %>';
+            const isEdit = <%= isEdit ? 'true' : 'false' %>;
+            const addressId = '<%= address ? address._id : '' %>';
+            const returnTo = '<%= returnTo || '' %>';
 
-                let url = isEdit ? `/address/${addressId}` : '/address';
-                if (returnTo) {
-                    url += `?returnTo=${returnTo}`;
+            let url = isEdit ? `/address/${addressId}` : '/address';
+            if (returnTo) {
+                url += `?returnTo=${returnTo}`;
+            }
+            const method = isEdit ? 'PUT' : 'POST';
+
+            fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(addressData)
+            })
+            .then(response => {
+                // If redirected (status 302), follow the redirect
+                if (response.redirected) {
+                    window.location.href = response.url;
+                    return;
                 }
-                const method = isEdit ? 'PUT' : 'POST';
-
-                fetch(url, {
-                    method: method,
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(addressData)
-                })
-                .then(response => {
-                    // If redirected (status 302), follow the redirect
-                    if (response.redirected) {
-                        window.location.href = response.url;
-                        return;
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data && data.success) {
-                        Swal.fire({
-                            title: 'Success!',
-                            text: data.message,
-                            icon: 'success',
-                            confirmButtonColor: '#000000'
-                        }).then(() => {
+                return response.json();
+            })
+            .then(data => {
+                if (data && data.success) {
+                    Swal.fire({
+                        title: 'Success!',
+                        text: data.message,
+                        icon: 'success',
+                        confirmButtonColor: '#000000'
+                    }).then(() => {
+                        if (returnTo) {
+                            window.location.href = `/${returnTo}`;
+                        } else {
                             window.location.href = '/address';
-                        });
-                    } else if (data) {
-                        Swal.fire({
-                            title: 'Error!',
-                            text: data.message,
-                            icon: 'error',
-                            confirmButtonColor: '#000000'
-                        });
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
+                        }
+                    });
+                } else if (data) {
                     Swal.fire({
                         title: 'Error!',
-                        text: 'An error occurred while saving the address',
+                        text: data.message,
                         icon: 'error',
                         confirmButtonColor: '#000000'
                     });
-                });
-            }
-        });
-
-        function validateForm(data) {
-            const requiredFields = ['fullName', 'mobileNumber', 'addressDetails', 'district', 'city', 'state', 'pincode'];
-            
-            for (let field of requiredFields) {
-                if (!data[field] || data[field].trim() === '') {
-                    showAlert(`Please fill in the ${field.replace(/([A-Z])/g, ' $1').toLowerCase()} field`, 'error');
-                    return false;
                 }
-            }
-
-            // Validate mobile number
-            const mobileRegex = /^[6-9]\d{9}$/;
-            if (!mobileRegex.test(data.mobileNumber)) {
-                showAlert('Please enter a valid 10-digit mobile number', 'error');
-                return false;
-            }
-
-            // Validate pincode
-            const pincodeRegex = /^\d{6}$/;
-            if (!pincodeRegex.test(data.pincode)) {
-                showAlert('Please enter a valid 6-digit pincode', 'error');
-                return false;
-            }
-
-            return true;
-        }
-
-        function showAlert(message, type) {
-            const iconType = type === 'error' ? 'error' : type === 'success' ? 'success' : 'info';
-            Swal.fire({
-                title: type === 'error' ? 'Error!' : type === 'success' ? 'Success!' : 'Info',
-                text: message,
-                icon: iconType,
-                confirmButtonColor: '#000000'
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'An error occurred while saving the address',
+                    icon: 'error',
+                    confirmButtonColor: '#000000'
+                });
             });
-        }
-
-        // Auto-format pincode input
-        document.getElementById('pincode').addEventListener('input', function(e) {
-            this.value = this.value.replace(/\D/g, '').substring(0, 6);
         });
 
-        // Auto-format mobile number
-        document.getElementById('mobileNumber').addEventListener('input', function(e) {
-            this.value = this.value.replace(/\D/g, '').substring(0, 10);
-        });
-
-        // Add smooth animations on page load
+        // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {
+            initializeStateDistrict();
+            
+            // Add smooth animations
             const sections = document.querySelectorAll('.form-section');
             sections.forEach((section, index) => {
                 section.style.animationDelay = `${index * 0.1}s`;
@@ -305,7 +582,9 @@
             
             input.addEventListener('blur', function() {
                 this.style.transform = 'translateY(0)';
-                this.style.boxShadow = '';
+                if (!this.classList.contains('is-invalid') && !this.classList.contains('is-valid')) {
+                    this.style.boxShadow = '';
+                }
             });
         });
     </script>

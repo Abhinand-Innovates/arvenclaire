@@ -21,12 +21,16 @@ const loadCouponPage = async (req, res) => {
 
     // Get user-specific coupons and global active coupons
     const userCoupons = await UserCoupon.find({ userId: userId })
-      .populate('couponId')
+      .populate({
+        path: 'couponId',
+        match: { isDeleted: false }
+      })
       .lean();
 
     // Get global active coupons (admin-created coupons available to all users)
     const globalCoupons = await Coupon.find({ 
       isActive: true,
+      isDeleted: false,
       usageLimit: { $gt: 1 } // Global coupons typically have usage limit > 1
     }).lean();
 

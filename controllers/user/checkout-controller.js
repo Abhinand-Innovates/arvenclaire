@@ -184,6 +184,7 @@ const loadCheckout = async (req, res) => {
       path: 'couponId',
       match: { 
         isActive: true, 
+        isDeleted: false,
         expiry: { $gte: new Date() } 
       }
     });
@@ -191,6 +192,7 @@ const loadCheckout = async (req, res) => {
     // Get global coupons (admin-created coupons with usage limit > 1, available to all users)
     const globalCoupons = await Coupon.find({ 
       isActive: true, 
+      isDeleted: false,
       expiry: { $gte: new Date() },
       usageLimit: { $gt: 1 } // Global coupons typically have usage limit > 1
     });
@@ -1000,6 +1002,7 @@ const applyCoupon = async (req, res) => {
     const coupon = await Coupon.findOne({ 
       code: couponCode.toUpperCase(), 
       isActive: true, 
+      isDeleted: false,
       expiry: { $gte: today },
       startDate: { $lte: endOfToday }
     });

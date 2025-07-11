@@ -10,6 +10,7 @@ const Wallet = require('../../models/wallet-schema');
 const Review = require("../../models/review-schema");
 const { createWelcomeCoupon, createReferralRewardCoupon } = require("../../utils/createUserCoupons");
 const { getProductsWithBestOffers } = require("../../utils/offer-utils");
+const { validateSignupForm } = require("../../validator/signupValidator");
 
 const loadLanding = async (req, res) => {
   try {
@@ -71,40 +72,37 @@ const signup = async (req, res) => {
   try {
     const { fullname, phone, email, password, referralCode } = req.body;
 
-    if (!fullname || fullname.length < 4) {
-      return res.status(400).json({ success: false, message: "Full name must be at least 4 characters" });
+    // Validate form data using the validator
+    const validation = validateSignupForm({ fullname, email, password, phone });
+    
+    if (!validation.isValid) {
+      // Return the first validation error
+      const firstError = validation.errors[0];
+      return res.status(400).json({
+        success: false,
+        message: firstError.message,
+        field: firstError.field
+      });
     }
 
-    if (/\d/.test(fullname)) {
-      return res.status(400).json({ success: false, message: "Full name should not contain numbers" });
-    }
+    // Use validated and trimmed data
+    const { fullname: validatedFullname, email: validatedEmail, phone: validatedPhone } = validation.validatedData;
 
-    const emailRegex = /^\S+@\S+\.\S+$/;
-    if (!email || !emailRegex.test(email)) {
-      return res.status(400).json({ success: false, message: "Please enter a valid email" });
-    }
-
-    if (!password || password.length < 8) {
-      return res.status(400).json({ success: false, message: "Password must be at least 8 characters" });
-    }
-
-    if (phone && !/^[6-9]\d{9}$/.test(phone)) {
-      return res.status(400).json({ success: false, message: "Phone number must be 10 digits and start with 6, 7, 8, or 9" });
-    }
-
-    const existingUser = await User.findOne({ email });
+    // Check if user already exists
+    const existingUser = await User.findOne({ email: validatedEmail });
     if (existingUser) {
       return res.status(403).json({
         success: false,
         message: "User already exists",
+        field: "email"
       });
     }
 
+    // Generate OTP and send email
     const otp = generateOtp();
     console.log("otp is:", otp);
 
-    const isSendMail = await sendEmail(email, otp);
-
+    const isSendMail = await sendEmail(validatedEmail, otp);
     if (!isSendMail) {
       return res.json({
         success: false,
@@ -112,8 +110,10 @@ const signup = async (req, res) => {
       });
     }
 
+    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
     
+    // Generate unique referral code
     let userReferralCode;
     let isReferralCodeUnique = false;
     
@@ -125,10 +125,11 @@ const signup = async (req, res) => {
       }
     }
     
+    // Store validated data in session
     req.session.userData = { 
-      fullname, 
-      phone, 
-      email, 
+      fullname: validatedFullname, 
+      phone: validatedPhone, 
+      email: validatedEmail, 
       password: hashedPassword, 
       referralCode: userReferralCode,
       referredByCode: referralCode || null 
@@ -150,8 +151,11 @@ const signup = async (req, res) => {
       });
     });
   } catch (error) {
-    console.error("Error in loading signup page", error);
-    res.status(500).send("Internal server error");
+    console.error("Error in signup:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error"
+    });
   }
 };
 

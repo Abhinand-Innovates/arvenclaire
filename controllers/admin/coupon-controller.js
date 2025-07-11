@@ -5,7 +5,8 @@ const Category = require('../../models/category-schema');
 
 const getCouponsPage = async (req, res) => {
     try {
-        const coupons = await Coupon.find({});
+        // Only fetch non-deleted coupons
+        const coupons = await Coupon.find({ isDeleted: false });
         res.render('coupons', { coupons });
     } catch (error) {
         console.error('Error fetching coupons:', error);
@@ -456,15 +457,18 @@ const deleteCoupon = async (req, res) => {
             });
         }
 
-        // Check if coupon has been used
-        if (coupon.usedCount > 0) {
+        // Check if coupon is already deleted
+        if (coupon.isDeleted) {
             return res.status(400).json({
                 success: false,
-                message: 'Cannot delete coupon that has been used'
+                message: 'Coupon is already deleted'
             });
         }
 
-        await Coupon.findByIdAndDelete(couponId);
+        // Perform soft delete - no conditions checked as per requirement
+        coupon.isDeleted = true;
+        coupon.deletedAt = new Date();
+        await coupon.save();
 
         res.json({
             success: true,

@@ -89,28 +89,76 @@ const saveAddress = async (req, res) => {
     } = req.body;
 
     // Validate required fields
-    if (!fullName || !mobileNumber || !addressDetails || !city || !state || !pincode || !addressType) {
+    if (!fullName || !mobileNumber || !addressDetails || !district || !city || !state || !pincode || !addressType) {
       return res.status(400).json({
         success: false,
         message: 'Please fill in all required fields'
       });
     }
 
-    // Validate mobile number
-    const mobileRegex = /^[6-9]\d{9}$/;
-    if (!mobileRegex.test(mobileNumber)) {
+    // Validate full name (same as signup form)
+    const trimmedFullName = fullName.trim();
+    if (trimmedFullName.length < 4) {
       return res.status(400).json({
         success: false,
-        message: 'Please enter a valid 10-digit mobile number'
+        message: 'Full name must be at least 4 characters long'
+      });
+    }
+    if (!/^[a-zA-Z\s]+$/.test(trimmedFullName)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Full name can only contain alphabets and spaces'
       });
     }
 
-    // Validate pincode
-    const pincodeRegex = /^\d{6}$/;
-    if (!pincodeRegex.test(pincode)) {
+    // Validate mobile number (same as signup form)
+    const mobileRegex = /^[6-9]\d{9}$/;
+    if (!mobileRegex.test(mobileNumber.trim())) {
       return res.status(400).json({
         success: false,
-        message: 'Please enter a valid 6-digit pincode'
+        message: 'Mobile number must be 10 digits and start with 6, 7, 8, or 9'
+      });
+    }
+
+    // Validate alternative phone if provided
+    if (altPhone && altPhone.trim()) {
+      if (!mobileRegex.test(altPhone.trim())) {
+        return res.status(400).json({
+          success: false,
+          message: 'Alternative phone must be 10 digits and start with 6, 7, 8, or 9'
+        });
+      }
+    }
+
+    // Validate address details
+    if (addressDetails.trim().length < 10) {
+      return res.status(400).json({
+        success: false,
+        message: 'Address details must be at least 10 characters long'
+      });
+    }
+
+    // Validate city
+    const trimmedCity = city.trim();
+    if (trimmedCity.length < 2) {
+      return res.status(400).json({
+        success: false,
+        message: 'City must be at least 2 characters long'
+      });
+    }
+    if (!/^[a-zA-Z\s]+$/.test(trimmedCity)) {
+      return res.status(400).json({
+        success: false,
+        message: 'City can only contain alphabets and spaces'
+      });
+    }
+
+    // Validate pincode (6 digits, cannot start with 0)
+    const pincodeRegex = /^[1-9]\d{5}$/;
+    if (!pincodeRegex.test(pincode.trim())) {
+      return res.status(400).json({
+        success: false,
+        message: 'Pincode must be exactly 6 digits and cannot start with 0'
       });
     }
 
@@ -128,13 +176,13 @@ const saveAddress = async (req, res) => {
 
     const newAddress = {
       addressType,
-      name: fullName,
-      city,
-      landMark: landmark || district,
+      name: trimmedFullName,
+      city: trimmedCity,
+      landMark: addressDetails.trim(),
       state,
-      pincode: parseInt(pincode),
-      phone: mobileNumber,
-      altPhone: altPhone || null,
+      pincode: parseInt(pincode.trim()),
+      phone: mobileNumber.trim(),
+      altPhone: altPhone && altPhone.trim() ? altPhone.trim() : null,
       isDefault: makeDefault === 'true' || makeDefault === true || false
     };
 
@@ -198,28 +246,76 @@ const updateAddress = async (req, res) => {
     } = req.body;
 
     // Validate required fields
-    if (!fullName || !mobileNumber || !addressDetails || !city || !state || !pincode || !addressType) {
+    if (!fullName || !mobileNumber || !addressDetails || !district || !city || !state || !pincode || !addressType) {
       return res.status(400).json({
         success: false,
         message: 'Please fill in all required fields'
       });
     }
 
-    // Validate mobile number
-    const mobileRegex = /^[6-9]\d{9}$/;
-    if (!mobileRegex.test(mobileNumber)) {
+    // Validate full name (same as signup form)
+    const trimmedFullName = fullName.trim();
+    if (trimmedFullName.length < 4) {
       return res.status(400).json({
         success: false,
-        message: 'Please enter a valid 10-digit mobile number'
+        message: 'Full name must be at least 4 characters long'
+      });
+    }
+    if (!/^[a-zA-Z\s]+$/.test(trimmedFullName)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Full name can only contain alphabets and spaces'
       });
     }
 
-    // Validate pincode
-    const pincodeRegex = /^\d{6}$/;
-    if (!pincodeRegex.test(pincode)) {
+    // Validate mobile number (same as signup form)
+    const mobileRegex = /^[6-9]\d{9}$/;
+    if (!mobileRegex.test(mobileNumber.trim())) {
       return res.status(400).json({
         success: false,
-        message: 'Please enter a valid 6-digit pincode'
+        message: 'Mobile number must be 10 digits and start with 6, 7, 8, or 9'
+      });
+    }
+
+    // Validate alternative phone if provided
+    if (altPhone && altPhone.trim()) {
+      if (!mobileRegex.test(altPhone.trim())) {
+        return res.status(400).json({
+          success: false,
+          message: 'Alternative phone must be 10 digits and start with 6, 7, 8, or 9'
+        });
+      }
+    }
+
+    // Validate address details
+    if (addressDetails.trim().length < 10) {
+      return res.status(400).json({
+        success: false,
+        message: 'Address details must be at least 10 characters long'
+      });
+    }
+
+    // Validate city
+    const trimmedCity = city.trim();
+    if (trimmedCity.length < 2) {
+      return res.status(400).json({
+        success: false,
+        message: 'City must be at least 2 characters long'
+      });
+    }
+    if (!/^[a-zA-Z\s]+$/.test(trimmedCity)) {
+      return res.status(400).json({
+        success: false,
+        message: 'City can only contain alphabets and spaces'
+      });
+    }
+
+    // Validate pincode (6 digits, cannot start with 0)
+    const pincodeRegex = /^[1-9]\d{5}$/;
+    if (!pincodeRegex.test(pincode.trim())) {
+      return res.status(400).json({
+        success: false,
+        message: 'Pincode must be exactly 6 digits and cannot start with 0'
       });
     }
 
@@ -250,13 +346,13 @@ const updateAddress = async (req, res) => {
 
     // Update address fields
     address.addressType = addressType;
-    address.name = fullName;
-    address.city = city;
-    address.landMark = landmark || district;
+    address.name = trimmedFullName;
+    address.city = trimmedCity;
+    address.landMark = addressDetails.trim();
     address.state = state;
-    address.pincode = parseInt(pincode);
-    address.phone = mobileNumber;
-    address.altPhone = altPhone || null;
+    address.pincode = parseInt(pincode.trim());
+    address.phone = mobileNumber.trim();
+    address.altPhone = altPhone && altPhone.trim() ? altPhone.trim() : null;
     address.isDefault = makeDefault === 'true' || makeDefault === true || false;
 
     await addressDoc.save();

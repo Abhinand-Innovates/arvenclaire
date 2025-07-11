@@ -177,15 +177,24 @@
       {
         id: "fullname",
         validate: (value) => {
+          // Check if starts with whitespace
+          if (value.startsWith(' ')) return false;
+          
           const trimmed = value.trim();
-          return trimmed.length >= 4 && !/\d/.test(trimmed);
+          // Check minimum length
+          if (trimmed.length < 4) return false;
+          
+          // Check if contains only alphabets and whitespaces (no numbers or special characters)
+          return /^[a-zA-Z\s]+$/.test(trimmed);
         },
         errorElement: "fullname-error",
         getErrorMessage: (value) => {
+          if (value.length === 0) return "Full name is required";
+          if (value.startsWith(' ')) return "Full name cannot start with whitespace";
+          
           const trimmed = value.trim();
-          if (trimmed.length === 0) return "Full name is required";
           if (trimmed.length < 4) return "Full name must be at least 4 characters";
-          if (/\d/.test(trimmed)) return "Full name should not contain numbers";
+          if (!/^[a-zA-Z\s]+$/.test(trimmed)) return "Full name can only contain alphabets and spaces";
           return "";
         }
       },
@@ -201,12 +210,55 @@
       },
       {
         id: "email",
-        validate: (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim()),
+        validate: (value) => {
+          const trimmed = value.trim();
+          
+          // Check if email contains whitespace
+          if (/\s/.test(trimmed)) return false;
+          
+          // Check if email contains only lowercase letters (no uppercase allowed)
+          if (/[A-Z]/.test(trimmed)) return false;
+          
+          // Check basic email structure
+          if (!trimmed.includes('@') || trimmed.split('@').length !== 2) return false;
+          
+          const [localPart, domainPart] = trimmed.split('@');
+          
+          // Validate local part (before @): only lowercase alphabets and numbers
+          if (!/^[a-z0-9]+$/.test(localPart)) return false;
+          
+          // Validate domain part (after @): only lowercase alphabets and dots
+          if (!/^[a-z.]+$/.test(domainPart)) return false;
+          
+          // Check if domain has at least one dot and proper structure
+          if (!domainPart.includes('.') || domainPart.startsWith('.') || domainPart.endsWith('.')) return false;
+          
+          // Check if domain parts are valid (only lowercase alphabets between dots)
+          const domainParts = domainPart.split('.');
+          for (const part of domainParts) {
+            if (!/^[a-z]+$/.test(part)) return false;
+          }
+          
+          return true;
+        },
         errorElement: "email-error",
         getErrorMessage: (value) => {
           const trimmed = value.trim();
           if (trimmed.length === 0) return "Email is required";
-          return "Please enter a valid email";
+          if (/\s/.test(trimmed)) return "Email cannot contain whitespaces";
+          if (/[A-Z]/.test(trimmed)) return "Email must contain only lowercase letters";
+          if (!trimmed.includes('@')) return "Email must contain @ symbol";
+          
+          const [localPart, domainPart] = trimmed.split('@');
+          
+          if (!localPart) return "Email must have content before @ symbol";
+          if (!/^[a-z0-9]+$/.test(localPart)) return "Before @ symbol: only lowercase letters and numbers allowed";
+          
+          if (!domainPart) return "Email must have content after @ symbol";
+          if (!/^[a-z.]+$/.test(domainPart)) return "After @ symbol: only lowercase letters and dots allowed";
+          if (!domainPart.includes('.')) return "Domain must contain at least one dot";
+          
+          return "Please enter a valid email address with lowercase letters only";
         }
       },
       {
