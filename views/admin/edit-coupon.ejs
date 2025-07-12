@@ -177,6 +177,7 @@
             $('#applicableCategories').select2();
             setupFieldValidation();
             updatePreview();
+            toggleMaxDiscountVisibility(); // Initialize visibility on page load
         });
 
         document.getElementById('generateCode').addEventListener('click', () => {
@@ -208,7 +209,10 @@
             // Discount Type validation
             const discountType = document.getElementById('discountType');
             if (discountType) {
-                discountType.addEventListener('change', validateDiscountType);
+                discountType.addEventListener('change', function() {
+                    validateDiscountType();
+                    toggleMaxDiscountVisibility(); // Toggle visibility when discount type changes
+                });
                 discountType.addEventListener('blur', validateDiscountType);
             }
 
@@ -544,6 +548,28 @@
             return true;
         }
 
+        // Function to toggle Maximum Discount field visibility based on Discount Type
+        function toggleMaxDiscountVisibility() {
+            const discountType = document.getElementById('discountType').value;
+            const maxDiscountGroup = document.getElementById('maxDiscount').closest('.form-group');
+            
+            if (discountType === 'flat') {
+                // Hide Maximum Discount field for Flat discount type
+                maxDiscountGroup.style.display = 'none';
+                // Remove required validation for hidden field
+                document.getElementById('maxDiscount').removeAttribute('required');
+            } else if (discountType === 'percentage') {
+                // Show Maximum Discount field for Percentage discount type
+                maxDiscountGroup.style.display = 'block';
+                // Add required validation for visible field
+                document.getElementById('maxDiscount').setAttribute('required', 'required');
+            } else {
+                // Default behavior - hide when no discount type is selected
+                maxDiscountGroup.style.display = 'none';
+                document.getElementById('maxDiscount').removeAttribute('required');
+            }
+        }
+
         // Helper functions for showing/hiding field errors
         function showFieldError(fieldGroup, errorElement, message) {
             fieldGroup.classList.add('error');
@@ -615,6 +641,17 @@
                             Swal.showLoading();
                         }
                     });
+                    
+                    // For flat discount type, ensure maxDiscount field is not required
+                    const discountType = document.getElementById('discountType').value;
+                    const maxDiscountField = document.getElementById('maxDiscount');
+                    
+                    if (discountType === 'flat') {
+                        maxDiscountField.removeAttribute('required');
+                        // Set maxDiscount to the same value as discount for flat type
+                        const discountValue = document.getElementById('discount').value;
+                        maxDiscountField.value = discountValue;
+                    }
                     
                     // Submit the form
                     this.submit();

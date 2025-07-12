@@ -86,7 +86,7 @@ adminRoute.get("/coupons", isAdminAuthenticated, preventCache, couponController.
 adminRoute.get("/add-coupon", isAdminAuthenticated, preventCache, couponController.getAddCouponPage);
 adminRoute.post("/add-coupon", isAdminAuthenticated, preventCache, couponController.addCoupon);
 adminRoute.get("/edit-coupon/:id", isAdminAuthenticated, preventCache, couponController.getEditCouponPage);
-adminRoute.put("/edit-coupon/:id", isAdminAuthenticated, preventCache, couponController.updateCoupon);
+adminRoute.post("/edit-coupon/:id", isAdminAuthenticated, preventCache, couponController.updateCoupon);
 adminRoute.patch("/coupon/:id/status", isAdminAuthenticated, preventCache, couponController.toggleCouponStatus);
 adminRoute.delete("/delete-coupon/:id", isAdminAuthenticated, preventCache, couponController.deleteCoupon);
 

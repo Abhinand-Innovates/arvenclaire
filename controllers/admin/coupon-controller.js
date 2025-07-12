@@ -79,7 +79,8 @@ const addCoupon = async (req, res) => {
         if (!minPurchase || minPurchase === '') {
             errors.minPurchase = 'Minimum purchase amount is required';
         }
-        if (!maxDiscount || maxDiscount === '') {
+        // Only validate maxDiscount for percentage discount type
+        if (discountType === 'percentage' && (!maxDiscount || maxDiscount === '')) {
             errors.maxDiscount = 'Maximum discount amount is required';
         }
         if (!startDate) {
@@ -178,7 +179,7 @@ const addCoupon = async (req, res) => {
             discountType,
             discount: parseFloat(discount),
             minPurchase: parseFloat(minPurchase),
-            maxDiscount: parseFloat(maxDiscount),
+            maxDiscount: discountType === 'percentage' ? parseFloat(maxDiscount) : parseFloat(discount), // For flat discount, maxDiscount equals discount value
             startDate: new Date(startDate),
             expiry: new Date(expiry),
             usageLimit: parseInt(usageLimit),
@@ -286,7 +287,8 @@ const updateCoupon = async (req, res) => {
         if (!minPurchase || minPurchase === '') {
             errors.minPurchase = 'Minimum purchase amount is required';
         }
-        if (!maxDiscount || maxDiscount === '') {
+        // Only validate maxDiscount for percentage discount type
+        if (discountType === 'percentage' && (!maxDiscount || maxDiscount === '')) {
             errors.maxDiscount = 'Maximum discount amount is required';
         }
         if (!startDate) {
@@ -390,7 +392,7 @@ const updateCoupon = async (req, res) => {
             discountType,
             discount: parseFloat(discount),
             minPurchase: parseFloat(minPurchase),
-            maxDiscount: parseFloat(maxDiscount),
+            maxDiscount: discountType === 'percentage' ? parseFloat(maxDiscount) : parseFloat(discount),
             startDate: new Date(startDate),
             expiry: new Date(expiry),
             usageLimit: parseInt(usageLimit),

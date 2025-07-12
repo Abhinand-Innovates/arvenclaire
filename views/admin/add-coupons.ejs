@@ -764,6 +764,17 @@
                         }
                     });
                     
+                    // For flat discount type, ensure maxDiscount field is not required
+                    const discountType = document.getElementById('discountType').value;
+                    const maxDiscountField = document.getElementById('maxDiscount');
+                    
+                    if (discountType === 'flat') {
+                        maxDiscountField.removeAttribute('required');
+                        // Set maxDiscount to the same value as discount for flat type
+                        const discountValue = document.getElementById('discount').value;
+                        maxDiscountField.value = discountValue;
+                    }
+                    
                     // Submit the form
                     this.submit();
                 }
