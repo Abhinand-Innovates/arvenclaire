@@ -15,7 +15,7 @@ const salesReportController = require("../controllers/admin/sales-report-control
 const ledgerController = require("../controllers/admin/ledger-controller");
 const { isAdminAuthenticated, preventCache, redirectIfAdminAuthenticated } = require('../middleware/auth-middleware');
 
-//Admin Login - with cache prevention for proper session handling and redirect if already authenticated
+
 adminRoute.get("/admin-login", preventCache, redirectIfAdminAuthenticated, adminController.getAdminLogin);
 adminRoute.post("/admin-login", redirectIfAdminAuthenticated, adminController.postAdminLogin);
 

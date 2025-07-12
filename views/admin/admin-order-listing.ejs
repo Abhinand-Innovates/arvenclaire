@@ -68,6 +68,7 @@
                         <option value="Processing" <%= statusFilter === 'Processing' ? 'selected' : '' %>>Processing</option>
                         <option value="Shipped" <%= statusFilter === 'Shipped' ? 'selected' : '' %>>Shipped</option>
                         <option value="Delivered" <%= statusFilter === 'Delivered' ? 'selected' : '' %>>Delivered</option>
+                        <option value="Cancelled" <%= statusFilter === 'Cancelled' ? 'selected' : '' %>>Cancelled</option>
                         <option value="Returned" <%= statusFilter === 'Returned' ? 'selected' : '' %>>Returned</option>
                     </select>
                 </div>
@@ -293,12 +294,7 @@
                             <label for="newStatus" class="form-label">Select New Status</label>
                             <select class="form-select" id="newStatus" required>
                                 <option value="">Choose status...</option>
-                                <option value="Pending">Pending</option>
-                                <option value="Processing">Processing</option>
-                                <option value="Shipped">Shipped</option>
-                                <option value="Delivered">Delivered</option>
-                                <option value="Return Request">Return Request</option>
-                                <option value="Returned">Returned</option>
+                                <!-- Options will be populated dynamically based on current status -->
                             </select>
                         </div>
                     </form>

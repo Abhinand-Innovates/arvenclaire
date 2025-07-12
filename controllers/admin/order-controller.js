@@ -192,7 +192,8 @@ const updateOrderStatus = async (req, res) => {
     const orderId = req.params.id;
     const { status } = req.body;
 
-    const validStatuses = ['Pending', 'Processing', 'Shipped', 'Delivered', 'Return Request', 'Returned'];
+    // Define all valid statuses including 'Cancelled' for admin cancellation
+    const validStatuses = ['Pending', 'Processing', 'Shipped', 'Delivered', 'Return Request', 'Returned', 'Cancelled'];
     
     if (!validStatuses.includes(status)) {
       return res.status(400).json({
@@ -223,18 +224,133 @@ const updateOrderStatus = async (req, res) => {
         message: 'Cannot update status of an order that was cancelled by the customer'
       });
     }
-    
-    // Prevent changing from certain final states
-    const finalStates = ['Delivered', 'Returned'];
-    if (finalStates.includes(order.status) && status !== order.status) {
+
+    // Check if order is already cancelled - no further status changes allowed
+    if (order.status === 'Cancelled') {
       return res.status(403).json({
         success: false,
-        message: `Cannot change status from ${order.status} to ${status}`
+        message: 'Cannot update status of a cancelled order'
       });
+    }
+    
+    // Define the sequential flow
+    const statusFlow = ['Pending', 'Processing', 'Shipped', 'Delivered', 'Return Request', 'Returned'];
+    const currentStatusIndex = statusFlow.indexOf(order.status);
+    const newStatusIndex = statusFlow.indexOf(status);
+
+    // Handle cancellation rules
+    if (status === 'Cancelled') {
+      // Admin can only cancel if status is Pending or Processing
+      if (!['Pending', 'Processing'].includes(order.status)) {
+        return res.status(403).json({
+          success: false,
+          message: 'Orders can only be cancelled when status is Pending or Processing'
+        });
+      }
+    } else {
+      // For non-cancellation status changes, enforce sequential flow
+      
+      // Prevent changing from certain final states
+      const finalStates = ['Delivered', 'Returned', 'Cancelled'];
+      if (finalStates.includes(order.status) && status !== order.status) {
+        return res.status(403).json({
+          success: false,
+          message: `Cannot change status from ${order.status} to ${status}`
+        });
+      }
+
+      // Check if trying to skip statuses (only allow next status in sequence or Return Request from Delivered)
+      if (currentStatusIndex !== -1 && newStatusIndex !== -1) {
+        // Allow Return Request only from Delivered status
+        if (status === 'Return Request' && order.status !== 'Delivered') {
+          return res.status(403).json({
+            success: false,
+            message: 'Return Request can only be initiated from Delivered status'
+          });
+        }
+        
+        // Allow Returned only from Return Request
+        if (status === 'Returned' && order.status !== 'Return Request') {
+          return res.status(403).json({
+            success: false,
+            message: 'Status can only be changed to Returned from Return Request'
+          });
+        }
+        
+        // For normal flow (Pending -> Processing -> Shipped -> Delivered), only allow next status
+        if (status !== 'Return Request' && status !== 'Returned') {
+          if (newStatusIndex !== currentStatusIndex + 1) {
+            return res.status(403).json({
+              success: false,
+              message: 'Status changes must follow the sequential order. Cannot skip statuses.'
+            });
+          }
+        }
+      }
     }
 
     // Update order status
     order.status = status;
+    
+    // Handle cancellation by admin
+    if (status === 'Cancelled') {
+      // Calculate refund amount before cancelling
+      const activeItems = order.orderedItems.filter(item => item.status === 'Active');
+      const returnRequestItems = order.orderedItems.filter(item => item.status === 'Return Request');
+      const includedItems = [...activeItems, ...returnRequestItems];
+      
+      let refundAmount = 0;
+      includedItems.forEach(item => {
+        refundAmount += item.totalPrice;
+      });
+      
+      if (includedItems.length > 0) {
+        refundAmount += order.shippingCharges;
+      }
+      
+      // Subtract coupon discount if applied
+      if (order.couponApplied && order.couponDiscount > 0) {
+        refundAmount -= order.couponDiscount;
+      }
+      
+      // Credit wallet for cancelled order (regardless of payment method)
+      if (refundAmount > 0) {
+        try {
+          const wallet = await Wallet.getOrCreateWallet(order.userId);
+          await wallet.addMoney(
+            refundAmount,
+            `Refund for order cancelled by admin (Order: ${order.orderId})`,
+            order.orderId
+          );
+        } catch (walletError) {
+          console.error('Error adding money to wallet for admin cancelled order:', walletError);
+          // Continue with cancellation even if wallet credit fails
+        }
+      }
+      
+      // Cancel all active items
+      for (const item of order.orderedItems) {
+        if (item.status === 'Active') {
+          item.status = 'Cancelled';
+          item.cancellationReason = 'Order cancelled by admin';
+          item.cancelledAt = new Date();
+          
+          // Restore product stock
+          try {
+            await Product.findByIdAndUpdate(
+              item.product,
+              { $inc: { quantity: item.quantity } }
+            );
+          } catch (stockError) {
+            console.error('Error restoring product stock:', stockError);
+          }
+        }
+      }
+      
+      // Set order amounts to 0
+      order.totalPrice = 0;
+      order.finalAmount = 0;
+    }
     
     // For COD orders, update payment status to "Completed" when delivered
     if (status === 'Delivered' && order.paymentMethod === 'Cash on Delivery' && order.paymentStatus === 'Pending') {
@@ -252,7 +368,9 @@ const updateOrderStatus = async (req, res) => {
     order.orderTimeline.push({
       status: status,
       timestamp: new Date(),
-      description: `Order status updated to ${status} by admin`
+      description: status === 'Cancelled' 
+        ? 'Order cancelled by admin' 
+        : `Order status updated to ${status} by admin`
     });
 
     await order.save();

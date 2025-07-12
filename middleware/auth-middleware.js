@@ -35,6 +35,18 @@ isUserAuthenticated : async (req, res, next) => {
     const userId = req.session.userId || req.session.googleUserId;
 
     if (!userId) {
+      // Check if this is an AJAX/API request
+      if (req.xhr || 
+          req.headers.accept?.indexOf('json') > -1 || 
+          req.headers['content-type']?.indexOf('json') > -1 ||
+          req.path.startsWith('/api/') ||
+          req.path.includes('/checkout/')) {
+        return res.status(401).json({
+          success: false,
+          message: 'Authentication required. Please login.',
+          redirect: '/login'
+        });
+      }
       return res.redirect('/login');
     }
 
@@ -65,9 +77,37 @@ isUserAuthenticated : async (req, res, next) => {
       if (err) console.error('Error saving session after user logout:', err);
     });
     
+    // Check if this is an AJAX/API request
+    if (req.xhr || 
+        req.headers.accept?.indexOf('json') > -1 || 
+        req.headers['content-type']?.indexOf('json') > -1 ||
+        req.path.startsWith('/api/') ||
+        req.path.includes('/checkout/')) {
+      return res.status(401).json({
+        success: false,
+        blocked: true,
+        message: 'Your account has been blocked. Please contact support.',
+        redirect: '/login?blocked=true'
+      });
+    }
+    
     return res.redirect('/login?blocked=true');
   } catch (error) {
     console.error('User Auth Middleware Error:', error);
+    
+    // Check if this is an AJAX/API request
+    if (req.xhr || 
+        req.headers.accept?.indexOf('json') > -1 || 
+        req.headers['content-type']?.indexOf('json') > -1 ||
+        req.path.startsWith('/api/') ||
+        req.path.includes('/checkout/')) {
+      return res.status(500).json({
+        success: false,
+        message: 'Authentication error. Please try again.',
+        redirect: '/login'
+      });
+    }
+    
     return res.status(500).render('error', { message: 'Authentication error' });
   }
 },

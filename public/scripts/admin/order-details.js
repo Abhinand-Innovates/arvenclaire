@@ -1,10 +1,69 @@
 // Update order status
 function updateOrderStatus(orderId, currentStatus) {
     document.getElementById('updateOrderId').value = orderId;
-    document.getElementById('newStatus').value = currentStatus;
+    
+    // Populate status options based on current status and flow restrictions
+    populateStatusOptions(currentStatus);
     
     const modal = new bootstrap.Modal(document.getElementById('statusUpdateModal'));
     modal.show();
+}
+
+// Populate status options based on current status and flow restrictions
+function populateStatusOptions(currentStatus) {
+    const statusSelect = document.getElementById('newStatus');
+    statusSelect.innerHTML = '<option value="">Choose status...</option>';
+    
+    // Define the sequential flow
+    const statusFlow = ['Pending', 'Processing', 'Shipped', 'Delivered', 'Return Request', 'Returned'];
+    const currentIndex = statusFlow.indexOf(currentStatus);
+    
+    let allowedStatuses = [];
+    
+    switch (currentStatus) {
+        case 'Pending':
+            allowedStatuses = ['Processing', 'Cancelled'];
+            break;
+        case 'Processing':
+            allowedStatuses = ['Shipped', 'Cancelled'];
+            break;
+        case 'Shipped':
+            allowedStatuses = ['Delivered'];
+            break;
+        case 'Delivered':
+            allowedStatuses = ['Return Request'];
+            break;
+        case 'Return Request':
+            allowedStatuses = ['Returned'];
+            break;
+        case 'Returned':
+        case 'Cancelled':
+            // Final states - no further changes allowed
+            allowedStatuses = [];
+            break;
+        default:
+            // For any other status, allow next in sequence
+            if (currentIndex !== -1 && currentIndex < statusFlow.length - 1) {
+                allowedStatuses = [statusFlow[currentIndex + 1]];
+            }
+    }
+    
+    // Add options to select
+    allowedStatuses.forEach(status => {
+        const option = document.createElement('option');
+        option.value = status;
+        option.textContent = status;
+        statusSelect.appendChild(option);
+    });
+    
+    // If no allowed statuses, show message
+    if (allowedStatuses.length === 0) {
+        const option = document.createElement('option');
+        option.value = '';
+        option.textContent = 'No status changes allowed';
+        option.disabled = true;
+        statusSelect.appendChild(option);
+    }
 }
 
 // Confirm status update

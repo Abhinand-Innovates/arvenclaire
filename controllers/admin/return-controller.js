@@ -234,6 +234,14 @@ const approveReturnRequest = async (req, res) => {
         });
       }
       
+      // Validate that return can only be approved from 'Return Request' status
+      if (order.status !== 'Return Request') {
+        return res.status(403).json({
+          success: false,
+          message: 'Return can only be approved from Return Request status'
+        });
+      }
+      
       order.status = 'Returned';
       
       // Calculate refund amount using same logic as order details page Total Amount

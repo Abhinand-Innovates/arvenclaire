@@ -37,8 +37,12 @@ const checkUserBlocked = async (req, res, next) => {
         if (err) console.error('Error saving session after user logout:', err);
       });
 
-      // AJAX request handling
-      if (req.xhr || req.headers.accept.indexOf('json') > -1) {
+      // AJAX request handling - check for various indicators of AJAX/API requests
+      if (req.xhr || 
+          req.headers.accept?.indexOf('json') > -1 || 
+          req.headers['content-type']?.indexOf('json') > -1 ||
+          req.path.startsWith('/api/') ||
+          req.path.includes('/checkout/')) {
         return res.status(401).json({
           success: false,
           blocked: true,
