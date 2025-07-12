@@ -140,6 +140,7 @@ const salesReportController = {
             const displayFinalAmount = isEntireCancelled ? 0 : Math.max(0, calculatedFinalAmount);
             
             return {
+                _id: order._id, // MongoDB ObjectId for linking to order details
                 orderId: order.orderId || 'N/A',
                 date: order.createdAt ? order.createdAt.toLocaleDateString('en-GB') : 'N/A',
                 customer: order.userId ? order.userId.fullname : 'Guest',

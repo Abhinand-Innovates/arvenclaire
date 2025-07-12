@@ -267,7 +267,7 @@
                             <% orders.forEach(function(order) { %>
                                 <tr>
                                     <td>
-                                        <a href="/admin/get-orders/<%= order.orderId %>/details" class="order-link">
+                                        <a href="/get-orders/<%= order._id %>/details" class="order-link">
                                             <i class="fas fa-external-link-alt"></i>
                                             <%= order.orderId %>
                                         </a>
