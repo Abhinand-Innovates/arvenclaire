@@ -79,7 +79,8 @@ const addCoupon = async (req, res) => {
         if (!minPurchase || minPurchase === '') {
             errors.minPurchase = 'Minimum purchase amount is required';
         }
-        if (!maxDiscount || maxDiscount === '') {
+        // Only require maxDiscount for percentage discount type
+        if (discountType === 'percentage' && (!maxDiscount || maxDiscount === '')) {
             errors.maxDiscount = 'Maximum discount amount is required';
         }
         if (!startDate) {
@@ -178,7 +179,6 @@ const addCoupon = async (req, res) => {
             discountType,
             discount: parseFloat(discount),
             minPurchase: parseFloat(minPurchase),
-            maxDiscount: parseFloat(maxDiscount),
             startDate: new Date(startDate),
             expiry: new Date(expiry),
             usageLimit: parseInt(usageLimit),
@@ -188,9 +188,18 @@ const addCoupon = async (req, res) => {
             applicableProducts: Array.isArray(applicableProducts) ? applicableProducts.filter(id => id) : (applicableProducts ? [applicableProducts] : [])
         };
 
+        // Only set maxDiscount for percentage discount type
+        if (discountType === 'percentage') {
+            couponData.maxDiscount = parseFloat(maxDiscount);
+        } else {
+            // For flat discount, set maxDiscount to the discount value itself
+            couponData.maxDiscount = parseFloat(discount);
+        }
+
         const newCoupon = new Coupon(couponData);
-        await newCoupon.save();
+        const savedCoupon = await newCoupon.save();
         
+        console.log('Coupon saved successfully:', savedCoupon._id);
         res.redirect('/coupons?success=Coupon added successfully');
     } catch (error) {
         console.error('Error adding coupon:', error);

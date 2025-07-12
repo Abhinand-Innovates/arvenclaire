@@ -345,8 +345,26 @@
             // User Usage Limit validation
             const userUsageLimit = document.getElementById('userUsageLimit');
             if (userUsageLimit) {
-                userUsageLimit.addEventListener('input', validateUserUsageLimit);
-                userUsageLimit.addEventListener('blur', validateUserUsageLimit);
+                userUsageLimit.addEventListener('input', function() {
+                    validateUserUsageLimit();
+                    validateUsageLimitComparison(); // Validate usage limit comparison
+                });
+                userUsageLimit.addEventListener('blur', function() {
+                    validateUserUsageLimit();
+                    validateUsageLimitComparison(); // Validate usage limit comparison
+                });
+            }
+
+            // Also add validation to global usage limit to check comparison
+            if (usageLimit) {
+                usageLimit.addEventListener('input', function() {
+                    validateUsageLimit();
+                    validateUsageLimitComparison(); // Validate usage limit comparison
+                });
+                usageLimit.addEventListener('blur', function() {
+                    validateUsageLimit();
+                    validateUsageLimitComparison(); // Validate usage limit comparison
+                });
             }
         }
 
@@ -648,6 +666,31 @@
             }
         }
 
+        // Function to validate usage limit comparison
+        function validateUsageLimitComparison() {
+            const usageLimit = document.getElementById('usageLimit');
+            const userUsageLimit = document.getElementById('userUsageLimit');
+            const userUsageLimitGroup = userUsageLimit.closest('.form-group');
+            const errorMsg = userUsageLimitGroup.querySelector('.error-message');
+
+            if (usageLimit.value && userUsageLimit.value) {
+                const globalLimit = parseInt(usageLimit.value);
+                const perUserLimit = parseInt(userUsageLimit.value);
+
+                if (!isNaN(globalLimit) && !isNaN(perUserLimit) && perUserLimit > globalLimit) {
+                    showFieldError(userUsageLimitGroup, errorMsg, 'Per user usage limit cannot exceed global usage limit');
+                    return false;
+                } else {
+                    // Only hide the comparison specific error, not other validation errors
+                    if (errorMsg.textContent === 'Per user usage limit cannot exceed global usage limit') {
+                        hideFieldError(userUsageLimitGroup, errorMsg);
+                    }
+                    return true;
+                }
+            }
+            return true;
+        }
+
         // Helper functions for showing/hiding field errors
         function showFieldError(fieldGroup, errorElement, message) {
             fieldGroup.classList.add('error');
@@ -675,6 +718,7 @@
             if (!validateUsageLimit()) isValid = false;
             if (!validateUserUsageLimit()) isValid = false;
             if (!validateFlatDiscountRule()) isValid = false;
+            if (!validateUsageLimitComparison()) isValid = false;
 
             return isValid;
         }
