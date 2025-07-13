@@ -269,7 +269,7 @@ const verifyCurrentEmail = async (req, res) => {
     };
 
     // Send OTP to current email
-    const isSendMail = await sendEmail(user.email, otp);
+    const isSendMail = await sendEmail(user.email, otp, "change email");
     if (!isSendMail) {
       return res.status(500).json({
         success: false,

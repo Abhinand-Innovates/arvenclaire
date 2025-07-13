@@ -102,7 +102,7 @@ const signup = async (req, res) => {
     const otp = generateOtp();
     console.log("otp is:", otp);
 
-    const isSendMail = await sendEmail(validatedEmail, otp);
+    const isSendMail = await sendEmail(validatedEmail, otp, "signup");
     if (!isSendMail) {
       return res.json({
         success: false,
@@ -264,7 +264,7 @@ const resendOtp = async (req, res) => {
       }
     });
 
-    const isSendMail = await sendEmail(email, otp);
+    const isSendMail = await sendEmail(email, otp, "signup");
 
     if (!isSendMail) {
       return res.json({
@@ -451,7 +451,7 @@ const verifyForgotPasswordEmail = async (req, res) => {
       email,
     };
 
-    const isSendMail = await sendEmail(email, otp);
+    const isSendMail = await sendEmail(email, otp, "forgot password");
     if (!isSendMail) {
       return res.status(500).json({
         success: false,
@@ -489,7 +489,7 @@ const resendForgotPasswordOtp = async (req, res) => {
       email,
     };
 
-    const isSendMail = await sendEmail(email, otp);
+    const isSendMail = await sendEmail(email, otp, "forgot password");
 
     if (!isSendMail) {
       return res.json({

@@ -458,29 +458,30 @@ textarea.form-control {
 }
 
 .faq-item {
-  background: #ffffff;
+  background: #2c2c2c;
   border-radius: 16px;
   margin-bottom: 1.5rem;
   overflow: hidden;
   transition: all 0.3s ease;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06);
-  border: 1px solid #e8e8e8;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  border: 1px solid #404040;
 }
 
 .faq-item:hover {
   transform: translateY(-2px);
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
+  background: #333333;
 }
 
 .faq-question {
   padding: 2rem 2.5rem;
-  background: #ffffff;
+  background: #2c2c2c;
   border: none;
   width: 100%;
   text-align: left;
   font-size: 1.1rem;
   font-weight: 500;
-  color: #000000;
+  color: #ffffff;
   cursor: pointer;
   display: flex;
   justify-content: space-between;
@@ -492,25 +493,27 @@ textarea.form-control {
 }
 
 .faq-question:hover {
-  background: #f8f9fa;
+  background: #333333;
+  color: #ffffff;
 }
 
 .faq-question.active {
-  background: #f8f9fa;
+  background: #333333;
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
+  color: #ffffff;
 }
 
 .faq-icon {
   font-size: 1.2rem;
-  color: #666666;
+  color: #cccccc;
   transition: transform 0.3s ease;
   margin-left: 1rem;
 }
 
 .faq-question.active .faq-icon {
   transform: rotate(180deg);
-  color: #000000;
+  color: #ffffff;
 }
 
 .faq-answer {
@@ -518,17 +521,18 @@ textarea.form-control {
   max-height: 0;
   overflow: hidden;
   transition: all 0.4s ease;
-  background: #ffffff;
-  border-top: 1px solid #f0f0f0;
+  background: #2c2c2c;
+  border-top: 1px solid #404040;
 }
 
 .faq-answer.active {
   padding: 2rem 2.5rem;
   max-height: 300px;
+  background: #333333;
 }
 
 .faq-answer p {
-  color: #666666;
+  color: #e0e0e0;
   line-height: 1.7;
   margin: 0;
   font-weight: 400;
