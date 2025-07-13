@@ -7,75 +7,25 @@ const Wallet = require('../../models/wallet-schema');
 
 
 
-// Get return requests with proper individual item support
+// Get return requests with proper individual item support - Only show pending requests
 const getReturnRequests = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = 10;
     const skip = (page - 1) * limit;
-    const searchTerm = req.query.search || '';
-    const statusFilter = req.query.status || '';
 
-    // Build aggregation pipeline to find orders with return requests
+    // Only show pending return requests (not approved or rejected)
     let matchStage = {
       $or: [
-        { status: 'Return Request' }, // Entire order return requests
-        { status: 'Returned' }, // Approved entire order returns
-        { status: 'Partially Returned' }, // Partially returned orders
-        { 'orderedItems.status': 'Return Request' }, // Individual item return requests
-        { 'orderedItems.status': 'Returned' }, // Individual returned items
-        { returnRejectedAt: { $exists: true } }, // Rejected returns
-        { 'orderedItems.returnRejectedAt': { $exists: true } } // Individual item rejections
+        { status: 'Return Request' }, // Entire order return requests that are pending
+        { 
+          $and: [
+            { status: { $in: ['Delivered', 'Partially Returned'] } },
+            { 'orderedItems.status': 'Return Request' } // Individual items pending
+          ]
+        }
       ]
     };
-
-    // Apply status filter
-    if (statusFilter) {
-      if (statusFilter === 'Pending') {
-        matchStage = {
-          $or: [
-            { status: 'Return Request' }, // Entire order pending
-            { 
-              $and: [
-                { status: { $in: ['Delivered', 'Partially Returned'] } },
-                { 'orderedItems.status': 'Return Request' } // Individual items pending
-              ]
-            }
-          ]
-        };
-      } else if (statusFilter === 'Approved' || statusFilter === 'Returned') {
-        matchStage = {
-          $or: [
-            { status: 'Returned' }, // Entire order approved
-            { status: 'Partially Returned' }, // Partially approved
-            { 'orderedItems.status': 'Returned' } // Individual items approved
-          ]
-        };
-      } else if (statusFilter === 'Rejected') {
-        matchStage = { 
-          $or: [
-            { returnRejectedAt: { $exists: true } },
-            { 'orderedItems.returnRejectedAt': { $exists: true } }
-          ]
-        };
-      }
-    }
-
-    // Apply search term filter
-    if (searchTerm) {
-      const searchConditions = [
-        { orderId: { $regex: searchTerm, $options: 'i' } },
-        { 'shippingAddress.name': { $regex: searchTerm, $options: 'i' } },
-        { 'shippingAddress.phone': { $regex: searchTerm, $options: 'i' } }
-      ];
-      
-      matchStage = {
-        $and: [
-          matchStage,
-          { $or: searchConditions }
-        ]
-      };
-    }
 
     // Get total count for pagination
     const totalRequests = await Order.countDocuments(matchStage);
@@ -88,14 +38,12 @@ const getReturnRequests = async (req, res) => {
       .skip(skip)
       .limit(limit);
 
-    // Return requests found and processed
-
     // Process return requests to extract individual item information
     const processedRequests = [];
     
     for (const order of returnRequests) {
-      // Check if entire order is being returned or was returned
-      if (order.status === 'Return Request' || order.status === 'Returned') {
+      // Check if entire order is being returned
+      if (order.status === 'Return Request') {
         // Calculate return amount using same logic as order details page Total Amount
         const activeItems = order.orderedItems.filter(item => item.status === 'Active');
         const returnRequestItems = order.orderedItems.filter(item => item.status === 'Return Request');
@@ -119,15 +67,13 @@ const getReturnRequests = async (req, res) => {
           returnAmount: currentTotal
         });
       } else {
-        // Check for individual item returns - show both pending and rejected items
+        // Check for individual item returns - only show pending items
         const returnRequestItems = order.orderedItems.filter(item => 
-          item.status === 'Return Request' || 
-          (item.returnRejectedAt && item.status === 'Active') ||
-          item.status === 'Returned'
+          item.status === 'Return Request'
         );
         
         if (returnRequestItems.length > 0) {
-          // For individual items, create separate entries for each return request (pending, approved, or rejected)
+          // For individual items, create separate entries for each pending return request
           returnRequestItems.forEach(item => {
             processedRequests.push({
               ...order.toObject(),
@@ -155,9 +101,7 @@ const getReturnRequests = async (req, res) => {
         totalPages,
         totalRequests,
         startIdx,
-        endIdx,
-        searchTerm,
-        statusFilter
+        endIdx
       });
     }
 
@@ -169,8 +113,6 @@ const getReturnRequests = async (req, res) => {
       totalRequests,
       startIdx,
       endIdx,
-      searchTerm,
-      statusFilter,
       title: 'Return Requests'
     });
 

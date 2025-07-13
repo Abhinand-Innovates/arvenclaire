@@ -34,173 +34,10 @@
             <div class="stat-card">
                 <i class="fas fa-clock pending"></i>
                 <h3 id="pendingCount">
-                    <%= returnRequests ? returnRequests.filter(req => req.status === 'Return Request').length : 0 %>
+                    <%= returnRequests ? returnRequests.length : 0 %>
                 </h3>
                 <p>Pending Requests</p>
             </div>
-            <div class="stat-card">
-                <i class="fas fa-check-circle approved"></i>
-                <h3 id="approvedCount">
-                    <%= returnRequests ? returnRequests.filter(req => req.status === 'Returned').length : 0 %>
-                </h3>
-                <p>Approved Returns</p>
-            </div>
-            <div class="stat-card">
-                <i class="fas fa-times-circle rejected"></i>
-                <h3 id="rejectedCount">
-                    <%= returnRequests ? returnRequests.filter(req => 
-                        req.returnRejectedAt || 
-                        (req.returnType === 'individual' && req.returnItems.some(item => item.returnRejectedAt))
-                    ).length : 0 %>
-                </h3>
-                <p>Rejected Requests</p>
-            </div>
-            <div class="stat-card">
-                <i class="fas fa-list total"></i>
-                <h3 id="totalCount">
-                    <%= returnRequests ? returnRequests.length : 0 %>
-                </h3>
-                <p>Total Requests</p>
-            </div>
-        </div>
-
-        <!-- Search and Filters -->
-        <div class="filters-card">
-            <div class="filters-header">
-                <h3 class="filters-title">
-                    <i class="fas fa-search"></i>
-                    Search & Filter Return Requests
-                </h3>
-            </div>
-            <form id="filtersForm">
-                <div class="filters-grid">
-                    <!-- Search Filter -->
-                    <div class="filter-group">
-                        <label class="filter-label">
-                            <i class="fas fa-search"></i>
-                            Search Return Requests
-                        </label>
-                        <div class="search-container">
-                            <input type="text" 
-                                   name="search" 
-                                   id="searchInput" 
-                                   class="form-control"
-                                   placeholder="Search by Order ID, Customer name, Email..."
-                                   value="<%= searchTerm || '' %>">
-                            <i class="fas fa-search search-icon"></i>
-                        </div>
-                    </div>
-
-                    <!-- Status Filter -->
-                    <div class="filter-group">
-                        <label class="filter-label">
-                            <i class="fas fa-flag"></i>
-                            Status Filter
-                        </label>
-                        <select name="status" class="form-select">
-                            <option value="">All Status</option>
-                            <option value="Pending" <%= statusFilter === 'Pending' ? 'selected' : '' %>>Pending</option>
-                            <option value="Approved" <%= statusFilter === 'Approved' ? 'selected' : '' %>>Approved</option>
-                            <option value="Rejected" <%= statusFilter === 'Rejected' ? 'selected' : '' %>>Rejected</option>
-                        </select>
-                    </div>
-
-                    <!-- Return Type Filter -->
-                    <div class="filter-group">
-                        <label class="filter-label">
-                            <i class="fas fa-layer-group"></i>
-                            Return Type
-                        </label>
-                        <select name="returnType" class="form-select">
-                            <option value="">All Types</option>
-                            <option value="individual" <%= (typeof returnType !== 'undefined' && returnType === 'individual') ? 'selected' : '' %>>Individual Items</option>
-                            <option value="entire" <%= (typeof returnType !== 'undefined' && returnType === 'entire') ? 'selected' : '' %>>Entire Order</option>
-                        </select>
-                    </div>
-
-                    <!-- Sort By -->
-                    <div class="filter-group">
-                        <label class="filter-label">
-                            <i class="fas fa-sort"></i>
-                            Sort By
-                        </label>
-                        <select name="sortBy" class="form-select">
-                            <option value="newest" <%= (typeof sortBy !== 'undefined' && sortBy === 'newest') ? 'selected' : '' %>>Newest First</option>
-                            <option value="oldest" <%= (typeof sortBy !== 'undefined' && sortBy === 'oldest') ? 'selected' : '' %>>Oldest First</option>
-                            <option value="amount-high" <%= (typeof sortBy !== 'undefined' && sortBy === 'amount-high') ? 'selected' : '' %>>Amount: High to Low</option>
-                            <option value="amount-low" <%= (typeof sortBy !== 'undefined' && sortBy === 'amount-low') ? 'selected' : '' %>>Amount: Low to High</option>
-                            <option value="customer-az" <%= (typeof sortBy !== 'undefined' && sortBy === 'customer-az') ? 'selected' : '' %>>Customer: A-Z</option>
-                            <option value="customer-za" <%= (typeof sortBy !== 'undefined' && sortBy === 'customer-za') ? 'selected' : '' %>>Customer: Z-A</option>
-                        </select>
-                    </div>
-
-                    <!-- Date Range Filter -->
-                    <div class="filter-group">
-                        <label class="filter-label">
-                            <i class="fas fa-calendar"></i>
-                            Date Range
-                        </label>
-                        <div class="date-range-container">
-                            <input type="date" 
-                                   name="dateFrom" 
-                                   class="form-control"
-                                   value="<%= (typeof dateFrom !== 'undefined') ? dateFrom : '' %>">
-                            <span class="date-separator">to</span>
-                            <input type="date" 
-                                   name="dateTo" 
-                                   class="form-control"
-                                   value="<%= (typeof dateTo !== 'undefined') ? dateTo : '' %>">
-                        </div>
-                    </div>
-
-                    <!-- Amount Range Filter -->
-                    <div class="filter-group">
-                        <label class="filter-label">
-                            <i class="fas fa-rupee-sign"></i>
-                            Amount Range
-                        </label>
-                        <div class="amount-range-container">
-                            <div class="amount-input-wrapper">
-                                <span class="currency-symbol">₹</span>
-                                <input type="number" 
-                                       name="minAmount" 
-                                       class="form-control amount-input"
-                                       placeholder="Min"
-                                       min="0"
-                                       step="100"
-                                       value="<%= (typeof minAmount !== 'undefined') ? minAmount : '' %>">
-                            </div>
-                            <span class="amount-separator">to</span>
-                            <div class="amount-input-wrapper">
-                                <span class="currency-symbol">₹</span>
-                                <input type="number" 
-                                       name="maxAmount" 
-                                       class="form-control amount-input"
-                                       placeholder="Max"
-                                       min="0"
-                                       step="100"
-                                       value="<%= (typeof maxAmount !== 'undefined') ? maxAmount : '' %>">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Filter Action Buttons -->
-                <div class="filter-actions">
-                    <button type="submit" class="filter-btn primary">
-                        <i class="fas fa-filter"></i>
-                        Apply Filters
-                    </button>
-                    <button type="button" class="filter-btn secondary" onclick="resetFilters()">
-                        <i class="fas fa-refresh"></i>
-                        Reset
-                    </button>
-                    <button type="button" class="filter-btn danger" onclick="clearAllFilters()">
-                        <i class="fas fa-times"></i>
-                        Clear All
-                    </button>
-                </div>
-            </form>
         </div>
 
         <!-- Table Container -->
@@ -358,72 +195,24 @@
                                     </td>
                                     <td>
                                         <div class="status-display">
-                                            <% 
-                                            let statusClass = 'status-pending';
-                                            let statusText = 'Pending';
-                                            
-                                            if (order.returnType === 'individual') {
-                                                // Individual item return status
-                                                const hasReturnedItems = order.returnItems.some(item => item.status === 'Returned');
-                                                const hasPendingItems = order.returnItems.some(item => item.status === 'Return Request');
-                                                const hasRejectedItems = order.returnItems.some(item => item.returnRejectedAt && item.status === 'Active');
-                                                
-                                                if (hasReturnedItems && !hasPendingItems && !hasRejectedItems) {
-                                                    statusClass = 'status-approved';
-                                                    statusText = 'Approved';
-                                                } else if (hasRejectedItems && !hasPendingItems && !hasReturnedItems) {
-                                                    statusClass = 'status-rejected';
-                                                    statusText = 'Rejected';
-                                                } else if (hasPendingItems) {
-                                                    statusClass = 'status-pending';
-                                                    statusText = 'Pending';
-                                                }
-                                            } else {
-                                                // Entire order return status
-                                                if (order.status === 'Returned') {
-                                                    statusClass = 'status-approved';
-                                                    statusText = 'Approved';
-                                                } else if (order.returnRejectedAt) {
-                                                    statusClass = 'status-rejected';
-                                                    statusText = 'Rejected';
-                                                }
-                                            }
-                                            %>
-                                            <span class="status-badge <%= statusClass %>">
-                                                <i class="fas fa-<%= statusClass === 'status-pending' ? 'clock' : statusClass === 'status-approved' ? 'check-circle' : 'times-circle' %>"></i>
-                                                <span><%= statusText %></span>
+                                            <span class="status-badge status-pending">
+                                                <i class="fas fa-clock"></i>
+                                                <span>Pending</span>
                                             </span>
                                         </div>
                                     </td>
                                     <td>
                                         <div class="action-buttons">
-                                            <% 
-                                            let showApproveReject = false;
-                                            let isRejected = false;
-                                            
-                                            if (order.returnType === 'individual') {
-                                                // Show approve/reject if there are pending individual items
-                                                showApproveReject = order.returnItems.some(item => item.status === 'Return Request');
-                                                isRejected = order.returnItems.some(item => item.returnRejectedAt && item.status === 'Active');
-                                            } else {
-                                                // Show approve/reject if entire order is pending return
-                                                showApproveReject = order.status === 'Return Request';
-                                                isRejected = order.returnRejectedAt && order.status === 'Delivered';
-                                            }
-                                            %>
-                                            
-                                            <% if (showApproveReject && !isRejected) { %>
-                                                <button class="btn-action btn-success" 
-                                                        onclick="approveReturn('<%= order._id %>')"
-                                                        title="Approve Return">
-                                                    <i class="fas fa-check"></i>
-                                                </button>
-                                                <button class="btn-action btn-danger" 
-                                                        onclick="rejectReturn('<%= order._id %>')"
-                                                        title="Reject Return">
-                                                    <i class="fas fa-times"></i>
-                                                </button>
-                                            <% } %>
+                                            <button class="btn-action btn-success" 
+                                                    onclick="approveReturn('<%= order._id %>')"
+                                                    title="Approve Return">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                            <button class="btn-action btn-danger" 
+                                                    onclick="rejectReturn('<%= order._id %>')"
+                                                    title="Reject Return">
+                                                <i class="fas fa-times"></i>
+                                            </button>
                                             <button class="btn-action btn-info" 
                                                     onclick="viewReturnDetails('<%= order._id %>')"
                                                     title="View Details">
@@ -458,21 +247,21 @@
                     <nav aria-label="Return requests pagination">
                         <ul class="pagination">
                             <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>">
-                                <a class="page-link" href="?page=<%= currentPage - 1 %>&search=<%= searchTerm || '' %>&status=<%= statusFilter || '' %>" aria-label="Previous">
+                                <a class="page-link" href="?page=<%= currentPage - 1 %>" aria-label="Previous">
                                     <i class="fas fa-chevron-left"></i>
                                 </a>
                             </li>
                             
                             <% for (let i = Math.max(1, currentPage - 2); i <= Math.min(totalPages, currentPage + 2); i++) { %>
                                 <li class="page-item <%= i === currentPage ? 'active' : '' %>">
-                                    <a class="page-link" href="?page=<%= i %>&search=<%= searchTerm || '' %>&status=<%= statusFilter || '' %>">
+                                    <a class="page-link" href="?page=<%= i %>">
                                         <%= i %>
                                     </a>
                                 </li>
                             <% } %>
                             
                             <li class="page-item <%= currentPage === totalPages ? 'disabled' : '' %>">
-                                <a class="page-link" href="?page=<%= currentPage + 1 %>&search=<%= searchTerm || '' %>&status=<%= statusFilter || '' %>" aria-label="Next">
+                                <a class="page-link" href="?page=<%= currentPage + 1 %>" aria-label="Next">
                                     <i class="fas fa-chevron-right"></i>
                                 </a>
                             </li>
@@ -486,143 +275,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script src="/scripts/admin/return-request.js"></script>
     <script>
-        // Advanced Filters Form Handling
-        document.addEventListener('DOMContentLoaded', function() {
-            const filtersForm = document.getElementById('filtersForm');
-            
-            // Handle form submission
-            filtersForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                applyFilters();
-            });
-
-            // Real-time search with debounce
-            const searchInput = document.getElementById('searchInput');
-            let searchTimeout;
-            
-            searchInput.addEventListener('input', function() {
-                clearTimeout(searchTimeout);
-                searchTimeout = setTimeout(() => {
-                    if (this.value.length >= 3 || this.value.length === 0) {
-                        applyFilters();
-                    }
-                }, 500);
-            });
-
-            // Validate amount range
-            const minAmountInput = document.querySelector('input[name="minAmount"]');
-            const maxAmountInput = document.querySelector('input[name="maxAmount"]');
-            
-            function validateAmountRange() {
-                const minAmount = parseFloat(minAmountInput.value) || 0;
-                const maxAmount = parseFloat(maxAmountInput.value) || Infinity;
-                
-                if (minAmount > maxAmount && maxAmount !== Infinity) {
-                    minAmountInput.style.borderColor = '#ef4444';
-                    maxAmountInput.style.borderColor = '#ef4444';
-                    return false;
-                } else {
-                    minAmountInput.style.borderColor = '#e5e7eb';
-                    maxAmountInput.style.borderColor = '#e5e7eb';
-                    return true;
-                }
-            }
-
-            minAmountInput.addEventListener('input', validateAmountRange);
-            maxAmountInput.addEventListener('input', validateAmountRange);
-
-            // Validate date range
-            const dateFromInput = document.querySelector('input[name="dateFrom"]');
-            const dateToInput = document.querySelector('input[name="dateTo"]');
-            
-            function validateDateRange() {
-                const dateFrom = new Date(dateFromInput.value);
-                const dateTo = new Date(dateToInput.value);
-                
-                if (dateFromInput.value && dateToInput.value && dateFrom > dateTo) {
-                    dateFromInput.style.borderColor = '#ef4444';
-                    dateToInput.style.borderColor = '#ef4444';
-                    return false;
-                } else {
-                    dateFromInput.style.borderColor = '#e5e7eb';
-                    dateToInput.style.borderColor = '#e5e7eb';
-                    return true;
-                }
-            }
-
-            dateFromInput.addEventListener('change', validateDateRange);
-            dateToInput.addEventListener('change', validateDateRange);
-        });
-
-        function applyFilters() {
-            const form = document.getElementById('filtersForm');
-            const formData = new FormData(form);
-            const url = new URL(window.location);
-            
-            // Clear existing parameters
-            url.search = '';
-            
-            // Add form data to URL
-            for (let [key, value] of formData.entries()) {
-                if (value && value.trim() !== '') {
-                    url.searchParams.set(key, value.trim());
-                }
-            }
-            
-            // Reset to page 1 for new filters
-            url.searchParams.set('page', '1');
-            
-            // Navigate to filtered URL
-            window.location.href = url.toString();
-        }
-
-        function resetFilters() {
-            // Reset form
-            document.getElementById('filtersForm').reset();
-            
-            // Navigate to base URL without parameters
-            window.location.href = window.location.pathname;
-        }
-
-        function clearAllFilters() {
-            // Reset form
-            document.getElementById('filtersForm').reset();
-            
-            // Navigate to base URL without parameters
-            window.location.href = window.location.pathname;
-        }
-
-        function refreshData() {
-            window.location.reload();
-        }
-
-        function exportData() {
-            // Get current filters
-            const url = new URL(window.location);
-            const params = url.searchParams;
-            
-            // Create export URL
-            const exportUrl = '/return-requests/export?' + params.toString();
-            
-            // Open export in new tab
-            window.open(exportUrl, '_blank');
-            
-            showToast('info', 'Export started. Download will begin shortly.');
-        }
-
-        // Enhanced search functionality
-        function searchReturns(searchTerm) {
-            const searchInput = document.getElementById('searchInput');
-            searchInput.value = searchTerm;
-            applyFilters();
-        }
-
-        function filterByStatus(status) {
-            const statusSelect = document.querySelector('select[name="status"]');
-            statusSelect.value = status;
-            applyFilters();
-        }
-
         // Toast notification system
         function showToast(icon, title, timer = 3000) {
             const Toast = Swal.mixin({
@@ -637,21 +289,6 @@
                 title: title
             });
         }
-
-        // Filter animation on load
-        document.addEventListener('DOMContentLoaded', function() {
-            const filterGroups = document.querySelectorAll('.filter-group');
-            filterGroups.forEach((group, index) => {
-                group.style.opacity = '0';
-                group.style.transform = 'translateY(20px)';
-                group.style.transition = 'all 0.6s ease';
-                
-                setTimeout(() => {
-                    group.style.opacity = '1';
-                    group.style.transform = 'translateY(0)';
-                }, index * 100);
-            });
-        });
     </script>
 </body>
 </html>

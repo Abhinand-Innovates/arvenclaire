@@ -87,7 +87,7 @@
                             </div>
                             <div class="form-group">
                                 <label for="discountValue" class="form-label">Discount Value <span class="required">*</span></label>
-                                <input type="number" class="form-control" id="discount" name="discount" step="0.01" min="0" value="<%= typeof formData !== 'undefined' && formData.discount ? formData.discount : '' %>" required>
+                                <input type="number" class="form-control" id="discount" name="discount" step="0.01" min="0" value="<%= typeof formData !== 'undefined' && formData.discount ? formData.discount : '' %>" required onkeypress="return isNumberKey(event)" oninput="validateNumberInput(this)">
                                 <% if (typeof errors !== 'undefined' && errors.discount) { %>
                                     <div class="error-message" style="display: block;"><%= errors.discount %></div>
                                 <% } else { %>
@@ -108,7 +108,7 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="minPurchaseAmount" class="form-label">Minimum Purchase Amount <span class="required">*</span></label>
-                                <input type="number" class="form-control" id="minPurchase" name="minPurchase" step="0.01" min="0" value="<%= typeof formData !== 'undefined' && formData.minPurchase ? formData.minPurchase : '' %>" required>
+                                <input type="number" class="form-control" id="minPurchase" name="minPurchase" step="0.01" min="0" value="<%= typeof formData !== 'undefined' && formData.minPurchase ? formData.minPurchase : '' %>" required onkeypress="return isNumberKey(event)" oninput="validateNumberInput(this)">
                                 <% if (typeof errors !== 'undefined' && errors.minPurchase) { %>
                                     <div class="error-message" style="display: block;"><%= errors.minPurchase %></div>
                                 <% } else { %>
@@ -160,7 +160,7 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="globalUsageLimit" class="form-label">Global Usage Limit <span class="required">*</span></label>
-                                <input type="number" class="form-control" id="usageLimit" name="usageLimit" min="1" value="<%= typeof formData !== 'undefined' && formData.usageLimit ? formData.usageLimit : '' %>" required>
+                                <input type="number" class="form-control" id="usageLimit" name="usageLimit" min="1" value="<%= typeof formData !== 'undefined' && formData.usageLimit ? formData.usageLimit : '' %>" required onkeypress="return isIntegerKey(event)" oninput="validateIntegerInput(this)">
                                 <% if (typeof errors !== 'undefined' && errors.usageLimit) { %>
                                     <div class="error-message" style="display: block;"><%= errors.usageLimit %></div>
                                 <% } else { %>
@@ -169,7 +169,7 @@
                             </div>
                             <div class="form-group">
                                 <label for="perUserLimit" class="form-label">Per User Limit <span class="required">*</span></label>
-                                <input type="number" class="form-control" id="userUsageLimit" name="userUsageLimit" min="1" value="<%= typeof formData !== 'undefined' && formData.userUsageLimit ? formData.userUsageLimit : '' %>" required>
+                                <input type="number" class="form-control" id="userUsageLimit" name="userUsageLimit" min="1" value="<%= typeof formData !== 'undefined' && formData.userUsageLimit ? formData.userUsageLimit : '' %>" required onkeypress="return isIntegerKey(event)" oninput="validateIntegerInput(this)">
                                 <% if (typeof errors !== 'undefined' && errors.userUsageLimit) { %>
                                     <div class="error-message" style="display: block;"><%= errors.userUsageLimit %></div>
                                 <% } else { %>
@@ -197,7 +197,7 @@
                             </div>
                             <div class="form-group">
                                 <label for="maxDiscount" class="form-label">Maximum Discount Amount <span class="required">*</span></label>
-                                <input type="number" class="form-control" id="maxDiscount" name="maxDiscount" step="0.01" min="0" value="<%= typeof formData !== 'undefined' && formData.maxDiscount ? formData.maxDiscount : '' %>" required>
+                                <input type="number" class="form-control" id="maxDiscount" name="maxDiscount" step="0.01" min="0" value="<%= typeof formData !== 'undefined' && formData.maxDiscount ? formData.maxDiscount : '' %>" required onkeypress="return isNumberKey(event)" oninput="validateNumberInput(this)">
                                 <% if (typeof errors !== 'undefined' && errors.maxDiscount) { %>
                                     <div class="error-message" style="display: block;"><%= errors.maxDiscount %></div>
                                 <% } else { %>
@@ -232,6 +232,59 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
     <script>
+        // Number validation functions
+        function isNumberKey(evt) {
+            var charCode = (evt.which) ? evt.which : evt.keyCode;
+            // Allow: backspace, delete, tab, escape, enter, decimal point
+            if (charCode == 46 || charCode == 8 || charCode == 9 || charCode == 27 || charCode == 13 ||
+                // Allow Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
+                (charCode == 65 && evt.ctrlKey === true) ||
+                (charCode == 67 && evt.ctrlKey === true) ||
+                (charCode == 86 && evt.ctrlKey === true) ||
+                (charCode == 88 && evt.ctrlKey === true)) {
+                return true;
+            }
+            // Ensure that it is a number and stop the keypress
+            if ((charCode < 48 || charCode > 57)) {
+                return false;
+            }
+            return true;
+        }
+
+        function isIntegerKey(evt) {
+            var charCode = (evt.which) ? evt.which : evt.keyCode;
+            // Allow: backspace, delete, tab, escape, enter
+            if (charCode == 8 || charCode == 9 || charCode == 27 || charCode == 13 ||
+                // Allow Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
+                (charCode == 65 && evt.ctrlKey === true) ||
+                (charCode == 67 && evt.ctrlKey === true) ||
+                (charCode == 86 && evt.ctrlKey === true) ||
+                (charCode == 88 && evt.ctrlKey === true)) {
+                return true;
+            }
+            // Ensure that it is a number and stop the keypress
+            if ((charCode < 48 || charCode > 57)) {
+                return false;
+            }
+            return true;
+        }
+
+        function validateNumberInput(input) {
+            // Remove any non-numeric characters except decimal point
+            input.value = input.value.replace(/[^0-9.]/g, '');
+            
+            // Ensure only one decimal point
+            var parts = input.value.split('.');
+            if (parts.length > 2) {
+                input.value = parts[0] + '.' + parts.slice(1).join('');
+            }
+        }
+
+        function validateIntegerInput(input) {
+            // Remove any non-numeric characters
+            input.value = input.value.replace(/[^0-9]/g, '');
+        }
+
         // Initialize form validation
         document.addEventListener('DOMContentLoaded', function() {
             setupFieldValidation();
