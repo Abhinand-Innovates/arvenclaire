@@ -845,7 +845,35 @@
         }
 
         /* Responsive Design */
-        @media (max-width: 767px) {
+        @media (max-width: 1024px) {
+            /* Tablet: 2 products per row */
+            .row .col-6.col-md-3 {
+                flex: 0 0 50% !important;
+                max-width: 50% !important;
+            }
+
+            .banner-nav-btn {
+                width: 45px;
+                height: 45px;
+                font-size: 1.1rem;
+            }
+
+            .banner-prev {
+                left: 20px;
+            }
+
+            .banner-next {
+                right: 20px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            /* Mobile: 1 product per row */
+            .row .col-6.col-md-3 {
+                flex: 0 0 100% !important;
+                max-width: 100% !important;
+            }
+
             .carousel-title {
                 font-size: 1.8rem;
             }
@@ -869,6 +897,169 @@
 
             .banner-subtitle {
                 font-size: 1rem;
+            }
+
+            /* Mobile banner adjustments */
+            .banner-card.black-theme {
+                padding: 2.5rem 1.5rem;
+            }
+
+            .banner-nav-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 1rem;
+            }
+
+            .banner-prev {
+                left: 15px;
+            }
+
+            .banner-next {
+                right: 15px;
+            }
+
+            /* Mobile carousel controls */
+            .carousel-controls {
+                padding: 0 3rem;
+            }
+
+            .carousel-btn {
+                width: 45px;
+                height: 45px;
+                font-size: 1.1rem;
+            }
+
+            .carousel-btn.prev {
+                left: -22px;
+            }
+
+            .carousel-btn.next {
+                right: -22px;
+            }
+
+            /* Mobile static image section */
+            .static-image {
+                height: 400px;
+            }
+
+            .image-title {
+                font-size: 2rem;
+            }
+
+            .image-subtitle {
+                font-size: 1rem;
+            }
+
+            /* Mobile product card adjustments */
+            .product-img {
+                height: 250px;
+            }
+
+            .product-title {
+                font-size: 0.95rem;
+            }
+
+            .product-price {
+                font-size: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            /* Small mobile: Ensure single column */
+            .row .col-6.col-md-3 {
+                flex: 0 0 100% !important;
+                max-width: 100% !important;
+                margin-bottom: 1.5rem;
+            }
+
+            .section-title {
+                font-size: 1.75rem;
+            }
+
+            .section-subtitle {
+                font-size: 1rem;
+                margin-bottom: 2rem;
+            }
+
+            .banner-title {
+                font-size: 1.75rem;
+            }
+
+            .banner-subtitle {
+                font-size: 0.95rem;
+            }
+
+            .banner-card.black-theme {
+                padding: 2rem 1rem;
+            }
+
+            .static-image {
+                height: 300px;
+            }
+
+            .image-title {
+                font-size: 1.75rem;
+            }
+
+            .image-subtitle {
+                font-size: 0.95rem;
+            }
+
+            .product-img {
+                height: 220px;
+            }
+
+            .card-body {
+                padding: 1rem !important;
+            }
+
+            .product-title {
+                font-size: 0.9rem;
+            }
+
+            .product-brand {
+                font-size: 0.8rem;
+            }
+
+            .product-price {
+                font-size: 0.95rem;
+            }
+
+            /* Hide carousel navigation on very small screens */
+            .banner-nav-btn {
+                display: none;
+            }
+
+            .carousel-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 1rem;
+            }
+
+            .carousel-btn.prev {
+                left: -20px;
+            }
+
+            .carousel-btn.next {
+                right: -20px;
+            }
+        }
+
+        /* Ensure consistent mobile layout across all screen sizes */
+        @media (max-width: 767px) {
+            .row {
+                margin: 0 -0.5rem;
+            }
+
+            .row .col-6.col-md-3 {
+                padding: 0 0.5rem;
+                margin-bottom: 1rem;
+            }
+
+            .product-card {
+                margin: 0 auto;
+                max-width: 100%;
+                width: 100%;
             }
         }
 

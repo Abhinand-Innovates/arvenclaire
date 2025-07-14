@@ -1020,6 +1020,12 @@
     padding: 1.5rem;
     top: 5rem;
   }
+
+  /* Reduce to 2 columns on tablet */
+  .products-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
 }
 
 @media (max-width: 768px) {
@@ -1055,9 +1061,17 @@
     padding: 1.5rem;
   }
 
+  /* Mobile: Only 1 product per row */
   .products-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr !important;
     gap: 1.5rem;
+    max-width: 100%;
+  }
+
+  /* Ensure product cards take full width on mobile */
+  .product-card {
+    width: 100%;
+    max-width: none;
   }
 
   /* Mobile responsive adjustments for hover actions */
@@ -1079,6 +1093,16 @@
   .product-hover-overlay {
     padding: 20px 15px 15px;
   }
+
+  /* Mobile product image adjustments */
+  .product-image-container {
+    min-height: 200px;
+    max-height: 250px;
+  }
+
+  .product-image {
+    max-height: 200px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -1086,8 +1110,10 @@
     padding: 4rem 0 2rem 0;
   }
 
+  /* Ensure single column layout on small mobile */
   .products-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr !important;
+    gap: 1rem;
   }
 
   .filter-buttons {
@@ -1097,6 +1123,74 @@
   .btn-filter {
     padding: 0.875rem 1rem;
     font-size: 0.875rem;
+  }
+
+  /* Smaller product cards on very small screens */
+  .product-image-container {
+    min-height: 180px;
+    max-height: 200px;
+  }
+
+  .product-image {
+    max-height: 180px;
+  }
+
+  .product-info {
+    padding: 1rem;
+  }
+
+  .product-name {
+    font-size: 1rem;
+  }
+
+  .current-price {
+    font-size: 1.125rem;
+  }
+}
+
+/* Additional mobile-specific styles for better responsiveness */
+@media (max-width: 991px) {
+  /* Ensure filters are mobile-friendly */
+  .filters-sidebar {
+    border-radius: 15px;
+    margin-bottom: 1rem;
+  }
+
+  .filter-group {
+    gap: 0.5rem;
+  }
+
+  .filter-select,
+  .search-input,
+  .price-input {
+    font-size: 14px;
+  }
+
+  /* Mobile pagination adjustments */
+  .pagination {
+    padding: 0.75rem;
+    gap: 0.25rem;
+  }
+
+  .page-btn {
+    width: 36px;
+    height: 36px;
+    font-size: 14px;
+  }
+}
+
+/* Ensure consistent mobile layout across all screen sizes */
+@media (max-width: 767px) {
+  .products-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 1.5rem !important;
+  }
+
+  .product-card {
+    margin: 0 auto;
+    max-width: 100%;
+    width: 100%;
   }
 }
 

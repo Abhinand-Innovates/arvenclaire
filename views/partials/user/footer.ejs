@@ -548,6 +548,78 @@
             .app-btn {
                 max-width: 100%;
             }
+
+            /* Enhanced mobile responsiveness for email field */
+            .newsletter-input {
+                padding: 1rem;
+                font-size: 1rem;
+                border-radius: 10px 10px 0 0;
+            }
+
+            .newsletter-btn {
+                padding: 1rem;
+                font-size: 1rem;
+            }
+        }
+
+        /* Enhanced mobile responsiveness for email field */
+        @media (max-width: 480px) {
+            .newsletter-section {
+                padding: 0.75rem;
+                margin: 0 -0.5rem;
+            }
+
+            .newsletter-title {
+                font-size: 1rem;
+                margin-bottom: 0.75rem;
+            }
+
+            .newsletter-desc {
+                font-size: 0.8rem;
+                margin-bottom: 0.75rem;
+            }
+
+            .input-wrapper {
+                border-radius: 8px;
+            }
+
+            .newsletter-input {
+                padding: 0.875rem 1rem;
+                font-size: 0.95rem;
+                border-radius: 8px 8px 0 0;
+            }
+
+            .newsletter-input::placeholder {
+                font-size: 0.9rem;
+            }
+
+            .newsletter-btn {
+                padding: 0.875rem 1rem;
+                font-size: 0.95rem;
+                border-radius: 0 0 8px 8px;
+            }
+        }
+
+        /* Extra small screens */
+        @media (max-width: 360px) {
+            .newsletter-section {
+                padding: 0.5rem;
+                margin: 0 -0.25rem;
+            }
+
+            .newsletter-input {
+                padding: 0.75rem 0.875rem;
+                font-size: 0.9rem;
+            }
+
+            .newsletter-btn {
+                padding: 0.75rem 0.875rem;
+                font-size: 0.9rem;
+            }
+
+            .newsletter-input::placeholder {
+                font-size: 0.85rem;
+            }
         }
     </style>
 </head>
@@ -605,7 +677,7 @@
                                 <li><a href="#"><span>Shipping Policy</span></a></li>
                                 <li><a href="#"><span>Returns & Exchanges</span></a></li>
                                 <li><a href="#"><span>Payment Options</span></a></li>
-                                <li><a href="#"><span>Contact Us</span></a></li>
+                                <li><a href="/contact"><span>Contact Us</span></a></li>
                             </ul>
                         </div>
                     </div>
