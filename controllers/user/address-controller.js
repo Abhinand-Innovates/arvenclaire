@@ -1,5 +1,9 @@
 const Address = require('../../models/address-schema');
 const User = require('../../models/user-schema');
+const { 
+    validateAddAddressForm, 
+    validateUpdateAddressForm 
+} = require('../../validator/addressValidator');
 
 
 // Load address listing page
@@ -74,91 +78,16 @@ const loadAddressForm = async (req, res) => {
 const saveAddress = async (req, res) => {
   try {
     const userId = req.session.userId;
-    const {
-      fullName,
-      mobileNumber,
-      addressDetails,
-      district,
-      city,
-      state,
-      pincode,
-      landmark,
-      addressType,
-      altPhone,
-      makeDefault
-    } = req.body;
-
-    // Validate required fields
-    if (!fullName || !mobileNumber || !addressDetails || !district || !city || !state || !pincode || !addressType) {
+    
+    // Validate form data using the validator
+    const validation = validateAddAddressForm(req.body);
+    
+    if (!validation.isValid) {
+      // Return the first validation error
+      const firstError = Object.values(validation.errors)[0];
       return res.status(400).json({
         success: false,
-        message: 'Please fill in all required fields'
-      });
-    }
-
-    // Validate full name (same as signup form)
-    const trimmedFullName = fullName.trim();
-    if (trimmedFullName.length < 4) {
-      return res.status(400).json({
-        success: false,
-        message: 'Full name must be at least 4 characters long'
-      });
-    }
-    if (!/^[a-zA-Z\s]+$/.test(trimmedFullName)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Full name can only contain alphabets and spaces'
-      });
-    }
-
-    // Validate mobile number (same as signup form)
-    const mobileRegex = /^[6-9]\d{9}$/;
-    if (!mobileRegex.test(mobileNumber.trim())) {
-      return res.status(400).json({
-        success: false,
-        message: 'Mobile number must be 10 digits and start with 6, 7, 8, or 9'
-      });
-    }
-
-    // Validate alternative phone if provided
-    if (altPhone && altPhone.trim()) {
-      if (!mobileRegex.test(altPhone.trim())) {
-        return res.status(400).json({
-          success: false,
-          message: 'Alternative phone must be 10 digits and start with 6, 7, 8, or 9'
-        });
-      }
-    }
-
-    // Validate address details
-    if (addressDetails.trim().length < 10) {
-      return res.status(400).json({
-        success: false,
-        message: 'Address details must be at least 10 characters long'
-      });
-    }
-
-    // Validate city
-    const trimmedCity = city.trim();
-    if (trimmedCity.length < 2) {
-      return res.status(400).json({
-        success: false,
-        message: 'City must be at least 2 characters long'
-      });
-    }
-    if (!/^[a-zA-Z\s]+$/.test(trimmedCity)) {
-      return res.status(400).json({
-        success: false,
-        message: 'City can only contain alphabets and spaces'
-      });
-    }
-
-    // Validate pincode (6 digits, cannot start with 0)
-    const pincodeRegex = /^[1-9]\d{5}$/;
-    if (!pincodeRegex.test(pincode.trim())) {
-      return res.status(400).json({
-        success: false,
-        message: 'Pincode must be exactly 6 digits and cannot start with 0'
+        message: firstError
       });
     }
 
@@ -166,7 +95,7 @@ const saveAddress = async (req, res) => {
     let addressDoc = await Address.findOne({ userId });
 
     // If this is set as default, remove default from other addresses
-    if (makeDefault === 'true' || makeDefault === true) {
+    if (validation.validatedData.isDefault) {
       if (addressDoc) {
         addressDoc.address.forEach(addr => {
           addr.isDefault = false;
@@ -174,17 +103,7 @@ const saveAddress = async (req, res) => {
       }
     }
 
-    const newAddress = {
-      addressType,
-      name: trimmedFullName,
-      city: trimmedCity,
-      landMark: addressDetails.trim(),
-      state,
-      pincode: parseInt(pincode.trim()),
-      phone: mobileNumber.trim(),
-      altPhone: altPhone && altPhone.trim() ? altPhone.trim() : null,
-      isDefault: makeDefault === 'true' || makeDefault === true || false
-    };
+    const newAddress = validation.validatedData;
 
     // If this is the first address, make it default automatically
     if (!addressDoc || addressDoc.address.length === 0) {
@@ -231,91 +150,16 @@ const updateAddress = async (req, res) => {
   try {
     const userId = req.session.userId;
     const addressId = req.params.id;
-    const {
-      fullName,
-      mobileNumber,
-      addressDetails,
-      district,
-      city,
-      state,
-      pincode,
-      landmark,
-      addressType,
-      altPhone,
-      makeDefault
-    } = req.body;
-
-    // Validate required fields
-    if (!fullName || !mobileNumber || !addressDetails || !district || !city || !state || !pincode || !addressType) {
+    
+    // Validate form data using the validator
+    const validation = validateUpdateAddressForm(req.body);
+    
+    if (!validation.isValid) {
+      // Return the first validation error
+      const firstError = Object.values(validation.errors)[0];
       return res.status(400).json({
         success: false,
-        message: 'Please fill in all required fields'
-      });
-    }
-
-    // Validate full name (same as signup form)
-    const trimmedFullName = fullName.trim();
-    if (trimmedFullName.length < 4) {
-      return res.status(400).json({
-        success: false,
-        message: 'Full name must be at least 4 characters long'
-      });
-    }
-    if (!/^[a-zA-Z\s]+$/.test(trimmedFullName)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Full name can only contain alphabets and spaces'
-      });
-    }
-
-    // Validate mobile number (same as signup form)
-    const mobileRegex = /^[6-9]\d{9}$/;
-    if (!mobileRegex.test(mobileNumber.trim())) {
-      return res.status(400).json({
-        success: false,
-        message: 'Mobile number must be 10 digits and start with 6, 7, 8, or 9'
-      });
-    }
-
-    // Validate alternative phone if provided
-    if (altPhone && altPhone.trim()) {
-      if (!mobileRegex.test(altPhone.trim())) {
-        return res.status(400).json({
-          success: false,
-          message: 'Alternative phone must be 10 digits and start with 6, 7, 8, or 9'
-        });
-      }
-    }
-
-    // Validate address details
-    if (addressDetails.trim().length < 10) {
-      return res.status(400).json({
-        success: false,
-        message: 'Address details must be at least 10 characters long'
-      });
-    }
-
-    // Validate city
-    const trimmedCity = city.trim();
-    if (trimmedCity.length < 2) {
-      return res.status(400).json({
-        success: false,
-        message: 'City must be at least 2 characters long'
-      });
-    }
-    if (!/^[a-zA-Z\s]+$/.test(trimmedCity)) {
-      return res.status(400).json({
-        success: false,
-        message: 'City can only contain alphabets and spaces'
-      });
-    }
-
-    // Validate pincode (6 digits, cannot start with 0)
-    const pincodeRegex = /^[1-9]\d{5}$/;
-    if (!pincodeRegex.test(pincode.trim())) {
-      return res.status(400).json({
-        success: false,
-        message: 'Pincode must be exactly 6 digits and cannot start with 0'
+        message: firstError
       });
     }
 
@@ -336,7 +180,7 @@ const updateAddress = async (req, res) => {
     }
 
     // If this is set as default, remove default from other addresses
-    if (makeDefault === 'true' || makeDefault === true) {
+    if (validation.validatedData.isDefault) {
       addressDoc.address.forEach(addr => {
         if (addr._id.toString() !== addressId) {
           addr.isDefault = false;
@@ -344,16 +188,8 @@ const updateAddress = async (req, res) => {
       });
     }
 
-    // Update address fields
-    address.addressType = addressType;
-    address.name = trimmedFullName;
-    address.city = trimmedCity;
-    address.landMark = addressDetails.trim();
-    address.state = state;
-    address.pincode = parseInt(pincode.trim());
-    address.phone = mobileNumber.trim();
-    address.altPhone = altPhone && altPhone.trim() ? altPhone.trim() : null;
-    address.isDefault = makeDefault === 'true' || makeDefault === true || false;
+    // Update address fields with validated data
+    Object.assign(address, validation.validatedData);
 
     await addressDoc.save();
 

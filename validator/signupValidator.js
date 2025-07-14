@@ -1,5 +1,4 @@
-// Signup form validation utilities
-// Contains validation functions for user registration
+
 
 /**
  * Validates fullname field
@@ -50,6 +49,7 @@ const validateFullname = (fullname) => {
     trimmedValue: trimmedFullname
   };
 };
+
 
 
 /**
@@ -144,6 +144,7 @@ const validateEmail = (email) => {
 };
 
 
+
 /**
  * Validates password field
  * @param {string} password - The password to validate
@@ -175,6 +176,7 @@ const validatePassword = (password) => {
 };
 
 
+
 /**
  * Validates phone field
  * @param {string} phone - The phone to validate
@@ -204,6 +206,7 @@ const validatePhone = (phone) => {
     trimmedValue: trimmedPhone
   };
 };
+
 
 
 /**

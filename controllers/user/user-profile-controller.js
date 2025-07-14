@@ -9,6 +9,7 @@ const Wallet = require('../../models/wallet-schema');
 const sharp = require("sharp");
 const path = require("path");
 const fs = require("fs");
+const { validateProfilePhone, validateEmailFormat } = require('../../validator/addressValidator');
 
 const loadProfile = async (req, res) => {
   try {
@@ -155,9 +156,10 @@ const updateProfileData = async (req, res) => {
       errors.fullname = 'Full name should not contain numbers';
     }
 
-    // Validate phone (optional)
-    if (phone && phone.trim() && !/^[6-9]\d{9}$/.test(phone.trim())) {
-      errors.phone = 'Phone number must be 10 digits and start with 6, 7, 8, or 9';
+    // Validate phone using the validator
+    const phoneValidation = validateProfilePhone(phone);
+    if (!phoneValidation.isValid) {
+      errors[phoneValidation.field] = phoneValidation.error;
     }
 
     // If there are validation errors, return them
@@ -184,8 +186,8 @@ const updateProfileData = async (req, res) => {
     };
 
     // Only update phone if provided
-    if (phone && phone.trim()) {
-      updateData.phone = phone.trim();
+    if (phoneValidation.trimmedValue) {
+      updateData.phone = phoneValidation.trimmedValue;
     } else if (phone === '') {
       // If empty string is sent, remove phone number
       updateData.phone = null;
@@ -381,25 +383,18 @@ const changeEmail = async (req, res) => {
       });
     }
 
-    // Validate new email
-    if (!newEmail || !newEmail.trim()) {
+    // Validate new email using the validator
+    const emailValidation = validateEmailFormat(newEmail);
+    if (!emailValidation.isValid) {
       return res.status(400).json({
         success: false,
-        message: 'New email is required'
-      });
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(newEmail.trim())) {
-      return res.status(400).json({
-        success: false,
-        message: 'Please enter a valid email address'
+        message: emailValidation.error
       });
     }
 
     // Check if new email already exists
     const existingUser = await User.findOne({
-      email: newEmail.toLowerCase().trim(),
+      email: emailValidation.trimmedValue,
       _id: { $ne: sessionOtp.userId }
     });
 
@@ -413,7 +408,7 @@ const changeEmail = async (req, res) => {
     // Update user email
     const updatedUser = await User.findByIdAndUpdate(
       sessionOtp.userId,
-      { email: newEmail.toLowerCase().trim() },
+      { email: emailValidation.trimmedValue },
       { new: true, runValidators: true }
     ).select('-password');
 
@@ -425,7 +420,7 @@ const changeEmail = async (req, res) => {
     }
 
     // Update session email
-    req.session.email = newEmail.toLowerCase().trim();
+    req.session.email = emailValidation.trimmedValue;
 
     // Clear email change session
     req.session.emailChangeOtp = null;

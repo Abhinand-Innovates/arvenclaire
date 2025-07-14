@@ -5,16 +5,13 @@ const bcrypt = require("bcrypt");
 
 const getAdminLogin = async (req, res) => {
   try {
-    // Check if admin is already logged in
     if (req.session && req.session.admin_id) {
       const admin = await User.findById(req.session.admin_id);
       
-      // If admin exists and is not blocked, redirect to dashboard
       if (admin && admin.isAdmin && !admin.isBlocked) {
         return res.redirect('/admin-dashboard');
       }
       
-      // If admin is blocked or doesn't exist, clear session and continue to login
       req.session.destroy((err) => {
         if (err) console.error('Error destroying admin session:', err);
       });
@@ -36,7 +33,6 @@ const postAdminLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Validate input
     if (!email || !password) {
       return res.status(400).json({
         success: false,
@@ -44,7 +40,6 @@ const postAdminLogin = async (req, res) => {
       });
     }
 
-    // Find admin by email
     const admin = await User.findOne({ 
       email: email.toLowerCase().trim(), 
       isAdmin: true 
@@ -64,7 +59,6 @@ const postAdminLogin = async (req, res) => {
       });
     }
 
-    // Verify password
     const isMatch = await bcrypt.compare(password, admin.password);
 
     if (!isMatch) {
@@ -74,22 +68,10 @@ const postAdminLogin = async (req, res) => {
       });
     }
 
-    // Regenerate session for security
-    // req.session.regenerate((err) => {
-    //   if (err) {
-    //     console.error('Admin session regeneration error:', err);
-    //     return res.status(500).json({
-    //       success: false,
-    //       message: "Login failed. Please try again.",
-    //     });
-    //   }
-
-      // Set admin session data
       req.session.admin_id = admin._id;
       req.session.admin_email = admin.email;
       req.session.loginTime = new Date();
 
-      // Save session before responding
       req.session.save((err) => {
         if (err) {
           console.error('Admin session save error:', err);
@@ -120,13 +102,11 @@ const postAdminLogin = async (req, res) => {
 
 const getAdminDashboard = async (req, res) => {
   try {
-    // This check is redundant since isAdminAuthenticated middleware handles it,
-    // but keeping for extra safety
+
     if (!req.session.admin_id) {
       return res.redirect('/admin-login');
     }
 
-    // Admin data is already available in res.locals.admin from middleware
     return res.render('admin-dashboard', {
       admin: res.locals.admin
     });
@@ -143,12 +123,11 @@ const getAdminDashboard = async (req, res) => {
 
 const logoutAdminDashboard = async (req, res) => {
   try {
-    // Check if there's an active admin session
+
     if (!req.session.admin_id) {
       return res.redirect('/admin-login');
     }
 
-    // Destroy session and clear cookies
     req.session.destroy((err) => {
       if (err) {
         console.error('Error destroying admin session:', err);
@@ -158,10 +137,8 @@ const logoutAdminDashboard = async (req, res) => {
         });
       }
 
-      // Clear all session-related cookies
       res.clearCookie('connect.sid');
       
-      // Also clear any other potential session cookies
       if (req.cookies) {
         Object.keys(req.cookies).forEach(cookieName => {
           res.clearCookie(cookieName);
