@@ -156,12 +156,7 @@ const ledgerController = {
             const { entries, summary } = await ledgerController.getLedgerData(filters);
 
             const doc = new PDFDocument({ 
-                margin: {
-                    top: 40,
-                    bottom: 40,
-                    left: 25,
-                    right: 25
-                },
+                margin: 50,
                 size: 'A4',
                 layout: 'landscape'
             });
@@ -173,119 +168,266 @@ const ledgerController = {
 
             doc.pipe(res);
 
+            // Page dimensions and layout constants (landscape)
             const pageWidth = 841.89;
             const pageHeight = 595.28;
-            const leftMargin = 25;
-            const rightMargin = 25;
-            const topMargin = 40;
-            const bottomMargin = 40;
-            const usableWidth = pageWidth - leftMargin - rightMargin;
-            const usableHeight = pageHeight - topMargin - bottomMargin;
+            const margin = 50;
+            const usableWidth = pageWidth - (margin * 2);
 
-            doc.fontSize(24).fillColor('#000000');
-            doc.text('ARVENCLAIRE', { align: 'center' });
-            doc.moveDown(0.3);
+            // Company header section
+            doc.rect(margin, margin, usableWidth, 70).fill('#f8f9fa');
+            doc.strokeColor('#dee2e6').rect(margin, margin, usableWidth, 70).stroke();
             
-            doc.fontSize(16).fillColor('#666666');
-            doc.text('General Ledger Report', { align: 'center' });
-            doc.moveDown(1);
+            // Company name
+            doc.fontSize(26).fillColor('#2c3e50');
+            doc.text('ARVENCLAIRE', margin + 20, margin + 12, { align: 'center', width: usableWidth - 40 });
             
-            doc.fontSize(11).fillColor('#333333');
+            // Report title
+            doc.fontSize(14).fillColor('#34495e');
+            doc.text('General Ledger Report', margin + 20, margin + 45, { align: 'center', width: usableWidth - 40 });
+
+            let currentY = margin + 90;
+            
+            // Report generation info section
+            doc.rect(margin, currentY, usableWidth, 50).fill('#e8f4fd');
+            doc.strokeColor('#3498db').rect(margin, currentY, usableWidth, 50).stroke();
+            
+            doc.fontSize(11).fillColor('#2c3e50');
+            doc.text('Report Information', margin + 15, currentY + 8);
+            
+            doc.fontSize(10).fillColor('#34495e');
             const currentDate = new Date();
-            doc.text(`Generated: ${currentDate.toLocaleDateString('en-GB')} at ${currentDate.toLocaleTimeString('en-GB')}`, { align: 'center' });
+            doc.text(`Generated: ${currentDate.toLocaleDateString('en-GB')} at ${currentDate.toLocaleTimeString('en-GB')}`, 
+                     margin + 15, currentY + 22);
             
+            let periodText = `Period: ${filters.timePeriod?.toUpperCase() || 'MONTHLY'}`;
             if (filters.startDate && filters.endDate) {
-                doc.text(`Period: ${new Date(filters.startDate).toLocaleDateString('en-GB')} to ${new Date(filters.endDate).toLocaleDateString('en-GB')}`, { align: 'center' });
-            } else {
-                doc.text(`Period: ${filters.timePeriod?.toUpperCase() || 'MONTHLY'}`, { align: 'center' });
+                periodText = `Custom Period: ${new Date(filters.startDate).toLocaleDateString('en-GB')} to ${new Date(filters.endDate).toLocaleDateString('en-GB')}`;
             }
+            doc.text(periodText + ` | Payment: ${filters.paymentMethod?.toUpperCase() || 'ALL'} | Status: ${filters.orderStatus?.toUpperCase() || 'ALL'}`, 
+                     margin + 15, currentY + 34);
             
-            doc.text(`Payment: ${filters.paymentMethod?.toUpperCase() || 'ALL'} | Status: ${filters.orderStatus?.toUpperCase() || 'ALL'}`, { align: 'center' });
-            doc.moveDown(1.5);
+            currentY += 70;
 
-            doc.fontSize(16).fillColor('#000000');
-            doc.text('LEDGER SUMMARY', { align: 'center', underline: true });
-            doc.moveDown(1);
+            // Ledger Summary Section
+            doc.fontSize(16).fillColor('#2c3e50');
+            doc.text('LEDGER SUMMARY', margin, currentY, { align: 'center', width: usableWidth });
+            currentY += 25;
             
-            doc.fontSize(11).fillColor('#333333');
-            const col1 = leftMargin;
-            const col2 = leftMargin + (usableWidth / 3);
-            const col3 = leftMargin + (2 * usableWidth / 3);
-            const colWidth = (usableWidth / 3) - 15;
+            // Summary cards layout (3 cards in landscape)
+            const cardWidth = (usableWidth - 40) / 3;
+            const cardHeight = 70;
+            const cardSpacing = 20;
             
-            let summaryY = doc.y;
+            // Card 1: Opening & Closing Balance
+            doc.rect(margin, currentY, cardWidth, cardHeight).fill('#e8f5e8');
+            doc.strokeColor('#27ae60').rect(margin, currentY, cardWidth, cardHeight).stroke();
+            doc.fontSize(11).fillColor('#27ae60');
+            doc.text('BALANCE SUMMARY', margin + 10, currentY + 8, { width: cardWidth - 20, align: 'center' });
+            doc.fontSize(10).fillColor('#2c3e50');
+            doc.text(`Opening: ₹${summary.openingBalance.toLocaleString('en-IN')}`, margin + 10, currentY + 25, { width: cardWidth - 20, align: 'center' });
+            doc.fontSize(12).fillColor('#2c3e50');
+            doc.text(`Closing: ₹${summary.closingBalance.toLocaleString('en-IN')}`, margin + 10, currentY + 42, { width: cardWidth - 20, align: 'center' });
             
-            doc.text(`Opening Balance: ₹${summary.openingBalance.toLocaleString('en-IN')}`, col1, summaryY, { width: colWidth });
-            doc.text(`Total Credits: ₹${summary.totalCredit.toLocaleString('en-IN')}`, col2, summaryY, { width: colWidth });
-            doc.text(`Total Debits: ₹${summary.totalDebit.toLocaleString('en-IN')}`, col3, summaryY, { width: colWidth });
-            summaryY += 18;
+            // Card 2: Credits & Debits
+            doc.rect(margin + cardWidth + cardSpacing, currentY, cardWidth, cardHeight).fill('#fff3cd');
+            doc.strokeColor('#f39c12').rect(margin + cardWidth + cardSpacing, currentY, cardWidth, cardHeight).stroke();
+            doc.fontSize(11).fillColor('#f39c12');
+            doc.text('TRANSACTION SUMMARY', margin + cardWidth + cardSpacing + 10, currentY + 8, { width: cardWidth - 20, align: 'center' });
+            doc.fontSize(10).fillColor('#2c3e50');
+            doc.text(`Credits: ₹${summary.totalCredit.toLocaleString('en-IN')}`, margin + cardWidth + cardSpacing + 10, currentY + 25, { width: cardWidth - 20, align: 'center' });
+            doc.text(`Debits: ₹${summary.totalDebit.toLocaleString('en-IN')}`, margin + cardWidth + cardSpacing + 10, currentY + 42, { width: cardWidth - 20, align: 'center' });
             
-            doc.text(`Net Balance: ₹${summary.netBalance.toLocaleString('en-IN')}`, col1, summaryY, { width: colWidth });
-            doc.text(`Closing Balance: ₹${summary.closingBalance.toLocaleString('en-IN')}`, col2, summaryY, { width: colWidth });
-            doc.text(`Total Entries: ${summary.totalEntries.toLocaleString('en-IN')}`, col3, summaryY, { width: colWidth });
+            // Card 3: Net Balance & Entries
+            doc.rect(margin + (cardWidth + cardSpacing) * 2, currentY, cardWidth, cardHeight).fill('#f8d7da');
+            doc.strokeColor('#e74c3c').rect(margin + (cardWidth + cardSpacing) * 2, currentY, cardWidth, cardHeight).stroke();
+            doc.fontSize(11).fillColor('#e74c3c');
+            doc.text('NET POSITION', margin + (cardWidth + cardSpacing) * 2 + 10, currentY + 8, { width: cardWidth - 20, align: 'center' });
+            doc.fontSize(12).fillColor('#2c3e50');
+            doc.text(`₹${summary.netBalance.toLocaleString('en-IN')}`, margin + (cardWidth + cardSpacing) * 2 + 10, currentY + 25, { width: cardWidth - 20, align: 'center' });
+            doc.fontSize(9).fillColor('#34495e');
+            doc.text(`${summary.totalEntries} Entries`, margin + (cardWidth + cardSpacing) * 2 + 10, currentY + 50, { width: cardWidth - 20, align: 'center' });
             
-            doc.y = summaryY + 25;
+            currentY += cardHeight + 30;
 
-            doc.fontSize(14).fillColor('#000000');
-            doc.text('LEDGER ENTRIES', { align: 'center', underline: true });
-            doc.moveDown(1);
+            // Performance Metrics Table
+            doc.fontSize(14).fillColor('#2c3e50');
+            doc.text('FINANCIAL METRICS', margin, currentY, { align: 'center', width: usableWidth });
+            currentY += 25;
             
-            doc.fontSize(10).fillColor('#000000');
-            const tableY = doc.y;
+            const metricsTableY = currentY;
+            const metricsRowHeight = 22;
+            const metricsColWidths = [usableWidth * 0.35, usableWidth * 0.25, usableWidth * 0.4];
+            let metricsColX = [margin, margin + metricsColWidths[0], margin + metricsColWidths[0] + metricsColWidths[1]];
             
-            const colWidths = [70, 95, 115, 140, 80, 80, 85, 75, 75];
-            const colX = [
-                leftMargin, 
-                leftMargin + 70, 
-                leftMargin + 165, 
-                leftMargin + 280, 
-                leftMargin + 420, 
-                leftMargin + 500, 
-                leftMargin + 580, 
-                leftMargin + 665,
-                leftMargin + 740
+            // Metrics table header
+            doc.rect(margin, metricsTableY, usableWidth, metricsRowHeight).fill('#3498db');
+            doc.strokeColor('#2980b9').rect(margin, metricsTableY, usableWidth, metricsRowHeight).stroke();
+            doc.fontSize(11).fillColor('#ffffff');
+            doc.text('Financial Metric', metricsColX[0] + 10, metricsTableY + 7, { width: metricsColWidths[0] - 20, align: 'left' });
+            doc.text('Amount', metricsColX[1] + 10, metricsTableY + 7, { width: metricsColWidths[1] - 20, align: 'center' });
+            doc.text('Description', metricsColX[2] + 10, metricsTableY + 7, { width: metricsColWidths[2] - 20, align: 'center' });
+            
+            const metricsData = [
+                ['Total Revenue (Credits)', `₹${summary.totalCredit.toLocaleString('en-IN')}`, 'Sales and income transactions'],
+                ['Total Expenses (Debits)', `₹${summary.totalDebit.toLocaleString('en-IN')}`, 'Refunds and expense transactions'],
+                ['Net Cash Flow', `₹${summary.netBalance.toLocaleString('en-IN')}`, 'Credits minus debits'],
+                ['Average Transaction', `₹${summary.totalEntries > 0 ? Math.round(summary.totalCredit / summary.totalEntries).toLocaleString('en-IN') : '0'}`, 'Average credit per transaction']
             ];
-            const headers = ['Date', 'Order ID', 'Customer', 'Description', 'Debit', 'Credit', 'Balance', 'Status', 'Payment'];
             
-            headers.forEach((header, i) => {
-                doc.text(header, colX[i], tableY, { width: colWidths[i], align: 'center' });
+            metricsData.forEach((row, index) => {
+                const rowY = metricsTableY + metricsRowHeight + (index * metricsRowHeight);
+                const bgColor = index % 2 === 0 ? '#f8f9fa' : '#ffffff';
+                
+                doc.rect(margin, rowY, usableWidth, metricsRowHeight).fill(bgColor);
+                doc.strokeColor('#dee2e6').rect(margin, rowY, usableWidth, metricsRowHeight).stroke();
+                
+                doc.fontSize(10).fillColor('#2c3e50');
+                doc.text(row[0], metricsColX[0] + 10, rowY + 7, { width: metricsColWidths[0] - 20, align: 'left' });
+                doc.text(row[1], metricsColX[1] + 10, rowY + 7, { width: metricsColWidths[1] - 20, align: 'center' });
+                doc.text(row[2], metricsColX[2] + 10, rowY + 7, { width: metricsColWidths[2] - 20, align: 'left' });
             });
             
-            doc.y = tableY + 15;
-            
-            doc.fontSize(9);
-            const maxRows = Math.min(entries.length, 30);
-            entries.slice(0, maxRows).forEach((entry, index) => {
-                const rowY = doc.y;
-                
-                if (index % 2 === 0) {
-                    doc.rect(leftMargin - 5, rowY - 2, usableWidth + 10, 12)
-                       .fillColor('#f8f9fa')
-                       .fill();
-                    doc.fillColor('#333333');
-                }
-                
-                doc.text(entry.date, colX[0], rowY, { width: colWidths[0], align: 'left' });
-                doc.text(entry.orderId.length > 11 ? entry.orderId.substring(0, 11) + '...' : entry.orderId, colX[1], rowY, { width: colWidths[1], align: 'left' });
-                doc.text(entry.customer.length > 14 ? entry.customer.substring(0, 14) + '...' : entry.customer, colX[2], rowY, { width: colWidths[2], align: 'left' });
-                doc.text(entry.description.length > 17 ? entry.description.substring(0, 17) + '...' : entry.description, colX[3], rowY, { width: colWidths[3], align: 'left' });
-                doc.text(`₹${entry.debit.toLocaleString('en-IN')}`, colX[4], rowY, { width: colWidths[4], align: 'right' });
-                doc.text(`₹${entry.credit.toLocaleString('en-IN')}`, colX[5], rowY, { width: colWidths[5], align: 'right' });
-                doc.text(`₹${entry.balance.toLocaleString('en-IN')}`, colX[6], rowY, { width: colWidths[6], align: 'right' });
-                doc.text(entry.status.length > 7 ? entry.status.substring(0, 7) + '...' : entry.status, colX[7], rowY, { width: colWidths[7], align: 'center' });
-                doc.text(entry.paymentMethod.length > 8 ? entry.paymentMethod.substring(0, 8) + '...' : entry.paymentMethod, colX[8], rowY, { width: colWidths[8], align: 'center' });
-                doc.y = rowY + 12;
-            });
+            currentY = metricsTableY + metricsRowHeight + (metricsData.length * metricsRowHeight) + 30;
 
-            if (entries.length > maxRows) {
-                doc.moveDown(0.5);
-                doc.fontSize(8).fillColor('#666666');
-                doc.text(`Note: Showing first ${maxRows} entries. Total: ${entries.length}`, { align: 'center' });
+            // Check if we need a new page for ledger entries
+            if (currentY > pageHeight - margin - 200) {
+                doc.addPage();
+                currentY = margin + 20;
             }
 
-            doc.fontSize(8).fillColor('#666666');
-            doc.text(`ArvenClaire Ledger Report - Generated on ${new Date().toLocaleDateString('en-GB')}`, 30, 550, { align: 'center', width: usableWidth });
-            doc.text('* All amounts in Indian Rupees (₹). Credits represent sales revenue.', 30, 560, { align: 'center', width: usableWidth });
+            // Ledger Entries Section
+            if (entries.length > 0) {
+                doc.fontSize(14).fillColor('#2c3e50');
+                doc.text('DETAILED LEDGER ENTRIES', margin, currentY, { align: 'center', width: usableWidth });
+                currentY += 15;
+                
+                doc.fontSize(10).fillColor('#6c757d');
+                doc.text(`Showing ${Math.min(entries.length, 20)} of ${entries.length} entries`, margin, currentY, { align: 'center', width: usableWidth });
+                currentY += 25;
+                
+                const ledgerTableY = currentY;
+                const ledgerRowHeight = 18;
+                const ledgerColWidths = [
+                    usableWidth * 0.1,   // Date
+                    usableWidth * 0.12,  // Order ID
+                    usableWidth * 0.15,  // Customer
+                    usableWidth * 0.18,  // Description
+                    usableWidth * 0.11,  // Debit
+                    usableWidth * 0.11,  // Credit
+                    usableWidth * 0.12,  // Balance
+                    usableWidth * 0.11   // Status
+                ];
+                const ledgerColX = [];
+                let ledgerCurrentX = margin;
+                ledgerColWidths.forEach(width => {
+                    ledgerColX.push(ledgerCurrentX);
+                    ledgerCurrentX += width;
+                });
+                
+                // Ledger table header
+                doc.rect(margin, ledgerTableY, usableWidth, ledgerRowHeight).fill('#495057');
+                doc.strokeColor('#343a40').rect(margin, ledgerTableY, usableWidth, ledgerRowHeight).stroke();
+                doc.fontSize(10).fillColor('#ffffff');
+                const ledgerHeaders = ['Date', 'Order ID', 'Customer', 'Description', 'Debit', 'Credit', 'Balance', 'Status'];
+                ledgerHeaders.forEach((header, i) => {
+                    doc.text(header, ledgerColX[i] + 5, ledgerTableY + 5, { width: ledgerColWidths[i] - 10, align: 'center' });
+                });
+                
+                // Ledger data rows
+                const maxLedgerRows = Math.min(entries.length, 20);
+                entries.slice(0, maxLedgerRows).forEach((entry, index) => {
+                    const rowY = ledgerTableY + ledgerRowHeight + (index * ledgerRowHeight);
+                    const bgColor = index % 2 === 0 ? '#f8f9fa' : '#ffffff';
+                    
+                    // Draw row background
+                    doc.rect(margin, rowY, usableWidth, ledgerRowHeight).fill(bgColor);
+                    doc.strokeColor('#dee2e6').rect(margin, rowY, usableWidth, ledgerRowHeight).stroke();
+                    
+                    // Prepare row data
+                    const ledgerRowData = [
+                        entry.date,
+                        entry.orderId.length > 12 ? entry.orderId.substring(0, 12) + '...' : entry.orderId,
+                        entry.customer.length > 15 ? entry.customer.substring(0, 15) + '...' : entry.customer,
+                        entry.description.length > 18 ? entry.description.substring(0, 18) + '...' : entry.description,
+                        entry.debit > 0 ? `₹${entry.debit.toLocaleString('en-IN')}` : '-',
+                        entry.credit > 0 ? `₹${entry.credit.toLocaleString('en-IN')}` : '-',
+                        `₹${entry.balance.toLocaleString('en-IN')}`,
+                        entry.status.length > 8 ? entry.status.substring(0, 8) + '...' : entry.status
+                    ];
+                    
+                    // Draw each cell
+                    ledgerRowData.forEach((data, i) => {
+                        let align = 'left';
+                        let textColor = '#2c3e50';
+                        
+                        // Set alignment based on column
+                        if (i >= 4 && i <= 6) align = 'right'; // Amount columns
+                        else if (i === 7) align = 'center'; // Status column
+                        
+                        // Color coding for amounts
+                        if (i === 4 && entry.debit > 0) {
+                            textColor = '#e74c3c'; // Red for debits
+                        } else if (i === 5 && entry.credit > 0) {
+                            textColor = '#27ae60'; // Green for credits
+                        }
+                        
+                        doc.fontSize(8).fillColor(textColor);
+                        doc.text(data, ledgerColX[i] + 5, rowY + 5, { 
+                            width: ledgerColWidths[i] - 10, 
+                            align: align
+                        });
+                    });
+                });
+                
+                // Totals row
+                const totalRowY = ledgerTableY + ledgerRowHeight + (maxLedgerRows * ledgerRowHeight);
+                doc.rect(margin, totalRowY, usableWidth, ledgerRowHeight).fill('#e8f4fd');
+                doc.strokeColor('#3498db').rect(margin, totalRowY, usableWidth, ledgerRowHeight).stroke();
+                
+                const totalRowData = [
+                    'TOTAL',
+                    '',
+                    '',
+                    '',
+                    summary.totalDebit > 0 ? `₹${summary.totalDebit.toLocaleString('en-IN')}` : '-',
+                    summary.totalCredit > 0 ? `₹${summary.totalCredit.toLocaleString('en-IN')}` : '-',
+                    `₹${summary.closingBalance.toLocaleString('en-IN')}`,
+                    ''
+                ];
+                
+                totalRowData.forEach((data, i) => {
+                    let align = 'left';
+                    if (i >= 4 && i <= 6) align = 'right'; // Amount columns
+                    else if (i === 7) align = 'center'; // Status column
+                    
+                    doc.fontSize(9).fillColor('#2c3e50');
+                    doc.text(data, ledgerColX[i] + 5, totalRowY + 5, { 
+                        width: ledgerColWidths[i] - 10, 
+                        align: align
+                    });
+                });
+                
+                if (entries.length > maxLedgerRows) {
+                    currentY = totalRowY + ledgerRowHeight + 15;
+                    doc.fontSize(9).fillColor('#6c757d');
+                    doc.text(`Note: Showing first ${maxLedgerRows} entries out of ${entries.length} total entries.`, 
+                             margin, currentY, { align: 'center', width: usableWidth });
+                }
+            }
+
+            // Footer
+            const footerY = pageHeight - margin - 30;
+            doc.strokeColor('#dee2e6').lineWidth(1)
+               .moveTo(margin, footerY)
+               .lineTo(pageWidth - margin, footerY)
+               .stroke();
+            
+            doc.fontSize(8).fillColor('#6c757d');
+            doc.text(`ArvenClaire Ledger Report - Generated on ${new Date().toLocaleDateString('en-GB')}`, 
+                     margin, footerY + 5, { align: 'center', width: usableWidth });
+            doc.text('* All amounts in Indian Rupees (₹). Credits represent sales revenue, debits represent expenses/refunds.', 
+                     margin, footerY + 15, { align: 'center', width: usableWidth });
 
             doc.end();
 

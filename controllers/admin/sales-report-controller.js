@@ -291,8 +291,9 @@ const salesReportController = {
             const { orders, salesStats, dailyAnalysis } = await salesReportController.getFilteredData(filters);
 
             const doc = new PDFDocument({ 
-                margin: 40,
-                size: 'A4'
+                margin: 50,
+                size: 'A4',
+                bufferPages: true
             });
             
             const filename = `ArvenClaire-Sales-Report-${new Date().toISOString().split('T')[0]}.pdf`;
@@ -302,162 +303,303 @@ const salesReportController = {
 
             doc.pipe(res);
 
+            // Page dimensions and layout constants
             const pageWidth = 595.28;
-            const leftMargin = 40;
-            const usableWidth = pageWidth - 80;
+            const pageHeight = 841.89;
+            const margin = 50;
+            const usableWidth = pageWidth - (margin * 2);
+            const usableHeight = pageHeight - (margin * 2);
 
-            doc.fontSize(24).fillColor('#000000');
-            doc.text('ARVENCLAIRE', { align: 'center' });
-            doc.moveDown(0.3);
+            // Helper function to draw borders and backgrounds
+            const drawTableBorder = (x, y, width, height, fillColor = null) => {
+                if (fillColor) {
+                    doc.rect(x, y, width, height).fillAndStroke(fillColor, '#000000');
+                } else {
+                    doc.rect(x, y, width, height).stroke('#000000');
+                }
+            };
+
+            // Helper function to add page header
+            const addPageHeader = () => {
+                // Company logo/header section with background
+                doc.rect(margin, margin, usableWidth, 80).fillAndStroke('#f8f9fa', '#dee2e6');
+                
+                // Company name
+                doc.fontSize(28).fillColor('#2c3e50').font('Helvetica-Bold');
+                doc.text('ARVENCLAIRE', margin + 20, margin + 15, { align: 'center', width: usableWidth - 40 });
+                
+                // Report title
+                doc.fontSize(14).fillColor('#34495e').font('Helvetica');
+                doc.text('Sales Analytics Report', margin + 20, margin + 50, { align: 'center', width: usableWidth - 40 });
+            };
+
+            // Helper function to add page footer
+            const addPageFooter = (pageNum) => {
+                const footerY = pageHeight - margin - 30;
+                
+                // Footer line
+                doc.strokeColor('#dee2e6').lineWidth(1)
+                   .moveTo(margin, footerY)
+                   .lineTo(pageWidth - margin, footerY)
+                   .stroke();
+                
+                // Footer text
+                doc.fontSize(8).fillColor('#6c757d').font('Helvetica');
+                doc.text(`ArvenClaire Sales Report - Generated on ${new Date().toLocaleDateString('en-GB')}`, 
+                         margin, footerY + 5, { align: 'left', width: usableWidth / 2 });
+                doc.text(`Page ${pageNum}`, margin + (usableWidth / 2), footerY + 5, { align: 'right', width: usableWidth / 2 });
+                doc.text('* All amounts in Indian Rupees (₹). Discounts include product offers and coupon discounts for active items only.', 
+                         margin, footerY + 15, { align: 'center', width: usableWidth });
+            };
+
+            // Page 1: Header and Report Info
+            addPageHeader();
             
-            doc.fontSize(16).fillColor('#666666');
-            doc.text('Sales Analytics Report', { align: 'center' });
-            doc.moveDown(1);
+            let currentY = margin + 100;
             
-            doc.fontSize(11).fillColor('#333333');
+            // Report generation info section
+            doc.rect(margin, currentY, usableWidth, 60).fillAndStroke('#e8f4fd', '#3498db');
+            
+            doc.fontSize(11).fillColor('#2c3e50').font('Helvetica-Bold');
+            doc.text('Report Information', margin + 15, currentY + 10);
+            
+            doc.fontSize(10).fillColor('#34495e').font('Helvetica');
             const currentDate = new Date();
-            doc.text(`Generated: ${currentDate.toLocaleDateString('en-GB')} at ${currentDate.toLocaleTimeString('en-GB')}`, { align: 'center' });
+            doc.text(`Generated: ${currentDate.toLocaleDateString('en-GB')} at ${currentDate.toLocaleTimeString('en-GB')}`, 
+                     margin + 15, currentY + 25);
             
+            let periodText = `Period: ${filters.timePeriod?.toUpperCase() || 'MONTHLY'}`;
             if (filters.startDate && filters.endDate) {
-                doc.text(`Custom Date Range: ${new Date(filters.startDate).toLocaleDateString('en-GB')} to ${new Date(filters.endDate).toLocaleDateString('en-GB')}`, { align: 'center' });
-            } else {
-                doc.text(`Period: ${filters.timePeriod?.toUpperCase() || 'MONTHLY'}`, { align: 'center' });
+                periodText = `Custom Period: ${new Date(filters.startDate).toLocaleDateString('en-GB')} to ${new Date(filters.endDate).toLocaleDateString('en-GB')}`;
+            }
+            doc.text(periodText, margin + 15, currentY + 37);
+            
+            doc.text(`Filters - Payment: ${filters.paymentMethod?.toUpperCase() || 'ALL'} | Status: ${filters.orderStatus?.toUpperCase() || 'ALL'}`, 
+                     margin + 15, currentY + 49);
+            
+            currentY += 80;
+
+            // Executive Summary Section
+            doc.fontSize(16).fillColor('#2c3e50').font('Helvetica-Bold');
+            doc.text('EXECUTIVE SUMMARY', margin, currentY, { align: 'center', width: usableWidth });
+            currentY += 25;
+            
+            // Summary cards layout
+            const cardWidth = (usableWidth - 30) / 3;
+            const cardHeight = 80;
+            const cardSpacing = 15;
+            
+            // Card 1: Revenue
+            doc.rect(margin, currentY, cardWidth, cardHeight).fillAndStroke('#e8f5e8', '#27ae60');
+            doc.fontSize(12).fillColor('#27ae60').font('Helvetica-Bold');
+            doc.text('TOTAL REVENUE', margin + 10, currentY + 10, { width: cardWidth - 20, align: 'center' });
+            doc.fontSize(16).fillColor('#2c3e50').font('Helvetica-Bold');
+            doc.text(`₹${salesStats.totalRevenue.toLocaleString('en-IN')}`, margin + 10, currentY + 30, { width: cardWidth - 20, align: 'center' });
+            doc.fontSize(9).fillColor('#34495e').font('Helvetica');
+            doc.text('Gross Revenue', margin + 10, currentY + 55, { width: cardWidth - 20, align: 'center' });
+            
+            // Card 2: Orders
+            doc.rect(margin + cardWidth + cardSpacing, currentY, cardWidth, cardHeight).fillAndStroke('#fff3cd', '#f39c12');
+            doc.fontSize(12).fillColor('#f39c12').font('Helvetica-Bold');
+            doc.text('TOTAL ORDERS', margin + cardWidth + cardSpacing + 10, currentY + 10, { width: cardWidth - 20, align: 'center' });
+            doc.fontSize(16).fillColor('#2c3e50').font('Helvetica-Bold');
+            doc.text(`${salesStats.totalOrders.toLocaleString('en-IN')}`, margin + cardWidth + cardSpacing + 10, currentY + 30, { width: cardWidth - 20, align: 'center' });
+            doc.fontSize(9).fillColor('#34495e').font('Helvetica');
+            doc.text(`Avg: ₹${Math.round(salesStats.averageOrder).toLocaleString('en-IN')}`, margin + cardWidth + cardSpacing + 10, currentY + 55, { width: cardWidth - 20, align: 'center' });
+            
+            // Card 3: Net Revenue
+            doc.rect(margin + (cardWidth + cardSpacing) * 2, currentY, cardWidth, cardHeight).fillAndStroke('#f8d7da', '#e74c3c');
+            doc.fontSize(12).fillColor('#e74c3c').font('Helvetica-Bold');
+            doc.text('NET REVENUE', margin + (cardWidth + cardSpacing) * 2 + 10, currentY + 10, { width: cardWidth - 20, align: 'center' });
+            doc.fontSize(16).fillColor('#2c3e50').font('Helvetica-Bold');
+            doc.text(`₹${salesStats.netRevenue.toLocaleString('en-IN')}`, margin + (cardWidth + cardSpacing) * 2 + 10, currentY + 30, { width: cardWidth - 20, align: 'center' });
+            doc.fontSize(9).fillColor('#34495e').font('Helvetica');
+            doc.text(`Discount: ₹${salesStats.totalDiscount.toLocaleString('en-IN')}`, margin + (cardWidth + cardSpacing) * 2 + 10, currentY + 55, { width: cardWidth - 20, align: 'center' });
+            
+            currentY += cardHeight + 30;
+
+            // Performance Metrics Table
+            doc.fontSize(14).fillColor('#2c3e50').font('Helvetica-Bold');
+            doc.text('PERFORMANCE METRICS', margin, currentY, { align: 'center', width: usableWidth });
+            currentY += 25;
+            
+            const metricsTableY = currentY;
+            const metricsRowHeight = 25;
+            const metricsColWidths = [usableWidth * 0.4, usableWidth * 0.3, usableWidth * 0.3];
+            let metricsColX = [margin, margin + metricsColWidths[0], margin + metricsColWidths[0] + metricsColWidths[1]];
+            
+            // Metrics table header
+            doc.rect(margin, metricsTableY, usableWidth, metricsRowHeight).fillAndStroke('#3498db', '#2980b9');
+            doc.fontSize(11).fillColor('#ffffff').font('Helvetica-Bold');
+            doc.text('Metric', metricsColX[0] + 10, metricsTableY + 8, { width: metricsColWidths[0] - 20, align: 'left' });
+            doc.text('Value', metricsColX[1] + 10, metricsTableY + 8, { width: metricsColWidths[1] - 20, align: 'center' });
+            doc.text('Percentage', metricsColX[2] + 10, metricsTableY + 8, { width: metricsColWidths[2] - 20, align: 'center' });
+            
+            const metricsData = [
+                ['Total Discount Amount', `₹${salesStats.totalDiscount.toLocaleString('en-IN')}`, `${((salesStats.totalDiscount / salesStats.totalRevenue) * 100).toFixed(1)}%`],
+                ['Average Order Value', `₹${Math.round(salesStats.averageOrder).toLocaleString('en-IN')}`, '-'],
+                ['Revenue Efficiency', `₹${salesStats.netRevenue.toLocaleString('en-IN')}`, `${((salesStats.netRevenue / salesStats.totalRevenue) * 100).toFixed(1)}%`]
+            ];
+            
+            metricsData.forEach((row, index) => {
+                const rowY = metricsTableY + metricsRowHeight + (index * metricsRowHeight);
+                const bgColor = index % 2 === 0 ? '#f8f9fa' : '#ffffff';
+                
+                doc.rect(margin, rowY, usableWidth, metricsRowHeight).fillAndStroke(bgColor, '#dee2e6');
+                
+                doc.fontSize(10).fillColor('#2c3e50').font('Helvetica');
+                doc.text(row[0], metricsColX[0] + 10, rowY + 8, { width: metricsColWidths[0] - 20, align: 'left' });
+                doc.font('Helvetica-Bold');
+                doc.text(row[1], metricsColX[1] + 10, rowY + 8, { width: metricsColWidths[1] - 20, align: 'center' });
+                doc.text(row[2], metricsColX[2] + 10, rowY + 8, { width: metricsColWidths[2] - 20, align: 'center' });
+            });
+            
+            currentY = metricsTableY + metricsRowHeight + (metricsData.length * metricsRowHeight) + 30;
+
+            // Daily Analysis Section
+            if (currentY > pageHeight - margin - 200) {
+                doc.addPage();
+                addPageHeader();
+                currentY = margin + 100;
             }
             
-            doc.text(`Payment: ${filters.paymentMethod?.toUpperCase() || 'ALL'} | Status: ${filters.orderStatus?.toUpperCase() || 'ALL'}`, { align: 'center' });
-            doc.moveDown(1.5);
-
-            doc.fontSize(16).fillColor('#000000');
-            doc.text('EXECUTIVE SUMMARY', { align: 'center', underline: true });
-            doc.moveDown(1);
+            doc.fontSize(14).fillColor('#2c3e50').font('Helvetica-Bold');
+            doc.text('DAILY PERFORMANCE ANALYSIS', margin, currentY, { align: 'center', width: usableWidth });
+            currentY += 25;
             
-            doc.fontSize(10).fillColor('#333333');
-            const leftCol = leftMargin;
-            const rightCol = leftMargin + (usableWidth / 2);
-            const colWidth = (usableWidth / 2) - 20;
-            
-            let summaryY = doc.y;
-            
-            doc.text(`Total Revenue (Gross): ₹${salesStats.totalRevenue.toLocaleString('en-IN')}`, leftCol, summaryY, { width: colWidth });
-            doc.text(`Net Revenue (After Discounts): ₹${salesStats.netRevenue.toLocaleString('en-IN')}`, rightCol, summaryY, { width: colWidth });
-            summaryY += 15;
-            
-            doc.text(`Total Orders: ${salesStats.totalOrders.toLocaleString('en-IN')}`, leftCol, summaryY, { width: colWidth });
-            doc.text(`Average Order Value: ₹${Math.round(salesStats.averageOrder).toLocaleString('en-IN')}`, rightCol, summaryY, { width: colWidth });
-            summaryY += 15;
-            
-            doc.text(`Total Discounts: ₹${salesStats.totalDiscount.toLocaleString('en-IN')}`, leftCol, summaryY, { width: colWidth });
-            doc.text(`Discount %: ${((salesStats.totalDiscount / salesStats.totalRevenue) * 100).toFixed(1)}%`, rightCol, summaryY, { width: colWidth });
-            
-            doc.y = summaryY + 25;
-
-            doc.fontSize(14).fillColor('#000000');
-            doc.text('DAILY PERFORMANCE ANALYSIS', { align: 'center', underline: true });
-            doc.moveDown(1);
-            
-            doc.fontSize(9).fillColor('#000000');
-            const tableY = doc.y;
-            const colWidths = [80, 60, 100, 100, 100];
-            const colX = [leftMargin, leftMargin + 80, leftMargin + 140, leftMargin + 240, leftMargin + 340];
-            const headers = ['Date', 'Orders', 'Revenue', 'Discount', 'Net Revenue'];
-            
-            headers.forEach((header, i) => {
-                doc.text(header, colX[i], tableY, { width: colWidths[i], align: 'center' });
+            const dailyTableY = currentY;
+            const dailyRowHeight = 20;
+            const dailyColWidths = [usableWidth * 0.2, usableWidth * 0.15, usableWidth * 0.25, usableWidth * 0.2, usableWidth * 0.2];
+            const dailyColX = [];
+            let dailyCurrentX = margin;
+            dailyColWidths.forEach(width => {
+                dailyColX.push(dailyCurrentX);
+                dailyCurrentX += width;
             });
             
-            doc.y = tableY + 15;
-            
-            doc.fontSize(8);
-            const maxRows = Math.min(dailyAnalysis.length, 12);
-            dailyAnalysis.slice(0, maxRows).forEach((item) => {
-                const rowY = doc.y;
-                doc.text(item.date, colX[0], rowY, { width: colWidths[0], align: 'left' });
-                doc.text(item.orders.toString(), colX[1], rowY, { width: colWidths[1], align: 'center' });
-                doc.text(`₹${item.revenue.toLocaleString('en-IN')}`, colX[2], rowY, { width: colWidths[2], align: 'center' });
-                doc.text(`₹${item.discount.toLocaleString('en-IN')}`, colX[3], rowY, { width: colWidths[3], align: 'center' });
-                doc.text(`₹${item.netRevenue.toLocaleString('en-IN')}`, colX[4], rowY, { width: colWidths[4], align: 'center' });
-                doc.y = rowY + 12;
-            });
-
-            doc.moveDown(0.5);
-            doc.fontSize(9).fillColor('#000000');
-            const totalY = doc.y;
-            doc.text('TOTAL', colX[0], totalY, { width: colWidths[0], align: 'left' });
-            doc.text(salesStats.totalOrders.toString(), colX[1], totalY, { width: colWidths[1], align: 'center' });
-            doc.text(`₹${salesStats.totalRevenue.toLocaleString('en-IN')}`, colX[2], totalY, { width: colWidths[2], align: 'center' });
-            doc.text(`₹${salesStats.totalDiscount.toLocaleString('en-IN')}`, colX[3], totalY, { width: colWidths[3], align: 'center' });
-            doc.text(`₹${salesStats.netRevenue.toLocaleString('en-IN')}`, colX[4], totalY, { width: colWidths[4], align: 'center' });
-
-            doc.y = totalY + 25;
-
-            doc.fontSize(14).fillColor('#000000');
-            doc.text('DETAILED ORDER ANALYSIS', { align: 'center', underline: true });
-            doc.moveDown(0.5);
-            
-            doc.fontSize(9).fillColor('#666666');
-            doc.text(`Showing ${Math.min(orders.length, 18)} of ${orders.length} orders`, { align: 'center' });
-            doc.moveDown(1);
-            
-            const orderHeaders = ['Order ID', 'Date', 'Customer', 'Payment', 'Status', 'Amount', 'Discount', 'Final'];
-            const orderColWidths = [65, 55, 80, 65, 55, 65, 65, 65];
-            const orderColX = [];
-            let currentX = leftMargin;
-            orderColWidths.forEach((width, i) => {
-                orderColX.push(currentX);
-                currentX += width;
+            // Daily table header
+            doc.rect(margin, dailyTableY, usableWidth, dailyRowHeight).fillAndStroke('#34495e', '#2c3e50');
+            doc.fontSize(10).fillColor('#ffffff').font('Helvetica-Bold');
+            const dailyHeaders = ['Date', 'Orders', 'Revenue', 'Discount', 'Net Revenue'];
+            dailyHeaders.forEach((header, i) => {
+                doc.text(header, dailyColX[i] + 5, dailyTableY + 6, { width: dailyColWidths[i] - 10, align: 'center' });
             });
             
-            doc.fontSize(8).fillColor('#000000');
-            const orderHeaderY = doc.y;
-            orderHeaders.forEach((header, i) => {
-                doc.text(header, orderColX[i], orderHeaderY, { width: orderColWidths[i], align: 'center' });
-            });
-            
-            doc.y = orderHeaderY + 15;
-            
-            doc.fontSize(7);
-            const maxOrdersToShow = Math.min(orders.length, 18);
-            orders.slice(0, maxOrdersToShow).forEach((order, index) => {
-                const orderRowY = doc.y;
-                const orderRowData = [
-                    order.orderId.length > 8 ? order.orderId.substring(0, 8) + '...' : order.orderId,
-                    order.date,
-                    order.customer.length > 10 ? order.customer.substring(0, 10) + '...' : order.customer,
-                    order.paymentMethod.length > 7 ? order.paymentMethod.substring(0, 7) + '...' : order.paymentMethod,
-                    order.status.length > 7 ? order.status.substring(0, 7) + '...' : order.status,
-                    `₹${order.amount.toLocaleString('en-IN')}`,
-                    `₹${order.discount.toLocaleString('en-IN')}`,
-                    `₹${order.finalAmount.toLocaleString('en-IN')}`
+            // Daily data rows
+            const maxDailyRows = Math.min(dailyAnalysis.length, 15);
+            dailyAnalysis.slice(0, maxDailyRows).forEach((item, index) => {
+                const rowY = dailyTableY + dailyRowHeight + (index * dailyRowHeight);
+                const bgColor = index % 2 === 0 ? '#f8f9fa' : '#ffffff';
+                
+                doc.rect(margin, rowY, usableWidth, dailyRowHeight).fillAndStroke(bgColor, '#dee2e6');
+                
+                doc.fontSize(9).fillColor('#2c3e50').font('Helvetica');
+                const rowData = [
+                    item.date,
+                    item.orders.toString(),
+                    `₹${item.revenue.toLocaleString('en-IN')}`,
+                    `₹${item.discount.toLocaleString('en-IN')}`,
+                    `₹${item.netRevenue.toLocaleString('en-IN')}`
                 ];
                 
-                orderRowData.forEach((data, i) => {
-                    const align = i < 3 ? 'left' : 'center';
-                    doc.fillColor('#333333').text(data, orderColX[i], orderRowY, { 
-                        width: orderColWidths[i], 
-                        align: align 
+                rowData.forEach((data, i) => {
+                    const align = i === 0 ? 'left' : 'center';
+                    doc.text(data, dailyColX[i] + 5, rowY + 6, { width: dailyColWidths[i] - 10, align: align });
+                });
+            });
+            
+            // Daily totals row
+            const totalRowY = dailyTableY + dailyRowHeight + (maxDailyRows * dailyRowHeight);
+            doc.rect(margin, totalRowY, usableWidth, dailyRowHeight).fillAndStroke('#e8f4fd', '#3498db');
+            doc.fontSize(10).fillColor('#2c3e50').font('Helvetica-Bold');
+            const totalRowData = [
+                'TOTAL',
+                salesStats.totalOrders.toString(),
+                `₹${salesStats.totalRevenue.toLocaleString('en-IN')}`,
+                `₹${salesStats.totalDiscount.toLocaleString('en-IN')}`,
+                `₹${salesStats.netRevenue.toLocaleString('en-IN')}`
+            ];
+            
+            totalRowData.forEach((data, i) => {
+                const align = i === 0 ? 'left' : 'center';
+                doc.text(data, dailyColX[i] + 5, totalRowY + 6, { width: dailyColWidths[i] - 10, align: align });
+            });
+            
+            currentY = totalRowY + dailyRowHeight + 30;
+
+            // Orders Detail Section
+            if (orders.length > 0) {
+                if (currentY > pageHeight - margin - 300) {
+                    doc.addPage();
+                    addPageHeader();
+                    currentY = margin + 100;
+                }
+                
+                doc.fontSize(14).fillColor('#2c3e50').font('Helvetica-Bold');
+                doc.text('DETAILED ORDER ANALYSIS', margin, currentY, { align: 'center', width: usableWidth });
+                currentY += 15;
+                
+                doc.fontSize(10).fillColor('#6c757d').font('Helvetica');
+                doc.text(`Showing ${Math.min(orders.length, 20)} of ${orders.length} orders`, margin, currentY, { align: 'center', width: usableWidth });
+                currentY += 25;
+                
+                const orderTableY = currentY;
+                const orderRowHeight = 18;
+                const orderColWidths = [usableWidth * 0.15, usableWidth * 0.12, usableWidth * 0.18, usableWidth * 0.15, usableWidth * 0.12, usableWidth * 0.14, usableWidth * 0.14];
+                const orderColX = [];
+                let orderCurrentX = margin;
+                orderColWidths.forEach(width => {
+                    orderColX.push(orderCurrentX);
+                    orderCurrentX += width;
+                });
+                
+                // Order table header
+                doc.rect(margin, orderTableY, usableWidth, orderRowHeight).fillAndStroke('#495057', '#343a40');
+                doc.fontSize(9).fillColor('#ffffff').font('Helvetica-Bold');
+                const orderHeaders = ['Order ID', 'Date', 'Customer', 'Payment', 'Status', 'Amount', 'Final'];
+                orderHeaders.forEach((header, i) => {
+                    doc.text(header, orderColX[i] + 3, orderTableY + 5, { width: orderColWidths[i] - 6, align: 'center' });
+                });
+                
+                // Order data rows
+                const maxOrderRows = Math.min(orders.length, 20);
+                orders.slice(0, maxOrderRows).forEach((order, index) => {
+                    const rowY = orderTableY + orderRowHeight + (index * orderRowHeight);
+                    const bgColor = index % 2 === 0 ? '#f8f9fa' : '#ffffff';
+                    
+                    doc.rect(margin, rowY, usableWidth, orderRowHeight).fillAndStroke(bgColor, '#dee2e6');
+                    
+                    doc.fontSize(8).fillColor('#2c3e50').font('Helvetica');
+                    const orderRowData = [
+                        order.orderId.length > 10 ? order.orderId.substring(0, 10) + '...' : order.orderId,
+                        order.date,
+                        order.customer.length > 12 ? order.customer.substring(0, 12) + '...' : order.customer,
+                        order.paymentMethod.length > 8 ? order.paymentMethod.substring(0, 8) + '...' : order.paymentMethod,
+                        order.status.length > 8 ? order.status.substring(0, 8) + '...' : order.status,
+                        `₹${order.amount.toLocaleString('en-IN')}`,
+                        `₹${order.finalAmount.toLocaleString('en-IN')}`
+                    ];
+                    
+                    orderRowData.forEach((data, i) => {
+                        const align = i < 2 ? 'left' : 'center';
+                        doc.text(data, orderColX[i] + 3, rowY + 5, { width: orderColWidths[i] - 6, align: align });
                     });
                 });
                 
-                doc.y = orderRowY + 10;
-                
-                if ((index + 1) % 6 === 0 && index < maxOrdersToShow - 1) {
-                    doc.strokeColor('#e0e0e0').lineWidth(0.5)
-                       .moveTo(leftMargin, doc.y + 1)
-                       .lineTo(leftMargin + usableWidth - 40, doc.y + 1)
-                       .stroke();
-                    doc.y += 3;
+                if (orders.length > maxOrderRows) {
+                    currentY = orderTableY + orderRowHeight + (maxOrderRows * orderRowHeight) + 15;
+                    doc.fontSize(9).fillColor('#6c757d').font('Helvetica');
+                    doc.text(`Note: Showing first ${maxOrderRows} orders out of ${orders.length} total orders.`, 
+                             margin, currentY, { align: 'center', width: usableWidth });
                 }
-            });
-
-            if (orders.length > maxOrdersToShow) {
-                doc.moveDown(0.5);
-                doc.fontSize(8).fillColor('#666666');
-                doc.text(`Note: Showing first ${maxOrdersToShow} orders. Total: ${orders.length}`, { align: 'center' });
             }
 
-            doc.fontSize(8).fillColor('#666666');
-            doc.text(`ArvenClaire Sales Report - Generated on ${new Date().toLocaleDateString('en-GB')}`, 40, 770, { align: 'center' });
-            doc.text('* All amounts in Indian Rupees (₹). Discounts include product offers and coupon discounts for active items only.', 40, 780, { align: 'center' });
+            // Add footer to all pages
+            const range = doc.bufferedPageRange();
+            for (let i = range.start; i < range.start + range.count; i++) {
+                doc.switchToPage(i);
+                addPageFooter(i + 1);
+            }
 
             doc.end();
 
