@@ -116,8 +116,11 @@
                                         <i class="fas fa-redo"></i> Retry Payment
                                     </a>
                                 <% } else if (
-                                    (order.paymentMethod === 'Cash on Delivery') ||
-                                    (order.paymentMethod !== 'Cash on Delivery' && order.paymentStatus === 'Completed')
+                                    order.status !== 'Cancelled' &&
+                                    (
+                                        (order.paymentMethod === 'Cash on Delivery') ||
+                                        (order.paymentMethod !== 'Cash on Delivery' && order.paymentStatus === 'Completed')
+                                    )
                                 ) { %>
                                     <button class="btn-download-invoice" onclick="downloadInvoice('<%= order.orderId %>')">
                                         <i class="fas fa-download"></i> Invoice

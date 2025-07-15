@@ -517,8 +517,16 @@ const downloadInvoice = async (req, res) => {
     }
 
     // Check if order is eligible for invoice download
-    // For online payments: payment must be completed
-    // For COD: invoice is available immediately after order placement
+    // 1. Order must not be fully cancelled
+    // 2. For online payments: payment must be completed
+    // 3. For COD: invoice is available immediately after order placement
+    if (order.status === 'Cancelled') {
+      return res.status(403).json({
+        success: false,
+        message: 'Invoice is not available for cancelled orders.'
+      });
+    }
+
     const isEligibleForInvoice = 
       (order.paymentMethod === 'Cash on Delivery') ||
       (order.paymentMethod !== 'Cash on Delivery' && order.paymentStatus === 'Completed');
