@@ -1,3 +1,4 @@
+// Admin coupon management controller
 const Coupon = require('../../models/coupon-schema');
 const Category = require('../../models/category-schema');
 const { 
@@ -6,11 +7,8 @@ const {
     checkCouponCodeExists 
 } = require('../../validator/couponValidator');
 
-
-
 const getCouponsPage = async (req, res) => {
     try {
-
         const coupons = await Coupon.find({ isDeleted: false });
         res.render('coupons', { coupons });
     } catch (error) {
@@ -18,8 +16,6 @@ const getCouponsPage = async (req, res) => {
         res.status(500).send('Error fetching coupons');
     }
 };
-
-
 
 const getAddCouponPage = async (req, res) => {
     try {
@@ -43,12 +39,8 @@ const getAddCouponPage = async (req, res) => {
     }
 };
 
-
-
-
 const addCoupon = async (req, res) => {
     try {
-        // Validate form data using the validator
         const validation = validateAddCouponForm(req.body);
         
         if (!validation.isValid) {
@@ -64,7 +56,6 @@ const addCoupon = async (req, res) => {
             });
         }
 
-        // Check if coupon code already exists
         const codeCheck = await checkCouponCodeExists(validation.validatedData.code, null, Coupon);
         if (codeCheck.exists) {
             const categories = await Category.find({});
@@ -79,7 +70,6 @@ const addCoupon = async (req, res) => {
             });
         }
 
-        // Create and save the new coupon
         const newCoupon = new Coupon(validation.validatedData);
         await newCoupon.save();
         
@@ -87,7 +77,6 @@ const addCoupon = async (req, res) => {
     } catch (error) {
         console.error('Error adding coupon:', error);
         
-        // Handle validation errors
         if (error.name === 'ValidationError') {
             const errors = {};
             Object.keys(error.errors).forEach(key => {
@@ -109,9 +98,6 @@ const addCoupon = async (req, res) => {
         });
     }
 };
-
-
-
 
 const getEditCouponPage = async (req, res) => {
     try {
@@ -138,14 +124,9 @@ const getEditCouponPage = async (req, res) => {
     }
 };
 
-
-
-
 const updateCoupon = async (req, res) => {
     try {
         const couponId = req.params.id;
-        
-        // Validate form data using the validator
         const validation = validateUpdateCouponForm(req.body, couponId);
         
         if (!validation.isValid) {
@@ -162,7 +143,6 @@ const updateCoupon = async (req, res) => {
             });
         }
 
-        // Check if coupon code already exists (excluding current coupon)
         const codeCheck = await checkCouponCodeExists(validation.validatedData.code, couponId, Coupon);
         if (codeCheck.exists) {
             const categories = await Category.find({});
@@ -178,7 +158,6 @@ const updateCoupon = async (req, res) => {
             });
         }
 
-        // Update the coupon
         const updatedCoupon = await Coupon.findByIdAndUpdate(couponId, validation.validatedData, { new: true });
         
         if (!updatedCoupon) {
@@ -231,9 +210,6 @@ const updateCoupon = async (req, res) => {
     }
 };
 
-
-
-
 const toggleCouponStatus = async (req, res) => {
     try {
         const couponId = req.params.id;
@@ -263,9 +239,6 @@ const toggleCouponStatus = async (req, res) => {
     }
 };
 
-
-
-
 const deleteCoupon = async (req, res) => {
     try {
         const couponId = req.params.id;
@@ -278,7 +251,6 @@ const deleteCoupon = async (req, res) => {
             });
         }
 
-        // Check if coupon is already deleted
         if (coupon.isDeleted) {
             return res.status(400).json({
                 success: false,
@@ -286,7 +258,6 @@ const deleteCoupon = async (req, res) => {
             });
         }
 
-        // Perform soft delete - no conditions checked as per requirement
         coupon.isDeleted = true;
         coupon.deletedAt = new Date();
         await coupon.save();
@@ -303,9 +274,6 @@ const deleteCoupon = async (req, res) => {
         });
     }
 };
-
-
-
 
 module.exports = {
     getCouponsPage,

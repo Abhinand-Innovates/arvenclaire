@@ -1,3 +1,4 @@
+// Admin ledger management controller
 const Order = require('../../models/order-schema');
 const User = require('../../models/user-schema');
 const fs = require('fs');
@@ -5,11 +6,7 @@ const path = require('path');
 const PDFDocument = require('pdfkit');
 const ExcelJS = require('exceljs');
 
-
-
-
 const ledgerController = {
-    // Helper function to get ledger data
     getLedgerData: async (filters) => {
         const { 
             timePeriod = 'monthly', 
@@ -19,7 +16,6 @@ const ledgerController = {
             endDate
         } = filters;
 
-        // Calculate date range based on time period or custom dates
         const now = new Date();
         let startDateObj, endDateObj;
         
@@ -53,12 +49,10 @@ const ledgerController = {
             endDateObj = now;
         }
 
-        // Build query filters
         const matchQuery = {
             createdAt: { $gte: startDateObj, $lte: endDateObj }
         };
 
-        // Add payment method filter
         if (paymentMethod !== 'all') {
             if (paymentMethod === 'cod') {
                 matchQuery.paymentMethod = 'Cash on Delivery';
@@ -71,17 +65,14 @@ const ledgerController = {
             }
         }
 
-        // Add order status filter
         if (orderStatus !== 'all') {
             matchQuery.status = { $regex: new RegExp(orderStatus, 'i') };
         }
 
-        // Get all orders
         const orders = await Order.find(matchQuery)
             .populate('userId', 'fullname email')
             .sort({ createdAt: -1 });
 
-        // Format ledger entries
         const ledgerEntries = [];
         let runningBalance = 0;
 
@@ -91,7 +82,6 @@ const ledgerController = {
                 select: 'regularPrice salePrice productOffer'
             });
             
-            // Calculate totals for active items only
             let activeTotalRegularPrice = 0;
             let activeTotalProductDiscount = 0;
             let activeTotalFinalPrice = 0;
@@ -111,7 +101,6 @@ const ledgerController = {
                 }
             }
             
-            // Calculate coupon discount
             let activeCouponDiscount = 0;
             const originalCouponDiscount = order.couponDiscount || 0;
             
@@ -122,13 +111,11 @@ const ledgerController = {
             const totalActiveDiscount = activeTotalProductDiscount + activeCouponDiscount;
             const calculatedFinalAmount = activeTotalRegularPrice - totalActiveDiscount;
             
-            // Handle entirely cancelled orders
             const isEntireCancelled = order.status && order.status.toLowerCase().includes('cancelled') && 
                                      !order.status.toLowerCase().includes('partially');
             
             const displayFinalAmount = isEntireCancelled ? 0 : Math.max(0, calculatedFinalAmount);
             
-            // Add to running balance (credit for sales)
             runningBalance += displayFinalAmount;
             
             ledgerEntries.push({
@@ -136,7 +123,7 @@ const ledgerController = {
                 orderId: order.orderId || 'N/A',
                 customer: order.userId ? order.userId.fullname : 'Guest',
                 description: `Sale - ${order.paymentMethod}`,
-                debit: 0, // No debit for sales
+                debit: 0,
                 credit: displayFinalAmount,
                 balance: runningBalance,
                 status: order.status || 'Pending',
@@ -144,7 +131,6 @@ const ledgerController = {
             });
         }
 
-        // Calculate summary statistics
         const totalCredit = ledgerEntries.reduce((sum, entry) => sum + entry.credit, 0);
         const totalDebit = ledgerEntries.reduce((sum, entry) => sum + entry.debit, 0);
         const netBalance = totalCredit - totalDebit;
@@ -154,7 +140,7 @@ const ledgerController = {
             totalCredit: totalCredit,
             totalDebit: totalDebit,
             netBalance: netBalance,
-            openingBalance: 0, // Can be customized based on business needs
+            openingBalance: 0,
             closingBalance: netBalance
         };
 
@@ -164,13 +150,11 @@ const ledgerController = {
         };
     },
 
-    // Export Ledger Report as PDF
     exportLedgerPDF: async (req, res) => {
         try {
             const filters = req.query;
             const { entries, summary } = await ledgerController.getLedgerData(filters);
 
-            // Create a new PDF document in landscape orientation with optimized margins
             const doc = new PDFDocument({ 
                 margin: {
                     top: 40,
@@ -184,24 +168,20 @@ const ledgerController = {
             
             const filename = `ArvenClaire-Ledger-Report-${new Date().toISOString().split('T')[0]}.pdf`;
 
-            // Set response headers for PDF download
             res.setHeader('Content-Type', 'application/pdf');
             res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
 
-            // Pipe the PDF to the response
             doc.pipe(res);
 
-            // Page dimensions for landscape A4 with optimized margins
-            const pageWidth = 841.89; // A4 landscape width
-            const pageHeight = 595.28; // A4 landscape height
+            const pageWidth = 841.89;
+            const pageHeight = 595.28;
             const leftMargin = 25;
             const rightMargin = 25;
             const topMargin = 40;
             const bottomMargin = 40;
-            const usableWidth = pageWidth - leftMargin - rightMargin; // 791.89px usable width
-            const usableHeight = pageHeight - topMargin - bottomMargin; // 515.28px usable height
+            const usableWidth = pageWidth - leftMargin - rightMargin;
+            const usableHeight = pageHeight - topMargin - bottomMargin;
 
-            // Company Header
             doc.fontSize(24).fillColor('#000000');
             doc.text('ARVENCLAIRE', { align: 'center' });
             doc.moveDown(0.3);
@@ -210,12 +190,10 @@ const ledgerController = {
             doc.text('General Ledger Report', { align: 'center' });
             doc.moveDown(1);
             
-            // Report metadata
             doc.fontSize(11).fillColor('#333333');
             const currentDate = new Date();
             doc.text(`Generated: ${currentDate.toLocaleDateString('en-GB')} at ${currentDate.toLocaleTimeString('en-GB')}`, { align: 'center' });
             
-            // Show custom date range if provided
             if (filters.startDate && filters.endDate) {
                 doc.text(`Period: ${new Date(filters.startDate).toLocaleDateString('en-GB')} to ${new Date(filters.endDate).toLocaleDateString('en-GB')}`, { align: 'center' });
             } else {
@@ -225,12 +203,10 @@ const ledgerController = {
             doc.text(`Payment: ${filters.paymentMethod?.toUpperCase() || 'ALL'} | Status: ${filters.orderStatus?.toUpperCase() || 'ALL'}`, { align: 'center' });
             doc.moveDown(1.5);
 
-            // Ledger Summary
             doc.fontSize(16).fillColor('#000000');
             doc.text('LEDGER SUMMARY', { align: 'center', underline: true });
             doc.moveDown(1);
             
-            // Summary in three columns for better horizontal space utilization
             doc.fontSize(11).fillColor('#333333');
             const col1 = leftMargin;
             const col2 = leftMargin + (usableWidth / 3);
@@ -239,29 +215,24 @@ const ledgerController = {
             
             let summaryY = doc.y;
             
-            // First row
             doc.text(`Opening Balance: ₹${summary.openingBalance.toLocaleString('en-IN')}`, col1, summaryY, { width: colWidth });
             doc.text(`Total Credits: ₹${summary.totalCredit.toLocaleString('en-IN')}`, col2, summaryY, { width: colWidth });
             doc.text(`Total Debits: ₹${summary.totalDebit.toLocaleString('en-IN')}`, col3, summaryY, { width: colWidth });
             summaryY += 18;
             
-            // Second row
             doc.text(`Net Balance: ₹${summary.netBalance.toLocaleString('en-IN')}`, col1, summaryY, { width: colWidth });
             doc.text(`Closing Balance: ₹${summary.closingBalance.toLocaleString('en-IN')}`, col2, summaryY, { width: colWidth });
             doc.text(`Total Entries: ${summary.totalEntries.toLocaleString('en-IN')}`, col3, summaryY, { width: colWidth });
             
             doc.y = summaryY + 25;
 
-            // Ledger Entries Table
             doc.fontSize(14).fillColor('#000000');
             doc.text('LEDGER ENTRIES', { align: 'center', underline: true });
             doc.moveDown(1);
             
-            // Table headers - optimized for better spacing and readability
             doc.fontSize(10).fillColor('#000000');
             const tableY = doc.y;
             
-            // Better distributed column widths for 791.89px usable width
             const colWidths = [70, 95, 115, 140, 80, 80, 85, 75, 75];
             const colX = [
                 leftMargin, 
@@ -282,18 +253,16 @@ const ledgerController = {
             
             doc.y = tableY + 15;
             
-            // Table rows - optimized for landscape layout with better spacing
             doc.fontSize(9);
-            const maxRows = Math.min(entries.length, 30); // Optimal rows for better readability
+            const maxRows = Math.min(entries.length, 30);
             entries.slice(0, maxRows).forEach((entry, index) => {
                 const rowY = doc.y;
                 
-                // Alternate row background (visual enhancement)
                 if (index % 2 === 0) {
                     doc.rect(leftMargin - 5, rowY - 2, usableWidth + 10, 12)
                        .fillColor('#f8f9fa')
                        .fill();
-                    doc.fillColor('#333333'); // Reset text color
+                    doc.fillColor('#333333');
                 }
                 
                 doc.text(entry.date, colX[0], rowY, { width: colWidths[0], align: 'left' });
@@ -308,19 +277,16 @@ const ledgerController = {
                 doc.y = rowY + 12;
             });
 
-            // Show note if more entries exist
             if (entries.length > maxRows) {
                 doc.moveDown(0.5);
                 doc.fontSize(8).fillColor('#666666');
                 doc.text(`Note: Showing first ${maxRows} entries. Total: ${entries.length}`, { align: 'center' });
             }
 
-            // Footer - adjusted for landscape layout
             doc.fontSize(8).fillColor('#666666');
             doc.text(`ArvenClaire Ledger Report - Generated on ${new Date().toLocaleDateString('en-GB')}`, 30, 550, { align: 'center', width: usableWidth });
             doc.text('* All amounts in Indian Rupees (₹). Credits represent sales revenue.', 30, 560, { align: 'center', width: usableWidth });
 
-            // Finalize the PDF
             doc.end();
 
         } catch (error) {
@@ -332,40 +298,33 @@ const ledgerController = {
         }
     },
 
-    // Export Ledger Report as Excel
     exportLedgerExcel: async (req, res) => {
         try {
             const filters = req.query;
             const { entries, summary } = await ledgerController.getLedgerData(filters);
 
-            // Create a new workbook
             const workbook = new ExcelJS.Workbook();
             const currentDate = new Date().toISOString().split('T')[0];
             const filename = `ArvenClaire-Ledger-Report-${currentDate}.xlsx`;
 
-            // Set workbook properties
             workbook.creator = 'ArvenClaire Ledger System';
             workbook.lastModifiedBy = 'ArvenClaire Ledger System';
             workbook.created = new Date();
             workbook.modified = new Date();
 
-            // 1. LEDGER SUMMARY SHEET
             const summarySheet = workbook.addWorksheet('Ledger Summary');
             
-            // Company Header
             summarySheet.mergeCells('A1:H1');
             summarySheet.getCell('A1').value = 'ARVENCLAIRE - GENERAL LEDGER REPORT';
             summarySheet.getCell('A1').font = { size: 18, bold: true, color: { argb: 'FF000000' } };
             summarySheet.getCell('A1').alignment = { horizontal: 'center', vertical: 'middle' };
             summarySheet.getCell('A1').fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE6F3FF' } };
 
-            // Report metadata
             summarySheet.mergeCells('A2:H2');
             summarySheet.getCell('A2').value = `Report Generated: ${new Date().toLocaleDateString('en-GB')} at ${new Date().toLocaleTimeString('en-GB')}`;
             summarySheet.getCell('A2').alignment = { horizontal: 'center' };
             summarySheet.getCell('A2').font = { size: 11, italic: true };
 
-            // Filter information
             let filterInfo = `Period: ${filters.timePeriod?.toUpperCase() || 'MONTHLY'}`;
             if (filters.startDate && filters.endDate) {
                 filterInfo = `Custom Period: ${new Date(filters.startDate).toLocaleDateString('en-GB')} to ${new Date(filters.endDate).toLocaleDateString('en-GB')}`;
@@ -377,13 +336,11 @@ const ledgerController = {
             summarySheet.getCell('A3').alignment = { horizontal: 'center' };
             summarySheet.getCell('A3').font = { size: 10, bold: true };
 
-            // Ledger Summary
             summarySheet.getCell('A5').value = 'LEDGER SUMMARY';
             summarySheet.getCell('A5').font = { size: 14, bold: true, color: { argb: 'FF2E75B6' } };
             summarySheet.mergeCells('A5:H5');
             summarySheet.getCell('A5').alignment = { horizontal: 'center' };
 
-            // Summary Table Headers
             const summaryHeaders = ['Metric', 'Amount', 'Description'];
             summaryHeaders.forEach((header, index) => {
                 const cell = summarySheet.getCell(7, index + 1);
@@ -397,7 +354,6 @@ const ledgerController = {
                 };
             });
 
-            // Summary Data
             const summaryData = [
                 ['Opening Balance', `₹${summary.openingBalance.toLocaleString('en-IN', {minimumFractionDigits: 2})}`, 'Balance at start of period'],
                 ['Total Credits', `₹${summary.totalCredit.toLocaleString('en-IN', {minimumFractionDigits: 2})}`, 'Total sales revenue'],
@@ -427,16 +383,13 @@ const ledgerController = {
                 });
             });
 
-            // Set column widths for summary
             summarySheet.columns = [
                 { width: 25 }, { width: 20 }, { width: 35 }, { width: 15 },
                 { width: 15 }, { width: 15 }, { width: 15 }, { width: 15 }
             ];
 
-            // 2. DETAILED LEDGER ENTRIES SHEET
             const entriesSheet = workbook.addWorksheet('Ledger Entries');
             
-            // Headers
             entriesSheet.getCell('A1').value = 'DETAILED LEDGER ENTRIES';
             entriesSheet.getCell('A1').font = { size: 16, bold: true, color: { argb: 'FF2E75B6' } };
             entriesSheet.mergeCells('A1:I1');
@@ -445,7 +398,6 @@ const ledgerController = {
             entriesSheet.getCell('A2').value = `Total Entries: ${entries.length}`;
             entriesSheet.getCell('A2').font = { size: 12, bold: true };
 
-            // Ledger table headers
             const ledgerHeaders = [
                 'Date', 'Order ID', 'Customer', 'Description', 'Debit Amount', 
                 'Credit Amount', 'Running Balance', 'Status', 'Payment Method'
@@ -463,7 +415,6 @@ const ledgerController = {
                 };
             });
 
-            // Add ledger entries data
             entries.forEach((entry, index) => {
                 const row = index + 5;
                 const entryData = [
@@ -482,7 +433,6 @@ const ledgerController = {
                     const cell = entriesSheet.getCell(row, colIndex + 1);
                     
                     if (typeof value === 'number' && colIndex >= 4 && colIndex <= 6) {
-                        // Format currency columns
                         cell.value = value;
                         cell.numFmt = '₹#,##0.00';
                     } else {
@@ -494,13 +444,11 @@ const ledgerController = {
                         bottom: { style: 'thin' }, right: { style: 'thin' }
                     };
                     
-                    // Alternate row colors
                     if (index % 2 === 0) {
                         cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF9F9F9' } };
                     }
                     
-                    // Status color coding
-                    if (colIndex === 7) { // Status
+                    if (colIndex === 7) {
                         if (value && value.toLowerCase().includes('delivered')) {
                             cell.font = { color: { argb: 'FF008000' }, bold: true };
                         } else if (value && value.toLowerCase().includes('cancelled')) {
@@ -510,17 +458,15 @@ const ledgerController = {
                         }
                     }
                     
-                    // Credit/Debit color coding
-                    if (colIndex === 4 && value > 0) { // Debit
+                    if (colIndex === 4 && value > 0) {
                         cell.font = { color: { argb: 'FFFF0000' }, bold: true };
                     }
-                    if (colIndex === 5 && value > 0) { // Credit
+                    if (colIndex === 5 && value > 0) {
                         cell.font = { color: { argb: 'FF008000' }, bold: true };
                     }
                 });
             });
 
-            // Add totals row
             const totalRow = entries.length + 5;
             const totalData = [
                 'TOTAL',
@@ -552,17 +498,14 @@ const ledgerController = {
                 };
             });
 
-            // Set column widths for entries
             entriesSheet.columns = [
                 { width: 12 }, { width: 15 }, { width: 20 }, { width: 25 }, { width: 15 },
                 { width: 15 }, { width: 18 }, { width: 15 }, { width: 18 }
             ];
 
-            // Set response headers for Excel download
             res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
             res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
 
-            // Write to response
             await workbook.xlsx.write(res);
             res.end();
 
@@ -575,8 +518,5 @@ const ledgerController = {
         }
     }
 };
-
-
-
 
 module.exports = ledgerController;

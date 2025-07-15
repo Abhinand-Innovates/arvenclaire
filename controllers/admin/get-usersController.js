@@ -1,7 +1,5 @@
+// Admin user management controller
 const User = require("../../models/user-schema");
-
-
-
 
 const getUsers = async (req, res) => {
   try {
@@ -13,7 +11,7 @@ const getUsers = async (req, res) => {
     let searchQuery = {};
     if (searchTerm) {
       searchQuery.$or = [
-        { fullname: { $regex: searchTerm, $options: 'i' } }, // Changed to lowercase
+        { fullname: { $regex: searchTerm, $options: 'i' } },
         { email: { $regex: searchTerm, $options: 'i' } },
         { phone: { $regex: searchTerm, $options: 'i' } },
       ];
@@ -27,14 +25,13 @@ const getUsers = async (req, res) => {
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(limit)
-      .select('fullname email phone createdAt isBlocked _id') // Changed to lowercase
+      .select('fullname email phone createdAt isBlocked _id')
       .lean();
 
-    // Rename fullname to fullName for frontend compatibility
     const modifiedUsers = users.map(user => ({
       ...user,
       fullName: user.fullname && user.fullname.trim() !== '' ? user.fullname : user.email.split('@')[0],
-      fullname: undefined // Remove original field
+      fullname: undefined
     }));
 
     const totalPages = Math.ceil(totalUsers / limit);
@@ -57,9 +54,6 @@ const getUsers = async (req, res) => {
   }
 };
 
-
-
-
 const getUsersApi = async (req, res) => {
   try {
     const searchTerm = req.query.search || '';
@@ -70,7 +64,7 @@ const getUsersApi = async (req, res) => {
     let searchQuery = {};
     if (searchTerm) {
       searchQuery.$or = [
-        { fullname: { $regex: searchTerm, $options: 'i' } }, // Changed to lowercase
+        { fullname: { $regex: searchTerm, $options: 'i' } },
         { email: { $regex: searchTerm, $options: 'i' } },
         { phone: { $regex: searchTerm, $options: 'i' } },
       ];
@@ -84,14 +78,13 @@ const getUsersApi = async (req, res) => {
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(limit)
-      .select('fullname email phone createdAt isBlocked _id') // Changed to lowercase
+      .select('fullname email phone createdAt isBlocked _id')
       .lean();
 
-    // Rename fullname to fullName for frontend compatibility
     const modifiedUsers = users.map(user => ({
       ...user,
       fullName: user.fullname && user.fullname.trim() !== '' ? user.fullname : user.email.split('@')[0],
-      fullname: undefined // Remove original field
+      fullname: undefined
     }));
 
     const totalPages = Math.ceil(totalUsers / limit);
@@ -113,19 +106,15 @@ const getUsersApi = async (req, res) => {
   }
 };
 
-
-
-
 const getUserById = async (req, res) => {
   try {
     const userId = req.params.id;
     const user = await User.findById(userId)
-      .select('fullname email phone createdAt isBlocked') // Changed to lowercase
+      .select('fullname email phone createdAt isBlocked')
       .lean();
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
-    // Rename fullname to fullName
     res.status(200).json({
       ...user,
       fullName: user.fullname && user.fullname.trim() !== '' ? user.fullname : user.email.split('@')[0],
@@ -136,9 +125,6 @@ const getUserById = async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error' });
   }
 };
-
-
-
 
 const blockUser = async (req, res) => {
   try {
@@ -168,9 +154,6 @@ const blockUser = async (req, res) => {
   }
 };
 
-
-
-
 const unblockUser = async (req, res) => {
   try {
     const userId = req.params.id;
@@ -198,8 +181,5 @@ const unblockUser = async (req, res) => {
     });
   }
 };
-
-
-
 
 module.exports = { getUsers, getUsersApi, getUserById, blockUser, unblockUser };

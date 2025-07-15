@@ -1,7 +1,6 @@
+// Admin authentication controller
 const User = require("../../models/user-schema")
 const bcrypt = require("bcrypt");
-
-
 
 const getAdminLogin = async (req, res) => {
   try {
@@ -27,7 +26,6 @@ const getAdminLogin = async (req, res) => {
     });
   }
 };
-
 
 const postAdminLogin = async (req, res) => {
   try {
@@ -68,26 +66,25 @@ const postAdminLogin = async (req, res) => {
       });
     }
 
-      req.session.admin_id = admin._id;
-      req.session.admin_email = admin.email;
-      req.session.loginTime = new Date();
+    req.session.admin_id = admin._id;
+    req.session.admin_email = admin.email;
+    req.session.loginTime = new Date();
 
-      req.session.save((err) => {
-        if (err) {
-          console.error('Admin session save error:', err);
-          return res.status(500).json({
-            success: false,
-            message: "Login failed. Please try again.",
-          });
-        }
-
-        return res.status(200).json({
-          success: true,
-          message: "Welcome Admin",
-          redirectTo: '/admin-dashboard',
+    req.session.save((err) => {
+      if (err) {
+        console.error('Admin session save error:', err);
+        return res.status(500).json({
+          success: false,
+          message: "Login failed. Please try again.",
         });
-      });
+      }
 
+      return res.status(200).json({
+        success: true,
+        message: "Welcome Admin",
+        redirectTo: '/admin-dashboard',
+      });
+    });
 
   } catch (error) {
     console.error("Admin login error:", error);
@@ -98,11 +95,8 @@ const postAdminLogin = async (req, res) => {
   }
 };
 
-
-
 const getAdminDashboard = async (req, res) => {
   try {
-
     if (!req.session.admin_id) {
       return res.redirect('/admin-login');
     }
@@ -119,11 +113,8 @@ const getAdminDashboard = async (req, res) => {
   }
 };
 
-
-
 const logoutAdminDashboard = async (req, res) => {
   try {
-
     if (!req.session.admin_id) {
       return res.redirect('/admin-login');
     }
@@ -156,8 +147,6 @@ const logoutAdminDashboard = async (req, res) => {
     });
   }
 };
-
-
 
 module.exports = { 
   getAdminLogin, 

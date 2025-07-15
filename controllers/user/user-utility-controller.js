@@ -1,8 +1,8 @@
+// User utility controller
 const User = require("../../models/user-schema");
 const Order = require('../../models/order-schema');
 const Wallet = require('../../models/wallet-schema');
 
-// Validate referral code API endpoint
 const validateReferralCode = async (req, res) => {
   try {
     const { referralCode } = req.body;
@@ -39,7 +39,6 @@ const validateReferralCode = async (req, res) => {
   }
 };
 
-// Load referrals page
 const loadReferrals = async (req, res) => {
   try {
     const userId = req.session.userId;
@@ -47,13 +46,11 @@ const loadReferrals = async (req, res) => {
       return res.redirect('/login');
     }
 
-    // Get user data for sidebar
     const user = await User.findById(userId).select('fullname email profilePhoto referralCode').lean();
     if (!user) {
       return res.redirect('/login');
     }
 
-    // Get user's wallet to find referral transactions
     const userWallet = await Wallet.findOne({ userId: userId });
     
     let referralTransactions = [];
@@ -61,7 +58,6 @@ const loadReferrals = async (req, res) => {
     let totalReferrals = 0;
 
     if (userWallet && userWallet.transactions) {
-      // Filter referral bonus transactions
       referralTransactions = userWallet.transactions.filter(transaction => 
         transaction.description && transaction.description.includes('Referral bonus for referring')
       ).map(transaction => ({
@@ -71,12 +67,10 @@ const loadReferrals = async (req, res) => {
         type: transaction.type
       })).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-      // Calculate totals
       totalEarnings = referralTransactions.reduce((sum, transaction) => sum + transaction.amount, 0);
       totalReferrals = referralTransactions.length;
     }
 
-    // Also get welcome bonus transactions for new users who used this user's referral code
     const welcomeBonusTransactions = await Wallet.aggregate([
       {
         $unwind: "$transactions"
@@ -127,10 +121,8 @@ const loadReferrals = async (req, res) => {
   }
 };
 
-// Load About page
 const loadAbout = async (req, res) => {
   try {
-    // User context is automatically added by middleware
     res.render('about', {
       title: 'About Us - ARVENCLAIRE'
     });
@@ -142,10 +134,8 @@ const loadAbout = async (req, res) => {
   }
 };
 
-// Load Contact page
 const loadContact = async (req, res) => {
   try {
-    // User context is automatically added by middleware
     res.render('contact', {
       title: 'Contact Us - ARVENCLAIRE'
     });
@@ -157,12 +147,10 @@ const loadContact = async (req, res) => {
   }
 };
 
-// Submit Contact form
 const submitContact = async (req, res) => {
   try {
     const { name, email, subject, message } = req.body;
 
-    // Validate input
     if (!name || !email || !subject || !message) {
       return res.status(400).json({
         success: false,
@@ -170,7 +158,6 @@ const submitContact = async (req, res) => {
       });
     }
 
-    // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return res.status(400).json({
@@ -178,12 +165,6 @@ const submitContact = async (req, res) => {
         message: 'Please enter a valid email address'
       });
     }
-
-    // Here you could save the contact form data to database
-    // For now, we'll just log it and send a success response
-
-    // You could also send an email notification to admin here
-    // await sendEmail(process.env.ADMIN_EMAIL, `New contact form submission from ${name}`);
 
     res.json({
       success: true,

@@ -1,11 +1,9 @@
+// Admin order management controller
 const Order = require('../../models/order-schema');
 const User = require('../../models/user-schema');
 const Product = require('../../models/product-schema');
 const Wallet = require('../../models/wallet-schema');
 
-
-
-// Get all orders for admin with pagination and search
 const getOrders = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
@@ -14,7 +12,6 @@ const getOrders = async (req, res) => {
     const searchTerm = req.query.search || '';
     const statusFilter = req.query.status || '';
 
-    // Build search query
     let searchQuery = {};
     
     if (searchTerm) {
@@ -29,10 +26,8 @@ const getOrders = async (req, res) => {
       searchQuery.status = statusFilter;
     }
 
-    // Get total count for pagination
     const totalOrders = await Order.countDocuments(searchQuery);
 
-    // Get return request count for notification (including individual item returns)
     const returnRequestCount = await Order.countDocuments({
       $or: [
         { status: 'Return Request' },
@@ -40,7 +35,6 @@ const getOrders = async (req, res) => {
       ]
     });
 
-    // Get orders with user details
     const orders = await Order.find(searchQuery)
       .populate('userId', 'fullname email phone')
       .populate('orderedItems.product', 'productName productImages')
@@ -52,7 +46,6 @@ const getOrders = async (req, res) => {
     const startIdx = (page - 1) * limit;
     const endIdx = Math.min(startIdx + limit, totalOrders);
 
-    // If it's an API request, return JSON
     if (req.headers.accept && req.headers.accept.includes('application/json')) {
       return res.json({
         success: true,
@@ -67,7 +60,6 @@ const getOrders = async (req, res) => {
       });
     }
 
-    // Render the orders page
     res.render('admin-order-listing', {
       orders,
       currentPage: page,
@@ -90,10 +82,6 @@ const getOrders = async (req, res) => {
   }
 };
 
-
-
-
-// Get single order details (API)
 const getOrderById = async (req, res) => {
   try {
     const orderId = req.params.id;
@@ -123,10 +111,6 @@ const getOrderById = async (req, res) => {
   }
 };
 
-
-
-
-// Get order details page
 const getOrderDetailsPage = async (req, res) => {
   try {
     const orderId = req.params.id;
@@ -142,20 +126,16 @@ const getOrderDetailsPage = async (req, res) => {
       });
     }
 
-    // Calculate subtotal and final amount based on active products only
     const activeItems = order.orderedItems.filter(item => item.status === 'Active');
     const subtotalActiveProducts = activeItems.reduce((total, item) => {
       const regularPrice = item.product?.regularPrice || 0;
       return total + (regularPrice * item.quantity);
     }, 0);
     
-    // Calculate final amount as subtotal minus discount
     const finalAmountActive = Math.max(0, subtotalActiveProducts - (order.discount || 0));
 
-    // Check if order is cancelled by user
     const isUserCancelled = order.status === 'Cancelled';
     
-    // Check if order has any items cancelled by user (not by admin)
     const hasUserCancellation = order.orderedItems.some(item => 
       item.status === 'Cancelled' && 
       item.cancellationReason && 
@@ -182,17 +162,11 @@ const getOrderDetailsPage = async (req, res) => {
   }
 };
 
-
-
-
-
-// Update order status
 const updateOrderStatus = async (req, res) => {
   try {
     const orderId = req.params.id;
     const { status } = req.body;
 
-    // Define all valid statuses including 'Cancelled' for admin cancellation
     const validStatuses = ['Pending', 'Processing', 'Shipped', 'Delivered', 'Return Request', 'Returned', 'Cancelled'];
     
     if (!validStatuses.includes(status)) {
@@ -210,7 +184,6 @@ const updateOrderStatus = async (req, res) => {
       });
     }
 
-    // Check if order was entirely cancelled by user
     const isUserCancelled = order.status === 'Cancelled' && 
       order.orderedItems.every(item => 
         item.status === 'Cancelled' && 
@@ -225,7 +198,6 @@ const updateOrderStatus = async (req, res) => {
       });
     }
 
-    // Check if order is already cancelled - no further status changes allowed
     if (order.status === 'Cancelled') {
       return res.status(403).json({
         success: false,
@@ -233,14 +205,11 @@ const updateOrderStatus = async (req, res) => {
       });
     }
     
-    // Define the sequential flow
     const statusFlow = ['Pending', 'Processing', 'Shipped', 'Delivered', 'Return Request', 'Returned'];
     const currentStatusIndex = statusFlow.indexOf(order.status);
     const newStatusIndex = statusFlow.indexOf(status);
 
-    // Handle cancellation rules
     if (status === 'Cancelled') {
-      // Admin can only cancel if status is Pending or Processing
       if (!['Pending', 'Processing'].includes(order.status)) {
         return res.status(403).json({
           success: false,
@@ -248,9 +217,6 @@ const updateOrderStatus = async (req, res) => {
         });
       }
     } else {
-      // For non-cancellation status changes, enforce sequential flow
-      
-      // Prevent changing from certain final states
       const finalStates = ['Delivered', 'Returned', 'Cancelled'];
       if (finalStates.includes(order.status) && status !== order.status) {
         return res.status(403).json({
@@ -259,9 +225,7 @@ const updateOrderStatus = async (req, res) => {
         });
       }
 
-      // Check if trying to skip statuses (only allow next status in sequence or Return Request from Delivered)
       if (currentStatusIndex !== -1 && newStatusIndex !== -1) {
-        // Allow Return Request only from Delivered status
         if (status === 'Return Request' && order.status !== 'Delivered') {
           return res.status(403).json({
             success: false,
@@ -269,7 +233,6 @@ const updateOrderStatus = async (req, res) => {
           });
         }
         
-        // Allow Returned only from Return Request
         if (status === 'Returned' && order.status !== 'Return Request') {
           return res.status(403).json({
             success: false,
@@ -277,7 +240,6 @@ const updateOrderStatus = async (req, res) => {
           });
         }
         
-        // For normal flow (Pending -> Processing -> Shipped -> Delivered), only allow next status
         if (status !== 'Return Request' && status !== 'Returned') {
           if (newStatusIndex !== currentStatusIndex + 1) {
             return res.status(403).json({
@@ -289,12 +251,9 @@ const updateOrderStatus = async (req, res) => {
       }
     }
 
-    // Update order status
     order.status = status;
     
-    // Handle cancellation by admin
     if (status === 'Cancelled') {
-      // Calculate refund amount before cancelling
       const activeItems = order.orderedItems.filter(item => item.status === 'Active');
       const returnRequestItems = order.orderedItems.filter(item => item.status === 'Return Request');
       const includedItems = [...activeItems, ...returnRequestItems];
@@ -308,12 +267,10 @@ const updateOrderStatus = async (req, res) => {
         refundAmount += order.shippingCharges;
       }
       
-      // Subtract coupon discount if applied
       if (order.couponApplied && order.couponDiscount > 0) {
         refundAmount -= order.couponDiscount;
       }
       
-      // Credit wallet for cancelled order (regardless of payment method)
       if (refundAmount > 0) {
         try {
           const wallet = await Wallet.getOrCreateWallet(order.userId);
@@ -324,18 +281,15 @@ const updateOrderStatus = async (req, res) => {
           );
         } catch (walletError) {
           console.error('Error adding money to wallet for admin cancelled order:', walletError);
-          // Continue with cancellation even if wallet credit fails
         }
       }
       
-      // Cancel all active items
       for (const item of order.orderedItems) {
         if (item.status === 'Active') {
           item.status = 'Cancelled';
           item.cancellationReason = 'Order cancelled by admin';
           item.cancelledAt = new Date();
           
-          // Restore product stock
           try {
             await Product.findByIdAndUpdate(
               item.product,
@@ -347,16 +301,13 @@ const updateOrderStatus = async (req, res) => {
         }
       }
       
-      // Set order amounts to 0
       order.totalPrice = 0;
       order.finalAmount = 0;
     }
     
-    // For COD orders, update payment status to "Completed" when delivered
     if (status === 'Delivered' && order.paymentMethod === 'Cash on Delivery' && order.paymentStatus === 'Pending') {
       order.paymentStatus = 'Completed';
       
-      // Add to timeline for payment status update
       order.orderTimeline.push({
         status: 'Payment Completed',
         timestamp: new Date(),
@@ -364,7 +315,6 @@ const updateOrderStatus = async (req, res) => {
       });
     }
     
-    // Add to timeline for status update
     order.orderTimeline.push({
       status: status,
       timestamp: new Date(),
@@ -390,14 +340,6 @@ const updateOrderStatus = async (req, res) => {
   }
 };
 
-
-
-
-// Note: approveReturnRequest function moved to return-controller.js to avoid duplication
-// This function was causing double wallet credits
-
-
-// Reject return request
 const rejectReturnRequest = async (req, res) => {
   try {
     const orderId = req.params.id;
@@ -427,12 +369,10 @@ const rejectReturnRequest = async (req, res) => {
       });
     }
 
-    // Update order status back to Delivered
     order.status = 'Delivered';
     order.returnRejectedAt = new Date();
     order.rejectionReason = rejectionReason;
 
-    // Add to timeline
     order.orderTimeline.push({
       status: 'Return Rejected',
       timestamp: new Date(),
@@ -456,23 +396,16 @@ const rejectReturnRequest = async (req, res) => {
   }
 };
 
-
-
-
-// Get return request count (including individual item returns)
 const getReturnRequestCount = async (req, res) => {
   try {
-    // Count orders with "Return Request" status (entire order returns)
     const entireOrderReturns = await Order.countDocuments({ 
       status: 'Return Request' 
     });
 
-    // Count orders with individual item return requests
     const individualItemReturns = await Order.countDocuments({
       'orderedItems.status': 'Return Request'
     });
 
-    // Total return requests (avoid double counting if an order has both)
     const totalReturnRequests = await Order.countDocuments({
       $or: [
         { status: 'Return Request' },
@@ -500,10 +433,6 @@ const getReturnRequestCount = async (req, res) => {
   }
 };
 
-
-
-
-// Get return requests page
 const getReturnRequests = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
@@ -512,18 +441,16 @@ const getReturnRequests = async (req, res) => {
     const searchTerm = req.query.search || '';
     const statusFilter = req.query.status || '';
 
-    // Build search query for ALL return-related orders (including history)
     let searchQuery = {
       $or: [
         { status: 'Return Request' },
         { status: 'Returned' },
-        { returnRequestedAt: { $exists: true } }, // Orders that have ever had a return request
-        { returnApprovedAt: { $exists: true } },  // Orders that have been approved
-        { returnRejectedAt: { $exists: true } }   // Orders that have been rejected
+        { returnRequestedAt: { $exists: true } },
+        { returnApprovedAt: { $exists: true } },
+        { returnRejectedAt: { $exists: true } }
       ]
     };
     
-    // Apply status filter if provided
     if (statusFilter) {
       if (statusFilter === 'Pending') {
         searchQuery = { status: 'Return Request' };
@@ -539,7 +466,6 @@ const getReturnRequests = async (req, res) => {
       }
     }
     
-    // Apply search term filter
     if (searchTerm) {
       const searchConditions = [
         { orderId: { $regex: searchTerm, $options: 'i' } },
@@ -548,7 +474,6 @@ const getReturnRequests = async (req, res) => {
       ];
       
       if (statusFilter) {
-        // If status filter is applied, combine with search
         searchQuery = {
           $and: [
             searchQuery,
@@ -556,7 +481,6 @@ const getReturnRequests = async (req, res) => {
           ]
         };
       } else {
-        // If no status filter, combine search with return-related query
         searchQuery = {
           $and: [
             {
@@ -574,14 +498,12 @@ const getReturnRequests = async (req, res) => {
       }
     }
 
-    // Get total count for pagination
     const totalRequests = await Order.countDocuments({ $and: [ searchQuery, { status: { $ne: "Cancelled" } } ] });
 
-    // Get return requests with user and product details
     const returnRequests = await Order.find({ $and: [ searchQuery, { status: { $ne: "Cancelled" } } ] })
       .populate('userId', 'fullname email phone')
       .populate('orderedItems.product', 'productName productImages regularPrice sellingPrice')
-      .sort({ returnRequestedAt: -1, createdAt: -1 }) // Sort by return request date first, then creation date
+      .sort({ returnRequestedAt: -1, createdAt: -1 })
       .skip(skip)
       .limit(limit);
 
@@ -589,7 +511,6 @@ const getReturnRequests = async (req, res) => {
     const startIdx = (page - 1) * limit;
     const endIdx = Math.min(startIdx + limit, totalRequests);
 
-    // If it's an API request, return JSON
     if (req.headers.accept && req.headers.accept.includes('application/json')) {
       return res.json({
         success: true,
@@ -604,7 +525,6 @@ const getReturnRequests = async (req, res) => {
       });
     }
 
-    // Render the return requests page
     res.render('return-request', {
       returnRequests,
       currentPage: page,
@@ -625,8 +545,6 @@ const getReturnRequests = async (req, res) => {
     });
   }
 };
-
-
 
 module.exports = {
   getOrders,

@@ -1,9 +1,9 @@
+// Admin dashboard controller
 const User = require("../../models/user-schema");
 const Order = require("../../models/order-schema");
 const Product = require("../../models/product-schema");
 const Category = require("../../models/category-schema");
 
-// Admin dashboard controller - handles all dashboard-related operations
 const getDashboardStats = async (req, res) => {
   try {
     const totalCustomers = await User.countDocuments({ 
@@ -87,9 +87,6 @@ const getDashboardStats = async (req, res) => {
     });
   }
 };
-
-
-
 
 const getSalesData = async (req, res) => {
   try {
@@ -199,9 +196,6 @@ const getSalesData = async (req, res) => {
   }
 };
 
-
-
-
 const getTopProducts = async (req, res) => {
   try {
     const topProducts = await Order.aggregate([
@@ -257,9 +251,6 @@ const getTopProducts = async (req, res) => {
   }
 };
 
-
-
-
 const getRecentOrders = async (req, res) => {
   try {
     const recentOrders = await Order.find()
@@ -282,9 +273,6 @@ const getRecentOrders = async (req, res) => {
     });
   }
 };
-
-
-
 
 const getNewCustomers = async (req, res) => {
   try {
@@ -310,9 +298,6 @@ const getNewCustomers = async (req, res) => {
     });
   }
 };
-
-
-
 
 const getBestSellingProducts = async (req, res) => {
   try {
@@ -374,9 +359,6 @@ const getBestSellingProducts = async (req, res) => {
     });
   }
 };
-
-
-
 
 const getBestSellingCategory = async (req, res) => {
   try {
@@ -445,9 +427,6 @@ const getBestSellingCategory = async (req, res) => {
   }
 };
 
-
-
-
 const getBestSellingBrand = async (req, res) => {
   try {
     const bestSellingBrand = await Order.aggregate([
@@ -512,9 +491,6 @@ const getBestSellingBrand = async (req, res) => {
   }
 };
 
-
-
-
 const getRevenueDistribution = async (req, res) => {
   try {
     const revenueDistribution = await Order.aggregate([
@@ -559,9 +535,6 @@ const getRevenueDistribution = async (req, res) => {
     });
   }
 };
-
-
-
 
 module.exports = {
   getDashboardStats,

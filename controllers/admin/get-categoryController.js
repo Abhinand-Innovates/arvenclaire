@@ -1,13 +1,9 @@
+// Admin category management controller
 const Category = require('../../models/category-schema');
 const mongoose = require('mongoose');
 
-
-
-
-// Render the category management page
 const renderCategoryManagementPage = async (req, res) => {
     try {
-        // Pass an empty array for categories initially, JS will fetch them
         res.render('get-category', { 
         });
     } catch (error) {
@@ -16,27 +12,22 @@ const renderCategoryManagementPage = async (req, res) => {
     }
 };
 
-
-
-
-// API: Get all categories (excluding soft deleted)
 const getAllCategoriesAPI = async (req, res) => {
     try {
-        // Use $ne: true to handle both false and undefined/null values (for existing categories)
         const categories = await Category.find({
             $or: [
                 { isDeleted: false },
                 { isDeleted: { $exists: false } }
             ]
-        }).sort({ createdAt: -1 }); // Sort by newest, exclude deleted
-        // Map to match frontend expected structure if needed, especially for 'date'
+        }).sort({ createdAt: -1 });
+        
         const formattedCategories = categories.map(cat => ({
             _id: cat._id,
             name: cat.name,
             description: cat.description,
             categoryOffer: cat.categoryOffer || 0,
-            isListed: cat.isListed, // Use isListed, not status
-            date: cat.createdAt.toISOString().split('T')[0] // Format date
+            isListed: cat.isListed,
+            date: cat.createdAt.toISOString().split('T')[0]
         }));
         res.status(200).json(formattedCategories);
     } catch (error) {
@@ -45,10 +36,6 @@ const getAllCategoriesAPI = async (req, res) => {
     }
 };
 
-
-
-
-// API: Add a new category
 const addCategoryAPI = async (req, res) => {
     try {
         const { name, description, status, categoryOffer } = req.body;
@@ -57,7 +44,6 @@ const addCategoryAPI = async (req, res) => {
             return res.status(400).json({ message: 'Category name is required.' });
         }
 
-        // Validate category offer
         if (categoryOffer !== undefined && (categoryOffer < 0 || categoryOffer > 100)) {
             return res.status(400).json({ message: 'Category offer must be between 0 and 100.' });
         }
@@ -66,11 +52,10 @@ const addCategoryAPI = async (req, res) => {
             name,
             description,
             categoryOffer: categoryOffer || 0,
-            status: status !== undefined ? status : true // Default to true if not provided
+            status: status !== undefined ? status : true
         });
 
         await newCategory.save();
-        // Return the newly created category with formatted date
         res.status(201).json({
             _id: newCategory._id,
             name: newCategory.name,
@@ -81,21 +66,17 @@ const addCategoryAPI = async (req, res) => {
         });
     } catch (error) {
         console.error("Error adding category:", error);
-        if (error.code === 11000 || error.message.includes('A category with this name already exists')) { // MongoDB duplicate key error or custom pre-save error
+        if (error.code === 11000 || error.message.includes('A category with this name already exists')) {
             return res.status(409).json({ message: 'A category with this name already exists.' });
         }
         res.status(500).json({ message: 'Error adding category', error: error.message });
     }
 };
 
-
-
-
-// API: Update an existing category
 const updateCategoryAPI = async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, description, status, categoryOffer } = req.body; // Include status if you want to update it here too
+        const { name, description, status, categoryOffer } = req.body;
 
         if (!mongoose.Types.ObjectId.isValid(id)) {
             return res.status(400).json({ message: 'Invalid category ID.' });
@@ -105,12 +86,10 @@ const updateCategoryAPI = async (req, res) => {
             return res.status(400).json({ message: 'Category name is required.' });
         }
 
-        // Validate category offer
         if (categoryOffer !== undefined && (categoryOffer < 0 || categoryOffer > 100)) {
             return res.status(400).json({ message: 'Category offer must be between 0 and 100.' });
         }
         
-        // Check for name uniqueness if name is being changed (only among non-deleted categories)
         if (name) {
             const existingCategory = await Category.findOne({
                 name: new RegExp(`^${name}$`, 'i'),
@@ -126,10 +105,10 @@ const updateCategoryAPI = async (req, res) => {
         }
 
         const updateData = { name, description };
-        if (status !== undefined) { // Only update status if provided
+        if (status !== undefined) {
             updateData.status = status;
         }
-        if (categoryOffer !== undefined) { // Only update categoryOffer if provided
+        if (categoryOffer !== undefined) {
             updateData.categoryOffer = categoryOffer;
         }
 
@@ -144,7 +123,7 @@ const updateCategoryAPI = async (req, res) => {
             description: updatedCategory.description,
             categoryOffer: updatedCategory.categoryOffer,
             status: updatedCategory.status,
-            date: updatedCategory.createdAt.toISOString().split('T')[0] // or updatedAt
+            date: updatedCategory.createdAt.toISOString().split('T')[0]
         });
     } catch (error) {
         console.error("Error updating category:", error);
@@ -155,15 +134,12 @@ const updateCategoryAPI = async (req, res) => {
     }
 };
 
-
-
-
-// API: Toggle category status
 const toggleCategoryStatusAPI = async (req, res) => {
     try {
         const { id } = req.params;
-        const { status } = req.body; // Expecting { status: true/false }
-                    if (!mongoose.Types.ObjectId.isValid(id)) {
+        const { status } = req.body;
+        
+        if (!mongoose.Types.ObjectId.isValid(id)) {
             return res.status(400).json({ message: 'Invalid category ID.' });
         }
         if (typeof status !== 'boolean') {
@@ -175,13 +151,12 @@ const toggleCategoryStatusAPI = async (req, res) => {
             return res.status(404).json({ message: 'Category not found.' });
         }
 
-        
         category.isListed = status;
         await category.save();
 
         res.status(200).json({
              message: `Category "${category.name}" status updated.`,
-             category: { // Send back the updated category partial data
+             category: {
                 _id: category._id,
                 status: category.status
              }
@@ -192,10 +167,6 @@ const toggleCategoryStatusAPI = async (req, res) => {
     }
 };
 
-
-
-
-// API: Update category offer
 const updateCategoryOfferAPI = async (req, res) => {
     try {
         const { id } = req.params;
@@ -205,7 +176,6 @@ const updateCategoryOfferAPI = async (req, res) => {
             return res.status(400).json({ message: 'Invalid category ID.' });
         }
 
-        // Validate category offer
         if (categoryOffer === undefined || categoryOffer === null) {
             return res.status(400).json({ message: 'Category offer is required.' });
         }
@@ -240,10 +210,6 @@ const updateCategoryOfferAPI = async (req, res) => {
     }
 };
 
-
-
-
-// API: Soft delete a category
 const deleteCategoryAPI = async (req, res) => {
     try {
         const { id } = req.params;
@@ -261,9 +227,8 @@ const deleteCategoryAPI = async (req, res) => {
             return res.status(400).json({ message: 'Category is already deleted.' });
         }
 
-        // Soft delete the category
         category.isDeleted = true;
-        category.isListed = false; // Also unlist when deleting
+        category.isListed = false;
         await category.save();
 
         res.status(200).json({
@@ -279,9 +244,6 @@ const deleteCategoryAPI = async (req, res) => {
         res.status(500).json({ message: 'Error deleting category', error: error.message });
     }
 };
-
-
-
 
 module.exports = {
     renderCategoryManagementPage,

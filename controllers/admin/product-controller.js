@@ -1,3 +1,4 @@
+// Admin product management controller
 const Product = require('../../models/product-schema');
 const Category = require('../../models/category-schema');
 const sharp = require('sharp');
@@ -6,19 +7,13 @@ const fs = require('fs');
 const { uploadDir } = require('../../config/multer-config');
 const { getProductsWithBestOffers } = require('../../utils/offer-utils');
 
-
-
-
-// Helper function to save base64 image
 const saveBase64Image = async (base64Data, filename) => {
     try {
-        // Remove data URL prefix if present
         const base64Image = base64Data.replace(/^data:image\/[a-z]+;base64,/, '');
         const imageBuffer = Buffer.from(base64Image, 'base64');
         
         const outputPath = path.join(uploadDir, filename);
         
-        // Process and save image with Sharp
         await sharp(imageBuffer)
             .resize(800, 800, {
                 fit: 'cover',
@@ -34,10 +29,6 @@ const saveBase64Image = async (base64Data, filename) => {
     }
 };
 
-
-
-
-// Helper function to delete image file
 const deleteImageFile = (filename) => {
     try {
         const filePath = path.join(uploadDir, filename);
@@ -49,25 +40,17 @@ const deleteImageFile = (filename) => {
     }
 };
 
-
-
-
-// Render product listing page
 const getProducts = async (req, res) => {
     try {
-        // Pagination parameters
         const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 10; // Products per page
+        const limit = parseInt(req.query.limit) || 10;
         const skip = (page - 1) * limit;
 
-        // Search and filter parameters
         const search = req.query.search || '';
         const selectedCategory = req.query.category || '';
 
-        // Build search query
         const searchQuery = { isDeleted: false };
 
-        // Add search functionality
         if (search) {
             searchQuery.$or = [
                 { productName: { $regex: search, $options: 'i' } },
@@ -76,12 +59,10 @@ const getProducts = async (req, res) => {
             ];
         }
 
-        // Add category filter
         if (selectedCategory) {
             searchQuery.category = selectedCategory;
         }
 
-        // Fetch products and categories in parallel
         const [allProducts, totalProducts, categories] = await Promise.all([
             Product.find(searchQuery)
                 .populate({
@@ -107,17 +88,14 @@ const getProducts = async (req, res) => {
             }).sort({ name: 1 })
         ]);
 
-        // Filter out products with null categories (deleted categories)
         const products = allProducts.filter(product => product.category !== null);
 
-        // Calculate pagination data
         const totalPages = Math.ceil(totalProducts / limit);
         const hasNextPage = page < totalPages;
         const hasPrevPage = page > 1;
         const nextPage = hasNextPage ? page + 1 : null;
         const prevPage = hasPrevPage ? page - 1 : null;
 
-        // Calculate page range for pagination display
         const startPage = Math.max(1, page - 2);
         const endPage = Math.min(totalPages, page + 2);
         const pageNumbers = [];
@@ -125,11 +103,9 @@ const getProducts = async (req, res) => {
             pageNumbers.push(i);
         }
 
-        // Calculate result range
         const startResult = totalProducts > 0 ? skip + 1 : 0;
         const endResult = Math.min(skip + limit, totalProducts);
 
-        // Build query string for pagination links
         const queryParams = new URLSearchParams();
         if (search) queryParams.set('search', search);
         if (selectedCategory) queryParams.set('category', selectedCategory);
@@ -139,7 +115,6 @@ const getProducts = async (req, res) => {
         res.render('product', {
             products,
             categories,
-            // Pagination data
             currentPage: page,
             totalPages,
             totalProducts,
@@ -152,7 +127,6 @@ const getProducts = async (req, res) => {
             endResult,
             limit,
             baseQuery,
-            // Filter data
             search,
             selectedCategory
         });
@@ -180,10 +154,6 @@ const getProducts = async (req, res) => {
     }
 };
 
-
-
-
-// Render add product page
 const getAddProduct = async (req, res) => {
     try {
         const categories = await Category.find({
@@ -200,10 +170,6 @@ const getAddProduct = async (req, res) => {
     }
 };
 
-
-
-
-// Render edit product page
 const getEditProduct = async (req, res) => {
     try {
         const productId = req.params.id;
@@ -227,10 +193,6 @@ const getEditProduct = async (req, res) => {
     }
 };
 
-
-
-
-// Add new product
 const addProduct = async (req, res) => {
     try {
         const {
@@ -247,7 +209,6 @@ const addProduct = async (req, res) => {
             mainImageIndex
         } = req.body;
 
-        // Validation
         if (!productName || !description || !brand || !category || !regularPrice || !salePrice || !features) {
             return res.status(400).json({ 
                 success: false, 
@@ -255,7 +216,6 @@ const addProduct = async (req, res) => {
             });
         }
 
-        // Check if product with same name already exists (case-sensitive)
         const existingProduct = await Product.findOne({ 
             productName: productName.trim(),
             isDeleted: false 
@@ -269,7 +229,6 @@ const addProduct = async (req, res) => {
             });
         }
 
-        // Parse cropped images
         let imageData = [];
         try {
             imageData = JSON.parse(croppedImages || '[]');
@@ -287,7 +246,6 @@ const addProduct = async (req, res) => {
             });
         }
 
-        // Process and save cropped images
         const processedImages = [];
         for (let i = 0; i < imageData.length; i++) {
             const timestamp = Date.now();
@@ -297,22 +255,17 @@ const addProduct = async (req, res) => {
                 await saveBase64Image(imageData[i], filename);
                 processedImages.push(filename);
             } catch (error) {
-                // Clean up any already saved images
                 processedImages.forEach(deleteImageFile);
                 throw new Error(`Failed to process image ${i + 1}`);
             }
         }
 
-        // Determine main image based on mainImageIndex
         const selectedMainIndex = parseInt(mainImageIndex) || 0;
         const validMainIndex = selectedMainIndex < processedImages.length ? selectedMainIndex : 0;
 
-                
-        // Arrange images with main image first
         const mainImageFile = processedImages[validMainIndex];
         const subImageFiles = processedImages.filter((_, index) => index !== validMainIndex);
 
-        // Create product
         const newProduct = new Product({
             productName,
             description,
@@ -347,10 +300,6 @@ const addProduct = async (req, res) => {
     }
 };
 
-
-
-
-// Get product by ID for editing
 const getProductById = async (req, res) => {
     try {
         const product = await Product.findById(req.params.id).populate('category');
@@ -370,10 +319,6 @@ const getProductById = async (req, res) => {
     }
 };
 
-
-
-
-// Update product
 const updateProduct = async (req, res) => {
     try {
         const productId = req.params.id;
@@ -392,7 +337,6 @@ const updateProduct = async (req, res) => {
             mainImage
         } = req.body;
 
-        // Find existing product
         const existingProduct = await Product.findById(productId);
         if (!existingProduct || existingProduct.isDeleted) {
             return res.status(404).json({
@@ -401,7 +345,6 @@ const updateProduct = async (req, res) => {
             });
         }
 
-        // Prepare update data
         const updateData = {
             productName,
             description,
@@ -414,10 +357,8 @@ const updateProduct = async (req, res) => {
             features
         };
 
-        // Handle image updates
         let currentImages = [existingProduct.mainImage, ...existingProduct.subImages];
 
-        // Remove deleted images
         if (removedImages) {
             const toRemove = JSON.parse(removedImages);
             toRemove.forEach(filename => {
@@ -426,7 +367,6 @@ const updateProduct = async (req, res) => {
             });
         }
 
-        // Add new cropped images
         let newImageFilenames = [];
         if (croppedImages) {
             const newImageData = JSON.parse(croppedImages);
@@ -444,7 +384,6 @@ const updateProduct = async (req, res) => {
             }
         }
 
-        // Ensure minimum 3 images
         if (currentImages.length < 3) {
             return res.status(400).json({
                 success: false,
@@ -452,33 +391,27 @@ const updateProduct = async (req, res) => {
             });
         }
 
-        // Handle main image selection
         let selectedMainImage;
 
         if (mainImage) {
-            // Check if mainImage is a number (index for new images)
             if (!isNaN(mainImage)) {
                 const newImageIndex = parseInt(mainImage);
                 if (newImageIndex >= 0 && newImageIndex < newImageFilenames.length) {
                     selectedMainImage = newImageFilenames[newImageIndex];
-                                    }
+                }
             } else {
-                // It's an existing image filename
                 if (currentImages.includes(mainImage)) {
                     selectedMainImage = mainImage;
                 }
             }
         }
 
-        // If no valid main image selected, use the first image
         if (!selectedMainImage) {
             selectedMainImage = currentImages[0];
-                    }
+        }
 
-        // Arrange images with selected main image first
         const subImages = currentImages.filter(img => img !== selectedMainImage);
 
-        // Update image fields
         updateData.mainImage = selectedMainImage;
         updateData.subImages = subImages;
 
@@ -503,10 +436,6 @@ const updateProduct = async (req, res) => {
     }
 };
 
-
-
-
-// Soft delete product
 const deleteProduct = async (req, res) => {
     try {
         const productId = req.params.id;
@@ -541,10 +470,6 @@ const deleteProduct = async (req, res) => {
     }
 };
 
-
-
-
-// Toggle product status (block/unblock)
 const toggleProductStatus = async (req, res) => {
     try {
         const productId = req.params.id;
@@ -575,13 +500,6 @@ const toggleProductStatus = async (req, res) => {
         });
     }
 };
-
-
-
-
-
-
-
 
 module.exports = {
     getProducts,

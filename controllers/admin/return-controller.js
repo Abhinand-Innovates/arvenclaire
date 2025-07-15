@@ -1,36 +1,30 @@
+// Admin return request management controller
 const mongoose = require('mongoose');
 const Order = require('../../models/order-schema');
 const User = require('../../models/user-schema');
 const Product = require('../../models/product-schema');
 const Wallet = require('../../models/wallet-schema');
 
-
-
-
-// Get return requests with proper individual item support - Only show pending requests
 const getReturnRequests = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = 10;
     const skip = (page - 1) * limit;
 
-    // Only show pending return requests (not approved or rejected)
     let matchStage = {
       $or: [
-        { status: 'Return Request' }, // Entire order return requests that are pending
+        { status: 'Return Request' },
         { 
           $and: [
             { status: { $in: ['Delivered', 'Partially Returned'] } },
-            { 'orderedItems.status': 'Return Request' } // Individual items pending
+            { 'orderedItems.status': 'Return Request' }
           ]
         }
       ]
     };
 
-    // Get total count for pagination
     const totalRequests = await Order.countDocuments(matchStage);
 
-    // Get return requests with user and product details
     const returnRequests = await Order.find(matchStage)
       .populate('userId', 'fullname email phone')
       .populate('orderedItems.product', 'productName productImages mainImage regularPrice sellingPrice')
@@ -38,13 +32,10 @@ const getReturnRequests = async (req, res) => {
       .skip(skip)
       .limit(limit);
 
-    // Process return requests to extract individual item information
     const processedRequests = [];
     
     for (const order of returnRequests) {
-      // Check if entire order is being returned
       if (order.status === 'Return Request') {
-        // Calculate return amount using same logic as order details page Total Amount
         const activeItems = order.orderedItems.filter(item => item.status === 'Active');
         const returnRequestItems = order.orderedItems.filter(item => item.status === 'Return Request');
         const includedItems = [...activeItems, ...returnRequestItems];
@@ -59,7 +50,6 @@ const getReturnRequests = async (req, res) => {
           currentTotal += order.shippingCharges;
         }
         
-        // For entire order returns, show as single entry
         processedRequests.push({
           ...order.toObject(),
           returnType: 'entire',
@@ -67,19 +57,17 @@ const getReturnRequests = async (req, res) => {
           returnAmount: currentTotal
         });
       } else {
-        // Check for individual item returns - only show pending items
         const returnRequestItems = order.orderedItems.filter(item => 
           item.status === 'Return Request'
         );
         
         if (returnRequestItems.length > 0) {
-          // For individual items, create separate entries for each pending return request
           returnRequestItems.forEach(item => {
             processedRequests.push({
               ...order.toObject(),
               returnType: 'individual',
-              returnItems: [item], // Only this specific item
-              returnAmount: item.totalPrice || (item.price * item.quantity), // Only this item's amount
+              returnItems: [item],
+              returnAmount: item.totalPrice || (item.price * item.quantity),
               individualItemId: item._id,
               individualItemName: item.product ? item.product.productName : 'Unknown Product'
             });
@@ -92,7 +80,6 @@ const getReturnRequests = async (req, res) => {
     const startIdx = (page - 1) * limit;
     const endIdx = Math.min(startIdx + limit, totalRequests);
 
-    // If it's an API request, return JSON
     if (req.headers.accept && req.headers.accept.includes('application/json')) {
       return res.json({
         success: true,
@@ -105,7 +92,6 @@ const getReturnRequests = async (req, res) => {
       });
     }
 
-    // Render the return requests page
     res.render('return-request', {
       returnRequests: processedRequests,
       currentPage: page,
@@ -125,16 +111,11 @@ const getReturnRequests = async (req, res) => {
   }
 };
 
-
-
-
-// Approve return request with individual item support
 const approveReturnRequest = async (req, res) => {
   try {
     const orderId = req.params.id;
     const { adminNote } = req.body;
     
-    // Validate order ID format
     if (!orderId || !mongoose.Types.ObjectId.isValid(orderId)) {
       return res.status(400).json({
         success: false,
@@ -153,7 +134,6 @@ const approveReturnRequest = async (req, res) => {
       });
     }
 
-    // Check if there are items with return request status or entire order is return request
     const returnRequestItems = order.orderedItems.filter(item => item.status === 'Return Request');
     const isEntireOrderReturn = order.status === 'Return Request';
 
@@ -168,7 +148,6 @@ const approveReturnRequest = async (req, res) => {
     let returnedItemsDescription = '';
 
     if (isEntireOrderReturn) {
-      // Entire order return - check if already processed to prevent duplicate wallet credits
       if (order.status === 'Returned' || order.returnApprovedAt) {
         return res.status(400).json({
           success: false,
@@ -176,7 +155,6 @@ const approveReturnRequest = async (req, res) => {
         });
       }
       
-      // Validate that return can only be approved from 'Return Request' status
       if (order.status !== 'Return Request') {
         return res.status(403).json({
           success: false,
@@ -186,7 +164,6 @@ const approveReturnRequest = async (req, res) => {
       
       order.status = 'Returned';
       
-      // Calculate refund amount using same logic as order details page Total Amount
       const activeItems = order.orderedItems.filter(item => item.status === 'Active');
       const returnRequestItems = order.orderedItems.filter(item => item.status === 'Return Request');
       const includedItems = [...activeItems, ...returnRequestItems];
@@ -203,13 +180,11 @@ const approveReturnRequest = async (req, res) => {
       
       refundAmount = currentTotal;
       
-      // Mark ALL items (both Active and Return Request) as returned and restore stock
       for (const item of order.orderedItems) {
         if (item.status === 'Active' || item.status === 'Return Request') {
           item.status = 'Returned';
           item.returnApprovedAt = new Date();
           
-          // Set return reason if not already set
           if (!item.returnReason) {
             item.returnReason = 'Entire order return approved by admin';
           }
@@ -227,8 +202,6 @@ const approveReturnRequest = async (req, res) => {
       
       returnedItemsDescription = 'Entire order';
     } else {
-      // Individual item returns - Process ALL pending return request items
-      // Check if any of these items were already processed as part of entire order return
       const alreadyProcessedItems = returnRequestItems.filter(item => item.returnApprovedAt);
       if (alreadyProcessedItems.length > 0) {
         return res.status(400).json({
@@ -241,7 +214,6 @@ const approveReturnRequest = async (req, res) => {
         item.status = 'Returned';
         item.returnApprovedAt = new Date();
         
-        // Calculate refund amount for this specific item ONLY
         const itemRefundAmount = item.totalPrice || (item.price * item.quantity);
         refundAmount += itemRefundAmount;
         
@@ -250,7 +222,6 @@ const approveReturnRequest = async (req, res) => {
         }
         returnedItemsDescription += `${item.product.productName} (₹${itemRefundAmount.toFixed(2)})`;
         
-        // Restore product stock for returned item ONLY
         try {
           await Product.findByIdAndUpdate(
             item.product._id,
@@ -261,7 +232,6 @@ const approveReturnRequest = async (req, res) => {
         }
       }
       
-      // Check if all items are now returned
       const activeItems = order.orderedItems.filter(item => item.status === 'Active');
       if (activeItems.length === 0) {
         order.status = 'Returned';
@@ -273,14 +243,12 @@ const approveReturnRequest = async (req, res) => {
     order.returnApprovedAt = new Date();
     order.adminNote = adminNote || 'Return request approved by admin';
 
-    // Add to timeline
     order.orderTimeline.push({
       status: order.status,
       timestamp: new Date(),
       description: `Return approved for: ${returnedItemsDescription}. Refund: ₹${refundAmount.toFixed(2)}. ${adminNote || 'Return approved by admin'}`
     });
 
-    // Add ONLY the calculated refund amount to user's wallet
     try {
       const wallet = await Wallet.getOrCreateWallet(order.userId._id);
       await wallet.addMoney(
@@ -290,7 +258,6 @@ const approveReturnRequest = async (req, res) => {
       );
     } catch (walletError) {
       console.error('Error adding money to wallet:', walletError);
-      // Continue with order update even if wallet fails
     }
 
     await order.save();
@@ -313,10 +280,6 @@ const approveReturnRequest = async (req, res) => {
   }
 };
 
-
-
-
-// Reject return request
 const rejectReturnRequest = async (req, res) => {
   try {
     const orderId = req.params.id;
@@ -340,7 +303,6 @@ const rejectReturnRequest = async (req, res) => {
       });
     }
 
-    // Check if there are items with return request status or entire order is return request
     const returnRequestItems = order.orderedItems.filter(item => item.status === 'Return Request');
     const isEntireOrderReturn = order.status === 'Return Request';
 
@@ -354,30 +316,24 @@ const rejectReturnRequest = async (req, res) => {
     let rejectedItemsDescription = '';
 
     if (isEntireOrderReturn) {
-      // Entire order return rejection
       order.status = 'Delivered';
       order.returnRejectedAt = new Date();
       order.rejectionReason = rejectionReason;
       
       for (const item of order.orderedItems) {
         if (item.status === 'Return Request') {
-          item.status = 'Active'; // Reset to active status
+          item.status = 'Active';
           item.returnRejectedAt = new Date();
           item.rejectionReason = rejectionReason;
-          // Keep returnAttempted as true to prevent future return attempts
         }
       }
       
-      // No refund for rejected returns - wallet credit removed
-      
       rejectedItemsDescription = 'Entire order';
     } else {
-      // Individual item return rejection
       for (const item of returnRequestItems) {
-        item.status = 'Active'; // Reset to active status
+        item.status = 'Active';
         item.returnRejectedAt = new Date();
         item.rejectionReason = rejectionReason;
-        // Keep returnAttempted as true to prevent future return attempts
         
         if (rejectedItemsDescription) {
           rejectedItemsDescription += ', ';
@@ -385,14 +341,10 @@ const rejectReturnRequest = async (req, res) => {
         rejectedItemsDescription += item.product.productName;
       }
       
-      // Set order-level rejection info for individual items
       order.returnRejectedAt = new Date();
       order.rejectionReason = rejectionReason;
-      
-      // No refund for rejected returns - wallet credit removed
     }
 
-    // Add to timeline
     order.orderTimeline.push({
       status: 'Return Rejected',
       timestamp: new Date(),
@@ -415,9 +367,6 @@ const rejectReturnRequest = async (req, res) => {
     });
   }
 };
-
-
-
 
 module.exports = {
   getReturnRequests,

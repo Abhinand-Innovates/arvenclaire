@@ -226,7 +226,7 @@
         let currentCallback;
         let selectedFiles = [];
         let cropModal;
-        let mainImageIndex = null; // Start with null, set to 0 when first image is added
+        let mainImageIndex = null; 
         let draggedIndex = null;
 
         // Initialize page
@@ -260,7 +260,6 @@
         // Fetch categories from API
         async function fetchCategories() {
             try {
-                console.log('Fetching categories...');
                 const response = await fetch('/get-categories');
                 console.log('Categories response status:', response.status);
 
