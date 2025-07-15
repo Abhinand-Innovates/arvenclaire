@@ -3,7 +3,7 @@ const User = require('../../models/user-schema');
 const { 
     validateAddAddressForm, 
     validateUpdateAddressForm 
-} = require('../../validator/addressValidator');
+} = require('../../validator/addressValidator-simple');
 
 
 // Load address listing page
@@ -79,10 +79,15 @@ const saveAddress = async (req, res) => {
   try {
     const userId = req.session.userId;
     
+    console.log('Received form data:', req.body);
+    
     // Validate form data using the validator
     const validation = validateAddAddressForm(req.body);
     
+    console.log('Validation result:', validation);
+    
     if (!validation.isValid) {
+      console.log('Validation failed:', validation.errors);
       // Return the first validation error
       const firstError = Object.values(validation.errors)[0];
       return res.status(400).json({
@@ -90,6 +95,8 @@ const saveAddress = async (req, res) => {
         message: firstError
       });
     }
+
+    console.log('Validated data:', validation.validatedData);
 
     // Find existing address document or create new one
     let addressDoc = await Address.findOne({ userId });
@@ -110,6 +117,8 @@ const saveAddress = async (req, res) => {
       newAddress.isDefault = true;
     }
 
+    console.log('New address to save:', newAddress);
+
     if (addressDoc) {
       addressDoc.address.push(newAddress);
     } else {
@@ -119,7 +128,11 @@ const saveAddress = async (req, res) => {
       });
     }
 
+    console.log('Address document before save:', addressDoc);
+
     await addressDoc.save();
+
+    console.log('Address saved successfully');
 
     // Check if this is a redirect from checkout
     const returnTo = req.query.returnTo;
@@ -136,9 +149,11 @@ const saveAddress = async (req, res) => {
 
   } catch (error) {
     console.error('Error saving address:', error);
+    console.error('Error details:', error.message);
+    console.error('Error stack:', error.stack);
     res.status(500).json({
       success: false,
-      message: 'Error saving address'
+      message: 'Error saving address: ' + error.message
     });
   }
 };

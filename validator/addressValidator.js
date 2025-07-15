@@ -1,5 +1,3 @@
-
-
 /**
  * Validates full name field for address
  * @param {string} fullName - The full name to validate
@@ -127,46 +125,6 @@ const validateAddressDetails = (addressDetails) => {
     return {
         isValid: true,
         trimmedValue: addressDetails.trim()
-    };
-};
-
-
-
-/**
- * Validates district field
- * @param {string} district - The district to validate
- * @returns {object} - { isValid: boolean, error: string, field: string }
- */
-const validateDistrict = (district) => {
-    if (!district || district.trim() === '') {
-        return {
-            isValid: false,
-            error: 'District is required',
-            field: 'district'
-        };
-    }
-
-    const trimmedDistrict = district.trim();
-    
-    if (trimmedDistrict.length < 2) {
-        return {
-            isValid: false,
-            error: 'District must be at least 2 characters long',
-            field: 'district'
-        };
-    }
-
-    if (!/^[a-zA-Z\s]+$/.test(trimmedDistrict)) {
-        return {
-            isValid: false,
-            error: 'District can only contain alphabets and spaces',
-            field: 'district'
-        };
-    }
-
-    return {
-        isValid: true,
-        trimmedValue: trimmedDistrict
     };
 };
 
@@ -320,11 +278,11 @@ const validateAddressType = (addressType) => {
         };
     }
 
-    const validTypes = ['Home', 'Work', 'Other'];
-    if (!validTypes.includes(addressType)) {
+    const validTypes = ['home', 'office', 'other'];
+    if (!validTypes.includes(addressType.toLowerCase())) {
         return {
             isValid: false,
-            error: 'Invalid address type. Must be Home, Work, or Other',
+            error: 'Invalid address type. Must be home, office, or other',
             field: 'addressType'
         };
     }
@@ -363,7 +321,6 @@ const validateAddAddressForm = (formData) => {
         fullName,
         mobileNumber,
         addressDetails,
-        district,
         city,
         state,
         pincode,
@@ -408,14 +365,6 @@ const validateAddAddressForm = (formData) => {
         validatedData.landMark = addressDetailsValidation.trimmedValue;
     }
 
-    // Validate district
-    const districtValidation = validateDistrict(district);
-    if (!districtValidation.isValid) {
-        errors[districtValidation.field] = districtValidation.error;
-    } else {
-        validatedData.district = districtValidation.trimmedValue;
-    }
-
     // Validate city
     const cityValidation = validateCity(city);
     if (!cityValidation.isValid) {
@@ -451,7 +400,7 @@ const validateAddAddressForm = (formData) => {
     if (!addressTypeValidation.isValid) {
         errors[addressTypeValidation.field] = addressTypeValidation.error;
     } else {
-        validatedData.addressType = addressType;
+        validatedData.addressType = addressType.toLowerCase();
     }
 
     // Validate make default
@@ -567,7 +516,6 @@ module.exports = {
     validateMobileNumber,
     validateAltPhone,
     validateAddressDetails,
-    validateDistrict,
     validateCity,
     validateState,
     validatePincode,

@@ -118,8 +118,6 @@ router.get("/wishlist/count", isUserAuthenticated, preventCache, checkUserBlocke
 router.post("/wishlist/bulk-transfer-to-cart", isUserAuthenticated, preventCache, checkUserBlocked, wishlistController.bulkTransferToCart);
 // Wallet route
 router.get("/wallet", isUserAuthenticated, preventCache, addUserContext, checkUserBlocked, userProfileController.loadWallet);
-// Coupon page route
-router.get("/coupon", isUserAuthenticated, preventCache, addUserContext, checkUserBlocked, userUtilityController.loadCouponPage);
 // Referrals page route
 router.get("/referrals", isUserAuthenticated, preventCache, addUserContext, checkUserBlocked, userUtilityController.loadReferrals);
 // Change password route

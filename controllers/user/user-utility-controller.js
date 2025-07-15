@@ -1,88 +1,6 @@
 const User = require("../../models/user-schema");
 const Order = require('../../models/order-schema');
 const Wallet = require('../../models/wallet-schema');
-const Coupon = require('../../models/coupon-schema');
-
-// Load coupon page
-const loadCouponPage = async (req, res) => {
-  try {
-    const userId = req.session.userId;
-    if (!userId) {
-      return res.redirect('/login');
-    }
-
-    // Get user data for sidebar
-    const user = await User.findById(userId).select('fullname email profilePhoto');
-    if (!user) {
-      return res.redirect('/login');
-    }
-
-    const UserCoupon = require('../../models/user-coupon-schema');
-
-    // Get user-specific coupons and global active coupons
-    const userCoupons = await UserCoupon.find({ userId: userId })
-      .populate({
-        path: 'couponId',
-        match: { isDeleted: false }
-      })
-      .lean();
-
-    // Get global active coupons (admin-created coupons available to all users)
-    const globalCoupons = await Coupon.find({ 
-      isActive: true,
-      isDeleted: false,
-      usageLimit: { $gt: 1 } // Global coupons typically have usage limit > 1
-    }).lean();
-
-    // Combine user-specific coupons with global coupons
-    const allUserCoupons = [];
-
-    // Add user-specific coupons
-    userCoupons.forEach(userCoupon => {
-      if (userCoupon.couponId && userCoupon.couponId.isActive) {
-        allUserCoupons.push({
-          ...userCoupon.couponId,
-          userUsageCount: userCoupon.isUsed ? 1 : 0,
-          isUserLimitExceeded: userCoupon.isUsed,
-          isUserSpecific: true
-        });
-      }
-    });
-
-    // Add global coupons with usage tracking
-    for (const coupon of globalCoupons) {
-      // Check if user already has this coupon in their user-specific list
-      const hasUserSpecificVersion = userCoupons.some(uc => 
-        uc.couponId && uc.couponId._id.toString() === coupon._id.toString()
-      );
-
-      if (!hasUserSpecificVersion) {
-        // Count how many times this user has used this global coupon
-        const userUsageCount = await Order.countDocuments({
-          userId: userId,
-          coupon: coupon._id,
-          paymentStatus: { $ne: 'Failed' }
-        });
-
-        allUserCoupons.push({
-          ...coupon,
-          userUsageCount: userUsageCount,
-          isUserLimitExceeded: userUsageCount >= coupon.userUsageLimit,
-          isUserSpecific: false
-        });
-      }
-    }
-
-    res.render('coupon', {
-      user,
-      title: 'My Coupons',
-      coupons: allUserCoupons
-    });
-  } catch (error) {
-    console.error('Error loading coupon page:', error);
-    res.status(500).render('error', { message: 'Error loading coupon page' });
-  }
-};
 
 // Validate referral code API endpoint
 const validateReferralCode = async (req, res) => {
@@ -282,7 +200,6 @@ const submitContact = async (req, res) => {
 };
 
 module.exports = {
-  loadCouponPage,
   validateReferralCode,
   loadReferrals,
   loadAbout,
