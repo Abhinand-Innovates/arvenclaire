@@ -118,7 +118,7 @@ const checkProductAvailability = async (req, res, next) => {
 
 
 
- /**Middleware specifically for product detail page access, Redirects to shop page instead of returning JSON*/
+ /**Middleware specifically for product detail page access, Redirects to shop page*/
 const checkProductAvailabilityForPage = async (req, res, next) => {
   try {
     const productId = req.params.id;
