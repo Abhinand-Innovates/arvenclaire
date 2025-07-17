@@ -85,6 +85,11 @@
 
     /* Product Images */
     .product-images {
+        position: relative;
+        transition: all 0.3s ease;
+    }
+
+    .product-images.sticky {
         position: sticky;
         top: 2rem;
     }
