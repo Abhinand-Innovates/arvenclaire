@@ -354,7 +354,7 @@
                                         <%= relatedProduct.offerDetails.bestOfferPercentage %>% OFF
                                     </div>
                                 <% } %>
-                                <img src="/Uploads/products/<%= relatedProduct.mainImage %>"
+                                <img src="/uploads/products/<%= relatedProduct.mainImage %>"
                                      alt="<%= relatedProduct.productName %>"
                                      class="related-product-image"
                                      onerror="this.src='https://images.unsplash.com/photo-1523275335684-37898b6baf30?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80'">
@@ -624,7 +624,6 @@
         }
     }
 
-    // Note: addToWishlist function is now available globally from header.ejs
 
     // Enhanced product availability checking
     let availabilityCheckInterval;
@@ -790,7 +789,6 @@
     });
 
 
-
     // Image Zoom Functionality
     let currentImageIndex = 0;
     let productImages = [];
@@ -813,7 +811,7 @@
         // Add main image
         const mainImage = '<%= product.mainImage %>';
         productImages.push({
-            src: `/Uploads/products/${mainImage}`,
+            src: `/uploads/products/${mainImage}`,
             alt: '<%= product.productName %>'
         });
 
@@ -821,7 +819,7 @@
         <% if (product.subImages && product.subImages.length > 0) { %>
             <% product.subImages.forEach(image => { %>
                 productImages.push({
-                    src: '/Uploads/products/<%= image %>',
+                    src: '/uploads/products/<%= image %>',
                     alt: '<%= product.productName %>'
                 });
             <% }) %>
