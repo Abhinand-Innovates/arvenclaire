@@ -297,9 +297,11 @@
         .product-img {
             width: 100%;
             height: 300px;
-            object-fit: cover;
+            object-fit: contain;
+            object-position: center;
             transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             position: relative;
+            background-color: #f8f9fa;
         }
 
         .product-card:hover .product-img {
@@ -1048,17 +1050,22 @@
         /* Ensure consistent mobile layout across all screen sizes */
         @media (max-width: 767px) {
             .row {
-                margin: 0 -0.5rem;
+                margin: 0 auto;
+                justify-content: center;
+                display: flex;
+                flex-wrap: wrap;
             }
 
             .row .col-6.col-md-3 {
-                padding: 0 0.5rem;
-                margin-bottom: 1rem;
+                padding: 0 1rem;
+                margin-bottom: 1.5rem;
+                display: flex;
+                justify-content: center;
             }
 
             .product-card {
                 margin: 0 auto;
-                max-width: 100%;
+                max-width: 350px;
                 width: 100%;
             }
         }

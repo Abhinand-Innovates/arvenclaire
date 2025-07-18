@@ -54,7 +54,7 @@
                 <!-- Product Images -->
                 <div class="product-images">
                     <div class="main-image-container image-zoom-container" id="mainImageContainer">
-                        <img src="/Uploads/products/<%= product.mainImage %>"
+                        <img src="/uploads/products/<%= product.mainImage %>"
                              alt="<%= product.productName %>"
                              class="main-image"
                              id="mainImage"
@@ -63,7 +63,7 @@
 
                         <!-- Magnifier Glass -->
                         <div class="magnifier" id="magnifier">
-                            <img src="/Uploads/products/<%= product.mainImage %>"
+                            <img src="/uploads/products/<%= product.mainImage %>"
                                  alt="<%= product.productName %>"
                                  class="magnifier-image"
                                  id="magnifierImage">
@@ -72,12 +72,12 @@
 
                     <div class="image-thumbnails">
                         <div class="thumbnail active" onclick="changeMainImage('/Uploads/products/<%= product.mainImage %>', this)">
-                            <img src="/Uploads/products/<%= product.mainImage %>" alt="Main Image">
+                            <img src="/uploads/products/<%= product.mainImage %>" alt="Main Image">
                         </div>
                         <% if (product.subImages && product.subImages.length > 0) { %>
                             <% product.subImages.slice(0, 3).forEach(image => { %>
                                 <div class="thumbnail" onclick="changeMainImage('/Uploads/products/<%= image %>', this)">
-                                    <img src="/Uploads/products/<%= image %>" alt="Product Image">
+                                    <img src="/uploads/products/<%= image %>" alt="Product Image">
                                 </div>
                             <% }) %>
                         <% } %>
