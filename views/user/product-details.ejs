@@ -71,12 +71,12 @@
                     </div>
 
                     <div class="image-thumbnails">
-                        <div class="thumbnail active" onclick="changeMainImage('/Uploads/products/<%= product.mainImage %>', this)">
+                        <div class="thumbnail active" onclick="changeMainImage('/uploads/products/<%= product.mainImage %>', this)">
                             <img src="/uploads/products/<%= product.mainImage %>" alt="Main Image">
                         </div>
                         <% if (product.subImages && product.subImages.length > 0) { %>
                             <% product.subImages.slice(0, 3).forEach(image => { %>
-                                <div class="thumbnail" onclick="changeMainImage('/Uploads/products/<%= image %>', this)">
+                                <div class="thumbnail" onclick="changeMainImage('/uploads/products/<%= image %>', this)">
                                     <img src="/uploads/products/<%= image %>" alt="Product Image">
                                 </div>
                             <% }) %>

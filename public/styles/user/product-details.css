@@ -19,7 +19,7 @@
         background: transparent;
         padding: 0;
         margin: 0;
-        font-size: 0.875rem;
+        font-size: 0.75rem;
     }
 
     .breadcrumb-item {
@@ -58,7 +58,7 @@
     }
 
     .breadcrumb-icon {
-        font-size: 0.875rem;
+        font-size: 0.75rem;
     }
 
     .product-details-container {
@@ -1375,6 +1375,19 @@
             padding: 0 1rem;
         }
 
+        .breadcrumb-container {
+            padding: 0.75rem 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .breadcrumb {
+            font-size: 0.7rem;
+        }
+
+        .breadcrumb-icon {
+            font-size: 0.7rem;
+        }
+
         .product-main {
             padding: 2rem;
         }
@@ -1508,6 +1521,19 @@
     }
 
     @media (max-width: 480px) {
+        .breadcrumb-container {
+            padding: 0.5rem 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .breadcrumb {
+            font-size: 0.65rem;
+        }
+
+        .breadcrumb-icon {
+            font-size: 0.65rem;
+        }
+
         .related-products-section {
             padding: 1.5rem 1rem;
         }
