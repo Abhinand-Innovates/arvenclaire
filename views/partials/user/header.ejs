@@ -454,22 +454,23 @@
                 align-items: center !important;
                 justify-content: space-between !important;
                 flex-wrap: nowrap !important;
+                padding: 0 1rem !important;
             }
 
-            /* Left side: Burger + Brand */
-            .navbar-brand {
-                font-size: 1.2rem !important;
-                margin-left: 0.5rem !important;
-                order: 2;
+            /* Left side container: Burger + Brand */
+            .navbar-left-container {
+                display: flex !important;
+                align-items: center !important;
+                gap: 0.75rem !important;
+                order: 1;
             }
 
             .navbar-toggler {
-                order: 1;
                 border: none !important;
                 padding: 0.25rem 0.5rem !important;
                 font-size: 1rem !important;
-                margin-right: 0.5rem !important;
                 background: none !important;
+                margin: 0 !important;
             }
 
             .navbar-toggler:focus {
@@ -478,6 +479,12 @@
 
             .navbar-toggler-icon {
                 background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%2833, 37, 41, 0.75%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e") !important;
+            }
+
+            .navbar-brand {
+                font-size: 1.2rem !important;
+                margin: 0 !important;
+                order: 2;
             }
 
             /* Right side: Icons container */
@@ -931,17 +938,29 @@
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-light py-3 shadow-sm fixed-top" style="background-color: #ffffff !important;">
         <div class="container">
-            <!-- Burger Button (Mobile Only) -->
-            <button class="navbar-toggler" type="button" id="mobileNavToggle">
-                <span class="navbar-toggler-icon"></span>
-            </button>
+            <!-- Left side container: Burger + Brand (Mobile Only) -->
+            <div class="navbar-left-container d-lg-none">
+                <!-- Burger Button -->
+                <button class="navbar-toggler" type="button" id="mobileNavToggle">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
 
-            <!-- Website Name/Brand -->
+                <!-- Website Name/Brand -->
+                <% if (typeof user !== 'undefined' && user) { %>
+                    <a class="navbar-brand" href="/dashboard"
+                        style="font-family: 'Times New Roman', Times, serif;">ARVENCLAIRE</a>
+                <% } else { %>
+                    <a class="navbar-brand" href="/"
+                        style="font-family: 'Times New Roman', Times, serif;">ARVENCLAIRE</a>
+                <% } %>
+            </div>
+
+            <!-- Desktop Brand (Desktop Only) -->
             <% if (typeof user !== 'undefined' && user) { %>
-                <a class="navbar-brand" href="/dashboard"
+                <a class="navbar-brand d-none d-lg-block" href="/dashboard"
                     style="font-family: 'Times New Roman', Times, serif;">ARVENCLAIRE</a>
             <% } else { %>
-                <a class="navbar-brand" href="/"
+                <a class="navbar-brand d-none d-lg-block" href="/"
                     style="font-family: 'Times New Roman', Times, serif;">ARVENCLAIRE</a>
             <% } %>
 
