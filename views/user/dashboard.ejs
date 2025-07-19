@@ -10,102 +10,12 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 <!-- SweetAlert2 CSS -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-<link rel="stylesheet" href="../../../styles/user/header.css">
-<style>
-/* Prevent horizontal scrolling - targeted fix */
-html, body {
-    overflow-x: hidden !important;
-    max-width: 100vw !important;
-}
-
-/* Fix carousel button positioning to prevent overflow */
-.carousel-controls {
-    position: relative !important;
-    overflow: visible !important;
-    margin: 2.5rem 0 !important;
-    padding: 0 60px !important; /* Add padding to contain buttons */
-}
-
-.carousel-btn.prev {
-    left: 0 !important; /* Reset to container edge */
-}
-
-.carousel-btn.next {
-    right: 0 !important; /* Reset to container edge */
-}
-
-/* Fix banner navigation buttons */
-.banner-section {
-    overflow: hidden !important;
-    position: relative !important;
-}
-
-.banner-prev {
-    left: 15px !important; /* Ensure it stays within bounds */
-}
-
-.banner-next {
-    right: 15px !important; /* Ensure it stays within bounds */
-}
-
-/* Ensure all sections stay within viewport */
-section {
-    max-width: 100% !important;
-    overflow-x: hidden !important;
-}
-
-.container {
-    max-width: 100% !important;
-    padding-left: 15px !important;
-    padding-right: 15px !important;
-}
-
-.row {
-    margin-left: 0 !important;
-    margin-right: 0 !important;
-}
-
-/* Mobile responsive fixes */
-@media (max-width: 768px) {
-    .carousel-controls {
-        padding: 0 50px !important;
-    }
-    
-    .carousel-btn.prev,
-    .carousel-btn.next {
-        width: 40px !important;
-        height: 40px !important;
-    }
-    
-    .banner-prev,
-    .banner-next {
-        width: 35px !important;
-        height: 35px !important;
-    }
-}
-
-@media (max-width: 480px) {
-    .carousel-controls {
-        padding: 0 45px !important;
-    }
-    
-    .banner-prev {
-        left: 10px !important;
-    }
-    
-    .banner-next {
-        right: 10px !important;
-    }
-}
-</style>
+<link rel="stylesheet" href="../../styles/user/dashboard.css">
 </head>
 <body>
 <!-- Include Header Content -->
 <%- include("../partials/user/header") %>
 
-<link rel="stylesheet" href="../../styles/user/dashboard.css">
-
-    <!-- Static Image Section -->
     <section class="static-image-section">
         <div class="static-image-container">
             <video autoplay muted loop playsinline class="static-image">
@@ -372,6 +282,9 @@ section {
                 const slideProducts = this.products.slice(startIndex, endIndex);
                 const isNext = slideIndex > this.currentSlide;
 
+                // Define enter class at the correct scope
+                const enterClass = isNext ? 'slide-in-right' : 'slide-in-left';
+
                 // Step 1: Animate current products out with slower timing
                 const currentProducts = this.grid.querySelectorAll('.col-6');
                 const exitClass = isNext ? 'slide-out-left' : 'slide-out-right';
@@ -388,7 +301,6 @@ section {
                     this.grid.innerHTML = '';
 
                     slideProducts.forEach((product, index) => {
-                        const enterClass = isNext ? 'slide-in-right' : 'slide-in-left';
                         const productHTML = `
                             <div class="col-6 col-md-3 mb-4 product-enter">
                                 <div class="card product-card" onclick="window.location.href='/product/${product._id}'">
