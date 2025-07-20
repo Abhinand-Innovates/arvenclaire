@@ -1,6 +1,10 @@
 /* Modern Contact Page Styling - Black & White Theme */
-.contact-page {
-  background-color: #ffffff;
+
+/* Contact Wrapper (Same structure as Shop Page) */
+.contact-wrapper {
+  background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+  min-height: 100vh;
+  padding: 6rem 0 2rem 0;
   font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     sans-serif;
   line-height: 1.6;
@@ -8,72 +12,44 @@
   overflow-x: hidden;
 }
 
-.contact-page-content {
-  margin-top: 80px;
+.contact-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
 }
 
-/* Hero Section - Modern Minimalist */
-.contact-hero {
-  background: linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #000000 100%);
-  color: white;
-  padding: 120px 0;
+/* Contact Header (Similar to Shop Header) */
+.contact-header {
   text-align: center;
-  position: relative;
-  overflow: hidden;
+  margin-bottom: 3rem;
 }
 
-.contact-hero::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="modern-grid" width="50" height="50" patternUnits="userSpaceOnUse"><path d="M 50 0 L 0 0 0 50" fill="none" stroke="white" stroke-width="0.5" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23modern-grid)"/></svg>');
-  opacity: 1;
-}
-
-.contact-hero::after {
-  content: "";
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100px;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, white, transparent);
-}
-
-.contact-hero h1 {
+.contact-title {
   font-size: clamp(2.5rem, 5vw, 4rem);
   font-weight: 300;
-  margin-bottom: 1.5rem;
-  position: relative;
-  z-index: 2;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: #ffffff;
+  margin-bottom: 1rem;
+  color: #111827;
+  letter-spacing: 0.05em;
 }
 
-.contact-hero p {
+.contact-subtitle {
   font-size: clamp(1.1rem, 2vw, 1.3rem);
-  margin-bottom: 0;
-  position: relative;
-  z-index: 2;
+  color: #6b7280;
   max-width: 600px;
   margin: 0 auto;
   font-weight: 300;
-  line-height: 1.8;
-  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.6;
 }
 
-/* Contact Section - Modern Layout */
-.contact-section {
-  padding: 100px 0;
-  background: #ffffff;
+/* Main Contact Layout */
+.contact-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
 }
 
-.contact-container {
+/* Contact Container Inner (for the form and info section) */
+.contact-container-inner {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 6rem;
@@ -81,6 +57,12 @@
   max-width: 1400px;
   margin: 0 auto;
   padding: 0 2rem;
+}
+
+/* Contact Section - Modern Layout */
+.contact-section {
+  padding: 2rem 0;
+  background: transparent;
 }
 
 /* Contact Info - Modern Card Design */
@@ -662,6 +644,10 @@ textarea.form-control {
 /* Responsive Design */
 @media (max-width: 1200px) {
   .contact-container {
+    padding: 0 1.5rem;
+  }
+
+  .contact-container-inner {
     gap: 4rem;
     padding: 0 1.5rem;
   }
@@ -673,13 +659,17 @@ textarea.form-control {
 }
 
 @media (max-width: 992px) {
-  .contact-container {
-    grid-template-columns: 1fr;
-    gap: 3rem;
+  .contact-wrapper {
+    padding: 5rem 0 2rem 0;
   }
 
-  .contact-hero {
-    padding: 80px 0;
+  .contact-container {
+    padding: 0 1rem;
+  }
+
+  .contact-container-inner {
+    grid-template-columns: 1fr;
+    gap: 3rem;
   }
 
   .contact-section,
@@ -690,8 +680,8 @@ textarea.form-control {
 }
 
 @media (max-width: 768px) {
-  .contact-hero {
-    padding: 60px 0;
+  .contact-wrapper {
+    padding: 4rem 0 2rem 0;
   }
 
   .contact-section,
@@ -706,7 +696,8 @@ textarea.form-control {
     border-radius: 16px;
   }
 
-  .contact-container {
+  .contact-container,
+  .contact-container-inner {
     padding: 0 1rem;
   }
 
@@ -739,6 +730,10 @@ textarea.form-control {
 }
 
 @media (max-width: 480px) {
+  .contact-wrapper {
+    padding: 3rem 0 2rem 0;
+  }
+
   .contact-item {
     flex-direction: column;
     text-align: center;
@@ -856,60 +851,8 @@ textarea.form-control {
   outline-offset: 2px;
 }
 
-.breadcrumbs-section {
-  background: #ffffff;
-  padding: 20px 0;
-  border-bottom: 1px solid #f0f0f0;
-  margin-top: 80px;
-}
-
-.breadcrumb {
-  background: transparent;
-  margin: 0;
-  padding: 0;
-  font-size: 0.95rem;
-}
-
-.breadcrumb-item {
-  color: #666666;
-}
-
-.breadcrumb-item a {
-  color: #000000;
-  text-decoration: none;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.breadcrumb-item a:hover {
-  color: #333333;
-  text-decoration: none;
-}
-
-.breadcrumb-item.active {
-  color: #666666;
-  font-weight: 500;
-}
-
-.breadcrumb-item + .breadcrumb-item::before {
-  content: ">";
-  color: #999999;
-  font-weight: normal;
-  margin: 0 0.5rem;
-}
-
-.breadcrumb-item i {
-  font-size: 0.9rem;
-}
-
 /* High Contrast Mode Support */
 @media (prefers-contrast: high) {
-  .contact-hero {
-    background: #000000;
-  }
-
   .contact-info {
     border: 2px solid #ffffff;
   }

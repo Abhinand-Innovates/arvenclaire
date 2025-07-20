@@ -1,0 +1,115 @@
+/* Modern Breadcrumb Styles - Shared across all pages */
+.main-content .breadcrumb-container,
+.breadcrumb-container {
+    background: rgba(255, 255, 255, 0.9) !important;
+    backdrop-filter: blur(10px) !important;
+    border-radius: 12px !important;
+    padding: 1rem 1.5rem !important;
+    margin-bottom: 2rem !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    height: auto !important;
+    min-height: auto !important;
+    max-height: none !important;
+    line-height: normal !important;
+}
+
+.main-content .breadcrumb,
+.breadcrumb {
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    font-size: 0.75rem !important;
+    line-height: 1.5 !important;
+}
+
+.breadcrumb-item {
+    display: flex;
+    align-items: center;
+}
+
+.breadcrumb-item a {
+    color: #6b7280;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+}
+
+.breadcrumb-item a:hover {
+    color: #111827;
+    background: rgba(17, 24, 39, 0.05);
+    transform: translateY(-1px);
+}
+
+.breadcrumb-item.active {
+    color: #111827;
+    font-weight: 600;
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+    content: "›";
+    color: #9ca3af;
+    font-weight: 600;
+    margin: 0 0.5rem;
+}
+
+.breadcrumb-icon {
+    font-size: 0.75rem;
+}
+
+/* Page wrapper with breadcrumb support */
+.page-wrapper {
+    background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+    min-height: 100vh;
+    padding: 6rem 0 2rem 0;
+}
+
+.page-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .page-wrapper {
+        padding: 5rem 0 2rem 0;
+    }
+
+    .page-container {
+        padding: 0 1rem;
+    }
+
+    .breadcrumb-container {
+        padding: 0.75rem 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .breadcrumb {
+        font-size: 0.7rem;
+    }
+
+    .breadcrumb-icon {
+        font-size: 0.7rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .breadcrumb-container {
+        padding: 0.5rem 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .breadcrumb {
+        font-size: 0.65rem;
+    }
+
+    .breadcrumb-icon {
+        font-size: 0.65rem;
+    }
+}

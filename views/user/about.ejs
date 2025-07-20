@@ -3,297 +3,329 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>About - ArvanClaire</title>
+    <title>About - ArvenClaire</title>
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- SweetAlert2 CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <!-- Shared Breadcrumb CSS -->
+    <link rel="stylesheet" href="../../styles/shared/breadcrumb.css">
     <link rel="stylesheet" href="../../styles/user/about.css">
 </head>
 <body>
     <!-- Include Header Content -->
     <%- include('../partials/user/header') %>
 
-    <div class="about-page">
-        <div class="about-page-content">
-            <!-- Breadcrumbs Section -->
-            <section class="breadcrumbs-section">
-                <div class="container">
-                    <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb">
-                            <li class="breadcrumb-item">
-                                <a href="/">
-                                    <i class="bi bi-house"></i>
-                                    Home
-                                </a>
-                            </li>
-                            <li class="breadcrumb-item active" aria-current="page">About</li>
-                        </ol>
-                    </nav>
-                </div>
-            </section>
+    <!-- Modern Breadcrumb -->
+    <div class="breadcrumb-wrapper">
+        <div class="container">
+            <div class="breadcrumb-container">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="/">
+                                <i class="bi bi-house breadcrumb-icon"></i>
+                                Home
+                            </a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">
+                            About
+                        </li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
 
-            <!-- Hero Section -->
-            <section class="about-hero">
-                <div class="container">
-                    <h1 class="fade-in">About Arvenclaire</h1>
-                    <p class="fade-in">Crafting timeless elegance through exceptional luxury watches since our inception
-                    </p>
-                </div>
-            </section>
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-badge">EST. 2008</div>
+                <h1 class="hero-title">
+                    Crafting Excellence<br>
+                    <span class="title-accent">Since 2008</span>
+                </h1>
+                <p class="hero-description">
+                    ArvenClaire represents the pinnacle of luxury timepiece curation, 
+                    where Swiss precision meets contemporary elegance.
+                </p>
+            </div>
+        </div>
+    </section>
 
-            <!-- Our Story Section with Image -->
-            <section class="about-section">
-                <div class="container">
-                    <h2 class="section-title fade-in">Our Story</h2>
-                    <div class="story-container">
-                        <div class="story-content slide-in-left">
-                            <p>
-                                Arvenclaire was born from a passion for precision, elegance, and timeless craftsmanship.
-                                Founded with the vision of bringing the world's finest luxury watches to discerning
-                                customers, we have established ourselves as a trusted destination for horological
-                                excellence.
-                            </p>
-                            <p>
-                                Our journey began with a simple belief: that a watch is more than just a timepiece—it's
-                                a statement of style, a symbol of achievement, and a companion for life's most precious
-                                moments. This philosophy drives everything we do, from curating our exceptional
-                                collection to providing unparalleled customer service.
-                            </p>
-                            <p>
-                                Today, Arvenclaire stands as a beacon of luxury and sophistication in the world of fine
-                                timepieces, serving customers who appreciate the artistry and heritage that goes into
-                                every watch we offer.
-                            </p>
+    <!-- Story Section -->
+    <section class="story-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <div class="story-content">
+                        <div class="section-label">Our Story</div>
+                        <h2 class="section-title">
+                            Where Tradition Meets Innovation
+                        </h2>
+                        <p class="story-text">
+                            Founded in 2008, ArvenClaire emerged from a passion for exceptional timepieces 
+                            and a vision to make luxury accessible to discerning collectors worldwide.
+                        </p>
+                        <p class="story-text">
+                            Our journey began with a simple belief: every watch tells a story, and every 
+                            story deserves to be told with precision, authenticity, and care.
+                        </p>
+                        <div class="story-features">
+                            <div class="feature">
+                                <i class="bi bi-shield-check"></i>
+                                <span>Certified Authentic</span>
+                            </div>
+                            <div class="feature">
+                                <i class="bi bi-award"></i>
+                                <span>Premium Quality</span>
+                            </div>
                         </div>
-                        <div class="story-image slide-in-right">
-                            <video autoplay muted loop playsinline
-                                onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="story-image">
+                        <div class="image-wrapper">
+                            <video autoplay muted loop playsinline class="main-video">
                                 <source src="../../assets/Logo_Video_Ready_Arvenclaire.mp4" type="video/mp4">
                                 Your browser does not support the video tag.
                             </video>
-
-                            <div class="story-image-placeholder" style="display: none;">
-                                <i class="bi bi-image"></i>
-                                <p>Our Story Video</p>
-                            </div>
                         </div>
                     </div>
                 </div>
-            </section>
+            </div>
+        </div>
+    </section>
 
-            <!-- Our Values Section -->
-            <section class="about-section">
-                <div class="container">
-                    <h2 class="section-title fade-in">Our Values</h2>
-                    <div class="values-grid">
-                        <div class="value-card fade-in">
-                            <div class="value-icon">
-                                <i class="bi bi-gem"></i>
-                            </div>
-                            <h3 class="value-title">Excellence</h3>
-                            <p class="value-description">
-                                We are committed to offering only the finest luxury watches from the world's most
-                                prestigious brands, ensuring every piece meets our exacting standards of quality and
-                                craftsmanship.
-                            </p>
-                        </div>
-                        <div class="value-card fade-in">
-                            <div class="value-icon">
-                                <i class="bi bi-shield-check"></i>
-                            </div>
-                            <h3 class="value-title">Authenticity</h3>
-                            <p class="value-description">
-                                Every watch in our collection is guaranteed authentic, sourced directly from authorized
-                                dealers and manufacturers, giving you complete confidence in your purchase.
-                            </p>
-                        </div>
-                        <div class="value-card fade-in">
-                            <div class="value-icon">
-                                <i class="bi bi-heart"></i>
-                            </div>
-                            <h3 class="value-title">Service</h3>
-                            <p class="value-description">
-                                Our dedicated team of watch specialists provides personalized service, expert advice,
-                                and ongoing support to ensure your experience with us is exceptional from start to
-                                finish.
-                            </p>
-                        </div>
+    <!-- Values Section -->
+    <section class="values-section">
+        <div class="container">
+            <div class="section-header">
+                <div class="section-label">Our Values</div>
+                <h2 class="section-title">What Drives Us</h2>
+                <p class="section-subtitle">
+                    Every decision we make is guided by these fundamental principles.
+                </p>
+            </div>
+            
+            <div class="values-grid">
+                <div class="value-card">
+                    <div class="value-icon">
+                        <i class="bi bi-gem"></i>
+                    </div>
+                    <h3 class="value-title">Excellence</h3>
+                    <p class="value-description">
+                        We curate only the finest timepieces, ensuring every watch meets 
+                        the highest standards of Swiss craftsmanship.
+                    </p>
+                </div>
+
+                <div class="value-card featured">
+                    <div class="value-icon">
+                        <i class="bi bi-people"></i>
+                    </div>
+                    <h3 class="value-title">Customer First</h3>
+                    <p class="value-description">
+                        Your satisfaction is our priority. We provide personalized service 
+                        and expert guidance throughout your journey.
+                    </p>
+                </div>
+
+                <div class="value-card">
+                    <div class="value-icon">
+                        <i class="bi bi-shield-lock"></i>
+                    </div>
+                    <h3 class="value-title">Trust</h3>
+                    <p class="value-description">
+                        Every timepiece comes with a guarantee of authenticity, backed by 
+                        our rigorous verification process.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section class="services-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4">
+                    <div class="services-header">
+                        <div class="section-label">Our Services</div>
+                        <h2 class="section-title">Complete Experience</h2>
+                        <p class="section-description">
+                            From authentication to after-sales service, we provide 
+                            comprehensive support for every timepiece enthusiast.
+                        </p>
                     </div>
                 </div>
-            </section>
-
-            <!-- Website Features Section -->
-            <section class="features-section">
-                <div class="container">
-                    <h2 class="features-title fade-in">Why Choose Our Platform</h2>
-                    <div class="features-grid">
-                        <div class="feature-item fade-in">
-                            <div class="feature-icon">
-                                <i class="bi bi-shield-lock"></i>
-                            </div>
-                            <h3 class="feature-title">Secure Shopping</h3>
-                            <p class="feature-description">
-                                Advanced SSL encryption and secure payment gateways ensure your personal and financial
-                                information is always protected during transactions.
-                            </p>
-                        </div>
-                        <div class="feature-item fade-in">
-                            <div class="feature-icon">
-                                <i class="bi bi-truck"></i>
-                            </div>
-                            <h3 class="feature-title">Fast Delivery</h3>
-                            <p class="feature-description">
-                                Express shipping options with full insurance and tracking. Most orders are processed
-                                within 24 hours and delivered within 2-3 business days.
-                            </p>
-                        </div>
-                        <div class="feature-item fade-in">
-                            <div class="feature-icon">
-                                <i class="bi bi-headset"></i>
-                            </div>
-                            <h3 class="feature-title">24/7 Support</h3>
-                            <p class="feature-description">
-                                Our dedicated customer service team is available around the clock to assist with any
-                                questions, concerns, or technical support you may need.
-                            </p>
-                        </div>
-                        <div class="feature-item fade-in">
-                            <div class="feature-icon">
-                                <i class="bi bi-arrow-repeat"></i>
-                            </div>
-                            <h3 class="feature-title">Easy Returns</h3>
-                            <p class="feature-description">
-                                30-day hassle-free return policy. If you're not completely satisfied with your purchase,
-                                we'll make it right with free return shipping.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Services Section -->
-            <section class="services-section">
-                <div class="container">
-                    <h2 class="section-title fade-in">Our Services</h2>
+                <div class="col-lg-8">
                     <div class="services-grid">
-                        <div class="service-card fade-in">
+                        <div class="service-item">
                             <div class="service-icon">
                                 <i class="bi bi-search"></i>
                             </div>
-                            <h3 class="service-title">Watch Authentication</h3>
-                            <p class="service-description">
-                                Every timepiece undergoes rigorous authentication by certified horologists to guarantee
-                                authenticity and quality.
-                            </p>
-                            <ul class="service-features">
-                                <li>Certified authentication process</li>
-                                <li>Detailed condition reports</li>
-                                <li>Authenticity certificates</li>
-                                <li>Expert verification</li>
-                            </ul>
+                            <div class="service-content">
+                                <h4>Expert Authentication</h4>
+                                <p>Rigorous verification by certified horologists</p>
+                            </div>
                         </div>
-                        <div class="service-card fade-in">
+
+                        <div class="service-item">
                             <div class="service-icon">
                                 <i class="bi bi-tools"></i>
                             </div>
-                            <h3 class="service-title">Watch Servicing</h3>
-                            <p class="service-description">
-                                Professional maintenance and repair services to keep your luxury timepieces in perfect
-                                working condition.
-                            </p>
-                            <ul class="service-features">
-                                <li>Complete movement servicing</li>
-                                <li>Case and bracelet restoration</li>
-                                <li>Water resistance testing</li>
-                                <li>Warranty on all services</li>
-                            </ul>
-                        </div>
-                        <div class="service-card fade-in">
-                            <div class="service-icon">
-                                <i class="bi bi-person-check"></i>
+                            <div class="service-content">
+                                <h4>Professional Servicing</h4>
+                                <p>Complete maintenance by Swiss-trained technicians</p>
                             </div>
-                            <h3 class="service-title">Personal Consultation</h3>
-                            <p class="service-description">
-                                One-on-one consultations with watch experts to help you find the perfect timepiece for
-                                your style and needs.
-                            </p>
-                            <ul class="service-features">
-                                <li>Expert recommendations</li>
-                                <li>Style and preference analysis</li>
-                                <li>Investment guidance</li>
-                                <li>Virtual and in-person options</li>
-                            </ul>
+                        </div>
+
+                        <div class="service-item">
+                            <div class="service-icon">
+                                <i class="bi bi-truck"></i>
+                            </div>
+                            <div class="service-content">
+                                <h4>Secure Delivery</h4>
+                                <p>Insured worldwide shipping with tracking</p>
+                            </div>
+                        </div>
+
+                        <div class="service-item">
+                            <div class="service-icon">
+                                <i class="bi bi-headset"></i>
+                            </div>
+                            <div class="service-content">
+                                <h4>24/7 Support</h4>
+                                <p>Round-the-clock premium customer service</p>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </section>
-
-            <!-- Call to Action Section -->
-            <section class="cta-section">
-                <div class="container">
-                    <div class="cta-content fade-in">
-                        <h2 class="cta-title">Ready to Find Your Perfect Timepiece?</h2>
-                        <p class="cta-description">
-                            Explore our curated collection of luxury watches and discover the perfect timepiece that
-                            reflects your style and sophistication.
-                        </p>
-                        <div class="cta-buttons">
-                            <a href="/shop" class="btn-primary">
-                                <i class="bi bi-shop"></i>
-                                Shop Now
-                            </a>
-                            <a href="/contact" class="btn-secondary">
-                                <i class="bi bi-envelope"></i>
-                                Contact Us
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
+            </div>
         </div>
-    </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="container">
+            <div class="cta-content">
+                <h2 class="cta-title">Ready to Begin Your Journey?</h2>
+                <p class="cta-description">
+                    Discover our curated collection of luxury timepieces and experience 
+                    the ArvenClaire difference.
+                </p>
+                <div class="cta-buttons">
+                    <a href="/shop" class="btn-primary">
+                        <span>Explore Collection</span>
+                        <i class="bi bi-arrow-right"></i>
+                    </a>
+                    <a href="/contact" class="btn-secondary">
+                        <span>Get in Touch</span>
+                        <i class="bi bi-chat-dots"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <!-- Include Footer Content -->
     <%- include('../partials/user/footer') %>
 
-        <script>
-            // Scroll reveal animation
-            document.addEventListener('DOMContentLoaded', function () {
-                const observerOptions = {
-                    threshold: 0.1,
-                    rootMargin: '0px 0px -50px 0px'
-                };
+    <!-- Bootstrap JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"></script>
 
-                const observer = new IntersectionObserver(function (entries) {
-                    entries.forEach(entry => {
-                        if (entry.isIntersecting) {
-                            entry.target.classList.add('visible');
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Video handling
+            const video = document.querySelector('.main-video');
+            if (video) {
+                video.addEventListener('loadeddata', function() {
+                    video.play().catch(e => console.log('Video autoplay prevented'));
+                });
+            }
+
+            // Animate stats on scroll
+            const observerOptions = {
+                threshold: 0.5,
+                rootMargin: '0px 0px -100px 0px'
+            };
+
+            const observer = new IntersectionObserver(function(entries) {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        if (entry.target.classList.contains('hero-stats')) {
+                            animateStats();
                         }
-                    });
-                }, observerOptions);
-
-                // Observe all animated elements
-                document.querySelectorAll('.fade-in, .slide-in-left, .slide-in-right').forEach(el => {
-                    observer.observe(el);
+                        entry.target.classList.add('animate-in');
+                    }
                 });
+            }, observerOptions);
 
-                // Add staggered animation delay for grid items
-                document.querySelectorAll('.values-grid .value-card').forEach((card, index) => {
-                    card.style.transitionDelay = `${index * 0.1}s`;
+            // Observe elements for animation
+            const animatedElements = document.querySelectorAll('.hero-stats, .story-content, .story-image, .value-card, .service-item');
+            animatedElements.forEach(el => {
+                el.classList.add('animate-element');
+                observer.observe(el);
+            });
+
+            // Animate statistics
+            function animateStats() {
+                const stats = [
+                    { element: '.stat:nth-child(1) .stat-number', target: 15, suffix: '+' },
+                    { element: '.stat:nth-child(2) .stat-number', target: 50, suffix: 'K+' },
+                    { element: '.stat:nth-child(3) .stat-number', target: 100, suffix: '+' }
+                ];
+
+                stats.forEach(stat => {
+                    const element = document.querySelector(stat.element);
+                    if (element) {
+                        animateNumber(element, 0, stat.target, stat.suffix, 2000);
+                    }
                 });
+            }
 
-                document.querySelectorAll('.features-grid .feature-item').forEach((item, index) => {
-                    item.style.transitionDelay = `${index * 0.1}s`;
-                });
+            function animateNumber(element, start, end, suffix, duration) {
+                const startTime = performance.now();
+                
+                function updateNumber(currentTime) {
+                    const elapsed = currentTime - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    
+                    const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+                    const current = Math.floor(start + (end - start) * easeOutQuart);
+                    
+                    element.textContent = current + suffix;
+                    
+                    if (progress < 1) {
+                        requestAnimationFrame(updateNumber);
+                    }
+                }
+                
+                requestAnimationFrame(updateNumber);
+            }
 
-                document.querySelectorAll('.services-grid .service-card').forEach((card, index) => {
-                    card.style.transitionDelay = `${index * 0.1}s`;
+            // Smooth scroll for anchor links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
                 });
             });
-        </script>
+
+            console.log('ArvenClaire About Page loaded successfully');
+        });
+    </script>
 </body>
 </html>

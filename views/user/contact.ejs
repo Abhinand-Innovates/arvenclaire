@@ -12,6 +12,8 @@
     <!-- SweetAlert2 CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <link rel="stylesheet" href="../../../styles/user/header.css">
+    <!-- Shared Breadcrumb CSS -->
+    <link rel="stylesheet" href="../../styles/shared/breadcrumb.css">
     <link rel="stylesheet" href="../../styles/user/contact.css">
 </head>
 
@@ -19,38 +21,37 @@
 
     <%- include('../partials/user/header') %>
 
-        <div class="contact-page">
-            <div class="contact-page-content">
-                <!-- Breadcrumbs Section -->
-                <section class="breadcrumbs-section">
-                    <div class="container">
-                        <nav aria-label="breadcrumb">
-                            <ol class="breadcrumb">
-                                <li class="breadcrumb-item">
-                                    <a href="/">
-                                        <i class="bi bi-house"></i>
-                                        Home
-                                    </a>
-                                </li>
-                                <li class="breadcrumb-item active" aria-current="page">Contact</li>
-                            </ol>
-                        </nav>
-                    </div>
-                </section>
+    <!-- Contact Page Wrapper (Same structure as Shop Page) -->
+    <div class="contact-wrapper">
+        <div class="contact-container">
+            <!-- Modern Breadcrumb (Same as Shop Page) -->
+            <div class="breadcrumb-container">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="/">
+                                Home
+                            </a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">
+                            Contact
+                        </li>
+                    </ol>
+                </nav>
+            </div>
 
-                <!-- Hero Section -->
-                <section class="contact-hero">
-                    <div class="container">
-                        <h1 class="fade-in">Contact Us</h1>
-                        <p class="fade-in">We're here to help you find the perfect timepiece and answer any questions
-                            you may have</p>
-                    </div>
-                </section>
+            <!-- Contact Header -->
+            <div class="contact-header">
+                <h1 class="contact-title">Contact Us</h1>
+                <p class="contact-subtitle">We're here to help you find the perfect timepiece and answer any questions you may have</p>
+            </div>
 
+            <!-- Main Contact Layout -->
+            <div class="contact-main">
                 <!-- Contact Section -->
                 <section class="contact-section">
                     <div class="container">
-                        <div class="contact-container">
+                        <div class="contact-container-inner">
                             <!-- Contact Information -->
                             <div class="contact-info slide-in-left">
                                 <h2>Get in Touch</h2>
@@ -272,12 +273,12 @@
                                     <h3 class="map-info-title">Appointments</h3>
                                     <p class="map-info-text">Private consultations available by appointment for
                                         personalized service</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </section>
-
+                    </section>
+                </div>
             </div>
         </div>
 

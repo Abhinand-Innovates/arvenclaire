@@ -1188,3 +1188,86 @@ footer .btn-light:hover {
     border: 1px solid white;
   }
 }
+
+
+/* DROPDOWN FUNCTIONALITY PRESERVATION AND OVERFLOW FIXES */
+.dropdown {
+  position: relative !important;
+}
+
+.dropdown-menu {
+  position: absolute !important;
+  z-index: 1050 !important;
+  max-width: calc(100vw - 20px) !important;
+  box-sizing: border-box !important;
+}
+
+.dropdown-menu.show {
+  display: block !important;
+}
+
+/* Account dropdown overflow prevention */
+.account-dropdown {
+  right: 0 !important;
+  left: auto !important;
+  transform: none !important;
+  max-width: calc(100vw - 20px) !important;
+  box-sizing: border-box !important;
+}
+
+/* Mobile dropdown positioning */
+@media (max-width: 991px) {
+  .mobile-icons-container .dropdown {
+    position: static !important;
+  }
+  
+  .mobile-icons-container .dropdown-menu {
+    position: fixed !important;
+    top: 60px !important;
+    right: 10px !important;
+    left: auto !important;
+    max-width: calc(100vw - 20px) !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .account-dropdown {
+    min-width: 250px !important;
+    max-width: calc(100vw - 20px) !important;
+    right: 10px !important;
+  }
+  
+  .mobile-icons-container .dropdown-menu {
+    right: 5px !important;
+    max-width: calc(100vw - 10px) !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .account-dropdown {
+    min-width: 200px !important;
+    max-width: calc(100vw - 10px) !important;
+    right: 5px !important;
+  }
+  
+  .mobile-icons-container .dropdown-menu {
+    right: 2px !important;
+    max-width: calc(100vw - 4px) !important;
+  }
+}
+
+/* Ensure dropdown doesn't cause horizontal scroll */
+.navbar .dropdown {
+  overflow: visible !important;
+}
+
+.navbar .dropdown-menu {
+  overflow: hidden !important;
+  word-wrap: break-word !important;
+}
+
+.dropdown-item {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}

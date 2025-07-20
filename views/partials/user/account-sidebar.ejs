@@ -155,7 +155,7 @@
 
             /* Burger Button Styles */
             .burger-btn {
-                display: none;
+                display: none; /* Hidden by default on desktop */
                 position: fixed;
                 top: 120px;
                 right: 20px;
@@ -171,7 +171,6 @@
                 transition: all 0.3s ease;
                 width: 36px;
                 height: 36px;
-                display: flex;
                 align-items: center;
                 justify-content: center;
             }
@@ -254,6 +253,14 @@
                 background-color: rgba(255, 255, 255, 0.1);
             }
 
+            /* Desktop and larger screens - ensure burger button is hidden */
+            @media (min-width: 769px) {
+                .burger-btn {
+                    display: none !important;
+                }
+            }
+
+            /* Mobile screens */
             @media (max-width: 768px) {
                 .profile-container {
                     padding-top: 80px; /* Smaller padding for mobile */
@@ -264,7 +271,7 @@
                 }
 
                 .burger-btn {
-                    display: block; /* Show burger button on mobile */
+                    display: flex !important; /* Show burger button on mobile */
                 }
             }
         </style>
