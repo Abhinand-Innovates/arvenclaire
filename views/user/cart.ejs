@@ -308,7 +308,7 @@
         }
 
         if (newQuantity > 5) {
-            showSweetAlert('Maximum limit reached! You can only add up to 5 items per product.', 'error');
+            showToast('Maximum Limit Reached', 'You can only add up to 5 items per product.', 'error');
             return;
         }
 
@@ -1038,17 +1038,71 @@
         }
     }
 
+    // Toast notification system
+    function showToast(title, message, type = 'info', duration = 4000) {
+    const container = document.getElementById('toast-container');
+    if (!container) {
+    // Create container if it doesn't exist
+    const newContainer = document.createElement('div');
+    newContainer.id = 'toast-container';
+    newContainer.style.cssText = 'position: fixed; bottom: 20px; right: 20px; z-index: 9999;';
+    document.body.appendChild(newContainer);
+    }
+    
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    
+    const icons = {
+    success: 'bi bi-check-circle-fill',
+    error: 'bi bi-exclamation-circle-fill',
+    warning: 'bi bi-exclamation-triangle-fill',
+    info: 'bi bi-info-circle-fill'
+    };
+    
+    toast.innerHTML = `
+    <div class="toast-icon">
+    <i class="${icons[type]}"></i>
+    </div>
+    <div class="toast-content">
+    <div class="toast-title">${title}</div>
+    <div class="toast-message">${message}</div>
+    </div>
+    <button class="toast-close" onclick="removeToast(this.parentElement)">
+    <i class="bi bi-x"></i>
+    </button>
+    `;
+    
+    document.getElementById('toast-container').appendChild(toast);
+    
+    // Trigger animation
+    setTimeout(() => toast.classList.add('show'), 100);
+    
+    // Auto remove
+    setTimeout(() => removeToast(toast), duration);
+    }
+    
+    function removeToast(toast) {
+    if (toast && toast.parentElement) {
+    toast.classList.remove('show');
+    setTimeout(() => {
+    if (toast.parentElement) {
+    toast.parentElement.removeChild(toast);
+    }
+    }, 300);
+    }
+    }
+    
     // Helper function to update cart counter
     function updateCartCounter(count) {
-        const cartCounter = document.querySelector('#cartCount');
-        if (cartCounter) {
-            if (count > 0) {
-                cartCounter.textContent = count;
-                cartCounter.style.display = 'flex';
-            } else {
-                cartCounter.style.display = 'none';
-            }
-        }
+    const cartCounter = document.querySelector('#cartCount');
+    if (cartCounter) {
+    if (count > 0) {
+    cartCounter.textContent = count;
+    cartCounter.style.display = 'flex';
+    } else {
+    cartCounter.style.display = 'none';
+    }
+    }
     }
 
     // Enhanced function to validate and update stock information for all cart items
@@ -1242,6 +1296,96 @@
     // Add CSS animations for enhanced user experience
     const style = document.createElement('style');
     style.textContent = `
+        .toast {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            margin-bottom: 10px;
+            padding: 16px 20px;
+            min-width: 300px;
+            max-width: 400px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transform: translateX(100%);
+            transition: all 0.3s ease;
+            border-left: 4px solid;
+        }
+        
+        .toast.show {
+            transform: translateX(0);
+        }
+        
+        .toast.success {
+            border-left-color: #10b981;
+        }
+        
+        .toast.error {
+            border-left-color: #ef4444;
+        }
+        
+        .toast.warning {
+            border-left-color: #f59e0b;
+        }
+        
+        .toast.info {
+            border-left-color: #3b82f6;
+        }
+        
+        .toast-icon {
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+        
+        .toast.success .toast-icon {
+            color: #10b981;
+        }
+        
+        .toast.error .toast-icon {
+            color: #ef4444;
+        }
+        
+        .toast.warning .toast-icon {
+            color: #f59e0b;
+        }
+        
+        .toast.info .toast-icon {
+            color: #3b82f6;
+        }
+        
+        .toast-content {
+            flex: 1;
+        }
+        
+        .toast-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: #111827;
+        }
+        
+        .toast-message {
+            color: #6b7280;
+            font-size: 14px;
+        }
+        
+        .toast-close {
+            background: none;
+            border: none;
+            color: #9ca3af;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 0;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .toast-close:hover {
+            color: #6b7280;
+        }
+
         @keyframes spin {
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }

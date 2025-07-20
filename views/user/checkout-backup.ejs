@@ -1017,16 +1017,36 @@
             document.getElementById('couponError').style.display = 'none';
         }
 
+
+
         // Place order
         async function placeOrder() {
             if (!selectedAddressId) {
-                showToast('Address Required', 'Please select a delivery address', 'warning');
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Address Required',
+                    text: 'Please select a delivery address',
+                    position: 'bottom-end',
+                    background: '#ffffff',
+                    color: '#000000',
+                    confirmButtonColor: '#000000',
+                    iconColor: '#ffc107'
+                });
                 return;
             }
 
             // Validate COD selection for orders above ₹4000
             if (selectedPaymentMethod === 'Cash on Delivery' && currentTotal > 4000) {
-                showToast('Payment Method Not Available', 'Cash on Delivery is not available for orders above ₹4000. Please select Online Payment or Wallet Payment.', 'error');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Payment Method Not Available',
+                    text: 'Cash on Delivery is not available for orders above ₹4000. Please select Online Payment or Wallet Payment.',
+                    position: 'bottom-end',
+                    background: '#ffffff',
+                    color: '#000000',
+                    confirmButtonColor: '#000000',
+                    iconColor: '#dc3545'
+                });
                 return;
             }
             
@@ -1067,7 +1087,16 @@
                 }
             } catch (error) {
                 console.error('Error placing order:', error);
-                showToast('Order Failed', error.message || 'Failed to place order. Please try again.', 'error');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Order Failed',
+                    text: error.message || 'Failed to place order. Please try again.',
+                    position: 'bottom-end',
+                    background: '#ffffff',
+                    color: '#000000',
+                    confirmButtonColor: '#000000',
+                    iconColor: '#dc3545'
+                });
 
                 // Reset button
                 placeOrderBtn.disabled = false;
@@ -1134,10 +1163,17 @@
 
                             if (verifyResult.success) {
                                 // Payment verified successfully
-                                showToast('Payment Successful!', 'Your payment has been processed successfully.', 'success');
-                                setTimeout(() => {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Payment Successful!',
+                                    text: 'Your payment has been processed successfully.',
+                                    position: 'bottom-end',
+                                    showConfirmButton: false,
+                                    timer: 2000,
+                                    timerProgressBar: true
+                                }).then(() => {
                                     window.location.href = `/order-success/${result.orderId}`;
-                                }, 2000);
+                                });
                             } else {
                                 throw new Error(verifyResult.message || 'Payment verification failed');
                             }
@@ -1160,8 +1196,13 @@
                                 // Redirect to failure page
                                 window.location.href = `/order-failure/${result.orderId}`;
                             } catch (failureError) {
-                                // Fallback: show toast if redirect fails
-                                showToast('Payment Verification Failed', 'There was an issue verifying your payment. Please contact support.', 'error');
+                                // Fallback: show alert if redirect fails
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Payment Verification Failed',
+                                    text: 'There was an issue verifying your payment. Please contact support.',
+                                    confirmButtonColor: '#ef4444'
+                                });
                             }
                         }
                     },
@@ -1198,8 +1239,13 @@
                     } catch (error) {
                         console.error('Error handling payment failure:', error);
                         
-                        // Fallback: show toast if redirect fails
-                        showToast('Payment Failed', response.error.description || 'Payment was not successful', 'error');
+                        // Fallback: show alert if redirect fails
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Payment Failed',
+                            text: response.error.description || 'Payment was not successful',
+                            confirmButtonColor: '#ef4444'
+                        });
 
                         // Reset button
                         const placeOrderBtn = document.querySelector('.btn-place-order');
@@ -1216,7 +1262,7 @@
             }
         }
 
-    </script>
+            </script>
 
     <%- include("../partials/user/footer") %>
 </body>

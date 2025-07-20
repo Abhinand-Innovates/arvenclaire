@@ -217,7 +217,7 @@
                     }, 300);
 
                     // Show success message
-                    showSweetAlert('Added to cart and removed from wishlist!', 'success');
+                    showToast('Added to cart and removed from wishlist!', 'success');
                 } else {
                     // Handle different error types
                     let errorMessage = result.message || 'Failed to add product to cart';
@@ -228,7 +228,7 @@
                         errorMessage = result.message;
                     }
 
-                    showSweetAlert(errorMessage, 'error');
+                    showToast(errorMessage, 'error');
 
                     // Restore button
                     addToCartBtn.disabled = false;
@@ -236,7 +236,7 @@
                 }
             } catch (error) {
                 console.error('Error adding to cart:', error);
-                showSweetAlert('Please login to add items to cart.', 'error');
+                showToast('Please login to add items to cart.', 'error');
 
                 // Restore button
                 const wishlistItem = document.querySelector(`[data-product-id="${productId}"]`);
@@ -285,13 +285,13 @@
                     // Update wishlist counter
                     updateWishlistCounter(data.wishlistCount);
 
-                    showSweetAlert('Removed from wishlist!', 'success');
+                    showToast('Removed from wishlist!', 'success');
                 } else {
-                    showSweetAlert(data.message || 'Failed to remove item', 'error');
+                    showToast(data.message || 'Failed to remove item', 'error');
                 }
             } catch (error) {
                 console.error('Error removing from wishlist:', error);
-                showSweetAlert('Failed to remove item. Please try again.', 'error');
+                showToast('Failed to remove item. Please try again.', 'error');
             }
         }
 
@@ -300,20 +300,73 @@
             await addToCart(productId);
         }
 
-        // Helper function to show SweetAlert messages
-        function showSweetAlert(message, type) {
-            Swal.fire({
-                icon: type,
-                title: type === 'success' ? 'Success!' : 'Error!',
-                text: message,
-                position: 'bottom-right',
-                toast: true,
-                showConfirmButton: false,
-                timer: type === 'success' ? 3000 : 5000,
-                timerProgressBar: true,
-                background: '#ffffff',
-                color: '#000000'
-            });
+        // Helper function to show toast messages
+        function showToast(message, type) {
+            // Create toast container if it doesn't exist
+            let toastContainer = document.getElementById('toast-container');
+            if (!toastContainer) {
+                toastContainer = document.createElement('div');
+                toastContainer.id = 'toast-container';
+                toastContainer.style.cssText = `
+                    position: fixed;
+                    bottom: 20px;
+                    right: 20px;
+                    z-index: 9999;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 10px;
+                `;
+                document.body.appendChild(toastContainer);
+            }
+
+            // Create toast element
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                background: ${type === 'success' ? '#4caf50' : '#f44336'};
+                color: white;
+                padding: 12px 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                font-size: 14px;
+                font-weight: 500;
+                max-width: 350px;
+                word-wrap: break-word;
+                opacity: 0;
+                transform: translateX(100%);
+                transition: all 0.3s ease;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            `;
+
+            // Add icon
+            const icon = document.createElement('i');
+            icon.className = type === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
+            toast.appendChild(icon);
+
+            // Add message
+            const messageSpan = document.createElement('span');
+            messageSpan.textContent = message;
+            toast.appendChild(messageSpan);
+
+            toastContainer.appendChild(toast);
+
+            // Animate in
+            setTimeout(() => {
+                toast.style.opacity = '1';
+                toast.style.transform = 'translateX(0)';
+            }, 10);
+
+            // Auto remove
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.parentNode.removeChild(toast);
+                    }
+                }, 300);
+            }, type === 'success' ? 3000 : 5000);
         }
 
         // Helper functions to update counters
@@ -383,7 +436,7 @@
                         }
                     }
 
-                    showSweetAlert(message, 'success');
+                    showToast(message, 'success');
 
                     // Remove successfully added items from UI
                     if (result.results.added.length > 0) {
@@ -427,12 +480,12 @@
                         }, 400);
                     }
                 } else {
-                    showSweetAlert(result.message || 'Failed to add items to cart', 'error');
+                    showToast(result.message || 'Failed to add items to cart', 'error');
                 }
 
             } catch (error) {
                 console.error('Error in bulk add to cart:', error);
-                showSweetAlert('Failed to add items to cart. Please try again.', 'error');
+                showToast('Failed to add items to cart. Please try again.', 'error');
             } finally {
                 // Restore button state
                 bulkAddBtn.disabled = false;

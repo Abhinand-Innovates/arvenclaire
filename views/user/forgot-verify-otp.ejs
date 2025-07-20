@@ -30,7 +30,148 @@
         </div>
     </div>
 
+    <!-- Toast Container -->
+    <div id="toast-container" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999;"></div>
+    
+    <style>
+        .toast {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            margin-bottom: 10px;
+            padding: 16px 20px;
+            min-width: 300px;
+            max-width: 400px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transform: translateX(100%);
+            transition: all 0.3s ease;
+            border-left: 4px solid;
+        }
+        
+        .toast.show {
+            transform: translateX(0);
+        }
+        
+        .toast.success {
+            border-left-color: #10b981;
+        }
+        
+        .toast.error {
+            border-left-color: #ef4444;
+        }
+        
+        .toast.warning {
+            border-left-color: #f59e0b;
+        }
+        
+        .toast.info {
+            border-left-color: #3b82f6;
+        }
+        
+        .toast-icon {
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+        
+        .toast.success .toast-icon {
+            color: #10b981;
+        }
+        
+        .toast.error .toast-icon {
+            color: #ef4444;
+        }
+        
+        .toast.warning .toast-icon {
+            color: #f59e0b;
+        }
+        
+        .toast.info .toast-icon {
+            color: #3b82f6;
+        }
+        
+        .toast-content {
+            flex: 1;
+        }
+        
+        .toast-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: #111827;
+        }
+        
+        .toast-message {
+            color: #6b7280;
+            font-size: 14px;
+        }
+        
+        .toast-close {
+            background: none;
+            border: none;
+            color: #9ca3af;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 0;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .toast-close:hover {
+            color: #6b7280;
+        }
+    </style>
+
     <script>
+        // Toast notification system
+        function showToast(title, message, type = 'info', duration = 4000) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            const icons = {
+                success: 'fas fa-check-circle',
+                error: 'fas fa-exclamation-circle',
+                warning: 'fas fa-exclamation-triangle',
+                info: 'fas fa-info-circle'
+            };
+            
+            toast.innerHTML = `
+                <div class="toast-icon">
+                    <i class="${icons[type]}"></i>
+                </div>
+                <div class="toast-content">
+                    <div class="toast-title">${title}</div>
+                    <div class="toast-message">${message}</div>
+                </div>
+                <button class="toast-close" onclick="removeToast(this.parentElement)">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            
+            container.appendChild(toast);
+            
+            // Trigger animation
+            setTimeout(() => toast.classList.add('show'), 100);
+            
+            // Auto remove
+            setTimeout(() => removeToast(toast), duration);
+        }
+        
+        function removeToast(toast) {
+            if (toast && toast.parentElement) {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    if (toast.parentElement) {
+                        toast.parentElement.removeChild(toast);
+                    }
+                }, 300);
+            }
+        }
+
         // OTP Validation Class
         class OTPValidator {
             constructor() {
@@ -237,19 +378,15 @@
                         clearInterval(timerManager.timerInterval);
                         sessionStorage.removeItem('forgotOtpTimerEndTime');
                         
-                        Swal.fire({
-                            icon: "success",
-                            title: "OTP verified successfully",
-                            showConfirmButton: false,
-                            timer: 1500
-                        }).then(() => {
+                        showToast('Success!', 'OTP verified successfully', 'success');
+                        setTimeout(() => {
                             if (data.redirectUrl && typeof data.redirectUrl === 'string') {
                                 window.location.href = data.redirectUrl;
                             } else {
                                 console.warn('No valid redirect URL provided');
                                 window.location.href = '/reset-password';
                             }
-                        });
+                        }, 1500);
                     } else {
                         this.showError(data.message || 'Invalid OTP. Please try again.');
                         this.highlightAllInputsAsError();
@@ -346,13 +483,7 @@
                 this.verifyButton.classList.add('expired');
                 sessionStorage.removeItem('forgotOtpTimerEndTime');
                 
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'OTP Expired',
-                    text: 'Please request a new OTP',
-                    timer: 3000,
-                    showConfirmButton: false
-                });
+                showToast('OTP Expired', 'Please request a new OTP', 'warning');
             }
 
             reset() {
@@ -409,32 +540,21 @@
             }))
             .then(data => {
                 if (data.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'OTP Sent',
-                        text: 'A new OTP has been sent to your email.',
-                        timer: 2000,
-                        showConfirmButton: false
-                    });
+                    Swal.close();
+                    showToast('OTP Sent', 'A new OTP has been sent to your email.', 'success');
 
                     timerManager.reset();
                     otpValidator.clearAllInputs();
                 } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: data.message || 'Failed to resend OTP. Please try again.'
-                    });
+                    Swal.close();
+                    showToast('Error', data.message || 'Failed to resend OTP. Please try again.', 'error');
                     resendBtn.disabled = false;
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Failed to resend OTP. Please try again.'
-                });
+                Swal.close();
+                showToast('Error', 'Failed to resend OTP. Please try again.', 'error');
                 resendBtn.disabled = false;
             })
             .finally(() => {

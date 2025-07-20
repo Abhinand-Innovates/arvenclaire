@@ -143,9 +143,149 @@
         </div>
     </div>
 
+    <!-- Toast Container -->
+    <div id="toast-container" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999;"></div>
+    
+    <style>
+        .toast {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            margin-bottom: 10px;
+            padding: 16px 20px;
+            min-width: 300px;
+            max-width: 400px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transform: translateX(100%);
+            transition: all 0.3s ease;
+            border-left: 4px solid;
+        }
+        
+        .toast.show {
+            transform: translateX(0);
+        }
+        
+        .toast.success {
+            border-left-color: #10b981;
+        }
+        
+        .toast.error {
+            border-left-color: #ef4444;
+        }
+        
+        .toast.warning {
+            border-left-color: #f59e0b;
+        }
+        
+        .toast.info {
+            border-left-color: #3b82f6;
+        }
+        
+        .toast-icon {
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+        
+        .toast.success .toast-icon {
+            color: #10b981;
+        }
+        
+        .toast.error .toast-icon {
+            color: #ef4444;
+        }
+        
+        .toast.warning .toast-icon {
+            color: #f59e0b;
+        }
+        
+        .toast.info .toast-icon {
+            color: #3b82f6;
+        }
+        
+        .toast-content {
+            flex: 1;
+        }
+        
+        .toast-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: #111827;
+        }
+        
+        .toast-message {
+            color: #6b7280;
+            font-size: 14px;
+        }
+        
+        .toast-close {
+            background: none;
+            border: none;
+            color: #9ca3af;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 0;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .toast-close:hover {
+            color: #6b7280;
+        }
+    </style>
+
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script>
+        // Toast notification system
+        function showToast(title, message, type = 'info', duration = 4000) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            const icons = {
+                success: 'fas fa-check-circle',
+                error: 'fas fa-exclamation-circle',
+                warning: 'fas fa-exclamation-triangle',
+                info: 'fas fa-info-circle'
+            };
+            
+            toast.innerHTML = `
+                <div class="toast-icon">
+                    <i class="${icons[type]}"></i>
+                </div>
+                <div class="toast-content">
+                    <div class="toast-title">${title}</div>
+                    <div class="toast-message">${message}</div>
+                </div>
+                <button class="toast-close" onclick="removeToast(this.parentElement)">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            
+            container.appendChild(toast);
+            
+            // Trigger animation
+            setTimeout(() => toast.classList.add('show'), 100);
+            
+            // Auto remove
+            setTimeout(() => removeToast(toast), duration);
+        }
+        
+        function removeToast(toast) {
+            if (toast && toast.parentElement) {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    if (toast.parentElement) {
+                        toast.parentElement.removeChild(toast);
+                    }
+                }, 300);
+            }
+        }
         
         // Download PDF invoice
         async function downloadInvoice(orderId) {
@@ -178,29 +318,14 @@
                     document.body.removeChild(a);
 
                     // Show success toast
-                    const Toast = Swal.mixin({
-                        toast: true,
-                        position: 'bottom-right',
-                        showConfirmButton: false,
-                        timer: 3000,
-                        timerProgressBar: true
-                    });
-
-                    Toast.fire({
-                        icon: 'success',
-                        title: 'Invoice downloaded successfully'
-                    });
+                    showToast('Success!', 'Invoice downloaded successfully', 'success');
                 } else {
                     const errorData = await response.json();
                     throw new Error(errorData.message || 'Failed to download invoice');
                 }
             } catch (error) {
                 console.error('Error downloading invoice:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Download Failed',
-                    text: error.message || 'Failed to download invoice. Please try again.'
-                });
+                showToast('Download Failed', error.message || 'Failed to download invoice. Please try again.', 'error');
             } finally {
                 // Reset button state
                 downloadBtn.innerHTML = originalText;
@@ -243,24 +368,8 @@
                     }, 800);
 
                     // Show a subtle toast notification
-                    const Toast = Swal.mixin({
-                        toast: true,
-                        position: 'top-right',
-                        showConfirmButton: false,
-                        timer: 4000,
-                        timerProgressBar: true,
-                        didOpen: (toast) => {
-                            toast.addEventListener('mouseenter', Swal.stopTimer)
-                            toast.addEventListener('mouseleave', Swal.resumeTimer)
-                        }
-                    });
-
                     setTimeout(() => {
-                        Toast.fire({
-                            icon: 'success',
-                            title: 'Your latest order is highlighted below',
-                            text: 'Click "View Details" to see complete order information'
-                        });
+                        showToast('Order Found', 'Your latest order is highlighted below. Click "View Details" to see complete order information.', 'success', 5000);
                     }, 1200);
 
                     // Clean up URL after highlighting (optional)

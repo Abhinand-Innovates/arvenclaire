@@ -338,20 +338,79 @@
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+    // Helper function to show toast messages
+    function showToast(message, type) {
+        // Create toast container if it doesn't exist
+        let toastContainer = document.getElementById('toast-container');
+        if (!toastContainer) {
+            toastContainer = document.createElement('div');
+            toastContainer.id = 'toast-container';
+            toastContainer.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                z-index: 9999;
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            `;
+            document.body.appendChild(toastContainer);
+        }
+
+        // Create toast element
+        const toast = document.createElement('div');
+        toast.style.cssText = `
+            background: ${type === 'success' ? '#4caf50' : '#f44336'};
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            font-size: 14px;
+            font-weight: 500;
+            max-width: 350px;
+            word-wrap: break-word;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        `;
+
+        // Add icon
+        const icon = document.createElement('i');
+        icon.className = type === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
+        toast.appendChild(icon);
+
+        // Add message
+        const messageSpan = document.createElement('span');
+        messageSpan.textContent = message;
+        toast.appendChild(messageSpan);
+
+        toastContainer.appendChild(toast);
+
+        // Animate in
+        setTimeout(() => {
+            toast.style.opacity = '1';
+            toast.style.transform = 'translateX(0)';
+        }, 10);
+
+        // Auto remove
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateX(100%)';
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.parentNode.removeChild(toast);
+                }
+            }, 300);
+        }, type === 'success' ? 3000 : 5000);
+    }
+
     // Show redirect message if product was blocked/unavailable
     <% if (typeof redirectMessage !== 'undefined' && redirectMessage) { %>
         document.addEventListener('DOMContentLoaded', function() {
-            Swal.fire({
-                icon: '<%= redirectMessage.type %>',
-                title: '<%= redirectMessage.title %>',
-                text: '<%= redirectMessage.text %>',
-                confirmButtonColor: '#111827',
-                background: '#f8fafc',
-                color: '#111827',
-                showConfirmButton: true,
-                timer: 5000,
-                timerProgressBar: true
-            });
+            showToast('<%= redirectMessage.text %>', '<%= redirectMessage.type %>');
         });
     <% } %>
 
@@ -379,13 +438,13 @@
                     updateWishlistCounter(result.wishlistCount);
                 }
 
-                showSweetAlert('Added to cart!', 'success');
+                showToast('Added to cart!', 'success');
             } else {
-                showSweetAlert(result.message || 'Failed to add to cart.', 'error');
+                showToast(result.message || 'Failed to add to cart.', 'error');
             }
         } catch (error) {
             console.error('Cart error:', error);
-            showSweetAlert('Please login to add items to cart.', 'error');
+            showToast('Please login to add items to cart.', 'error');
         }
     }
 
@@ -417,22 +476,22 @@
                         heartIcon.classList.add('bi-heart');
                         buttonElement.classList.remove('in-wishlist');
                         buttonElement.title = 'Add to Wishlist';
-                        showSweetAlert('Removed from wishlist!', 'success');
+                        showToast('Removed from wishlist!', 'success');
                     } else {
                         // Add to wishlist
                         heartIcon.classList.remove('bi-heart');
                         heartIcon.classList.add('bi-heart-fill');
                         buttonElement.classList.add('in-wishlist');
                         buttonElement.title = 'Remove from Wishlist';
-                        showSweetAlert('Added to wishlist!', 'success');
+                        showToast('Added to wishlist!', 'success');
                     }
                 }
             } else {
-                showSweetAlert(result.message || 'Failed to update wishlist.', 'error');
+                showToast(result.message || 'Failed to update wishlist.', 'error');
             }
         } catch (error) {
             console.error('Wishlist error:', error);
-            showSweetAlert('Please login to manage wishlist.', 'error');
+            showToast('Please login to manage wishlist.', 'error');
         }
     }
 

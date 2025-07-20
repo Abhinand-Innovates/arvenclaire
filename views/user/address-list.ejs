@@ -94,7 +94,149 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script>
+    
+    <!-- Toast Container -->
+    <div id="toast-container" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999;"></div>
+    
+    <style>
+        .toast {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            margin-bottom: 10px;
+            padding: 16px 20px;
+            min-width: 300px;
+            max-width: 400px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transform: translateX(100%);
+            transition: all 0.3s ease;
+            border-left: 4px solid;
+        }
+        
+        .toast.show {
+            transform: translateX(0);
+        }
+        
+        .toast.success {
+            border-left-color: #10b981;
+        }
+        
+        .toast.error {
+            border-left-color: #ef4444;
+        }
+        
+        .toast.warning {
+            border-left-color: #f59e0b;
+        }
+        
+        .toast.info {
+            border-left-color: #3b82f6;
+        }
+        
+        .toast-icon {
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+        
+        .toast.success .toast-icon {
+            color: #10b981;
+        }
+        
+        .toast.error .toast-icon {
+            color: #ef4444;
+        }
+        
+        .toast.warning .toast-icon {
+            color: #f59e0b;
+        }
+        
+        .toast.info .toast-icon {
+            color: #3b82f6;
+        }
+        
+        .toast-content {
+            flex: 1;
+        }
+        
+        .toast-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: #111827;
+        }
+        
+        .toast-message {
+            color: #6b7280;
+            font-size: 14px;
+        }
+        
+        .toast-close {
+            background: none;
+            border: none;
+            color: #9ca3af;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 0;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .toast-close:hover {
+            color: #6b7280;
+        }
+    </style>
+    
     <script>
+        // Toast notification system
+        function showToast(title, message, type = 'info', duration = 4000) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            const icons = {
+                success: 'fas fa-check-circle',
+                error: 'fas fa-exclamation-circle',
+                warning: 'fas fa-exclamation-triangle',
+                info: 'fas fa-info-circle'
+            };
+            
+            toast.innerHTML = `
+                <div class="toast-icon">
+                    <i class="${icons[type]}"></i>
+                </div>
+                <div class="toast-content">
+                    <div class="toast-title">${title}</div>
+                    <div class="toast-message">${message}</div>
+                </div>
+                <button class="toast-close" onclick="removeToast(this.parentElement)">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            
+            container.appendChild(toast);
+            
+            // Trigger animation
+            setTimeout(() => toast.classList.add('show'), 100);
+            
+            // Auto remove
+            setTimeout(() => removeToast(toast), duration);
+        }
+        
+        function removeToast(toast) {
+            if (toast && toast.parentElement) {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    if (toast.parentElement) {
+                        toast.parentElement.removeChild(toast);
+                    }
+                }, 300);
+            }
+        }
+
         function setAsDefault(addressId) {
             Swal.fire({
                 title: 'Set as Default?',
@@ -116,31 +258,17 @@
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
-                            Swal.fire({
-                                title: 'Success!',
-                                text: data.message,
-                                icon: 'success',
-                                confirmButtonColor: '#000000'
-                            }).then(() => {
+                            showToast('Success!', data.message, 'success');
+                            setTimeout(() => {
                                 location.reload();
-                            });
+                            }, 1000);
                         } else {
-                            Swal.fire({
-                                title: 'Error!',
-                                text: data.message,
-                                icon: 'error',
-                                confirmButtonColor: '#000000'
-                            });
+                            showToast('Error!', data.message, 'error');
                         }
                     })
                     .catch(error => {
                         console.error('Error:', error);
-                        Swal.fire({
-                            title: 'Error!',
-                            text: 'An error occurred while setting default address',
-                            icon: 'error',
-                            confirmButtonColor: '#000000'
-                        });
+                        showToast('Error!', 'An error occurred while setting default address', 'error');
                     });
                 }
             });
@@ -167,31 +295,17 @@
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
-                            Swal.fire({
-                                title: 'Deleted!',
-                                text: data.message,
-                                icon: 'success',
-                                confirmButtonColor: '#000000'
-                            }).then(() => {
+                            showToast('Deleted!', data.message, 'success');
+                            setTimeout(() => {
                                 location.reload();
-                            });
+                            }, 1000);
                         } else {
-                            Swal.fire({
-                                title: 'Error!',
-                                text: data.message,
-                                icon: 'error',
-                                confirmButtonColor: '#000000'
-                            });
+                            showToast('Error!', data.message, 'error');
                         }
                     })
                     .catch(error => {
                         console.error('Error:', error);
-                        Swal.fire({
-                            title: 'Error!',
-                            text: 'An error occurred while deleting the address',
-                            icon: 'error',
-                            confirmButtonColor: '#000000'
-                        });
+                        showToast('Error!', 'An error occurred while deleting the address', 'error');
                     });
                 }
             });
