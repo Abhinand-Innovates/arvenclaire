@@ -731,7 +731,7 @@
             const result = await response.json();
 
             if (result.success) {
-                showSweetAlert('Added to cart!', 'success');
+                showSweetAlert(result.message || 'Added to cart!', 'success');
             } else {
                 showSweetAlert(result.message || 'Failed to add to cart.', 'error');
             }
@@ -770,14 +770,14 @@
                     heartIcon.classList.add('bi-heart');
                     buttonElement.classList.remove('in-wishlist');
                     buttonText.textContent = ' Add to Wishlist';
-                    showSweetAlert('Removed from wishlist!', 'success');
+                    showSweetAlert(result.message || 'Removed from wishlist!', 'success');
                 } else {
                     // Add to wishlist
                     heartIcon.classList.remove('bi-heart');
                     heartIcon.classList.add('bi-heart-fill');
                     buttonElement.classList.add('in-wishlist');
                     buttonText.textContent = ' Remove from Wishlist';
-                    showSweetAlert('Added to wishlist!', 'success');
+                    showSweetAlert(result.message || 'Added to wishlist!', 'success');
                 }
             } else {
                 showSweetAlert(result.message || 'Failed to update wishlist.', 'error');
@@ -1297,7 +1297,7 @@
                     updateWishlistCounter(result.wishlistCount);
                 }
 
-                showSweetAlert('Added to cart!', 'success');
+                showSweetAlert(result.message || 'Added to cart!', 'success');
             } else {
                 showSweetAlert(result.message || 'Failed to add to cart.', 'error');
             }
@@ -1335,14 +1335,14 @@
                         heartIcon.classList.add('bi-heart');
                         buttonElement.classList.remove('in-wishlist');
                         buttonElement.title = 'Add to Wishlist';
-                        showSweetAlert('Removed from wishlist!', 'success');
+                        showSweetAlert(result.message || 'Removed from wishlist!', 'success');
                     } else {
                         // Add to wishlist
                         heartIcon.classList.remove('bi-heart');
                         heartIcon.classList.add('bi-heart-fill');
                         buttonElement.classList.add('in-wishlist');
                         buttonElement.title = 'Remove from Wishlist';
-                        showSweetAlert('Added to wishlist!', 'success');
+                        showSweetAlert(result.message || 'Added to wishlist!', 'success');
                     }
                 }
             } else {

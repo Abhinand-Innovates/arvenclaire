@@ -786,7 +786,7 @@
                         updateWishlistCounter(result.wishlistCount);
                     }
 
-                    showToast('Success!', 'Added to cart!', 'success');
+                    showToast(result.message || 'Added to cart!');
                 } else {
                     showToast('Error', result.message || 'Failed to add to cart.', 'error');
                 }
@@ -824,14 +824,14 @@
                             heartIcon.classList.add('bi-heart');
                             buttonElement.classList.remove('in-wishlist');
                             buttonElement.title = 'Add to Wishlist';
-                            showToast('Success!', 'Removed from wishlist!', 'success');
+                            showToast(result.message || 'Removed from wishlist!', 'success');
                         } else {
                             // Add to wishlist
                             heartIcon.classList.remove('bi-heart');
                             heartIcon.classList.add('bi-heart-fill');
                             buttonElement.classList.add('in-wishlist');
                             buttonElement.title = 'Remove from Wishlist';
-                            showToast('Success!', 'Added to wishlist!', 'success');
+                            showToast(result.message || 'Added to wishlist!', 'success');
                         }
                     }
                 } else {

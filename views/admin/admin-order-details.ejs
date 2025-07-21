@@ -48,7 +48,13 @@
                                 !item.cancellationReason.includes('by admin')
                             );
                         
-                        const canUpdateStatus = !isFinalState && !isEntirelyUserCancelled;
+                        // Allow status updates for partially cancelled orders since they have active items
+                        const isPartiallyCancelled = order.status === 'Partially Cancelled';
+                        
+                        // Check payment status - only allow updates for completed payments (except COD)
+                        const hasPaymentIssue = order.paymentMethod !== 'Cash on Delivery' && order.paymentStatus !== 'Completed';
+                        
+                        const canUpdateStatus = ((!isFinalState && !isEntirelyUserCancelled) || isPartiallyCancelled) && !hasPaymentIssue;
                     %>
                     
                     <% if (canUpdateStatus) { %>
@@ -57,7 +63,15 @@
                             Update Status
                         </button>
                     <% } else { %>
-                        <button class="btn btn-disabled" disabled title="<%= isEntirelyUserCancelled ? 'Order was cancelled by customer' : 'Order is in final state' %>">
+                        <% 
+                            let lockReason = 'Order is in final state';
+                            if (isEntirelyUserCancelled) {
+                                lockReason = 'Order was cancelled by customer';
+                            } else if (hasPaymentIssue) {
+                                lockReason = 'Payment not completed - only orders with completed payments can be updated';
+                            }
+                        %>
+                        <button class="btn btn-disabled" disabled title="<%= lockReason %>">
                             <i class="fas fa-lock"></i>
                             Status Locked
                         </button>
@@ -80,6 +94,23 @@
                             <% } else if (hasUserCancellation) { %>
                                 This order contains items cancelled by the customer and cannot be modified.
                             <% } %>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <% } %>
+
+        <!-- Alert for Payment Issues -->
+        <% if (hasPaymentIssue) { %>
+        <div class="alert-container">
+            <div class="alert alert-info">
+                <div class="alert-content">
+                    <i class="fas fa-credit-card alert-icon"></i>
+                    <div class="alert-text">
+                        <h6 class="alert-title">Payment Required</h6>
+                        <p class="alert-message">
+                            This order's payment status is "<%= order.paymentStatus %>". Only orders with completed payments can have their status updated. The customer needs to complete the payment first.
                         </p>
                     </div>
                 </div>
@@ -121,6 +152,12 @@
                         <div class="detail-item">
                             <span class="detail-label">Payment Method</span>
                             <span class="detail-value"><%= order.paymentMethod %></span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Payment Status</span>
+                            <span class="status-badge status-<%= order.paymentStatus.toLowerCase() %>" style="font-size: 0.75rem;">
+                                <%= order.paymentStatus %>
+                            </span>
                         </div>
                         <% if (order.estimatedDelivery) { %>
                         <div class="detail-item">

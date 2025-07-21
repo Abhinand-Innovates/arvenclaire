@@ -1,12 +1,65 @@
 // Update order status
 function updateOrderStatus(orderId, currentStatus) {
-    document.getElementById('updateOrderId').value = orderId;
-    
-    // Populate status options based on current status and flow restrictions
-    populateStatusOptions(currentStatus);
-    
-    const modal = new bootstrap.Modal(document.getElementById('statusUpdateModal'));
-    modal.show();
+    // First, get the order data to check payment status
+    fetch(`/get-orders/${orderId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.order) {
+                const order = data.order;
+                
+                // Check payment status - prevent updates for incomplete payments (except COD)
+                if (order.paymentMethod !== 'Cash on Delivery' && order.paymentStatus !== 'Completed') {
+                    Swal.fire({
+                        title: 'Payment Required',
+                        text: `Cannot update order status. Payment status is "${order.paymentStatus}". Only orders with completed payments can be updated.`,
+                        icon: 'warning',
+                        confirmButtonColor: '#000000'
+                    });
+                    return;
+                }
+                
+                // Check if order was cancelled by customer
+                const isUserCancelled = order.status === 'Cancelled' && 
+                    order.orderedItems.every(item => 
+                        item.status === 'Cancelled' && 
+                        item.cancellationReason && 
+                        !item.cancellationReason.includes('by admin')
+                    );
+                
+                if (isUserCancelled) {
+                    Swal.fire({
+                        title: 'Order Locked',
+                        text: 'Cannot update status of an order that was cancelled by the customer.',
+                        icon: 'warning',
+                        confirmButtonColor: '#000000'
+                    });
+                    return;
+                }
+                
+                // If all checks pass, proceed with status update
+                document.getElementById('updateOrderId').value = orderId;
+                populateStatusOptions(currentStatus);
+                
+                const modal = new bootstrap.Modal(document.getElementById('statusUpdateModal'));
+                modal.show();
+            } else {
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Failed to load order details.',
+                    icon: 'error',
+                    confirmButtonColor: '#000000'
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching order details:', error);
+            Swal.fire({
+                title: 'Error',
+                text: 'Failed to load order details.',
+                icon: 'error',
+                confirmButtonColor: '#000000'
+            });
+        });
 }
 
 // Populate status options based on current status and flow restrictions
@@ -35,6 +88,10 @@ function populateStatusOptions(currentStatus) {
             break;
         case 'Return Request':
             allowedStatuses = ['Returned'];
+            break;
+        case 'Partially Cancelled':
+            // For partially cancelled orders, allow progression of remaining items
+            allowedStatuses = ['Processing', 'Shipped', 'Delivered', 'Cancelled'];
             break;
         case 'Returned':
         case 'Cancelled':

@@ -198,10 +198,21 @@ const updateOrderStatus = async (req, res) => {
       });
     }
 
+    // Allow status updates for partially cancelled orders, but not for fully cancelled orders
     if (order.status === 'Cancelled') {
       return res.status(403).json({
         success: false,
-        message: 'Cannot update status of a cancelled order'
+        message: 'Cannot update status of a fully cancelled order'
+      });
+    }
+
+    // Check payment status - only allow status updates for completed payments (except COD)
+    console.log(`Order ${orderId} - Payment Method: ${order.paymentMethod}, Payment Status: ${order.paymentStatus}`);
+    if (order.paymentMethod !== 'Cash on Delivery' && order.paymentStatus !== 'Completed') {
+      console.log(`Blocking status update for order ${orderId} due to incomplete payment`);
+      return res.status(403).json({
+        success: false,
+        message: 'Cannot update status of orders with pending or failed payments. Payment must be completed first.'
       });
     }
     
@@ -210,42 +221,53 @@ const updateOrderStatus = async (req, res) => {
     const newStatusIndex = statusFlow.indexOf(status);
 
     if (status === 'Cancelled') {
-      if (!['Pending', 'Processing'].includes(order.status)) {
+      if (!['Pending', 'Processing', 'Partially Cancelled'].includes(order.status)) {
         return res.status(403).json({
           success: false,
-          message: 'Orders can only be cancelled when status is Pending or Processing'
+          message: 'Orders can only be cancelled when status is Pending, Processing, or Partially Cancelled'
         });
       }
     } else {
-      const finalStates = ['Delivered', 'Returned', 'Cancelled'];
-      if (finalStates.includes(order.status) && status !== order.status) {
-        return res.status(403).json({
-          success: false,
-          message: `Cannot change status from ${order.status} to ${status}`
-        });
-      }
+      // For partially cancelled orders, allow normal status progression for remaining items
+      if (order.status === 'Partially Cancelled') {
+        // Allow any forward progression from Partially Cancelled
+        if (!['Processing', 'Shipped', 'Delivered', 'Return Request', 'Returned'].includes(status)) {
+          return res.status(403).json({
+            success: false,
+            message: 'Invalid status transition from Partially Cancelled'
+          });
+        }
+      } else {
+        const finalStates = ['Delivered', 'Returned', 'Cancelled'];
+        if (finalStates.includes(order.status) && status !== order.status) {
+          return res.status(403).json({
+            success: false,
+            message: `Cannot change status from ${order.status} to ${status}`
+          });
+        }
 
-      if (currentStatusIndex !== -1 && newStatusIndex !== -1) {
-        if (status === 'Return Request' && order.status !== 'Delivered') {
-          return res.status(403).json({
-            success: false,
-            message: 'Return Request can only be initiated from Delivered status'
-          });
-        }
-        
-        if (status === 'Returned' && order.status !== 'Return Request') {
-          return res.status(403).json({
-            success: false,
-            message: 'Status can only be changed to Returned from Return Request'
-          });
-        }
-        
-        if (status !== 'Return Request' && status !== 'Returned') {
-          if (newStatusIndex !== currentStatusIndex + 1) {
+        if (currentStatusIndex !== -1 && newStatusIndex !== -1) {
+          if (status === 'Return Request' && order.status !== 'Delivered') {
             return res.status(403).json({
               success: false,
-              message: 'Status changes must follow the sequential order. Cannot skip statuses.'
+              message: 'Return Request can only be initiated from Delivered status'
             });
+          }
+          
+          if (status === 'Returned' && order.status !== 'Return Request') {
+            return res.status(403).json({
+              success: false,
+              message: 'Status can only be changed to Returned from Return Request'
+            });
+          }
+          
+          if (status !== 'Return Request' && status !== 'Returned') {
+            if (newStatusIndex !== currentStatusIndex + 1) {
+              return res.status(403).json({
+                success: false,
+                message: 'Status changes must follow the sequential order. Cannot skip statuses.'
+              });
+            }
           }
         }
       }
