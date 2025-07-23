@@ -50,7 +50,10 @@
             <a href="/forgot-password" class="forgot-password-link">Forgot Password?</a>
           </div>
 
-          <button type="submit" class="btn btn-dark w-100 mb-3">Log In</button>
+          <button type="submit" class="btn btn-dark w-100 mb-3" id="loginBtn">
+            <span id="loginBtnText">Log In</span>
+            <span id="loginBtnSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+          </button>
 
           <div class="divider text-center text-muted my-3">or</div>
 
@@ -279,6 +282,23 @@
 
     setupPasswordToggle("password", "password-toggle");
 
+      // Loading state functions
+      function setLoadingState(isLoading) {
+        const loginBtn = document.getElementById('loginBtn');
+        const loginBtnText = document.getElementById('loginBtnText');
+        const loginBtnSpinner = document.getElementById('loginBtnSpinner');
+        
+        if (isLoading) {
+          loginBtn.disabled = true;
+          loginBtnText.textContent = 'Logging in...';
+          loginBtnSpinner.classList.remove('d-none');
+        } else {
+          loginBtn.disabled = false;
+          loginBtnText.textContent = 'Log In';
+          loginBtnSpinner.classList.add('d-none');
+        }
+      }
+
       // Form submit handling
       loginForm.addEventListener('submit', async (event) => {
         event.preventDefault();
@@ -296,6 +316,9 @@
 
         const email = document.getElementById('email').value.trim();
         const password = document.getElementById('password').value;
+
+        // Set loading state
+        setLoadingState(true);
 
         try {
           const response = await fetch('/login', {
@@ -319,11 +342,13 @@
 
           if (!data.success) {
             showToast('Login Failed', data.message || 'An error occurred during login.', 'error');
+            setLoadingState(false);
             return;
           }
         } catch (error) {
           console.error('Login error:', error);
           showToast('Error', 'An unexpected error occurred. Please try again later.', 'error');
+          setLoadingState(false);
         }
       });
     });
