@@ -337,7 +337,7 @@ const bulkTransferToCart = async (req, res) => {
     const wishlistCount = updatedWishlist ? updatedWishlist.products.length : 0;
 
     const updatedCart = await Cart.findOne({ userId });
-    const cartCount = updatedCart ? updatedCart.items.reduce((total, item) => total + item.quantity, 0) : 0;
+    const cartCount = updatedCart ? updatedCart.items.length : 0;
 
     // Prepare response message
     let message = '';

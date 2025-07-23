@@ -552,20 +552,35 @@ textarea.form-control {
 
 .faq-section .section-header {
     text-align: center;
-    margin-bottom: var(--space-16);
+    margin-bottom: var(--space-20);
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 
 .faq-section .section-badge {
     background: var(--white);
     color: var(--black);
+    margin-bottom: var(--space-5);
 }
 
 .faq-section .section-title {
     color: var(--white);
+    margin-bottom: var(--space-8);
 }
 
 .faq-section .section-description {
     color: var(--gray-300);
+    margin-bottom: 0;
+    font-size: 1.125rem;
+    line-height: 1.8;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .faq-grid {

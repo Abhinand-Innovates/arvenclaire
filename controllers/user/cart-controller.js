@@ -214,8 +214,8 @@ const addToCart = async (req, res) => {
       // Silently handle wishlist removal error
     }
 
-    // Get updated cart count
-    const cartCount = cart.items.reduce((total, item) => total + item.quantity, 0);
+    // Get updated cart count (number of unique products)
+    const cartCount = cart.items.length;
 
     res.json({
       success: true,
@@ -245,7 +245,8 @@ const getCartCount = async (req, res) => {
     }
 
     const cart = await Cart.findOne({ userId });
-    const count = cart ? cart.items.reduce((total, item) => total + item.quantity, 0) : 0;
+    // Count unique products instead of total quantity
+    const count = cart ? cart.items.length : 0;
 
     res.json({ count });
 
@@ -352,8 +353,8 @@ const updateCartQuantity = async (req, res) => {
 
     await cart.save();
 
-    // Get updated cart count
-    const cartCount = cart.items.reduce((total, item) => total + item.quantity, 0);
+    // Get updated cart count (number of unique products)
+    const cartCount = cart.items.length;
 
     res.json({
       success: true,
@@ -410,8 +411,8 @@ const removeFromCart = async (req, res) => {
 
     await cart.save();
 
-    // Get updated cart count
-    const cartCount = cart.items.reduce((total, item) => total + item.quantity, 0);
+    // Get updated cart count (number of unique products)
+    const cartCount = cart.items.length;
 
     res.json({
       success: true,
@@ -509,7 +510,7 @@ const removeOutOfStockItems = async (req, res) => {
         success: true,
         message: 'No out-of-stock items found to remove',
         removedCount: 0,
-        cartCount: cart.items.reduce((total, item) => total + item.quantity, 0)
+        cartCount: cart.items.length
       });
     }
 
@@ -517,8 +518,8 @@ const removeOutOfStockItems = async (req, res) => {
     cart.items = availableItems;
     await cart.save();
 
-    // Get updated cart count
-    const cartCount = cart.items.reduce((total, item) => total + item.quantity, 0);
+    // Get updated cart count (number of unique products)
+    const cartCount = cart.items.length;
 
     res.json({
       success: true,
