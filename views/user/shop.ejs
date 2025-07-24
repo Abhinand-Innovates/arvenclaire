@@ -140,6 +140,7 @@
                                            step="100"
                                            value="<%= minPrice || '' %>">
                                 </div>
+                                <div class="validation-message" id="minPriceMessage"></div>
                             </div>
 
                             <div class="price-separator">TO</div>
@@ -157,7 +158,11 @@
                                            step="100"
                                            value="<%= maxPrice || '' %>">
                                 </div>
+                                <div class="validation-message" id="maxPriceMessage"></div>
                             </div>
+                            
+                            <!-- General price range validation message -->
+                            <div class="validation-message price-range-message" id="priceRangeMessage"></div>
                         </div>
                     </div>
 
@@ -561,33 +566,91 @@
             window.location.href = newUrl;
         });
 
-        // Simple Price Inputs Implementation
+        // Enhanced Price Inputs Implementation with Validation Messages
         const minPriceInput = document.getElementById('minPriceInput');
         const maxPriceInput = document.getElementById('maxPriceInput');
+        const minPriceMessage = document.getElementById('minPriceMessage');
+        const maxPriceMessage = document.getElementById('maxPriceMessage');
+        const priceRangeMessage = document.getElementById('priceRangeMessage');
 
-        function validatePriceInputs() {
-            const minPrice = parseFloat(minPriceInput.value) || 0;
-            const maxPrice = parseFloat(maxPriceInput.value) || Infinity;
+        // Helper function to show validation message
+        function showValidationMessage(element, message, type = 'error') {
+            element.innerHTML = `<i class="bi bi-${getIconForType(type)}"></i> ${message}`;
+            element.className = `validation-message ${type} show`;
+        }
 
-            // Clear previous validation states
-            minPriceInput.style.borderColor = '';
-            maxPriceInput.style.borderColor = '';
+        // Helper function to hide validation message
+        function hideValidationMessage(element) {
+            element.className = 'validation-message';
+            element.innerHTML = '';
+        }
 
-            if (minPrice > maxPrice && maxPrice !== Infinity) {
-                // Invalid range - highlight inputs with red
-                minPriceInput.style.borderColor = '#dc2626';
-                maxPriceInput.style.borderColor = '#dc2626';
-                minPriceInput.style.boxShadow = '0 0 0 3px rgba(220, 38, 38, 0.2)';
-                maxPriceInput.style.boxShadow = '0 0 0 3px rgba(220, 38, 38, 0.2)';
-                return false;
-            } else {
-                // Valid range - highlight inputs with green
-                minPriceInput.style.borderColor = '#059669';
-                maxPriceInput.style.borderColor = '#059669';
-                minPriceInput.style.boxShadow = '0 0 0 3px rgba(5, 150, 105, 0.2)';
-                maxPriceInput.style.boxShadow = '0 0 0 3px rgba(5, 150, 105, 0.2)';
-                return true;
+        // Helper function to get icon for message type
+        function getIconForType(type) {
+            switch(type) {
+                case 'error': return 'exclamation-circle';
+                case 'success': return 'check-circle';
+                case 'warning': return 'exclamation-triangle';
+                case 'info': return 'info-circle';
+                default: return 'info-circle';
             }
+        }
+
+        // Enhanced validation function
+        function validatePriceInputs() {
+            const minPrice = parseFloat(minPriceInput.value);
+            const maxPrice = parseFloat(maxPriceInput.value);
+            let isValid = true;
+
+            // Clear previous states
+            minPriceInput.className = 'price-input';
+            maxPriceInput.className = 'price-input';
+            hideValidationMessage(minPriceMessage);
+            hideValidationMessage(maxPriceMessage);
+            hideValidationMessage(priceRangeMessage);
+
+            // Validate minimum price
+            if (minPriceInput.value && (isNaN(minPrice) || minPrice < 0)) {
+                minPriceInput.className = 'price-input invalid';
+                showValidationMessage(minPriceMessage, 'Please enter a valid minimum price', 'error');
+                isValid = false;
+            } else if (minPriceInput.value && minPrice >= 0) {
+                minPriceInput.className = 'price-input valid';
+                showValidationMessage(minPriceMessage, 'Valid minimum price', 'success');
+            }
+
+            // Validate maximum price
+            if (maxPriceInput.value && (isNaN(maxPrice) || maxPrice < 0)) {
+                maxPriceInput.className = 'price-input invalid';
+                showValidationMessage(maxPriceMessage, 'Please enter a valid maximum price', 'error');
+                isValid = false;
+            } else if (maxPriceInput.value && maxPrice >= 0) {
+                maxPriceInput.className = 'price-input valid';
+                //showValidationMessage(maxPriceMessage, 'Valid maximum price', 'success');
+            }
+
+            // Validate price range relationship
+            if (minPriceInput.value && maxPriceInput.value && !isNaN(minPrice) && !isNaN(maxPrice)) {
+                if (minPrice > maxPrice) {
+                    minPriceInput.className = 'price-input invalid';
+                    maxPriceInput.className = 'price-input invalid';
+                    showValidationMessage(priceRangeMessage, 'Maximum price must be greater than minimum price', 'error');
+                    isValid = false;
+                } else if (minPrice === maxPrice && minPrice > 0) {
+                    minPriceInput.className = 'price-input warning';
+                    maxPriceInput.className = 'price-input warning';
+                    showValidationMessage(priceRangeMessage, 'Price range is very narrow', 'warning');
+                } else {
+                    showValidationMessage(priceRangeMessage, 'Valid price range', 'success');
+                }
+            }
+
+            // Show helpful info messages
+            if (!minPriceInput.value && !maxPriceInput.value) {
+                showValidationMessage(priceRangeMessage, 'Enter price range to filter products', 'info');
+            }
+
+            return isValid;
         }
 
         function handlePriceInputChange(input) {
@@ -597,14 +660,10 @@
                 input.style.transform = 'scale(1)';
             }, 200);
 
-            // Validate range
-            validatePriceInputs();
-
-            // Add glow effect to container
-            const container = document.querySelector('.price-inputs-container');
-            container.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.4)';
-            setTimeout(() => {
-                container.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
+            // Validate with delay to avoid too frequent validation
+            clearTimeout(input.validationTimeout);
+            input.validationTimeout = setTimeout(() => {
+                validatePriceInputs();
             }, 300);
         }
 
@@ -621,22 +680,21 @@
         [minPriceInput, maxPriceInput].forEach(input => {
             input.addEventListener('focus', function() {
                 this.style.transform = 'translateY(-1px)';
-                this.style.boxShadow = '0 0 0 3px rgba(17, 24, 39, 0.3), 0 4px 6px rgba(0, 0, 0, 0.2)';
-                this.style.background = '#111827';
             });
 
             input.addEventListener('blur', function() {
                 this.style.transform = 'translateY(0)';
-                this.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.1)';
-                this.style.background = '#1f2937';
-                validatePriceInputs();
+                // Final validation on blur
+                setTimeout(() => {
+                    validatePriceInputs();
+                }, 100);
             });
         });
 
-        // Initialize validation
-        if (minPriceInput.value || maxPriceInput.value) {
+        // Initialize validation on page load
+        setTimeout(() => {
             validatePriceInputs();
-        }
+        }, 500);
     });
 
 
